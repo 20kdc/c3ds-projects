@@ -1,0 +1,144 @@
+CPX: CAOS Proxy For Cross-Language And Operating System Use
+
+specification version number
+
+	2206171548
+
+license of specification
+
+	Written starting in 2022 by 20kdc
+	To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+	You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+protocol
+
+	1. The client connects to localhost TCP port 19960 (or a host:port specified by the user).
+	2. The server will attempt to find an engine and lock the mutex.
+	3. It will then send the first 24 bytes of the shared memory (the header).
+	   See http://double.nz/creatures/developer/sharedmemory.htm
+	4. It is legal for the client to close the connection here if the client has no request to make (i.e. if the client is simply querying the PID or connection state).
+	5. The client will then send a little-endian 32-bit word indicating the length of the request data in bytes, and then send the request data.
+	6. The server will then perform the request (copy data, set size, signal request event and wait on response event).
+	7. The server will send the entire response (the 24-byte header and then the amount of data bytes that header specifies).
+	8. Finally, the server will close it's side of the socket and shutdown it's communications with the engine.
+
+server error handling
+
+	It's possible for an error to occur in the CPX Server, rather than in the engine (say, if the game hasn't been started yet)
+	Clients do NOT have to care about this. The procedure described below looks almost identical to an engine-originated error to a client.
+
+	If an error occurs in the CPX Server or associated components, the server should attempt to mimic a standard request error.
+
+	That goes as follows:
+	1. If the server has not sent the first 24-byte shared memory header, it will send a faked header twice.
+	2. If it has sent the first 24-byte shared memory header, and needs to send a response, it will send a faked header once.
+	3. If an error occurs half-way through a transmission, the server can't do much about it (since such errors usually come in the form of illegal access exceptions).
+
+	The resulting error message should always start with "caosprox: " to indicate it's true origin.
+
+recommendations
+
+	Note that a CPX server should NOT support multiple connections at the same time, but should use OS "waiting socket queue" facilities.
+	This allows a CPX server to implicitly mediate multiple accessors to the CAOS interface.
+
+	A CPX server is allowed to host on :: / 0.0.0.0, use a custom port, or target a specific game name if the user requests it.
+	A CPX client is allowed to only support connecting to the server on 0.0.0.0.
+
+design rationale
+
+	The standard port will use similar logic to that which Creatures Labs uses, i.e. finding the "Software\Gameware Development\Creatures Engine\Default Game" key.
+	This should ensure that CPX applications taking the "default option" act consistently with Creatures Labs applications.
+
+	The CPX mechanism was designed to use the shared memory interface as the Linux "CAOS Console" interface is frankly crippled.
+	The possibility of a translation mechanism has been kept possible if the implementor is willing to write out the request bodies as files and inject them.
+
+	All data transfer area functionality was included, as someone may wish to create a "data transfer proxy" between two Windows/Wine instances.
+	Such a "data transfer proxy" should act as a CPX client on one end and a CPX server on the other.
+	The client and server should be separately interchangable with other CPX software.
+	This is important when combined with the aforementioned translation mechanism concept (i.e. to make Creatures Labs software under Wine operate on the Linux Docking Station).
+
+	Worth noting is that a CPX server for Windows that does not make stupid decisions will work under Wine.
+	In practice any CPX server that requires an external runtime (Java or .NET) falls afoul of this.
+	.NET Core is also to be avoided for servers as it is unstable under Wine and the native versions would have trouble accessing Wine resources.
+	Therefore a CPX server for Windows will serve all operating systems.
+	The choice of a TCP socket was intentional to allow CPX to act as a bridge between the "Wine world" and the supporting platform.
+
+	An interesting and useful side effect is that it also can bridge out of virtual machines and allows remote use if wanted.
+
+	In addition, the choice to have the server close communications between connections was intentional.
+	This allows CPX to co-exist with official Creatures Labs applications (this co-existence seems to be the purpose of the mutex).
+
+	Error handling mimicking engine errors avoids the issues of a fancy bespoke solution that inevitably people have to write code for.
+	People already have to write code to handle CAOS errors so they can simply treat this as a fancy new as-of-yet-unheard-of CAOS error.
+	No reason to make things more complicated than they are.
+
+implementation status (from most important to least)
+
+	CPX Server Windows : BETA
+	Example CPX Client : NO
+	Storyteller PR     : NO
+	CPX Server Unix    : NO
+	CPX -> SHM         : NO
+
+implementation notes for CPX Server Windows
+
+	CPX Server Windows will be written using mingw-w64, which in my experience has worked properly on Windows XP SP2 virtual machines.
+	(I expect it will be possible to make the application function on Windows 95, but you'll have more issues making Windows 95 function.)
+	CPX Server Windows will hang out in your taskbar's notification area for easy shutdown.
+	Pressing it will ask if you want to shut down the server.
+	Ideally, an application developer should be able to simply attempt to start the CPX server automatically (running Wine if necessary).
+	Application developers SHOULD NOT automatically stop the CPX server - there may be other applications using it.
+	However application developers should NOT become too reliant on the success of this method as differing configurations may cause issues.
+	Application developers SHOULD be able to rely on port 19960.
+
+implementation notes for example CPX client
+
+	The example CPX client will be written using Python.
+	It'll read out the name of the currently selected creature.
+
+possible topologies
+
+	Standard
+
+	+------------+      |       +------------+         +------------+
+	|            |     CPX      |            |   SHM   |            |
+	| CPX Client | ------------ | CPX Server | ------- | engine.exe |
+	| Any        |      |       | C,C++      |         | C++/CAOS   |
+	+------------+      |       +------------+         +------------+
+	                    |
+	 Native World       |                 Wine/Windows World
+
+
+	Remote
+
+	+---------------+   |   +------------+      |       +------------+         +------------+
+	|               |   |   |            |     CPX      |            |   SHM   |            |
+	|  BrainInAVat  |   |   | CPX Client | --+--------- | CPX Server | ------- | engine.exe |
+	|  C++ probably |   |   | Any        |   |  |       | C,C++      |         | C++/CAOS   |
+	+---------------+   |   +------------+   |  |       +------------+         +------------+
+	       | SHM        |                    |  |
+	+---------------+   |                    |  |
+	|               |   |                    |  |
+	|  CPX -> SHM   | - | -------------------+  |
+	|  C,C++        |   |                       |
+	+---------------+   |                       |
+	                    |                       |
+	Local Wine/Windows  |  Local Native World   |         Remote Host, Wine/Windows World
+
+
+	Creatures Internet Edition, etc (native Linux/Mac ports)
+
+	+---------------+       +------------+      |       +------------+         +------------+
+	|               |       |            |     CPX      |            |   SHM   | BrainInVat |
+	|  C.I.E        |       | CPX Client | --+--------- | CPX -> SHM | ------- | and etc.   |
+	|  C++/CAOS     |       | Any        |   |  |       | C,C++      |         | C++ prob.  |
+	+---------------+       +------------+   |  |       +------------+         +------------+
+	       | CAOS Console/Files              |  |
+	+---------------+                        |  |
+	| CPX Server    |                        |  |
+	| for CIE       | -----------------------+  |
+	|  Any          |                           |
+	+---------------+                           |
+	                                            |
+	                             Native World   |         Wine/Windows World
+

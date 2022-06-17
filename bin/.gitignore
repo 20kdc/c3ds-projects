@@ -1,0 +1,7 @@
+# multi-purpose file
+
+*.exe
+*.dll
+*.o
+*.obj
+
