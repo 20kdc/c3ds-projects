@@ -6,6 +6,7 @@ I'm in no way affiliated with Creature Labs, this is all unofficial, and it migh
 
 ## Contents
 
++ bin: Binaries are placed here.
 + caosproxy: specification for OS-independent and easier to access interconnect between tooling & the game
 + colour-depth-fix: improves Linux & Mac compatibilty of Docking Station through renderer patching
 

@@ -1,4 +1,5 @@
 all: bin/ddrhk.dll bin/ddrhk.exe
+rel: bin/ddrhk.dll bin/ddrhk.exe colour-depth-fix/README.md
 
 INTERMEDIATES += bin/ddrhk.dll bin/dscf_a.obj bin/ddrhk.exe
 

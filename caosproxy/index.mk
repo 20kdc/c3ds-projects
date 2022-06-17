@@ -1,4 +1,5 @@
 all: bin/caosprox.exe
+rel: bin/caosprox.exe caosproxy/spec.txt caosproxy/caosterm.py
 
 INTERMEDIATES += bin/caosprox.exe bin/caospres.o
 
