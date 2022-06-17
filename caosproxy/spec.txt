@@ -74,8 +74,8 @@ design rationale
 
 implementation status (from most important to least)
 
-	CPX Server Windows : BETA
-	Example CPX Client : NO
+	CPX Server Windows : PUBLIC BETA
+	Example CPX Client : OK
 	Storyteller PR     : NO
 	CPX Server Unix    : NO
 	CPX -> SHM         : NO
