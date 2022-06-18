@@ -145,9 +145,15 @@ static void handleClientWithEverything(SOCKET client, transfer_t * shm, HANDLE r
 	ResetEvent(resultEvent);
 	PulseEvent(requestEvent);
 	HANDLE waitHandles[2] = {process, resultEvent};
-	WaitForMultipleObjects(2, waitHandles, FALSE, INFINITE);
-	// send the results back to the client
-	transferAreaToClient(client, shm, 0);
+	DWORD result = WaitForMultipleObjects(2, waitHandles, FALSE, INFINITE);
+	if (result == WAIT_OBJECT_0) {
+		// This specific error means the process ended while the request was occuring.
+		// This can be tested with the "bang" CAOS command or some other crashing operation.
+		internalError(client, "game closed during request", 0);
+	} else {
+		// send the results back to the client
+		transferAreaToClient(client, shm, 0);
+	}
 }
 
 static void handleClientWithSHM(SOCKET client, const char * gameID, transfer_t * shm) {
