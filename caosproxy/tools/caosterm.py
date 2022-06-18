@@ -29,9 +29,7 @@ while True:
 	hdr = libcpx.CSMIHead(libcpx.recvall(s, libcpx.csmihead_len))
 	print("IHDR:", hdr)
 	# send request
-	req = b"execute\n" + text.encode("latin1") + b"\0"
-	s.sendall(struct.pack("<I", len(req)))
-	s.sendall(req)
+	s.sendall(libcpx.encode_cpxr(b"execute\n" + text.encode("latin1") + b"\0"))
 	# receive secondary burst
 	hdr.of_bytes(libcpx.recvall(s, libcpx.csmihead_len))
 	print("RHDR:", hdr)
