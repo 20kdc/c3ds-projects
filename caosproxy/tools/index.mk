@@ -1,2 +1,2 @@
-rel: caosproxy/tools/caosterm.py
+rel: caosproxy/tools/caosterm.py caosproxy/tools/maprooms.py caosproxy/tools/maptypes.py
 
