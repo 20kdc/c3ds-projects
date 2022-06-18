@@ -11,33 +11,35 @@ import readline
 import sys
 import struct
 
-the_host = sys.argv[1]
-the_port = int(sys.argv[2])
+import libcpx
+
+the_host = "localhost"
+the_port = 19960
+
+if len(sys.argv) >= 2:
+	the_host = sys.argv[1]
+if len(sys.argv) >= 3:
+	the_port = int(sys.argv[2])
 
 while True:
 	text = input("caos> ")
 	s = socket.socket()
 	s.connect((the_host, the_port))
 	# receive initial burst
-	hdr1 = b""
-	for i in range(24):
-		hdr1 += s.recv(1)
-	print("HDR1:", hdr1.hex())
+	hdr = libcpx.CSMIHead(libcpx.recvall(s, libcpx.csmihead_len))
+	print("IHDR:", hdr)
 	# send request
-	req = b"execute\n" + text.encode("cp437") + b"\0"
+	req = b"execute\n" + text.encode("latin1") + b"\0"
 	s.sendall(struct.pack("<I", len(req)))
 	s.sendall(req)
 	# receive secondary burst
-	hdr2 = b""
-	for i in range(24):
-		hdr2 += s.recv(1)
-	print("HDR2:", hdr2.hex())
-	print("     ", "mmmmmmmmpppppppprrrrrrrrsssssssszzzzzzzz________")
+	hdr.of_bytes(libcpx.recvall(s, libcpx.csmihead_len))
+	print("RHDR:", hdr)
 	# receive response data
-	resp_size = struct.unpack("<I", hdr2[12:16])[0]
-	resp = b""
-	for i in range(resp_size):
-		resp += s.recv(1)
-	print("RESP:", resp.decode("cp437"))
+	resp = libcpx.recvall(s, hdr.data_len)
+	# we don't bother getting rid of the null terminator for text output
+	# of course we don't KNOW it's text output anyway
+	# does it matter?
+	print(resp.decode("latin1"))
 	s.close()
 
