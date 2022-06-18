@@ -13,6 +13,7 @@
 
 import socket
 import sys
+import os
 import struct
 
 class CSMIHead():
@@ -32,7 +33,7 @@ class CSMIHead():
 		self.padding = 0
 		if not (b is None):
 			self.of_bytes(b)
-	def is_valid(self):
+	def is_valid(self) -> bool:
 		"""
 		Returns True if this header is valid.
 		"""
@@ -48,7 +49,7 @@ class CSMIHead():
 		self.data_len = unpacked[3]
 		self.data_len_max = unpacked[4]
 		self.padding = unpacked[5]
-	def to_bytes(self):
+	def to_bytes(self) -> bytes:
 		"""
 		Converts this object back to a shared memory interface header's bytes.
 		"""
@@ -59,7 +60,7 @@ class CSMIHead():
 		"""
 		return "CSMIHead: magic=" + self.magic.decode("latin1") + " pid=" + str(self.process_id) + " code=" + str(self.result_code) + " dl=" + str(self.data_len) + " dlm=" + str(self.data_len_max) + " pad=" + str(self.padding)
 
-def recvall(s: socket.socket, l: int):
+def recvall(s: socket.socket, l: int) -> bytes:
 	"""
 	Calls recv repeatedly until end of stream (raising EOFError if encountered early) or until the given length has been fulfilled.
 	"""
@@ -73,15 +74,57 @@ def recvall(s: socket.socket, l: int):
 
 csmihead_len = 24
 
-def decode_cpxrhead(b: bytes):
+def decode_cpxrhead(b: bytes) -> int:
 	"""
 	Decodes a CPX request header (just an integer for the length)
 	"""
 	return struct.unpack("<I", b)[0]
-def encode_cpxr(b: bytes):
+def encode_cpxr(b: bytes) -> bytes:
 	"""
 	Encodes a CPX request (i.e. adds a length prefix).
 	"""
 	return struct.pack("<I", len(b)) + b
 cpxrhead_len = 4
+
+def open_default() -> socket:
+	"""
+	Opens a socket to the "default" CPX server.
+	"""
+	return socket.create_connection((os.getenv("CPX_HOST") or "localhost", os.getenv("CPX_PORT") or 19960))
+
+class CPXError(Exception):
+	"""
+	This exception type is specifically for errors returned by the remote host.
+	Any networking errors or such are returned as other exceptions.
+	"""
+	pass
+
+def execute_caos(s: socket.socket, t: str) -> str:
+	"""
+	Runs some CAOS in a "default" manner.
+	This isn't qualified to handle binary data as it expects (and removes) the null terminator.
+	"""
+	recvall(s, csmihead_len)
+	# send request
+	s.sendall(encode_cpxr(b"execute\n" + t.encode("latin1") + b"\0"))
+	hdr = CSMIHead(recvall(s, csmihead_len))
+	resp = recvall(s, hdr.data_len)
+	# remove null terminator
+	resp = resp[0:len(resp) - 1]
+	resp = resp.decode("latin1")
+	if hdr.result_code != 0:
+		# Error
+		raise CPXError(resp)
+	return resp
+
+def execute_caos_default(t: str) -> str:
+	"""
+	Runs some CAOS in a "default" manner, targetting the default socket.
+	This isn't qualified to handle binary data as it expects (and removes) the null terminator.
+	"""
+	s = open_default()
+	try:
+		return execute_caos(s, t)
+	finally:
+		s.close()
 
