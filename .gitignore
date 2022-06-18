@@ -1,0 +1,6 @@
+*.o
+*.exe
+*.dll
+release.zip
+release-id.txt
+

@@ -16,10 +16,10 @@ INTERMEDIATES :=
 all:
 
 rel: COPYING.txt README.md
-	echo `date +%s` > bin/release-id.txt
-	rm -f bin/release.zip
-	zip bin/release.zip $^
-	cd bin ; zip release.zip release-id.txt
+	echo `date +%s` > release-id.txt
+	rm -f release.zip
+	zip release.zip $^
+	zip release.zip release-id.txt
 
 include colour-depth-fix/index.mk
 include caosproxy/index.mk

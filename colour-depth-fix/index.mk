@@ -1,14 +1,14 @@
-all: bin/ddrhk.dll bin/ddrhk.exe
-rel: bin/ddrhk.dll bin/ddrhk.exe colour-depth-fix/README.md
+all: colour-depth-fix/ddrhk.dll colour-depth-fix/ddrhk.exe
+rel: colour-depth-fix/ddrhk.dll colour-depth-fix/ddrhk.exe colour-depth-fix/README.md
 
-INTERMEDIATES += bin/ddrhk.dll bin/dscf_a.obj bin/ddrhk.exe
+INTERMEDIATES += colour-depth-fix/ddrhk.dll colour-depth-fix/dscf_a.o colour-depth-fix/ddrhk.exe
 
-bin/ddrhk.dll: colour-depth-fix/dscf.c bin/dscf_a.obj
+colour-depth-fix/ddrhk.dll: colour-depth-fix/dscf.c colour-depth-fix/dscf_a.o
 	$(COMPILER) $(COMPILE_FLAGS_DLL) $^ -o $@
 
-bin/dscf_a.obj: colour-depth-fix/dscf_a.asm
+colour-depth-fix/dscf_a.o: colour-depth-fix/dscf_a.asm
 	$(NASM) -fwin32 $< -o $@
 
-bin/ddrhk.exe: colour-depth-fix/ddrhk.c
-	$(COMPILER) $(COMPILE_FLAGS_GUI) -Os -flto -static-libgcc -Wno-multichar -mwindows $^ -o $@
+colour-depth-fix/ddrhk.exe: colour-depth-fix/ddrhk.c
+	$(COMPILER) $(COMPILE_FLAGS_GUI) $^ -o $@
 

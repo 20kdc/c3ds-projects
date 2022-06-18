@@ -1,9 +1,0 @@
-# multi-purpose file
-
-*.exe
-*.dll
-*.o
-*.obj
-release-id.txt
-release.zip
-
