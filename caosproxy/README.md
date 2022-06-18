@@ -26,6 +26,16 @@ maptypes.py
 Provides a list of classifiers which have scripts.
 ```
 
+```
+bdmptest.py
+For testing of the handling of binary data by CPX servers, runs "brn: dmpl 0" for the selected creature
+```
+
+```
+libcpx.py
+this isn't a tool, it's a library
+```
+
 ## `w32` (CAOSProxy Server W32)
 
 This is a CAOSProxy (CPX) server to be used on Wine or on Windows.
