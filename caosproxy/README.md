@@ -36,3 +36,15 @@ default mode is loud, HOST is 127.0.0.1 (set to 0.0.0.0 for remote access), defa
 all prior args must be specified if you wish to use one
 ```
 
+## `cpxciesv.py` (CAOSProxy Server for Linux Docking Station)
+
+This is by no means complete but it's the sort of thing where it should be very easy to deal with the issues.
+
+Known hazards:
+
+1. Errors are not detected
+2. Variant command leaders (different forms of `execute\n`, etc.) are not properly detected
+3. The magic `\nrscr` string appearing in the script to send is NOT checked for
+
+Binary data transmission at least works properly though.
+

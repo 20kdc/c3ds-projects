@@ -2,7 +2,7 @@ CPX: CAOS Proxy For Cross-Language And Operating System Use
 
 specification version number
 
-	2206171548
+	2206182044
 
 license of specification
 
@@ -21,6 +21,58 @@ protocol
 	6. The server will then perform the request (copy data, set size, signal request event and wait on response event).
 	7. The server will send the entire response (the 24-byte header and then the amount of data bytes that header specifies).
 	8. Finally, the server will close it's side of the socket and shutdown it's communications with the engine.
+
+critical notes on the shared memory interface
+
+	When sending a request, the C2E shared memory interface treats the request body as a null-terminated string.
+	The null terminator is NOT automatically added by the CPX server.
+	The C2E shared memory interface is designed as if it's sending back a null-terminated string, but it gets complicated in the presence of binary data.
+	As said binary data may also contain zeroes. So basically it sends back whatever it wants and then appends a zero byte on the end.
+	Finally:
+		"c2e@" is at offset 0 in the header
+		the 32-bit little-endian status code (1 for error text, which inhibits other output) is at offset 8
+		and the response length (including null byte) is at offset 12
+
+standardized API design
+
+	Following this part of the specification is not required but recommended.
+
+	target selection
+
+		A CPX library presumably has some way to select a specific CPX target (in the case of `libcpx.py` this is by passing a presumably already connected socket).
+		A CPX library may have an *automatic* CPX target.
+		Ideally, the automatic CPX target should be localhost port 19960, unless environment variables CPX_HOST / CPX_PORT are provided, which override these.
+		However this is not required.
+
+	raw request
+
+		A CPX client library's basic requirement to be a library that acts as a client for CPX implies a way of making a request.
+		This is the primitive that most applications will care about.
+		There are applications that need access to the full details of the protocol (i.e. pre-request SHM state, details like the process ID).
+		But if your CPX library isn't intended for writing advanced applications (i.e. CPX servers or translators), you don't need to expose a header reader/writer.
+		You just need to be capable of sending CPX requests.
+
+		A function for a raw request should look like one of two forms.
+		For languages without exceptions or where they'd be more trouble than they're worth:
+			CPXRawRequest(CPXTarget, bytes) -> (int, bytes)
+		For languages with exceptions where it's not troublesome:
+			CPXRawRequest(CPXTarget, bytes) -> bytes throws CPXError
+
+		The input bytes here are expected to have the null terminator already attached (as CPX expects).
+		Where applicable, the length of the output bytes must be exactly equal to the response length returned in the shared memory header - they describe an equivalent range.
+		This means no truncating based on the null terminator.
+		However, where the API is using exceptions, errors can have their null terminator stripped and be decoded as Latin-1.
+
+notes on extensions
+
+	Extensions to this protocol, should they ever be required, should pretend to be engine commands.
+	It's not like the engine is ever going to change.
+	This is why the standardized API design is careful about the raw request API.
+
+	Do be aware extensions should not be considered a substitute for manual configuration.
+	Returning the "game path" sounds portable until a virtual machine or separate computer is involved.
+	Then it comes down to manual configuration.
+	***Extensions should absolutely not be abused to prevent manual configuration!!!***
 
 server error handling
 
@@ -46,27 +98,29 @@ recommendations
 
 design rationale
 
-	The standard port will use similar logic to that which Creatures Labs uses, i.e. finding the "Software\Gameware Development\Creatures Engine\Default Game" key.
+	CPX-W32 uses similar logic to that which Creatures Labs uses, i.e. finding the "Software\Gameware Development\Creatures Engine\Default Game" key.
 	This should ensure that CPX applications taking the "default option" act consistently with Creatures Labs applications.
 
 	The CPX mechanism was designed to use the shared memory interface as the Linux "CAOS Console" interface is frankly crippled.
-	The possibility of a translation mechanism has been kept possible if the implementor is willing to write out the request bodies as files and inject them.
+	A particular problem with the Linux "CAOS Console" interface is the use of newline-followed-by-rscr ("\nrscr") as a terminator.
+	A translation mechanism is in-progress and likely already functions in most cases.
 
-	All data transfer area functionality was included, as someone may wish to create a "data transfer proxy" between two Windows/Wine instances.
-	Such a "data transfer proxy" should act as a CPX client on one end and a CPX server on the other.
-	The client and server should be separately interchangable with other CPX software.
-	This is important when combined with the aforementioned translation mechanism concept (i.e. to make Creatures Labs software under Wine operate on the Linux Docking Station).
+	All SHM functionality was included (in particular it's still possible to get the process ID over CPX) to try and avoid losing anything in translation.
+	Out of band data such as the game path registry keys are not included (yet? not absolutely necessary given some regediting).
+	The ultimate goal with this approach is to make Creatures Labs software under Wine operate on the Linux Docking Station.
 
-	Worth noting is that a CPX server for Windows that does not make stupid decisions will work under Wine.
-	In practice any CPX server that requires an external runtime (Java or .NET) falls afoul of this.
-	.NET Core is also to be avoided for servers as it is unstable under Wine and the native versions would have trouble accessing Wine resources.
-	Therefore a CPX server for Windows will serve all operating systems.
-	The choice of a TCP socket was intentional to allow CPX to act as a bridge between the "Wine world" and the supporting platform.
+	Worth noting is that CPX-W32 works under Wine (by design, and also it was tested on that platform).
 
-	An interesting and useful side effect is that it also can bridge out of virtual machines and allows remote use if wanted.
+	All software interacting with Creatures in general should avoid .NET and .NET Core, as they're dodgy under Wine (.NET Core crashes, try UndertaleModTool).
+	One would think simply running the software natively is the solution, but then it can't access Wine functions to poke at things like shared memory interfaces.
+
+	CPX-W32, and presumably any future replacement CPX servers designed properly, are expected to work in any environment in which the Windows version of the game runs.
+	The choice of a TCP socket was intentional to allow CPX to act as a bridge outside of this "Wine/Windows world".
+	A particular case I've heard about since the last revision of this specification was the use of a virtual machine to play Creatures on Mac OS X.
+	This is a good example of where CPX's choice of a TCP socket is helpful, as it allows supporting software to run outside of the VM.
 
 	In addition, the choice to have the server close communications between connections was intentional.
-	This allows CPX to co-exist with official Creatures Labs applications (this co-existence seems to be the purpose of the mutex).
+	This allows CPX to co-exist with official Creatures Labs applications (co-existence between applications seems to be the purpose of the mutex).
 
 	Error handling mimicking engine errors avoids the issues of a fancy bespoke solution that inevitably people have to write code for.
 	People already have to write code to handle CAOS errors so they can simply treat this as a fancy new as-of-yet-unheard-of CAOS error.
@@ -77,24 +131,8 @@ implementation status (from most important to least)
 	CPX Server Windows : PUBLIC BETA
 	Example CPX Client : OK
 	Storyteller PR     : SORT OF
-	CPX Server Unix    : NO
+	CPX Server Unix    : BUGGY ALPHA
 	CPX -> SHM         : NO
-
-implementation notes for CPX Server Windows
-
-	CPX Server Windows will be written using mingw-w64, which in my experience has worked properly on Windows XP SP2 virtual machines.
-	(I expect it will be possible to make the application function on Windows 95, but you'll have more issues making Windows 95 function.)
-	CPX Server Windows will hang out in your taskbar's notification area for easy shutdown.
-	Pressing it will ask if you want to shut down the server.
-	Ideally, an application developer should be able to simply attempt to start the CPX server automatically (running Wine if necessary).
-	Application developers SHOULD NOT automatically stop the CPX server - there may be other applications using it.
-	However application developers should NOT become too reliant on the success of this method as differing configurations may cause issues.
-	Application developers SHOULD be able to rely on port 19960.
-
-implementation notes for example CPX client
-
-	The example CPX client will be written using Python.
-	It'll read out the name of the currently selected creature.
 
 possible topologies
 

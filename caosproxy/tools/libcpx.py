@@ -53,7 +53,7 @@ class CSMIHead():
 		"""
 		Converts this object back to a shared memory interface header's bytes.
 		"""
-		return struct.pack("<4sIiIIi", self.magic, self.process_id, self.result_code, self.data_len, self.data_len_max, self.padding) + self.data
+		return struct.pack("<4sIiIIi", self.magic, self.process_id, self.result_code, self.data_len, self.data_len_max, self.padding)
 	def __repr__(self):
 		"""
 		Provides a description of the object fields.
@@ -86,6 +86,12 @@ def encode_cpxr(b: bytes) -> bytes:
 	return struct.pack("<I", len(b)) + b
 cpxrhead_len = 4
 
+def cut_terminated(b: bytes, t: bytes):
+	idx = b.find(t)
+	if idx == -1:
+		return b, b""
+	return b[:idx], b[idx + len(t):]
+
 def open_default() -> socket:
 	"""
 	Opens a socket to the "default" CPX server.
@@ -99,28 +105,50 @@ class CPXError(Exception):
 	"""
 	pass
 
-def execute_caos(s: socket.socket, t: str) -> str:
+# -- main client functions --
+
+def raw_request(s: socket.socket, request: bytes) -> bytes:
 	"""
-	Runs some CAOS in a "default" manner.
-	This isn't qualified to handle binary data as it expects (and removes) the null terminator.
+	Performs a raw CPX request, sending and returning binary data.
+	Realistically, what you're sending is always going to be a *null-terminated* string.
+	The main purpose of this function is that it handles the fiddly bits (i.e. raising CPXError).
 	"""
 	recvall(s, csmihead_len)
 	# send request
-	s.sendall(encode_cpxr(b"execute\n" + t.encode("latin1") + b"\0"))
+	s.sendall(encode_cpxr(request))
 	hdr = CSMIHead(recvall(s, csmihead_len))
 	resp = recvall(s, hdr.data_len)
-	# remove null terminator
-	resp = resp[0:len(resp) - 1]
-	resp = resp.decode("latin1")
 	if hdr.result_code != 0:
 		# Error
-		raise CPXError(resp)
+		raise CPXError(cut_terminated(resp, b"\0")[0].decode("latin1"))
 	return resp
+
+def execute_caos(s: socket.socket, t: str) -> str:
+	"""
+	Runs some CAOS and gets a textual result.
+	This isn't qualified to handle binary data as it expects (and removes) the null terminator and decodes the string.
+	"""
+	resp = raw_request(s, "execute\0" + t.encode("latin1") + b"\0")
+	return cut_terminated(resp, b"\0")[0].decode("latin1")
+
+# -- main client functions, defaults --
+
+def raw_request_default(t: bytes) -> bytes:
+	"""
+	Performs a raw CPX request, sending and returning binary data.
+	Realistically, what you're sending is always going to be a *null-terminated* string.
+	The main purpose of this function is that it handles the fiddly bits (i.e. raising CPXError).
+	"""
+	s = open_default()
+	try:
+		return raw_request(s, t)
+	finally:
+		s.close()
 
 def execute_caos_default(t: str) -> str:
 	"""
-	Runs some CAOS in a "default" manner, targetting the default socket.
-	This isn't qualified to handle binary data as it expects (and removes) the null terminator.
+	Runs some CAOS and gets a textual result.
+	This isn't qualified to handle binary data as it expects (and removes) the null terminator and decodes the string.
 	"""
 	s = open_default()
 	try:
