@@ -6,7 +6,27 @@ It is intended for mixed environments where the game or applications may not be 
 
 For further information see `spec.txt`.
 
-## CAOSProxy Server W32
+## `tools`
+
+This is a set of Python 3 scripts for various poking.
+Note that those scripts which connect to a CPX server use `CPX_HOST` and `CPX_PORT`, or default to localhost and 19960.
+
+```
+caosterm.py
+CAOS terminal. Enough said.
+```
+
+```
+maprooms.py [a quoted list of space separated metaroom IDs] > some.svg
+Maps the rooms in the running game.
+```
+
+```
+maptypes.py
+Provides a list of classifiers which have scripts.
+```
+
+## `w32` (CAOSProxy Server W32)
 
 This is a CAOSProxy (CPX) server to be used on Wine or on Windows.
 
