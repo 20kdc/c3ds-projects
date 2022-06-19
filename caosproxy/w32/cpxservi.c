@@ -46,6 +46,7 @@ int cpxservi_serverInit(int host, int port) {
 }
 
 const char * cpxservi_gameID = NULL;
+const char * cpxservi_gamePath = NULL;
 
 static int sgetc(SOCKET s) {
 	char chr;
@@ -77,23 +78,43 @@ static void sputa(SOCKET s, const void * target, int len) {
 
 
 static char gameIDBuffer[8192];
+static char gamePathBuffer[8192];
 static char tmpBuffer[8200]; // above + 8 chars for _request
+
+static const char * findRegKey(HKEY hive, const char * base, const char * sub, const char * def, char * buffer) {
+	HKEY key;
+	if (!RegOpenKeyA(hive, base, &key)) {
+		LONG bufferLen = 8191;
+		DWORD throwaway; // I feel like there's a story to this being required.
+		int result = RegQueryValueExA(key, sub, NULL, &throwaway, buffer, &bufferLen);
+		RegCloseKey(key);
+		if (!result) {
+			// only try this if it succeeds - ERROR_MORE_DATA will cause it to run off the end of the buffer
+			buffer[bufferLen] = 0;
+			return buffer;
+		}
+		printf("caosprox registry warning, found \"%s\" but asking for \"%s\" got %x\n", base, sub, result);
+	} else {
+		printf("caosprox registry warning, failed to find \"%s\":\"%s\"\n", base, sub);
+	}
+	return def;
+}
 
 static const char * findGameID() {
 	if (cpxservi_gameID)
 		return cpxservi_gameID;
-	HKEY key;
-	if (!RegOpenKeyA(HKEY_CURRENT_USER, "Software\\CyberLife Technology\\Creatures Engine", &key)) {
-		LONG gameIDBufferLen = 8191;
-		int result = RegQueryValueA(key, "Default Game", gameIDBuffer, &gameIDBufferLen);
-		RegCloseKey(key);
-		if (!result) {
-			// only try this if it succeeds - ERROR_MORE_DATA will cause it to run off the end of the buffer
-			gameIDBuffer[gameIDBufferLen] = 0;
-			return gameIDBuffer;
-		}
-	}
-	return "Docking Station";
+	return findRegKey(HKEY_CURRENT_USER, "Software\\CyberLife Technology\\Creatures Engine", "Default Game", "Docking Station", gameIDBuffer);
+}
+
+static const char * findGamePath(const char * gameID) {
+	if (cpxservi_gamePath)
+		return cpxservi_gamePath;
+	const char * base = "Software\\CyberLife Technology\\";
+	int baseLen = strlen(base);
+	char name[baseLen + strlen(gameID) + 1];
+	strcpy(name, base);
+	strcpy(name + baseLen, gameID);
+	return findRegKey(HKEY_LOCAL_MACHINE, name, "Main Directory", "C:\\Program Files (x86)\\Docking Station\\", gameIDBuffer);
 }
 
 typedef struct {
@@ -105,6 +126,18 @@ typedef struct {
 
 static void transferAreaToClient(SOCKET client, const transfer_t * area, int hdrOnly) {
 	sputa(client, area, hdrOnly ? 24 : (area->sizeBytes + 24));
+}
+
+static void sendStringResponse(SOCKET client, const char * text) {
+	transfer_t * tmpErr = (transfer_t *) tmpBuffer;
+	memcpy(tmpErr->magic, "c2e@", 4);
+	strcpy(tmpErr->data, text);
+	tmpErr->pid = 0;
+	tmpErr->resultCode = 0;
+	tmpErr->sizeBytes = strlen(tmpErr->data) + 1;
+	tmpErr->maxSizeBytes = 8192;
+	tmpErr->padding = 0;
+	transferAreaToClient(client, tmpErr, 0);
 }
 
 // Note! doubleSend is 1 if we haven't sent the initial 24-byte header.
@@ -122,7 +155,7 @@ static void internalError(SOCKET client, const char * text, int doubleSend) {
 	transferAreaToClient(client, tmpErr, 0);
 }
 
-static void handleClientWithEverything(SOCKET client, transfer_t * shm, HANDLE resultEvent, HANDLE requestEvent, HANDLE process) {
+static void handleClientWithEverything(SOCKET client, const char * gameID, transfer_t * shm, HANDLE resultEvent, HANDLE requestEvent, HANDLE process) {
 	// send SHM state to client
 	transferAreaToClient(client, shm, 1);
 	// now we want a size back
@@ -141,7 +174,25 @@ static void handleClientWithEverything(SOCKET client, transfer_t * shm, HANDLE r
 		internalError(client, "failed to get request body", 0);
 		return;
 	}
-	// actually run the request
+	// WAIT! This could be intended for CPX.
+	if ((size >= 8) && !memcmp(shm->data, "cpx-fwd:", 8)) {
+		// The client wants us to forward this along as if nothing happened.
+		memmove(shm->data, shm->data + 8, size - 8);
+		// fallthrough
+	} else if ((size >= 8) && !memcmp(shm->data, "cpx-ver\n", 8)) {
+		// The client wants us to give an identifier
+		sendStringResponse(client, "CPX Server W32");
+		return;
+	} else if ((size >= 8) && !memcmp(shm->data, "cpx-gamepath\n", 13)) {
+		// The client wants us to give the game path
+		sendStringResponse(client, findGamePath(gameID));
+		return;
+	} else if ((size >= 4) && !memcmp(shm->data, "cpx-", 4)) {
+		// It's intended for CPX but we don't recognize it.
+		internalError(client, "Unrecognized CPX extension command.", 0);
+		return;
+	}
+	// It's intended for the engine
 	ResetEvent(resultEvent);
 	PulseEvent(requestEvent);
 	HANDLE waitHandles[2] = {process, resultEvent};
@@ -177,7 +228,7 @@ static void handleClientWithSHM(SOCKET client, const char * gameID, transfer_t *
 		CloseHandle(process);
 		return;
 	}
-	handleClientWithEverything(client, shm, resultEvent, requestEvent, process);
+	handleClientWithEverything(client, gameID, shm, resultEvent, requestEvent, process);
 	CloseHandle(requestEvent);
 	CloseHandle(resultEvent);
 }

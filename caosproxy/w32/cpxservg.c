@@ -15,6 +15,7 @@
 // returns non-zero on error
 extern int cpxservi_serverInit(int host, int port);
 extern const char * cpxservi_gameID;
+// this uses stdio, so we need to be sure we stop using it from main thread if in UI mode!
 extern void cpxservi_serverLoop();
 
 static HWND globalWindow;

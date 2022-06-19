@@ -1,5 +1,7 @@
 # ciesetup
 
+*STATUS: Incomplete*
+
 ciesetup is a process designed to take one of three files:
 
 + `dockingstation.run` (MD5: 5a175535e104e6150005c1f3213aebc3 )

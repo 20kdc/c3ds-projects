@@ -2,7 +2,7 @@ CPX: CAOS Proxy For Cross-Language And Operating System Use
 
 specification version number
 
-	2206182044
+	2206191904
 
 license of specification
 
@@ -33,6 +33,35 @@ critical notes on the shared memory interface
 		the 32-bit little-endian status code (1 for error text, which inhibits other output) is at offset 8
 		and the response length (including null byte) is at offset 12
 
+command set (standard)
+
+	The normal C2E command handling essentially reads a null-terminated string, and that's the command.
+	The command type is determined by the string-separated words of the first line.
+
+	Commands are as follows:
+	"execute\n" : Executes the (following) CAOS. Output is the result.
+	"scrp X Y Z W\n" : Adds script with classifier X Y Z W, which follows. Don't add an "endm", it's implied.
+
+command set (CPX extension)
+
+	These commands are similar to engine commands, but they have stricter requirements on spacing as they're implemented in the CPX server.
+	They are treated as "starts with this set of bytes", but will still expect null termination if they have a parameter.
+	All CPX extended command start with the first four bytes "cpx-", and this is used to detect them.
+	They are as follows:
+	"cpx-fwd:" : This is used as an "escape command" to say you REALLY want to bypass this CPX server.
+	"cpx-ver\n" : Output is the CPX server version.
+	"cpx-gamepath\n" : Output is the game path, i.e: C:\Program Files (x86)\Docking Station\
+
+notes on extensions
+
+	Extensions to this protocol, should they ever be required, should pretend to be engine commands.
+	It's not like the engine is ever going to change.
+	This is why the standardized API design is careful about the raw request API.
+
+	Do be aware extensions should not be considered a substitute for manual configuration.
+	Returning the game path should not mean applications should only operate if the game path is correctly returned.
+	***Extensions should absolutely not be abused to prevent manual configuration!!!***
+
 standardized API design
 
 	Following this part of the specification is not required but recommended.
@@ -62,17 +91,6 @@ standardized API design
 		Where applicable, the length of the output bytes must be exactly equal to the response length returned in the shared memory header - they describe an equivalent range.
 		This means no truncating based on the null terminator.
 		However, where the API is using exceptions, errors can have their null terminator stripped and be decoded as Latin-1.
-
-notes on extensions
-
-	Extensions to this protocol, should they ever be required, should pretend to be engine commands.
-	It's not like the engine is ever going to change.
-	This is why the standardized API design is careful about the raw request API.
-
-	Do be aware extensions should not be considered a substitute for manual configuration.
-	Returning the "game path" sounds portable until a virtual machine or separate computer is involved.
-	Then it comes down to manual configuration.
-	***Extensions should absolutely not be abused to prevent manual configuration!!!***
 
 server error handling
 
@@ -128,9 +146,9 @@ design rationale
 
 implementation status (from most important to least)
 
-	CPX Server Windows : PUBLIC BETA
+	CPX Server Windows : OK
 	Example CPX Client : OK
-	Storyteller PR     : SORT OF
+	Storyteller        : HANDLED BY UPSTREAM
 	CPX Server Unix    : BUGGY ALPHA
 	CPX -> SHM         : NO
 
