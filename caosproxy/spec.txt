@@ -2,7 +2,7 @@ CPX: CAOS Proxy For Cross-Language And Operating System Use
 
 specification version number
 
-	2206191904
+	2206192014
 
 license of specification
 
@@ -40,6 +40,7 @@ command set (standard)
 
 	Commands are as follows:
 	"execute\n" : Executes the (following) CAOS. Output is the result.
+	"iscr\n" : Alias for execute
 	"scrp X Y Z W\n" : Adds script with classifier X Y Z W, which follows. Don't add an "endm", it's implied.
 
 command set (CPX extension)
