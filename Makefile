@@ -23,6 +23,7 @@ rel: COPYING.txt README.md
 
 include colour-depth-fix/index.mk
 include caosproxy/index.mk
+include ciesetup/index.mk
 
 clean:
 	rm -f $(INTERMEDIATES)

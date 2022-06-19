@@ -1,0 +1,4 @@
+# we want NOTHING in here except this .gitignore to be uploaded
+*
+!.gitignore
+
