@@ -128,7 +128,7 @@ def execute_caos(s: socket.socket, t: str) -> str:
 	Runs some CAOS and gets a textual result.
 	This isn't qualified to handle binary data as it expects (and removes) the null terminator and decodes the string.
 	"""
-	resp = raw_request(s, "execute\0" + t.encode("latin1") + b"\0")
+	resp = raw_request(s, b"execute\n" + (t.encode("latin1")) + b"\0")
 	return cut_terminated(resp, b"\0")[0].decode("latin1")
 
 # -- main client functions, defaults --
