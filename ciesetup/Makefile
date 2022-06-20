@@ -64,11 +64,6 @@ $(R)libraries.tar: $(R)libgdk-1.2.so.0 $(R)libglib-1.2.so.0 $(R)libgmodule-1.2.s
 
 # -- Gadget set 4: Workarounds --
 
-# notes for future work: need dstation-install to either be more chill or to conveniently get deleted and replaced with something entirely different
-# need to do the DS_music workaround if dstation-install isn't doing it
-# need to make langpick happen or take over for it
-# need to take over the duties of managing C3 installation
-
 INTERMEDIATES += $(R)ds_195_64_wa.tar
 
 $(R)ds_195_64_wa.tar: $(R)ds_195_64_dec.tar gadgets/workarounds.py
