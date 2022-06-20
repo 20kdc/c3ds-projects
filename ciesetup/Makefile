@@ -11,8 +11,9 @@ INPUTS := $(R)dockingstation.run.tar.bz2 $(R)dockingstation.run $(R)dockingstati
 default: $(R)unified.tar
 
 test: $(R)unified.tar
-	tar -xf $(R)unified.tar -C /media/ramdisk
-	cd /media/ramdisk/ ; ./dockingstation
+	mkdir -p /media/ramdisk/ds
+	tar -xf $(R)unified.tar -C /media/ramdisk/ds
+	cd /media/ramdisk/ds ; ./dockingstation
 
 .PHONY: clean
 
