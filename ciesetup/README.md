@@ -24,3 +24,5 @@ Then run `make` in the `ciesetup` directory. Python 3 is expected.
 
 Make drives the process, while the individual short Python scripts perform specific transformations.
 
+Zenity is expected for language selection (and possibly in future error dialogs).
+
