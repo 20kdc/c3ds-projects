@@ -12,14 +12,28 @@ extern int puts(const char * text);
 extern int printf(const char * fmt, ...);
 extern int strcmp(const char * a, const char * b);
 
-// this is silly but it's just a workaround so we can auto-Continue on errors for now
+// -- Fake GTK 1.2 Type System --
+#define GTK12_TYPE_OBJECT 21
+// this is silly but it's just a workaround
+// it kind of amazes me, GTK 1.2 and they already had this convoluted type system
+// luckily, the only part of this ever actually accessed by the game is classfield (presumably via GTK_OBJECT())
+typedef struct {
+	// this has a "fundamental type", 21 means object
+	int type;
+} gtk12_class_t;
 
 typedef struct {
 	void * classfield;
 } gtk12_object_t;
 
-gtk12_object_t the_one_object = {&the_one_object};
-gtk12_object_t the_continue_object = {&the_one_object};
+static gtk12_class_t the_one_class = {GTK12_TYPE_OBJECT};
+
+// -- Fake GTK 1.2 Objects --
+
+static gtk12_object_t the_one_object = {&the_one_class};
+static gtk12_object_t the_continue_object = {&the_one_class};
+
+// moving swiftly on!
 
 void gtk_init() {
 }
@@ -28,10 +42,13 @@ void * gtk_window_new() {
 	return &the_one_object;
 }
 
-void gtk_container_get_type() {
+int gtk_container_get_type() {
+	return GTK12_TYPE_OBJECT;
 }
 
-void gtk_type_check_object_cast() {
+void * gtk_type_check_object_cast() {
+	printf("gtk_type_check_object_cast was actually called, meep!\n");
+	return (void *) 0;
 }
 
 void gtk_widget_destroy() {
@@ -40,7 +57,8 @@ void gtk_widget_destroy() {
 void gtk_container_set_border_width() {
 }
 
-void gtk_window_get_type() {
+int gtk_window_get_type() {
+	return GTK12_TYPE_OBJECT;
 }
 
 void gtk_window_set_default_size() {
@@ -61,7 +79,8 @@ void * gtk_text_new() {
 	return &the_one_object;
 }
 
-void gtk_text_get_type() {
+int gtk_text_get_type() {
+	return GTK12_TYPE_OBJECT;
 }
 
 void gtk_text_set_editable() {
@@ -78,7 +97,8 @@ void * gtk_button_new_with_label(const char * text) {
 void gtk_container_add() {
 }
 
-void gtk_box_get_type() {
+int gtk_box_get_type() {
+	return GTK12_TYPE_OBJECT;
 }
 
 void gtk_box_pack_start() {
