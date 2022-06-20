@@ -10,6 +10,10 @@ INPUTS := $(R)dockingstation.run.tar.bz2 $(R)dockingstation.run $(R)dockingstati
 
 default: $(R)unified.tar
 
+test: $(R)unified.tar
+	tar -xf $(R)unified.tar -C /media/ramdisk
+	cd /media/ramdisk/ ; ./dockingstation
+
 .PHONY: clean
 
 clean:
@@ -50,42 +54,21 @@ $(R)ds_195_64_dec.tar: gadgets/debz2.py $(R)ds_195_64.tar
 	python3 gadgets/debz2.py $(R)ds_195_64.tar $(R)ds_195_64_dec.tar_
 	mv $(R)ds_195_64_dec.tar_ $(R)ds_195_64_dec.tar
 
-# -- Gadget set 3: Librarian --
+# -- Gadget set 3: Workarounds --
 
-INTERMEDIATES += $(R)libraries.tar
+INTERMEDIATES += $(R)unified.tar
 
-# notes for future work: it's possible to symlink these to GTK2, but it fails when it actually tries to *use* GTK2.
-# is it possible to make some sort of shim? maybe "libdummy.so" + preloading?
-# FOR NOW, we expect the bare minimum necessary files.
-# IN FUTURE these should be acquired or built somehow.
-$(R)libraries.tar: $(R)libgdk-1.2.so.0 $(R)libglib-1.2.so.0 $(R)libgmodule-1.2.so.0 $(R)libgthread-1.2.so.0 $(R)libgtk-1.2.so.0
-	cd $(R) ; tar -cf libraries.tar_ ./libgdk-1.2.so.0 ./libglib-1.2.so.0 ./libgmodule-1.2.so.0 ./libgthread-1.2.so.0 ./libgtk-1.2.so.0
-	mv $(R)libraries.tar_ $(R)libraries.tar
-
-# -- Gadget set 4: Workarounds --
-
-INTERMEDIATES += $(R)ds_195_64_wa.tar
-
-$(R)ds_195_64_wa.tar: $(R)ds_195_64_dec.tar gadgets/workarounds.py
+$(R)unified.tar: $(R)ds_195_64_dec.tar gadgets/workarounds.py gadgets/workarounds.deps $(file < gadgets/workarounds.deps)
 	# alright, so, this is where things get hairy, because BASICALLY,
 	#  their script assumes you want separate global/user directories
 	# we don't want this because it makes agent install act funny IIRC?
 	# but if we nuke their script we have to take over for it, and that's where the workarounds come in
-	mkdir -p $(R)tmp_ds_195_64_wa
-	cd $(R)tmp_ds_195_64_wa ; tar -xf ../ds_195_64_dec.tar
+	mkdir -p $(R)tmp_unified
+	cd $(R)tmp_unified ; tar -xf ../ds_195_64_dec.tar
 	# time to do modifications HERE
-	cd $(R)tmp_ds_195_64_wa ; python3 ../$(UNR)gadgets/workarounds.py
+	cd $(R)tmp_unified ; python3 ../$(UNR)gadgets/workarounds.py ../$(UNR)gadgets/
 	# done with modifications, save
-	cd $(R)tmp_ds_195_64_wa ; tar -cf ../ds_195_64_wa.tar_ .
-	rm -rf $(R)tmp_ds_195_64_wa
-	mv $(R)ds_195_64_wa.tar_ $(R)ds_195_64_wa.tar
-
-# -- Unification --
-
-INTERMEDIATES += $(R)unified.tar
-
-$(R)unified.tar: $(R)libraries.tar $(R)ds_195_64_wa.tar
-	cd $(R) ; tar -Af unified.tar_ ds_195_64_wa.tar
-	cd $(R) ; tar -Af unified.tar_ libraries.tar
+	cd $(R)tmp_unified ; tar -cf ../unified.tar_ .
+	rm -rf $(R)tmp_unified
 	mv $(R)unified.tar_ $(R)unified.tar
 

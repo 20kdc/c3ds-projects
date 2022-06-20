@@ -6,10 +6,24 @@
 # To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 # You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+import sys
 import os
 
 # "change current directory to here" script
 geocentric = "\n# current directory = script directory\ncd $(dirname \"`readlink -e $0`\")\n"
+
+gadgets_base = sys.argv[1]
+
+os.mkdir("ciesetup")
+
+# - library stuff -
+
+os.system("cp " + gadgets_base + "dummy.so ./ciesetup/")
+os.system("cp " + gadgets_base + "runtime.so ./ciesetup/")
+os.system("ln -s ciesetup/dummy.so libgtk-1.2.so.0")
+os.system("ln -s ciesetup/dummy.so libgdk-1.2.so.0")
+os.system("ln -s ciesetup/dummy.so libglib-1.2.so.0")
+os.system("ln -s ciesetup/dummy.so libgmodule-1.2.so.0")
 
 # - cleanup -
 
@@ -48,15 +62,13 @@ language_names = ["American English", "British English", "Deutsch", "Français",
 language_codes = ["en", "en-GB", "de", "fr", "nl", "it", "es"]
 language_cl = ["american", "english-uk", "deu", "fra", "nld", "ita", "esp"]
 
-os.mkdir("languages")
-
 for i in range(len(language_names)):
-	nfile = open("languages/" + language_codes[i], "w")
+	nfile = open("ciesetup/language-" + language_codes[i] + ".cfg", "w")
 	nfile.write("Language " + language_codes[i] + "\n")
 	nfile.write("LanguageCLibrary " + language_cl[i] + "\n")
 	nfile.close()
 
-nfile = open("languages/list", "w")
+nfile = open("ciesetup/languages", "w")
 for i in range(len(language_names)):
 	nfile.write(language_codes[i] + "\n")
 	nfile.write(language_names[i] + "\n")
@@ -67,8 +79,8 @@ nfile.close()
 launcher_file = open("select-language", "w")
 launcher_file.write("#!/bin/sh\n")
 launcher_file.write(geocentric)
-launcher_file.write("zenity --list --column=\"Code\" --column=\"Language\" --hide-column 1 --text=\"Select the language in which to play this game.\\n(Only British English, French, and German appear in the normal language picker,\\nso support may be spotty for other languages.)\\nYou can change this later using the select-language script.\" < languages/list > languages/choice || exit 1\n")
-launcher_file.write("cp \"languages/`cat languages/choice`\" language.cfg || exit 1\n")
+launcher_file.write("zenity --list --column=\"Code\" --column=\"Language\" --hide-column 1 --text=\"Select the language in which to play this game.\\n(Only British English, French, and German appear in the normal language picker,\\nso support may be spotty for other languages.)\\nYou can change this later using the select-language script.\" < ciesetup/languages > ciesetup/language || exit 1\n")
+launcher_file.write("cp \"ciesetup/language-`cat ciesetup/language`.cfg\" language.cfg || exit 1\n")
 launcher_file.close()
 
 os.chmod("select-language", 0o755)
@@ -82,6 +94,7 @@ launcher_file.write("#!/bin/sh\n")
 launcher_file.write(geocentric)
 launcher_file.write(langcentric)
 launcher_file.write("export LD_LIBRARY_PATH=.\n")
+launcher_file.write("export LD_PRELOAD=./ciesetup/runtime.so\n")
 launcher_file.write("exec ./lc2e\n")
 launcher_file.close()
 
@@ -125,6 +138,7 @@ launcher_file.write("fi\n")
 launcher_file.write("# continue forth\n")
 launcher_file.write("cd \"Creatures 3\"\n")
 launcher_file.write("export LD_LIBRARY_PATH=..\n")
+launcher_file.write("export LD_PRELOAD=../ciesetup/runtime.so\n")
 launcher_file.write("exec ../lc2e\n")
 launcher_file.close()
 

@@ -6,6 +6,7 @@ COMPILER ?= i686-w64-mingw32-gcc
 STRIP ?= i686-w64-mingw32-strip
 WINDRES ?= i686-w64-mingw32-windres
 NASM ?= nasm
+ACTUALLY_WINDOWS ?= 0
 
 COMPILE_FLAGS_DLL ?= -Os -flto -static-libgcc -Wno-multichar -shared
 COMPILE_FLAGS_EXE ?= -Os -flto -static-libgcc -Wno-multichar
@@ -23,7 +24,12 @@ rel: COPYING.txt README.md
 
 include colour-depth-fix/index.mk
 include caosproxy/index.mk
-include ciesetup/index.mk
+
+# Stuff that has compilation steps that require Linux.
+# As such these will basically just assume you have Linux for everything.
+ifeq ($(ACTUALLY_WINDOWS),0)
+	include ciesetup/index.mk
+endif
 
 clean:
 	rm -f $(INTERMEDIATES)
