@@ -1,6 +1,6 @@
 # ciesetup
 
-*STATUS: Incomplete*
+*STATUS: Incomplete But Theoretically Useful*
 
 ciesetup is a process designed to take one of three files:
 
