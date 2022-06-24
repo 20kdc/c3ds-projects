@@ -2,7 +2,7 @@ CPX: CAOS Proxy For Cross-Language And Operating System Use
 
 specification version number
 
-	2206192014
+	2206231248
 
 license of specification
 
@@ -33,6 +33,11 @@ critical notes on the shared memory interface
 		the 32-bit little-endian status code (1 for error text, which inhibits other output) is at offset 8
 		and the response length (including null byte) is at offset 12
 
+	All strings are theoretically in windows-1252 (Use latin1 if necessary but only as a consistent transformation).
+	On Windows systems with alternative native configurations, this may not be the case.
+	But languages with bad built-in encoding support such as Node.js complicate the situation.
+	It is better to break in the presence of foreign characters than to break entirely if the configuration is foreign.
+
 command set (standard)
 
 	The normal C2E command handling essentially reads a null-terminated string, and that's the command.
@@ -50,8 +55,22 @@ command set (CPX extension)
 	All CPX extended command start with the first four bytes "cpx-", and this is used to detect them.
 	They are as follows:
 	"cpx-fwd:" : This is used as an "escape command" to say you REALLY want to bypass this CPX server.
+	             The rest of the command after the ":" is forwarded to the engine as if it were the whole command.
+	             This doesn't quite apply if this server performs translation.
+	             Then the command merely skips over the "CPX extension" part of the translator.
+	             So "cpx-fwd:execute\n" will always have the same semantics as "execute\n".
 	"cpx-ver\n" : Output is the CPX server version.
 	"cpx-gamepath\n" : Output is the game path, i.e: C:\Program Files (x86)\Docking Station\
+	                   This must be an absolute path.
+	                   Applications using this are expected to provide an override mechanism due to Wine/virtual machines/remote configurations/etc.
+
+	                   A suggestion for default behaviour if a Windows path (second character ":") is detected from an application running on a Unix-like:
+	                   Convert "\" to "/" and lowercase the first character, then prepend "$HOME/.wine/dosdevices/".
+
+	                   A suggestion for default behaviour if a Unixy path (no ":" in second character) is detected from an application running on a Windows-like:
+	                   Convert "/" to "\" and prepend "Z:".
+
+	                   Both of these behaviours should be overridable, they are heuristics only.
 
 notes on extensions
 
@@ -150,7 +169,7 @@ implementation status (from most important to least)
 	CPX Server Windows : OK
 	Example CPX Client : OK
 	Storyteller        : HANDLED BY UPSTREAM
-	CPX Server Unix    : BUGGY ALPHA
+	CPX Server Unix    : BETA (still no \nrscr fixups)
 	CPX -> SHM         : NO
 
 possible topologies

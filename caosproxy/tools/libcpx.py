@@ -16,6 +16,8 @@ import sys
 import os
 import struct
 
+enc = "windows-1252"
+
 class CSMIHead():
 	"""
 	Class to manage a shared memory interface header.
@@ -58,7 +60,7 @@ class CSMIHead():
 		"""
 		Provides a description of the object fields.
 		"""
-		return "CSMIHead: magic=" + self.magic.decode("latin1") + " pid=" + str(self.process_id) + " code=" + str(self.result_code) + " dl=" + str(self.data_len) + " dlm=" + str(self.data_len_max) + " pad=" + str(self.padding)
+		return "CSMIHead: magic=" + self.magic.decode(enc) + " pid=" + str(self.process_id) + " code=" + str(self.result_code) + " dl=" + str(self.data_len) + " dlm=" + str(self.data_len_max) + " pad=" + str(self.padding)
 
 def recvall(s: socket.socket, l: int) -> bytes:
 	"""
@@ -120,7 +122,7 @@ def raw_request(s: socket.socket, request: bytes) -> bytes:
 	resp = recvall(s, hdr.data_len)
 	if hdr.result_code != 0:
 		# Error
-		raise CPXError(cut_terminated(resp, b"\0")[0].decode("latin1"))
+		raise CPXError(cut_terminated(resp, b"\0")[0].decode(enc))
 	return resp
 
 def execute_caos(s: socket.socket, t: str) -> str:
@@ -128,8 +130,8 @@ def execute_caos(s: socket.socket, t: str) -> str:
 	Runs some CAOS and gets a textual result.
 	This isn't qualified to handle binary data as it expects (and removes) the null terminator and decodes the string.
 	"""
-	resp = raw_request(s, b"execute\n" + (t.encode("latin1")) + b"\0")
-	return cut_terminated(resp, b"\0")[0].decode("latin1")
+	resp = raw_request(s, b"execute\n" + (t.encode(enc)) + b"\0")
+	return cut_terminated(resp, b"\0")[0].decode(enc)
 
 # -- main client functions, defaults --
 

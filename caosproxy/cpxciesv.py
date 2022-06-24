@@ -6,29 +6,36 @@
 # To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 # You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+import os
 import sys
 import socket
 from tools import libcpx # this is so silly but it keeps the file organization sane
 import traceback
 
+gamepath = "" # must be set
 cie_host = "localhost"
 cie_port = 20001
 cpx_host = "localhost"
 cpx_port = 19960
 
-if len(sys.argv) == 5:
-	cie_host = sys.argv[1]
-	cie_port = int(sys.argv[2])
-	cpx_host = sys.argv[3]
-	cpx_port = int(sys.argv[4])
-elif len(sys.argv) == 3:
-	cie_host = sys.argv[1]
-	cie_port = int(sys.argv[2])
-elif len(sys.argv) == 1:
+if len(sys.argv) == 6:
+	gamepath = sys.argv[1]
+	cie_host = sys.argv[2]
+	cie_port = int(sys.argv[3])
+	cpx_host = sys.argv[4]
+	cpx_port = int(sys.argv[5])
+elif len(sys.argv) == 4:
+	gamepath = sys.argv[1]
+	cie_host = sys.argv[2]
+	cie_port = int(sys.argv[3])
+elif len(sys.argv) == 2:
 	# all defaults!
+	gamepath = sys.argv[1]
 	pass
 else:
-	raise Exception("expects: [CIE_HOST CIE_PORT [CPX_HOST CPX_PORT]]")
+	raise Exception("expects: GAMEPATH [CIE_HOST CIE_PORT [CPX_HOST CPX_PORT]]")
+
+gamepath = os.path.abspath(gamepath)
 
 # --- CIE Client ---
 
@@ -52,12 +59,22 @@ def send_cie_request(req: bytes):
 
 # returns tuple (result_code, data)
 def send_cpx_execute_to_cie(req: bytes):
-	# uh just pass it as-is for now?????
-	# as for the result, the null terminator is added regardless, which may or may not be a good idea
+	# for the result, the null terminator is added regardless, which may or may not be a good idea
 	return 0, send_cie_request(req + b"\nrscr") + b"\0"
 
 # returns tuple (result_code, data)
 def send_cpx_request_to_cie(req: bytes):
+	# catch CPX meta commands
+	if req.startswith(b"cpx-fwd:"):
+		# this *could* be a valid command being framed by a weird client
+		req = req[8:]
+	elif req.startswith(b"cpx-ver\n"):
+		return 0, b"CPX Server CIE\0"
+	elif req.startswith(b"cpx-gamepath\n"):
+		return 0, gamepath.encode(libcpx.enc) + b"\0"
+	elif req.startswith(b"cpx-"):
+		return 1, b"caosproxy: Unrecognized CPX extension command.\0"
+	# continue
 	req_all = libcpx.cut_terminated(req, b"\0")[0]
 	req_ab = libcpx.cut_terminated(req_all, b"\n")
 	cmd = req_ab[0]
@@ -83,7 +100,7 @@ def send_cpx_response(conn: socket.socket, code: int, data: bytes):
 def internal_error(conn: socket.socket, stage: str, error: Exception):
 	print("Error during " + stage + ": ")
 	traceback.print_exception(type(error), error, error.__traceback__)
-	send_cpx_response(conn, 1, ("caosproxy: " + stage).encode("latin1") + b"\x00")
+	send_cpx_response(conn, 1, ("caosproxy: " + stage).encode(libcpx.enc) + b"\x00")
 
 def handle_connection(conn: socket.socket):
 	# send initial header. if we don't even manage this, just bail out on the connection entirely.
