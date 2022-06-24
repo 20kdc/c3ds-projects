@@ -2,7 +2,7 @@ CPX: CAOS Proxy For Cross-Language And Operating System Use
 
 specification version number
 
-	2206231248
+	2206242343
 
 license of specification
 
@@ -74,8 +74,8 @@ command set (CPX extension)
 
 notes on extensions
 
-	Extensions to this protocol, should they ever be required, should pretend to be engine commands.
-	It's not like the engine is ever going to change.
+	Extensions to this protocol, should they ever be required, should follow the format of the above extension commands.
+	These pretend to be engine commands. It's not like the engine is ever going to change.
 	This is why the standardized API design is careful about the raw request API.
 
 	Do be aware extensions should not be considered a substitute for manual configuration.
