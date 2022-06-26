@@ -13,12 +13,13 @@
 #include <winsock2.h>
 #include <windows.h>
 
+#include "libcpx.h"
+
 static SOCKET serverSocket;
 // Initialize
 int cpxservi_serverInit(int host, int port) {
 	// deal with WS nonsense
-	WSADATA dontcare = {};
-	WSAStartup(MAKEWORD(2, 2), &dontcare);
+	libcpx_initWinsock();
 	// actual stuff
 	serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverSocket == INVALID_SOCKET) {
@@ -47,35 +48,6 @@ int cpxservi_serverInit(int host, int port) {
 
 const char * cpxservi_gameID = NULL;
 const char * cpxservi_gamePath = NULL;
-
-static int sgetc(SOCKET s) {
-	char chr;
-	if (recv(s, &chr, 1, 0) == 1)
-		return chr & 0xFF;
-	return -1;
-}
-
-static int sgeta(SOCKET s, void * target, int len) {
-	char * targetC = target;
-	for (int i = 0; i < len; i++) {
-		int res = sgetc(s);
-		if (res == -1)
-			return i;
-		targetC[i] = res;
-	}
-	return len;
-}
-
-static void sputc(SOCKET s, char chr) {
-	send(s, &chr, 1, 0);
-}
-
-static void sputa(SOCKET s, const void * target, int len) {
-	const char * targetC = target;
-	for (int i = 0; i < len; i++)
-		sputc(s, targetC[i]);
-}
-
 
 static char gameIDBuffer[8192];
 static char gamePathBuffer[8192];
@@ -117,19 +89,12 @@ static const char * findGamePath(const char * gameID) {
 	return findRegKey(HKEY_LOCAL_MACHINE, name, "Main Directory", "C:\\Program Files (x86)\\Docking Station\\", gameIDBuffer);
 }
 
-typedef struct {
-	char magic[4];
-	DWORD pid;
-	int resultCode, sizeBytes, maxSizeBytes, padding;
-	char data[];
-} transfer_t;
-
-static void transferAreaToClient(SOCKET client, const transfer_t * area, int hdrOnly) {
-	sputa(client, area, hdrOnly ? 24 : (area->sizeBytes + 24));
+static void transferAreaToClient(SOCKET client, const libcpx_shmHeader_t * area, int hdrOnly) {
+	libcpx_sputa(client, area, hdrOnly ? 24 : (area->sizeBytes + 24));
 }
 
 static void sendStringResponse(SOCKET client, const char * text) {
-	transfer_t * tmpErr = (transfer_t *) tmpBuffer;
+	libcpx_shmHeader_t * tmpErr = (libcpx_shmHeader_t *) tmpBuffer;
 	memcpy(tmpErr->magic, "c2e@", 4);
 	strcpy(tmpErr->data, text);
 	tmpErr->pid = 0;
@@ -142,7 +107,7 @@ static void sendStringResponse(SOCKET client, const char * text) {
 
 // Note! doubleSend is 1 if we haven't sent the initial 24-byte header.
 static void internalError(SOCKET client, const char * text, int doubleSend) {
-	transfer_t * tmpErr = (transfer_t *) tmpBuffer;
+	libcpx_shmHeader_t * tmpErr = (libcpx_shmHeader_t *) tmpBuffer;
 	memcpy(tmpErr->magic, "c2e@", 4);
 	sprintf(tmpErr->data, "caosprox: %s", text);
 	tmpErr->pid = 0;
@@ -155,12 +120,12 @@ static void internalError(SOCKET client, const char * text, int doubleSend) {
 	transferAreaToClient(client, tmpErr, 0);
 }
 
-static void handleClientWithEverything(SOCKET client, const char * gameID, transfer_t * shm, HANDLE resultEvent, HANDLE requestEvent, HANDLE process) {
+static void handleClientWithEverything(SOCKET client, const char * gameID, libcpx_shmHeader_t * shm, HANDLE resultEvent, HANDLE requestEvent, HANDLE process) {
 	// send SHM state to client
 	transferAreaToClient(client, shm, 1);
 	// now we want a size back
 	int size;
-	if (sgeta(client, &size, 4) != 4) {
+	if (libcpx_sgeta(client, &size, 4) != 4) {
 		internalError(client, "failed to get request size", 0);
 		return;
 	}
@@ -170,7 +135,7 @@ static void handleClientWithEverything(SOCKET client, const char * gameID, trans
 	}
 	// can't hurt
 	shm->sizeBytes = size;
-	if (sgeta(client, shm->data, size) != size) {
+	if (libcpx_sgeta(client, shm->data, size) != size) {
 		internalError(client, "failed to get request body", 0);
 		return;
 	}
@@ -181,7 +146,7 @@ static void handleClientWithEverything(SOCKET client, const char * gameID, trans
 		// fallthrough
 	} else if ((size >= 8) && !memcmp(shm->data, "cpx-ver\n", 8)) {
 		// The client wants us to give an identifier
-		sendStringResponse(client, "CPX Server W32");
+		sendStringResponse(client, "CPX Server W32, version " LIBCPX_VERSION);
 		return;
 	} else if ((size >= 8) && !memcmp(shm->data, "cpx-gamepath\n", 13)) {
 		// The client wants us to give the game path
@@ -207,7 +172,7 @@ static void handleClientWithEverything(SOCKET client, const char * gameID, trans
 	}
 }
 
-static void handleClientWithSHM(SOCKET client, const char * gameID, transfer_t * shm) {
+static void handleClientWithSHM(SOCKET client, const char * gameID, libcpx_shmHeader_t * shm) {
 	HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, shm->pid);
 	if (!process) {
 		internalError(client, "failed to open process handle (game dead?)", 1);
@@ -240,7 +205,7 @@ static void handleClientInsideMutex(SOCKET client, const char * gameID) {
 		internalError(client, "could not open memory handle (game not running/detection failed?)", 1);
 		return;
 	}
-	transfer_t * shm = (transfer_t *) MapViewOfFile(fma, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+	libcpx_shmHeader_t * shm = (libcpx_shmHeader_t *) MapViewOfFile(fma, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 	if (!shm) {
 		internalError(client, "could not map view of shared memory", 1);
 		CloseHandle(fma);

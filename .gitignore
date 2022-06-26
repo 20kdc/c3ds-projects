@@ -2,5 +2,5 @@
 *.exe
 *.dll
 release.zip
-release-id.txt
+release-id.h
 

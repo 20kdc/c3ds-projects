@@ -14,12 +14,28 @@ import traceback
 
 import libcpx
 
-def rrdo(t: bytes) -> str:
-	return libcpx.raw_request_default(t)[:-1].decode("latin1")
+def rrdo(f: str, t: bytes) -> str:
+	try:
+		print("\t" + f + ":", libcpx.raw_request_default(t)[:-1].decode(libcpx.enc))
+	except Exception as error:
+		print("During:", f)
+		traceback.print_exception(type(error), error, error.__traceback__)
 
-print("server:", rrdo(b"cpx-ver\n\0"))
-print("game path:", rrdo(b"cpx-gamepath\n\0"))
-print("game name:", rrdo(b"execute\nouts gnam\0"))
-print("engine version:", rrdo(b"execute\noutv vmjr outs \".\" outv vmnr\0"))
-print("engine modules:", rrdo(b"execute\nouts modu\0"))
+# ---
+print("SMI Header:")
+srl = libcpx.open_default()
+cpxr = libcpx.CSMIHead(libcpx.recvall(srl, libcpx.csmihead_len))
+print("\tengine ID:", cpxr.magic.decode("latin1"))
+print("\tpayload capacity:", cpxr.data_len_max)
+srl.close()
+# ---
+print("Game information:")
+rrdo("game name", b"execute\nouts gnam\0")
+rrdo("engine version", b"execute\noutv vmjr outs \".\" outv vmnr\0")
+rrdo("engine modules", b"execute\nouts modu\0")
+# ---
+print("CPX extensions:")
+rrdo("server", b"cpx-ver\n\0")
+rrdo("game path", b"cpx-gamepath\n\0")
+# ---
 

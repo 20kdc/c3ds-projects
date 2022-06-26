@@ -17,10 +17,14 @@ INTERMEDIATES :=
 all:
 
 rel: COPYING.txt README.md
-	echo `date +%s` > release-id.txt
+	# note the manual regeneration of this!
+	echo "#define RELEASE_ID `date +%s`LL" > release-id.h
 	rm -f release.zip
 	zip release.zip $^
-	zip release.zip release-id.txt
+	zip release.zip release-id.h
+
+release-id.h:
+	echo "#define RELEASE_ID `date +%s`LL" > release-id.h
 
 include colour-depth-fix/index.mk
 include caosproxy/index.mk

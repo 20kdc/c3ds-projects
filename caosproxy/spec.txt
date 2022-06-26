@@ -170,7 +170,7 @@ implementation status (from most important to least)
 	Example CPX Client : OK
 	Storyteller        : HANDLED BY UPSTREAM
 	CPX Server Unix    : BETA (still no \nrscr fixups)
-	CPX -> SHM         : NO
+	CPX -> SHM         : BETA
 
 possible topologies
 
