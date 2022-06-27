@@ -12,19 +12,15 @@ COMPILE_FLAGS_DLL ?= -Os -flto -static-libgcc -Wno-multichar -shared
 COMPILE_FLAGS_EXE ?= -Os -flto -static-libgcc -Wno-multichar
 COMPILE_FLAGS_GUI ?= -Os -flto -static-libgcc -Wno-multichar -mwindows
 
-INTERMEDIATES :=
+INTERMEDIATES := release-id.txt
 
 all:
 
 rel: COPYING.txt README.md
-	# note the manual regeneration of this!
-	echo "#define RELEASE_ID `date +%s`LL" > release-id.h
+	echo `date +%s` > release-id.txt
 	rm -f release.zip
 	zip release.zip $^
-	zip release.zip release-id.h
-
-release-id.h:
-	echo "#define RELEASE_ID `date +%s`LL" > release-id.h
+	zip release.zip release-id.txt
 
 include colour-depth-fix/index.mk
 include caosproxy/index.mk
