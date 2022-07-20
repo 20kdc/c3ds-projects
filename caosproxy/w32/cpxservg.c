@@ -33,7 +33,7 @@ static LRESULT WINAPI cpxservg_wp(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			}
 		}
 	}
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	return DefWindowProcA(hwnd, uMsg, wParam, lParam);
 }
 
 static void cpxservg_ui() {
@@ -59,9 +59,9 @@ static void cpxservg_ui() {
 
 	// standard message loop
 	MSG msg = {};
-	while (GetMessage(&msg, NULL, 0, 0) > 0) {
+	while (GetMessageA(&msg, NULL, 0, 0) > 0) {
 		TranslateMessage(&msg); 
-		DispatchMessage(&msg);
+		DispatchMessageA(&msg);
 	}
 }
 
