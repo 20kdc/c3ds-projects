@@ -8,11 +8,24 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
+#include <stdio.h>
+
+extern const char cm_page_start[];
+extern const int cm_page_len;
+
 int main(int argc, char ** argv) {
 	SDL_Window * w;
 	SDL_Renderer * r;
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_CreateWindowAndRenderer(640, 480, SDL_WINDOW_RESIZABLE, &w, &r);
+	SDL_Surface * s = SDL_LoadBMP_RW(SDL_RWFromConstMem(cm_page_start, cm_page_len), 1);
+	if (!s)
+		puts("wah! failed to open BMP!");
+	puts("opened BMP");
+	SDL_Texture * t = SDL_CreateTextureFromSurface(r, s);
+	if (!t)
+		puts("wah! failed to create texture!");
+	puts("created texture");
 	while (1) {
 		SDL_Event ev;
 		while (SDL_PollEvent(&ev)) {
@@ -33,6 +46,8 @@ int main(int argc, char ** argv) {
 
 		SDL_RenderDrawLine(r, 256, 400, 300, 80);
 		SDL_RenderDrawLine(r, 256, 160, 400, 160);
+
+		SDL_RenderCopy(r, t, NULL, NULL);
 
 		SDL_RenderPresent(r);
 	}
