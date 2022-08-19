@@ -30,6 +30,20 @@ CPXRequestResult::CPXRequestResult(const char * err) : resultCode(1), content(er
 CPXRequestResult::CPXRequestResult(int resultCode, int length) : resultCode(resultCode), content(NULL, (size_t) length) {
 }
 
+bool CPXRequestResult::verifyMagic(CMSlice & cleanSlice) {
+	if (resultCode)
+		return false;
+	if (content.length < 10)
+		return false;
+	if (memcmp(content.data, "CMMagicHD\n", 10))
+		return false;
+	// the zero terminator is checked for here
+	if (memcmp(content.data + (content.length - 10), "CMMagicFT", 10))
+		return false;
+	cleanSlice = CMSlice(content.data + 10, content.length - 20);
+	return true;
+}
+
 typedef struct {
 	char magic[4]; // cpx@
 	int pid; // by unspoken convention, 0 if not supported
@@ -78,5 +92,18 @@ CPXRequestResult * cpxMakeRawRequest(const char * request) {
 	} else {
 		return new CPXRequestResult("failed to open socket");
 	}
+}
+
+bool cpxNextString(CMSlice & slice, CMSlice & content, char split) {
+	for (int i = 0; i < slice.length; i++) {
+		if (slice.data[i] == split) {
+			// advance!
+			content = CMSlice(slice.data, i);
+			slice = slice.slice(i + 1);
+			return true;
+		}
+	}
+	// ran off end without hitting a terminator
+	return false;
 }
 

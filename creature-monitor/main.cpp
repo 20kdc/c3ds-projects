@@ -31,9 +31,14 @@ void errorOut(const char * reason) {
 }
 
 void writeText(int x, int y, const char * text) {
+	writeText(x, y, text, strlen(text));
+}
+
+void writeText(int x, int y, const char * text, size_t len) {
 	SDL_Rect src = {0, 0, 7, 14};
 	SDL_Rect dst = {x, y, 7, 14};
-	while (*text) {
+	while (len) {
+		len--;
 		char ch = *text++;
 		if (ch == 10) {
 			dst.x = x;
@@ -45,6 +50,11 @@ void writeText(int x, int y, const char * text) {
 			dst.x += 8;
 		}
 	}
+}
+
+void fillRect(const SDL_Rect rect, uint32_t colour) {
+	SDL_SetRenderDrawColor(gRenderer, (colour >> 16) & 0xFF, (colour >> 8) & 0xFF, colour & 0xFF, (colour >> 24) & 0xFF);
+	SDL_RenderFillRect(gRenderer, &rect);
 }
 
 int main(int argc, char ** argv) {
@@ -68,21 +78,21 @@ int main(int argc, char ** argv) {
 	while (1) {
 		SDL_Delay(50);
 		SDL_Event ev;
+		int w, h;
+		SDL_GetWindowSize(gWindow, &w, &h);
 		while (SDL_PollEvent(&ev)) {
 			if (ev.type == SDL_QUIT)
 				return 0;
-			gCurrentState->event(ev);
+			gCurrentState->event(w, h, ev);
 		}
-		gCurrentState->frame();
+		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+		SDL_RenderClear(gRenderer);
+		gCurrentState->frame(w, h);
+		SDL_RenderPresent(gRenderer);
 		while (gQueuedDelete) {
 			CMObject * qd = gQueuedDelete;
 			gQueuedDelete = qd->_nextInDeleteQueue;
 			delete qd;
-		}
-		while (SDL_PollEvent(&ev)) {
-			if (ev.type == SDL_QUIT)
-				return 0;
-			gCurrentState->event(ev);
 		}
 	}
 }

@@ -17,6 +17,8 @@ extern SDL_Texture * gFont;
 
 void errorOut(const char * reason);
 void writeText(int x, int y, const char * text);
+void writeText(int x, int y, const char * text, size_t len);
+void fillRect(const SDL_Rect rect, uint32_t colour);
 
 class CMObject {
 public:
@@ -27,8 +29,8 @@ public:
 
 class CMState : public CMObject {
 public:
-	virtual void frame() = 0;
-	virtual void event(SDL_Event & event) = 0;
+	virtual void frame(int w, int h) = 0;
+	virtual void event(int w, int h, SDL_Event & event) = 0;
 };
 
 extern CMState * gCurrentState;

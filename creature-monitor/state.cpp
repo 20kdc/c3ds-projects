@@ -7,34 +7,65 @@
 
 #include "main.h"
 #include "cpx.h"
+
 #include <stdio.h>
 
 class CMTestState : public CMState {
 public:
 	Uint32 nextCheck = 0;
-	char * information = NULL;
+	CPXRequestResult * result = NULL;
 
-	void frame() {
-		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-		SDL_RenderClear(gRenderer);
-		if (information != NULL)
-			writeText(0, 0, information);
-		SDL_RenderPresent(gRenderer);
+	void frame(int w, int h) {
+		if (result) {
+			CMSlice slice;
+			if (result->verifyMagic(slice)) {
+				if (slice.length > 0) {
+					writeText(8, 8, "Select Target:");
+					int y = 32;
+					CMSlice line;
+					while (cpxNextString(slice, line, 10)) {
+						writeText(w - 256, y, line.data, line.length);
+						cpxNextString(slice, line, 10);
+						writeText(0, y, line.data, line.length);
+						y += 16;
+					}
+				}
+			} else {
+				writeText(0, 0, result->content.data, result->content.length);
+			}
+		}
 
 		Uint32 currentTicks = SDL_GetTicks();
 		if (currentTicks > nextCheck) {
 			nextCheck = currentTicks + 1000;
-			// do CPX request to get status
-			CPXRequestResult * result = cpxMakeRawRequest("execute\nouts modu\nouts \"\\nhaiii\"");
 
-			information = (char *) malloc(result->content.length + 1);
-			memcpy(information, result->content.data, result->content.length);
-			result->content.data[result->content.length] = 0;
+			if (result)
+				delete result;
 
-			delete result;
+			// do CPX request to locate them Norns
+			result = cpxMakeRawRequest(
+				"execute\n"
+				"outs \"CMMagicHD\\n\"\n"
+				// give the selected creature special attention
+				"targ norn\n"
+				"doif targ ne null\n"
+					"outs gtos 0\n"
+					"outs \"\\n\"\n"
+					"outs hist name gtos 0\n"
+					"outs \" (selected)\\n\"\n"
+				"endi\n"
+				// go over the others
+				"enum 4 0 0\n"
+					"outs gtos 0\n"
+					"outs \"\\n\"\n"
+					"outs hist name gtos 0\n"
+					"outs \"\\n\"\n"
+				"next\n"
+				"outs \"CMMagicFT\"\n"
+			);
 		}
 	}
-	void event(SDL_Event & event) {
+	void event(int w, int h, SDL_Event & event) {
 	}
 };
 
