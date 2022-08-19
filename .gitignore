@@ -3,4 +3,6 @@
 *.dll
 release.zip
 release-id.txt
+*.dxvk-cache
+*.log
 

@@ -4,11 +4,11 @@ rel: colour-depth-fix/ddrhk.dll colour-depth-fix/ddrhk.exe colour-depth-fix/READ
 INTERMEDIATES += colour-depth-fix/ddrhk.dll colour-depth-fix/dscf_a.o colour-depth-fix/ddrhk.exe
 
 colour-depth-fix/ddrhk.dll: colour-depth-fix/dscf.c colour-depth-fix/dscf_a.o
-	$(COMPILER) $(COMPILE_FLAGS_DLL) $^ -o $@
+	$(W32_CC) $(W32_CFLAGS_DLL) $^ -o $@
 
 colour-depth-fix/dscf_a.o: colour-depth-fix/dscf_a.asm
 	$(NASM) -fwin32 $< -o $@
 
 colour-depth-fix/ddrhk.exe: colour-depth-fix/ddrhk.c
-	$(COMPILER) $(COMPILE_FLAGS_GUI) $^ -o $@
+	$(W32_CC) $(W32_CFLAGS_GUI) $^ -o $@
 

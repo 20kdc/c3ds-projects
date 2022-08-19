@@ -7,13 +7,13 @@ CAOSPROX_BODY := caosproxy/w32/cpxservg.c caosproxy/w32/cpxservi.c caosproxy/w32
 CPXINVRT_BODY := caosproxy/w32/cpxinvrt.c caosproxy/w32/caospres.o
 
 caosproxy/caosprox.exe: $(CAOSPROX_BODY) caosproxy/w32/libcpx.h
-	$(COMPILER) $(COMPILE_FLAGS_GUI) $(CAOSPROX_BODY) -o $@ -lws2_32
-	$(STRIP) $@
+	$(W32_CC) $(W32_CFLAGS_GUI) $(CAOSPROX_BODY) -o $@ -lws2_32
+	$(W32_STRIP) $@
 
 caosproxy/w32/caospres.o: caosproxy/w32/caospres.rc caosproxy/w32/caosprox.ico
-	$(WINDRES) caosproxy/w32/caospres.rc caosproxy/w32/caospres.o
+	$(W32_WINDRES) caosproxy/w32/caospres.rc caosproxy/w32/caospres.o
 
 caosproxy/cpxinvrt.exe: $(CPXINVRT_BODY) caosproxy/w32/libcpx.h
-	$(COMPILER) $(COMPILE_FLAGS_EXE) $(CPXINVRT_BODY) -o $@ -lws2_32 -lshlwapi
-	$(STRIP) $@
+	$(W32_CC) $(W32_CFLAGS_EXE) $(CPXINVRT_BODY) -o $@ -lws2_32 -lshlwapi
+	$(W32_STRIP) $@
 

@@ -10,8 +10,8 @@ rel: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
 rel: ciesetup/repo/.gitignore
 
 ciesetup/gadgets/dummy.so: ciesetup/gadgets/dummy.c
-	gcc -m32 -o $@ -shared -nostdlib $<
+	$(CC) -m32 -o $@ -shared -nostdlib $<
 
 ciesetup/gadgets/runtime.so: ciesetup/gadgets/runtime_audio.c ciesetup/gadgets/runtime_dialogs.c
-	gcc -m32 -o $@ -shared -nostdlib $^
+	$(CC) -m32 -o $@ -shared -nostdlib $^
 
