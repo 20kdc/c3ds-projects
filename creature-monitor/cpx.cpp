@@ -7,23 +7,6 @@
 
 #include "cpx.h"
 
-CMBuffer::CMBuffer(const char * d, size_t l) {
-	if (!l) {
-		d = NULL;
-		data = NULL;
-		length = 0;
-	} else {
-		data = (char *) malloc(l);
-		length = l;
-	}
-	if (d)
-		memcpy(data, d, l);
-}
-
-CMBuffer::~CMBuffer() {
-	free(data);
-}
-
 CPXRequestResult::CPXRequestResult(const char * err) : resultCode(1), content(err, strlen(err) + 1) {
 }
 
@@ -92,18 +75,5 @@ CPXRequestResult * cpxMakeRawRequest(const char * request) {
 	} else {
 		return new CPXRequestResult("failed to open socket");
 	}
-}
-
-bool cpxNextString(CMSlice & slice, CMSlice & content, char split) {
-	for (int i = 0; i < slice.length; i++) {
-		if (slice.data[i] == split) {
-			// advance!
-			content = CMSlice(slice.data, i);
-			slice = slice.slice(i + 1);
-			return true;
-		}
-	}
-	// ran off end without hitting a terminator
-	return false;
 }
 

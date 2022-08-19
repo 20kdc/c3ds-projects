@@ -89,11 +89,7 @@ int main(int argc, char ** argv) {
 		SDL_RenderClear(gRenderer);
 		gCurrentState->frame(w, h);
 		SDL_RenderPresent(gRenderer);
-		while (gQueuedDelete) {
-			CMObject * qd = gQueuedDelete;
-			gQueuedDelete = qd->_nextInDeleteQueue;
-			delete qd;
-		}
+		CMObject::performQueuedDeletions();
 	}
 }
 

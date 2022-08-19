@@ -23,9 +23,9 @@ public:
 					writeText(8, 8, "Select Target:");
 					int y = 32;
 					CMSlice line;
-					while (cpxNextString(slice, line, 10)) {
+					while (cmNextString(slice, line, 10)) {
 						writeText(w - 256, y, line.data, line.length);
-						cpxNextString(slice, line, 10);
+						cmNextString(slice, line, 10);
 						writeText(0, y, line.data, line.length);
 						y += 16;
 					}

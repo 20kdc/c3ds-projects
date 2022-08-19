@@ -11,6 +11,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
 
+#include "libcm.h"
+
 extern SDL_Window * gWindow;
 extern SDL_Renderer * gRenderer;
 extern SDL_Texture * gFont;
@@ -20,13 +22,6 @@ void writeText(int x, int y, const char * text);
 void writeText(int x, int y, const char * text, size_t len);
 void fillRect(const SDL_Rect rect, uint32_t colour);
 
-class CMObject {
-public:
-	virtual ~CMObject() {}
-	void queueDelete();
-	CMObject * _nextInDeleteQueue;
-};
-
 class CMState : public CMObject {
 public:
 	virtual void frame(int w, int h) = 0;
@@ -34,7 +29,6 @@ public:
 };
 
 extern CMState * gCurrentState;
-extern CMObject * gQueuedDelete;
 
 extern void setInitialState();
 
