@@ -5,8 +5,7 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
+#include "main.h"
 
 #include <stdio.h>
 
@@ -16,6 +15,14 @@ extern const int cm_page_len;
 SDL_Window * gWindow;
 SDL_Renderer * gRenderer;
 SDL_Texture * gFont;
+
+CMState * gCurrentState;
+CMObject * gQueuedDelete;
+
+void CMObject::queueDelete() {
+	_nextInDeleteQueue = gQueuedDelete;
+	gQueuedDelete = this;
+}
 
 void errorOut(const char * reason) {
 	puts(reason);
@@ -44,27 +51,37 @@ int main(int argc, char ** argv) {
 	SDL_Init(SDL_INIT_VIDEO);
 	if (SDL_CreateWindowAndRenderer(640, 480, SDL_WINDOW_RESIZABLE, &gWindow, &gRenderer))
 		errorOut("wah! failed to create window/renderer!");
+
 	SDL_Surface * s = SDL_LoadBMP_RW(SDL_RWFromConstMem(cm_page_start, cm_page_len), 1);
 	if (!s)
 		errorOut("wah! failed to open BMP!");
 	puts("opened BMP");
+
 	gFont = SDL_CreateTextureFromSurface(gRenderer, s);
 	if (!gFont)
 		errorOut("wah! failed to create texture!");
 	puts("created texture");
+
+	setInitialState();
 	while (1) {
+		SDL_Delay(50);
 		SDL_Event ev;
 		while (SDL_PollEvent(&ev)) {
 			if (ev.type == SDL_QUIT)
 				return 0;
+			gCurrentState->event(ev);
 		}
-		SDL_Delay(100);
-		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
-		SDL_RenderClear(gRenderer);
-		SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
-		writeText(4, 4, "Hello world!");
-
-		SDL_RenderPresent(gRenderer);
+		gCurrentState->frame();
+		while (gQueuedDelete) {
+			CMObject * qd = gQueuedDelete;
+			gQueuedDelete = qd->_nextInDeleteQueue;
+			delete qd;
+		}
+		while (SDL_PollEvent(&ev)) {
+			if (ev.type == SDL_QUIT)
+				return 0;
+			gCurrentState->event(ev);
+		}
 	}
 }
 
