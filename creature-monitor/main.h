@@ -9,6 +9,7 @@
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_net.h>
 
 extern SDL_Window * gWindow;
 extern SDL_Renderer * gRenderer;

@@ -49,6 +49,8 @@ void writeText(int x, int y, const char * text) {
 
 int main(int argc, char ** argv) {
 	SDL_Init(SDL_INIT_VIDEO);
+	SDLNet_Init();
+
 	if (SDL_CreateWindowAndRenderer(640, 480, SDL_WINDOW_RESIZABLE, &gWindow, &gRenderer))
 		errorOut("wah! failed to create window/renderer!");
 

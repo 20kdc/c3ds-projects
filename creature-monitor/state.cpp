@@ -6,14 +6,30 @@
  */
 
 #include "main.h"
+#include <stdio.h>
 
 class CMTestState : public CMState {
 public:
+	Uint32 nextCheck = 0;
+
 	void frame() {
 		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
 		SDL_RenderClear(gRenderer);
 		writeText(0, 0, "Hello world!");
 		SDL_RenderPresent(gRenderer);
+
+		Uint32 currentTicks = SDL_GetTicks();
+		if (currentTicks > nextCheck) {
+			nextCheck = currentTicks + 1000;
+			IPaddress ipa = {SDL_SwapBE32(INADDR_LOOPBACK), 19960};
+			TCPsocket socket = SDLNet_TCP_Open(&ipa);
+			if (socket) {
+				puts("opened socket!");
+				SDLNet_TCP_Close(socket);
+			} else {
+				puts("did not open socket!");
+			}
+		}
 	}
 	void event(SDL_Event & event) {
 	}
