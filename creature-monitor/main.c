@@ -1,3 +1,10 @@
+/*
+ * creature-monitor - watching norns from afar?
+ * Written starting in 2022 by 20kdc
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
