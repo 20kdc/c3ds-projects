@@ -24,11 +24,13 @@ void fillRect(const SDL_Rect rect, uint32_t colour);
 
 class CMState : public CMObject {
 public:
+	virtual const char * stateName() = 0;
 	virtual void frame(int w, int h) = 0;
 	virtual void event(int w, int h, SDL_Event & event) = 0;
 };
 
-extern CMState * gCurrentState;
+void setState(CMState * state);
 
-extern void setInitialState();
+void setInitialState();
+void setSelectorState();
 

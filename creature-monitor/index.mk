@@ -1,4 +1,4 @@
-CREATURE_MONITOR_SOURCES := creature-monitor/main.cpp creature-monitor/state.cpp creature-monitor/libcm.cpp
+CREATURE_MONITOR_SOURCES := creature-monitor/main.cpp creature-monitor/state_inforead.cpp creature-monitor/state_selector.cpp creature-monitor/libcm.cpp
 CREATURE_MONITOR_SOURCES += creature-monitor/cpx.cpp
 CREATURE_MONITOR_HEADERS := creature-monitor/main.h creature-monitor/cpx.h creature-monitor/libcm.h
 

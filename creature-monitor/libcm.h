@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <stddef.h>
+
 class CMObject {
 public:
 	CMObject() {}
@@ -15,7 +17,7 @@ public:
 	void queueDelete();
 	static void performQueuedDeletions();
 private:
-	CMObject * _nextInDeleteQueue;
+	CMObject * _nextInDeleteQueue = NULL;
 	static CMObject * _deleteQueue;
 };
 
@@ -26,12 +28,24 @@ public:
 	char * data;
 	size_t length;
 	CMSlice() {}
+	CMSlice(const char * text) : data((char *) text), length(strlen(text)) {}
 	CMSlice(char * data, size_t length) : data(data), length(length) {}
+	CMSlice(const char * data, size_t length) : data((char *) data), length(length) {}
 	CMSlice slice(size_t pos) {
 		return CMSlice(data + pos, length - pos);
 	}
 	CMSlice slice(size_t pos, size_t len) {
-		return CMSlice(data + pos, length - pos);
+		return CMSlice(data + pos, len);
+	}
+	CMSlice first(size_t len) { return slice(0, len); }
+	CMSlice last(size_t len) { return slice(length - len, len); }
+	bool operator ==(const CMSlice & other) {
+		if (length != other.length) return false;
+		return !memcmp(data, other.data, length);
+	}
+	bool operator !=(const CMSlice & other) {
+		if (length != other.length) return true;
+		return memcmp(data, other.data, length) != 0;
 	}
 };
 

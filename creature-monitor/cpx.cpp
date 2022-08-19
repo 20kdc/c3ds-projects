@@ -18,12 +18,12 @@ bool CPXRequestResult::verifyMagic(CMSlice & cleanSlice) {
 		return false;
 	if (content.length < 10)
 		return false;
-	if (memcmp(content.data, "CMMagicHD\n", 10))
+	if (content.first(10) != "CMMagicHD\n")
 		return false;
 	// the zero terminator is checked for here
-	if (memcmp(content.data + (content.length - 10), "CMMagicFT", 10))
+	if (content.last(10) != CMSlice("CMMagicFT", 10))
 		return false;
-	cleanSlice = CMSlice(content.data + 10, content.length - 20);
+	cleanSlice = content.slice(10, content.length - 20);
 	return true;
 }
 

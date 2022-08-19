@@ -38,6 +38,11 @@ CMBuffer::~CMBuffer() {
 	free(data);
 }
 
+void CMObject::queueDelete() {
+	_nextInDeleteQueue = _deleteQueue;
+	_deleteQueue = this;
+}
+
 void CMObject::performQueuedDeletions() {
 	while (_deleteQueue) {
 		CMObject * qd = _deleteQueue;

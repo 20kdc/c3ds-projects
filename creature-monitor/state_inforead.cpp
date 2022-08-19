@@ -10,29 +10,21 @@
 
 #include <stdio.h>
 
-class CMTestState : public CMState {
+class CMInforeadState : public CMState {
 public:
 	Uint32 nextCheck = 0;
 	CPXRequestResult * result = NULL;
+	int selectedLine = -1;
+
+	~CMInforeadState() {
+		delete result;
+	}
+
+	const char * stateName() { return "inforead"; }
 
 	void frame(int w, int h) {
 		if (result) {
-			CMSlice slice;
-			if (result->verifyMagic(slice)) {
-				if (slice.length > 0) {
-					writeText(8, 8, "Select Target:");
-					int y = 32;
-					CMSlice line;
-					while (cmNextString(slice, line, 10)) {
-						writeText(w - 256, y, line.data, line.length);
-						cmNextString(slice, line, 10);
-						writeText(0, y, line.data, line.length);
-						y += 16;
-					}
-				}
-			} else {
-				writeText(0, 0, result->content.data, result->content.length);
-			}
+			writeText(0, 0, result->content.data, result->content.length);
 		}
 
 		Uint32 currentTicks = SDL_GetTicks();
@@ -45,31 +37,17 @@ public:
 			// do CPX request to locate them Norns
 			result = cpxMakeRawRequest(
 				"execute\n"
-				"outs \"CMMagicHD\\n\"\n"
-				// give the selected creature special attention
-				"targ norn\n"
-				"doif targ ne null\n"
-					"outs gtos 0\n"
-					"outs \"\\n\"\n"
-					"outs hist name gtos 0\n"
-					"outs \" (selected)\\n\"\n"
-				"endi\n"
-				// go over the others
-				"enum 4 0 0\n"
-					"outs gtos 0\n"
-					"outs \"\\n\"\n"
-					"outs hist name gtos 0\n"
-					"outs \"\\n\"\n"
-				"next\n"
-				"outs \"CMMagicFT\"\n"
+				"outs \"Boop!\"\n"
 			);
 		}
+		// TODO debug holdover
+		setSelectorState();
 	}
 	void event(int w, int h, SDL_Event & event) {
 	}
 };
 
 void setInitialState() {
-	gCurrentState = new CMTestState();
+	setState(new CMInforeadState());
 }
 

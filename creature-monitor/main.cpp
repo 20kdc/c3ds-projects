@@ -17,12 +17,6 @@ SDL_Renderer * gRenderer;
 SDL_Texture * gFont;
 
 CMState * gCurrentState;
-CMObject * gQueuedDelete;
-
-void CMObject::queueDelete() {
-	_nextInDeleteQueue = gQueuedDelete;
-	gQueuedDelete = this;
-}
 
 void errorOut(const char * reason) {
 	puts(reason);
@@ -55,6 +49,13 @@ void writeText(int x, int y, const char * text, size_t len) {
 void fillRect(const SDL_Rect rect, uint32_t colour) {
 	SDL_SetRenderDrawColor(gRenderer, (colour >> 16) & 0xFF, (colour >> 8) & 0xFF, colour & 0xFF, (colour >> 24) & 0xFF);
 	SDL_RenderFillRect(gRenderer, &rect);
+}
+
+void setState(CMState * state) {
+	if (gCurrentState != NULL)
+		gCurrentState->queueDelete();
+	printf("switching state to: %s\n", state->stateName());
+	gCurrentState = state;
 }
 
 int main(int argc, char ** argv) {
