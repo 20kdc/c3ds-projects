@@ -1,5 +1,6 @@
 CREATURE_MONITOR_SOURCES := creature-monitor/main.cpp creature-monitor/state.cpp creature-monitor/delnew.cpp
-CREATURE_MONITOR_HEADERS := creature-monitor/main.h
+CREATURE_MONITOR_SOURCES += creature-monitor/cpx.cpp
+CREATURE_MONITOR_HEADERS := creature-monitor/main.h creature-monitor/cpx.h
 
 ifeq ($(HOST_SDL2),1)
 # host build
