@@ -89,9 +89,8 @@ public:
 						int lineId = 0;
 						while (cmNextString(slice, line, 10)) {
 							cmNextString(slice, line, 10);
-							if (lineId == selectedLine) {
-								// TODO we selected a creature!
-							}
+							if (lineId == selectedLine)
+								setChemState(line);
 							y += LINE_HEIGHT;
 							lineId++;
 						}

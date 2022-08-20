@@ -28,6 +28,10 @@ void writeText(int x, int y, const char * text) {
 	writeText(x, y, text, strlen(text));
 }
 
+void writeText(int x, int y, const CMSlice & textSlice) {
+	writeText(x, y, textSlice.data, textSlice.length);
+}
+
 void writeText(int x, int y, const char * text, size_t len) {
 	SDL_Rect src = {0, 0, 7, 14};
 	SDL_Rect dst = {x, y, 7, 14};

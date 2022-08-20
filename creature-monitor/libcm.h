@@ -52,12 +52,20 @@ public:
 		if (length != other.length) return true;
 		return memcmp(data, other.data, length) != 0;
 	}
+
+	char * asCStr() {
+		char * buf = (char *) malloc(length + 1);
+		memcpy(buf, data, length);
+		buf[length] = 0;
+		return buf;
+	}
 };
 
 class CMBuffer : public CMObject, public CMSlice {
 public:
-	CMBuffer(const char * data, size_t len);
+	CMBuffer(const CMBuffer & slice) : CMBuffer(slice.data, slice.length) {}
 	CMBuffer(const CMSlice & slice) : CMBuffer(slice.data, slice.length) {}
+	CMBuffer(const char * data, size_t len);
 	~CMBuffer();
 };
 
@@ -65,4 +73,5 @@ public:
 // Returns false if there isn't one.
 // Note that if the split char is found at the very end of the slice, false is returned (there's no more actual data)
 bool cmNextString(CMSlice & slice, CMSlice & content, char split);
+CMBuffer cmAppend(CMSlice & a, CMSlice & b);
 
