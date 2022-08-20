@@ -88,9 +88,11 @@ public:
 						CMSlice line;
 						int lineId = 0;
 						while (cmNextString(slice, line, 10)) {
-							cmNextString(slice, line, 10);
-							if (lineId == selectedLine)
+							if (lineId == selectedLine) {
 								setChemState(line);
+								return;
+							}
+							cmNextString(slice, line, 10);
 							y += LINE_HEIGHT;
 							lineId++;
 						}

@@ -73,5 +73,5 @@ public:
 // Returns false if there isn't one.
 // Note that if the split char is found at the very end of the slice, false is returned (there's no more actual data)
 bool cmNextString(CMSlice & slice, CMSlice & content, char split);
-CMBuffer cmAppend(CMSlice & a, CMSlice & b);
+CMBuffer cmAppend(const CMSlice & a, const CMSlice & b);
 

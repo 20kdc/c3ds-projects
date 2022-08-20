@@ -64,7 +64,7 @@ bool cmNextString(CMSlice & slice, CMSlice & content, char split) {
 	return false;
 }
 
-CMBuffer cmAppend(CMSlice & a, CMSlice & b) {
+CMBuffer cmAppend(const CMSlice & a, const CMSlice & b) {
 	CMBuffer buf(NULL, a.length + b.length);
 	memcpy(buf.data, a.data, a.length);
 	memcpy(buf.data + a.length, b.data, b.length);

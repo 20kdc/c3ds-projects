@@ -13,18 +13,20 @@
 class CMChemState : public CMState {
 public:
 	CPXRequestResult * result = NULL;
-	CMPeriodic updateTimer = CMPeriodic(1000);
+	CMPeriodic updateTimer = CMPeriodic(100);
 	CMBuffer moniker;
+	char * stateNameDetail;
 
 	CMChemState(const CMSlice & moniker) : moniker(moniker) {
-		
+		stateNameDetail = cmAppend("chem:", moniker).dupCStr();
 	}
 
 	~CMChemState() {
+		free(stateNameDetail);
 		delete result;
 	}
 
-	const char * stateName() { return "chem"; }
+	const char * stateName() { return stateNameDetail; }
 
 	void frame(int w, int h) {
 		if (result) {
@@ -57,22 +59,32 @@ public:
 		if (result)
 			delete result;
 
-		result = cpxMakeRawRequest(
+		char * request = cmAppend(cmAppend(
 			"execute\n"
+			"targ mtoc \"",
+			moniker
+		),
+			"\"\n"
 			// header
 			CAOS_PRINT_CM_HEADER
 			// read out chemical values
 			"setv va00 0\n"
-			"targ norn\n"
 			"loop\n"
 			"outv chem va00\n"
 			"outs \"\\n\"\n"
 			"addv va00 1\n"
 			"untl va00 eq 256\n"
 			CAOS_PRINT_CM_FOOTER
-		);
+		).dupCStr();
+		result = cpxMakeRawRequest(request);
+		free(request);
 	}
 	void event(int w, int h, SDL_Event & event) {
+		if (event.type == SDL_KEYDOWN) {
+			if (event.key.keysym.sym == SDLK_BACKSPACE) {
+				setSelectorState();
+			}
+		}
 	}
 };
 
