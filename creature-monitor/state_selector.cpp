@@ -15,9 +15,10 @@
 
 class CMSelectorState : public CMState {
 public:
-	Uint32 nextCheck = 0;
 	CPXRequestResult * result = NULL;
 	int selectedLine = -1;
+
+	CMPeriodic updateTimer = CMPeriodic(1000);
 
 	~CMSelectorState() {
 		delete result;
@@ -49,17 +50,14 @@ public:
 			}
 		}
 
-		Uint32 currentTicks = SDL_GetTicks();
-		if (currentTicks > nextCheck) {
-			nextCheck = currentTicks + 1000;
-
+		if (updateTimer.shouldRun()) {
 			if (result)
 				delete result;
 
 			// do CPX request to locate them Norns
 			result = cpxMakeRawRequest(
 				"execute\n"
-				"outs \"CMMagicHD\\n\"\n"
+				CAOS_PRINT_CM_HEADER
 				// give the selected creature special attention
 				"targ norn\n"
 				"doif targ ne null\n"
@@ -75,7 +73,7 @@ public:
 					"outs hist name gtos 0\n"
 					"outs \"\\n\"\n"
 				"next\n"
-				"outs \"CMMagicFT\"\n"
+				CAOS_PRINT_CM_FOOTER
 			);
 		}
 	}

@@ -11,6 +11,9 @@
 
 #include <stdint.h>
 
+#define CAOS_PRINT_CM_HEADER "outs \"CMMagicHD\\n\"\n"
+#define CAOS_PRINT_CM_FOOTER "outs \"CMMagicFT\"\n"
+
 class CPXRequestResult : public CMObject {
 public:
 	int resultCode;

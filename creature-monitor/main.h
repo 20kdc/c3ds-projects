@@ -22,6 +22,26 @@ void writeText(int x, int y, const char * text);
 void writeText(int x, int y, const char * text, size_t len);
 void fillRect(const SDL_Rect rect, uint32_t colour);
 
+class CMPeriodic {
+public:
+	Uint32 nextCheck;
+	Uint32 timeBetween;
+	CMPeriodic(Uint32 tb) {
+		nextCheck = SDL_GetTicks();
+		timeBetween = tb;
+	}
+	bool shouldRun() {
+		Uint32 now = SDL_GetTicks();
+		if (nextCheck <= now) {
+			nextCheck += timeBetween;
+			if (nextCheck < now)
+				nextCheck = now + timeBetween;
+			return true;
+		}
+		return false;
+	}
+};
+
 class CMState : public CMObject {
 public:
 	virtual const char * stateName() = 0;
@@ -30,6 +50,9 @@ public:
 };
 
 void setState(CMState * state);
+
+// application stuff
+extern CMSlice cmChemicalNames[256];
 
 void setInitialState();
 void setSelectorState();

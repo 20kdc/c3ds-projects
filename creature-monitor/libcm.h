@@ -13,6 +13,8 @@ class CMObject {
 public:
 	CMObject() {}
 	CMObject(const CMObject &) = delete;
+	CMObject & operator =(const CMObject & other) = delete;
+
 	virtual ~CMObject() {}
 	void queueDelete();
 	static void performQueuedDeletions();
@@ -27,10 +29,12 @@ class CMSlice {
 public:
 	char * data;
 	size_t length;
-	CMSlice() {}
+
+	CMSlice() : data(NULL), length(0) {}
 	CMSlice(const char * text) : data((char *) text), length(strlen(text)) {}
 	CMSlice(char * data, size_t length) : data(data), length(length) {}
 	CMSlice(const char * data, size_t length) : data((char *) data), length(length) {}
+
 	CMSlice slice(size_t pos) {
 		return CMSlice(data + pos, length - pos);
 	}
@@ -39,6 +43,7 @@ public:
 	}
 	CMSlice first(size_t len) { return slice(0, len); }
 	CMSlice last(size_t len) { return slice(length - len, len); }
+
 	bool operator ==(const CMSlice & other) {
 		if (length != other.length) return false;
 		return !memcmp(data, other.data, length);
