@@ -53,7 +53,7 @@ public:
 		return memcmp(data, other.data, length) != 0;
 	}
 
-	char * asCStr() {
+	char * dupCStr() {
 		char * buf = (char *) malloc(length + 1);
 		memcpy(buf, data, length);
 		buf[length] = 0;

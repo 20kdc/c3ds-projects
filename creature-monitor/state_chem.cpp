@@ -36,7 +36,17 @@ public:
 					writeText(x, y, cmChemicalNames[i]);
 					CMSlice line;
 					cmNextString(clean, line, '\n');
+					char * val = line.dupCStr();
+					double n = atof(val);
+					free(val);
 					writeText(x, y + 16, line);
+					SDL_Rect fullBar = {x + 66, y + 16, 124, 16};
+					fillRect(fullBar, 0xFFFFFFFF);
+					fullBar.x += 1; fullBar.y += 1; fullBar.w -= 2; fullBar.h -= 2;
+					fillRect(fullBar, 0xFF000000);
+					fullBar.x += 1; fullBar.y += 1; fullBar.w -= 2; fullBar.h -= 2;
+					fullBar.w = (int) (fullBar.w * n);
+					fillRect(fullBar, 0xFFFFFFFF);
 				}
 			}
 		}
