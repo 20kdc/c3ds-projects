@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "libcm.h"
@@ -69,5 +70,17 @@ CMBuffer cmAppend(const CMSlice & a, const CMSlice & b) {
 	memcpy(buf.data, a.data, a.length);
 	memcpy(buf.data + a.length, b.data, b.length);
 	return buf;
+}
+
+CMBuffer cmItoB(int i) {
+	char tmp[0x40];
+	sprintf(tmp, "%i", i);
+	return CMBuffer(tmp);
+}
+
+void cmDumpSliceToFile(const CMSlice & data, const char * name) {
+	FILE * f = fopen(name, "wb");
+	fwrite(data.data, data.length, 1, f);
+	fclose(f);
 }
 

@@ -23,6 +23,11 @@ void writeText(int x, int y, const CMSlice & text);
 void writeText(int x, int y, const char * text, size_t len);
 void fillRect(const SDL_Rect rect, uint32_t colour);
 
+inline static SDL_Rect marginRect(const SDL_Rect basis, int amount) {
+	int a2 = amount * 2;
+	return {basis.x + amount, basis.y + amount, basis.w - a2, basis.h - a2};
+}
+
 class CMPeriodic {
 public:
 	Uint32 nextCheck;
@@ -58,4 +63,5 @@ extern CMSlice cmChemicalNames[256];
 void setInitialState();
 void setSelectorState();
 void setChemState(const CMSlice & moniker);
+void setBrainState(const CMSlice & moniker);
 

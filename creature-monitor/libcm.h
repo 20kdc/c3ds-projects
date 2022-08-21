@@ -61,8 +61,19 @@ public:
 	}
 };
 
-class CMBuffer : public CMObject, public CMSlice {
+class CMBuffer : public CMSlice {
 public:
+	CMBuffer() {}
+	CMBuffer & operator =(const CMBuffer & other) {
+		free(data);
+		data = NULL;
+		length = other.length;
+		if (length) {
+			data = (char *) malloc(other.length);
+			memcpy(data, other.data, length);
+		}
+		return *this;
+	}
 	CMBuffer(const CMBuffer & slice) : CMBuffer(slice.data, slice.length) {}
 	CMBuffer(const CMSlice & slice) : CMBuffer(slice.data, slice.length) {}
 	CMBuffer(const char * data, size_t len);
@@ -74,4 +85,6 @@ public:
 // Note that if the split char is found at the very end of the slice, false is returned (there's no more actual data)
 bool cmNextString(CMSlice & slice, CMSlice & content, char split);
 CMBuffer cmAppend(const CMSlice & a, const CMSlice & b);
+CMBuffer cmItoB(int i);
+void cmDumpSliceToFile(const CMSlice & data, const char * name);
 

@@ -50,6 +50,8 @@ public:
 					fullBar.w = (int) (fullBar.w * n);
 					fillRect(fullBar, 0xFFFFFFFF);
 				}
+			} else {
+				writeText(0, 0, result->content.data, result->content.length);
 			}
 		}
 
@@ -83,6 +85,8 @@ public:
 		if (event.type == SDL_KEYDOWN) {
 			if (event.key.keysym.sym == SDLK_BACKSPACE) {
 				setSelectorState();
+			} else if (event.key.keysym.sym == SDLK_RETURN) {
+				setBrainState(moniker);
 			}
 		}
 	}
