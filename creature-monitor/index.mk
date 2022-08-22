@@ -23,6 +23,7 @@ INTERMEDIATES += creature-monitor/creature-monitor.exe creature-monitor/SDL2.dll
 
 creature-monitor/creature-monitor.exe: $(CREATURE_MONITOR_SOURCES) $(CREATURE_MONITOR_HEADERS) creature-monitor/page-coff.o
 	$(W32_CC) -fno-rtti -fno-exceptions $(W32_CFLAGS_SDL) $(CREATURE_MONITOR_SOURCES) creature-monitor/page-coff.o -o $@ -lSDL2 -lSDL2_net
+	$(W32_STRIP) $@
 
 creature-monitor/SDL2.dll:
 	cp /usr/local/i686-w64-mingw32/bin/SDL2.dll $@ || cp /usr/i686-w64-mingw32/bin/SDL2.dll $@ || cp /mingw32/bin/SDL2.dll $@
