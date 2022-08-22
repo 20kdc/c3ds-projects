@@ -61,7 +61,7 @@ public:
 	int lobes, tracts;
 
 	CMBrainState(const CMSlice & moniker, int l, int t) : moniker(moniker), lobes(l), tracts(t) {
-		stateNameDetail = cmAppend(cmAppend(cmAppend(cmAppend(cmAppend("brain:", moniker), " L"), cmItoB(l)), " T"), cmItoB(t)).dupCStr();
+		stateNameDetail = (CMSlice("brain:") + moniker + CMSlice(" L") + cmItoB(l) + CMSlice(" T") + cmItoB(t)).dupCStr();
 	}
 
 	~CMBrainState() {
@@ -137,16 +137,16 @@ public:
 		if (result)
 			delete result;
 
-		CMBuffer request = cmAppend(cmAppend("execute\ntarg mtoc \"", moniker), "\"\n");
+		CMBuffer request = CMSlice("execute\ntarg mtoc \"") + moniker + CMSlice("\"\n");
 		for (int i = 0; i < lobes; i++) {
-			request = cmAppend(request, "brn: dmpl ");
-			request = cmAppend(request, cmItoB(i));
-			request = cmAppend(request, "\n");
+			request = request + CMSlice("brn: dmpl ");
+			request = request + cmItoB(i);
+			request = request + CMSlice("\n");
 		}
 		for (int i = 0; i < tracts; i++) {
-			request = cmAppend(request, "brn: dmpt ");
-			request = cmAppend(request, cmItoB(i));
-			request = cmAppend(request, "\n");
+			request = request + CMSlice("brn: dmpt ");
+			request = request + cmItoB(i);
+			request = request + CMSlice("\n");
 		}
 		char * requestC = request.dupCStr();
 		result = cpxMakeRawRequest(requestC);
@@ -171,7 +171,7 @@ public:
 	char * stateNameDetail;
 
 	CMBrainSetupState(const CMSlice & moniker) : moniker(moniker) {
-		stateNameDetail = cmAppend("brain-setup:", moniker).dupCStr();
+		stateNameDetail = (CMSlice("brain-setup:") + moniker).dupCStr();
 	}
 
 	~CMBrainSetupState() {
@@ -191,17 +191,16 @@ public:
 		if (result)
 			delete result;
 
-		char * request = cmAppend(cmAppend(
+		char * request = (CMSlice(
 			"execute\n"
-			"targ mtoc \"",
-			moniker
-		),
+			"targ mtoc \""
+		) + moniker + CMSlice(
 			"\"\n"
 			// header
 			CAOS_PRINT_CM_HEADER
 			"brn: dmpb\n"
 			CAOS_PRINT_CM_FOOTER
-		).dupCStr();
+		)).dupCStr();
 		result = cpxMakeRawRequest(request);
 		free(request);
 

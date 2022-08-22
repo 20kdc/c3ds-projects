@@ -18,7 +18,7 @@ public:
 	char * stateNameDetail;
 
 	CMChemState(const CMSlice & moniker) : moniker(moniker) {
-		stateNameDetail = cmAppend("chem:", moniker).dupCStr();
+		stateNameDetail = (CMSlice("chem:") + moniker).dupCStr();
 	}
 
 	~CMChemState() {
@@ -61,11 +61,10 @@ public:
 		if (result)
 			delete result;
 
-		char * request = cmAppend(cmAppend(
+		char * request = (CMSlice(
 			"execute\n"
-			"targ mtoc \"",
-			moniker
-		),
+			"targ mtoc \""
+		) + moniker + CMSlice(
 			"\"\n"
 			// header
 			CAOS_PRINT_CM_HEADER
@@ -77,7 +76,7 @@ public:
 			"addv va00 1\n"
 			"untl va00 eq 256\n"
 			CAOS_PRINT_CM_FOOTER
-		).dupCStr();
+		)).dupCStr();
 		result = cpxMakeRawRequest(request);
 		free(request);
 	}
