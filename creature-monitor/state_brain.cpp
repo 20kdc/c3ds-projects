@@ -79,17 +79,15 @@ public:
 				int ofsX = 32;
 				int ofsY = 32;
 				for (int i = 0; i < lobes; i++) {
-					lobehdr_t * lobehdr = (lobehdr_t *) cursor.data;
+					lobehdr_t * lobehdr = (lobehdr_t *) cursor.grab(sizeof(lobehdr_t));
 					// printf("%c%c%c%c %i %i %i %i\n", lobehdr->name[0], lobehdr->name[1], lobehdr->name[2], lobehdr->name[3], lobehdr->x, lobehdr->y, lobehdr->w, lobehdr->h);
-					cursor = cursor.slice(sizeof(lobehdr_t));
 
-					neuron_t * neurons = (neuron_t *) cursor.data;
 					int neuronCount = lobehdr->w * lobehdr->h;
 					// printf(" total neuron blob size %i\n", (int) (neuronCount * sizeof(neuron_t)));
-					cursor = cursor.slice(neuronCount * sizeof(neuron_t));
+					neuron_t * neurons = (neuron_t *) cursor.grab(neuronCount * sizeof(neuron_t));
 
 					// footer
-					cursor = cursor.slice(sizeof(lobefoot_t));
+					cursor.grab(sizeof(lobefoot_t));
 
 					// now draw
 					SDL_Rect lobe = getCellRegion(ofsX, ofsY, lobehdr->x, lobehdr->y, lobehdr->w, lobehdr->h);

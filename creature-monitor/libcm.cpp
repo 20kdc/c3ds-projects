@@ -14,8 +14,16 @@
 
 CMObject * CMObject::_deleteQueue;
 
+void cmPanic(const char * text) {
+	fprintf(stderr, "panic: %s\n", text);
+	abort();
+}
+
 void * operator new(size_t sz) {
-	return malloc(sz);
+	void * res = malloc(sz);
+	if (!res)
+		cmPanic("failed malloc");
+	return res;
 }
 
 void operator delete(void * obj, size_t) {

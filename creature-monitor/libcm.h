@@ -9,6 +9,8 @@
 
 #include <stddef.h>
 
+void cmPanic(const char * text);
+
 class CMObject {
 public:
 	CMObject() {}
@@ -51,6 +53,15 @@ public:
 	bool operator !=(const CMSlice & other) {
 		if (length != other.length) return true;
 		return memcmp(data, other.data, length) != 0;
+	}
+
+	char * grab(size_t size) {
+		if (length < size)
+			cmPanic("attempted to grab bigger slice than possible");
+		char * oData = data;
+		data += size;
+		length -= size;
+		return oData;
 	}
 
 	char * dupCStr() {
