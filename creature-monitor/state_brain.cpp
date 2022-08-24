@@ -23,12 +23,19 @@ typedef struct {
 
 typedef struct {
 	float input;
-	int b;
+	int id; // always equal to neuron index
 	float values[8];
 } neuron_t;
 
 typedef struct {
-	int a;
+	int id;
+	int srcNeuron;
+	int dstNeuron;
+	float values[8];
+} dendrite_t;
+
+typedef struct {
+	int id;
 	int decisionIndex;
 	char name[4];
 	int d;
@@ -37,8 +44,29 @@ typedef struct {
 	ruleset_t init;
 	ruleset_t update;
 	// neurons follow
-	// then another random thing
+	neuron_t neurons[];
+	// then lobefoot_t
 } lobehdr_t;
+
+typedef struct {
+	int a;
+	int b;
+	int srcLobe;
+	int srcMin;
+	int srcUnk;
+	char srcUnk2;
+	int dstLobe;
+	int dstMin;
+	int dstUnk;
+	char dstUnk2;
+	bool flagA;
+	bool flagB;
+	ruleset_t init;
+	ruleset_t update;
+	int dendriteCount;
+	// dendrites follow
+	// then lobefoot_t
+} tracthdr_t;
 
 typedef struct {
 	char footer[10];
@@ -46,10 +74,34 @@ typedef struct {
 #pragma pack(pop)
 
 #define BRN_GRIDW 16
-#define BRN_GRIDH 16
+#define BRN_GRIDH 12
 
 static SDL_Rect getCellRegion(int ofsX, int ofsY, int x, int y, int w, int h) {
 	return {ofsX + (x * BRN_GRIDW), ofsY + (y * BRN_GRIDH), w * BRN_GRIDW, h * BRN_GRIDH};
+}
+
+static SDL_Rect getCellRegion(int ofsX, int ofsY, lobehdr_t * lobe, int i) {
+	return getCellRegion(ofsX, ofsY, lobe->x + (i % lobe->w), lobe->y + (i / lobe->w), 1, 1);
+}
+
+static int decideColour(float f) {
+	float datums[] = {
+		f * -16,
+		fabs(f),
+		f * 16,
+	};
+	int col = 0;
+	for (int k = 0; k < 3; k++) {
+		int subCol = (int) (datums[k] * 255);
+		if (subCol < 0)
+			subCol = 0;
+		if (subCol > 255)
+			subCol = 255;
+		col <<= 8;
+		col |= subCol;
+	}
+	col |= 0xFF000000;
+	return col;
 }
 
 class CMBrainState : public CMState {
@@ -59,6 +111,7 @@ public:
 	CMBuffer moniker;
 	char * stateNameDetail;
 	int lobes, tracts;
+	bool dendritesView = false;
 
 	CMBrainState(const CMSlice & moniker, int l, int t) : moniker(moniker), lobes(l), tracts(t) {
 		stateNameDetail = (CMSlice("brain:") + moniker + CMSlice(" L") + cmItoB(l) + CMSlice(" T") + cmItoB(t)).dupCStr();
@@ -78,8 +131,11 @@ public:
 				// cmDumpSliceToFile(cursor, "lobedump.bin");
 				int ofsX = 32;
 				int ofsY = 32;
+				lobehdr_t * lobeHeaders[lobes];
 				for (int i = 0; i < lobes; i++) {
 					lobehdr_t * lobehdr = (lobehdr_t *) cursor.grab(sizeof(lobehdr_t));
+					// store for later access
+					lobeHeaders[i] = lobehdr;
 					// printf("%c%c%c%c %i %i %i %i\n", lobehdr->name[0], lobehdr->name[1], lobehdr->name[2], lobehdr->name[3], lobehdr->x, lobehdr->y, lobehdr->w, lobehdr->h);
 
 					int neuronCount = lobehdr->w * lobehdr->h;
@@ -99,30 +155,49 @@ public:
 					// printf(" end at %i\n", (int) (cursor.data - result->content.data));
 
 					for (int j = 0; j < neuronCount; j++) {
-						int nX = j % lobehdr->w;
-						int nY = j / lobehdr->w;
-						SDL_Rect nbox = getCellRegion(ofsX, ofsY, lobehdr->x + nX, lobehdr->y + nY, 1, 1);
+						SDL_Rect nbox = getCellRegion(ofsX, ofsY, lobehdr, j);
 						SDL_Rect nboxInner = marginRect(nbox, 4);
-						int col = 0;
-						float datums[] = {
-							neurons[j].values[0] * -16,
-							fabs(neurons[j].values[0]),
-							neurons[j].values[0] * 16,
-						};
-						for (int k = 0; k < 3; k++) {
-							int subCol = (int) (datums[k] * 255);
-							if (subCol < 0)
-								subCol = 0;
-							if (subCol > 255)
-								subCol = 255;
-							col <<= 8;
-							col |= subCol;
-						}
-						col |= 0xFF000000;
 						if (lobehdr->decisionIndex == j)
 							fillRect(nbox, 0xFF808080);
-						fillRect(nboxInner, col);
+						fillRect(nboxInner, decideColour(neurons[j].values[0]));
 					}
+				}
+
+				for (int i = 0; i < tracts; i++) {
+					tracthdr_t * tracthdr = (tracthdr_t *) cursor.grab(sizeof(tracthdr_t));
+
+					dendrite_t * dendrites = (dendrite_t *) cursor.grab(tracthdr->dendriteCount * sizeof(dendrite_t));
+
+					// need to find lobe
+					lobehdr_t * srcLobeHdr = NULL;
+					lobehdr_t * dstLobeHdr = NULL;
+					for (int j = 0; j < lobes; j++) {
+						if (lobeHeaders[j]->id == tracthdr->srcLobe)
+							srcLobeHdr = lobeHeaders[j];
+						if (lobeHeaders[j]->id == tracthdr->dstLobe)
+							dstLobeHdr = lobeHeaders[j];
+					}
+
+					if (srcLobeHdr && dstLobeHdr) {
+						int srcLobeHdrNC = srcLobeHdr->w * srcLobeHdr->h;
+						int dstLobeHdrNC = dstLobeHdr->w * dstLobeHdr->h;
+						// have both lobes!
+						for (int j = 0; j < tracthdr->dendriteCount; j++) {
+							int sni = dendrites[j].srcNeuron;
+							if (sni < 0 || sni >= srcLobeHdrNC) {
+								continue;
+							}
+							if (dendritesView) {
+								SDL_Rect srcNeuron = getCellRegion(ofsX, ofsY, srcLobeHdr, sni);
+								SDL_Rect dstNeuron = getCellRegion(ofsX, ofsY, dstLobeHdr, dendrites[j].dstNeuron);
+								float f = dendrites[j].values[0] * srcLobeHdr->neurons[sni].values[0];
+								drawLine(rectCentre(srcNeuron), rectCentre(dstNeuron), decideColour(f));
+							}
+						}
+					}
+
+					// footer
+					cursor.grab(sizeof(lobefoot_t));
 				}
 			} else {
 				writeText(0, 0, result->content.data, result->content.length);
@@ -154,6 +229,8 @@ public:
 		if (event.type == SDL_KEYDOWN) {
 			if (event.key.keysym.sym == SDLK_BACKSPACE) {
 				setSelectorState();
+			} else if (event.key.keysym.sym == SDLK_d) {
+				dendritesView = !dendritesView;
 			} else if (event.key.keysym.sym == SDLK_RETURN) {
 				setChemState(moniker);
 			}

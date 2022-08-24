@@ -22,6 +22,11 @@ void writeText(int x, int y, const char * text);
 void writeText(int x, int y, const CMSlice & text);
 void writeText(int x, int y, const char * text, size_t len);
 void fillRect(const SDL_Rect rect, uint32_t colour);
+void drawLine(const SDL_Point a, const SDL_Point b, uint32_t colour);
+
+inline static SDL_Point rectCentre(const SDL_Rect a) {
+	return {a.x + (a.w / 2), a.y + (a.h / 2)};
+}
 
 inline static SDL_Rect marginRect(const SDL_Rect basis, int amount) {
 	int a2 = amount * 2;

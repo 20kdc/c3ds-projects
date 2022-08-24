@@ -50,9 +50,18 @@ void writeText(int x, int y, const char * text, size_t len) {
 	}
 }
 
-void fillRect(const SDL_Rect rect, uint32_t colour) {
+static void setDrawColour(uint32_t colour) {
 	SDL_SetRenderDrawColor(gRenderer, (colour >> 16) & 0xFF, (colour >> 8) & 0xFF, colour & 0xFF, (colour >> 24) & 0xFF);
+}
+
+void fillRect(const SDL_Rect rect, uint32_t colour) {
+	setDrawColour(colour);
 	SDL_RenderFillRect(gRenderer, &rect);
+}
+
+void drawLine(const SDL_Point a, const SDL_Point b, uint32_t colour) {
+	setDrawColour(colour);
+	SDL_RenderDrawLine(gRenderer, a.x, a.y, b.x, b.y);
 }
 
 void setState(CMState * state) {
