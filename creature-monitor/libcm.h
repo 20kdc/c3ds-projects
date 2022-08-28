@@ -9,6 +9,7 @@
 
 #include <stddef.h>
 
+// defined in main.cpp
 void cmPanic(const char * text);
 
 class CMObject {

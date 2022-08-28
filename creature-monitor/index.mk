@@ -1,8 +1,9 @@
 CREATURE_MONITOR_SOURCES := creature-monitor/main.cpp creature-monitor/libcm.cpp
+CREATURE_MONITOR_SOURCES += creature-monitor/ui_ctrl.cpp
 CREATURE_MONITOR_SOURCES += creature-monitor/state_inforead.cpp creature-monitor/state_selector.cpp creature-monitor/state_chem.cpp creature-monitor/state_brain.cpp
 CREATURE_MONITOR_SOURCES += creature-monitor/cpx.cpp
 
-CREATURE_MONITOR_HEADERS := creature-monitor/main.h creature-monitor/cpx.h creature-monitor/libcm.h
+CREATURE_MONITOR_HEADERS := creature-monitor/main.h creature-monitor/cpx.h creature-monitor/libcm.h creature-monitor/ui_ctrl.h
 
 ifeq ($(HOST_SDL2),1)
 # host build

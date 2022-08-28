@@ -7,31 +7,7 @@
 
 #pragma once
 
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_net.h>
-
-#include "libcm.h"
-
-extern SDL_Window * gWindow;
-extern SDL_Renderer * gRenderer;
-extern SDL_Texture * gFont;
-
-void errorOut(const char * reason);
-void writeText(int x, int y, const char * text);
-void writeText(int x, int y, const CMSlice & text);
-void writeText(int x, int y, const char * text, size_t len);
-void fillRect(const SDL_Rect rect, uint32_t colour);
-void drawLine(const SDL_Point a, const SDL_Point b, uint32_t colour);
-
-inline static SDL_Point rectCentre(const SDL_Rect a) {
-	return {a.x + (a.w / 2), a.y + (a.h / 2)};
-}
-
-inline static SDL_Rect marginRect(const SDL_Rect basis, int amount) {
-	int a2 = amount * 2;
-	return {basis.x + amount, basis.y + amount, basis.w - a2, basis.h - a2};
-}
+#include "ui_ctrl.h"
 
 class CMPeriodic {
 public:

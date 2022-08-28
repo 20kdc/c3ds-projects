@@ -148,15 +148,15 @@ public:
 					// now draw
 					SDL_Rect lobe = getCellRegion(ofsX, ofsY, lobehdr->x, lobehdr->y, lobehdr->w, lobehdr->h);
 					fillRect(lobe, 0xFFFFFFFF);
-					fillRect(marginRect(lobe, 2), 0xFF000000);
+					fillRect(rcMargin(lobe, 2), 0xFF000000);
 
-					writeText(lobe.x, lobe.y - 16, lobehdr->name, 4);
+					writeText(ptOfs(rcUL(lobe), {0, -16}), lobehdr->name, 4);
 					// driv ends at 0x55A / 1370
 					// printf(" end at %i\n", (int) (cursor.data - result->content.data));
 
 					for (int j = 0; j < neuronCount; j++) {
 						SDL_Rect nbox = getCellRegion(ofsX, ofsY, lobehdr, j);
-						SDL_Rect nboxInner = marginRect(nbox, 4);
+						SDL_Rect nboxInner = rcMargin(nbox, 4);
 						if (lobehdr->decisionIndex == j)
 							fillRect(nbox, 0xFF808080);
 						fillRect(nboxInner, decideColour(neurons[j].values[0]));
@@ -191,7 +191,7 @@ public:
 								SDL_Rect srcNeuron = getCellRegion(ofsX, ofsY, srcLobeHdr, sni);
 								SDL_Rect dstNeuron = getCellRegion(ofsX, ofsY, dstLobeHdr, dendrites[j].dstNeuron);
 								float f = dendrites[j].values[0] * srcLobeHdr->neurons[sni].values[0];
-								drawLine(rectCentre(srcNeuron), rectCentre(dstNeuron), decideColour(f));
+								drawLine(rcCentre(srcNeuron), rcCentre(dstNeuron), decideColour(f));
 							}
 						}
 					}
@@ -200,7 +200,7 @@ public:
 					cursor.grab(sizeof(lobefoot_t));
 				}
 			} else {
-				writeText(0, 0, result->content.data, result->content.length);
+				writeText({0, 0}, result->content.data, result->content.length);
 			}
 		}
 
@@ -258,7 +258,7 @@ public:
 
 	void frame(int w, int h) {
 		if (result)
-			writeText(0, 0, result->content.data, result->content.length);
+			writeText({0, 0}, result->content.data, result->content.length);
 
 		if (!updateTimer.shouldRun())
 			return;

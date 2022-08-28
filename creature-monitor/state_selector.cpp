@@ -31,22 +31,22 @@ public:
 			CMSlice slice;
 			if (result->verifyMagic(slice)) {
 				if (slice.length > 0) {
-					writeText(8, 8, "Select Target:");
+					writeText({8, 8}, "Select Target:");
 					int y = LINE_START_Y;
 					CMSlice line;
 					int lineId = 0;
 					while (cmNextString(slice, line, 10)) {
 						if (lineId == selectedLine)
 							fillRect({0, y, w, LINE_HEIGHT}, 0xFF000080);
-						writeText(w - 256, y, line.data, line.length);
+						writeText({w - 256, y}, line.data, line.length);
 						cmNextString(slice, line, 10);
-						writeText(0, y, line.data, line.length);
+						writeText({0, y}, line.data, line.length);
 						y += LINE_HEIGHT;
 						lineId++;
 					}
 				}
 			} else {
-				writeText(0, 0, result->content.data, result->content.length);
+				writeText({0, 0}, result->content.data, result->content.length);
 			}
 		}
 
@@ -97,8 +97,6 @@ public:
 							lineId++;
 						}
 					}
-				} else {
-					writeText(0, 0, result->content.data, result->content.length);
 				}
 			}
 		} else if (event.type == SDL_MOUSEMOTION) {

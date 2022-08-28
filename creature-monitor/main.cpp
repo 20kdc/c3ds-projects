@@ -12,58 +12,7 @@
 extern const char cm_page_start[];
 extern const int cm_page_len;
 
-SDL_Window * gWindow;
-SDL_Renderer * gRenderer;
-SDL_Texture * gFont;
-
 CMState * gCurrentState;
-
-void errorOut(const char * reason) {
-	puts(reason);
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", reason, gWindow);
-	exit(1);
-}
-
-void writeText(int x, int y, const char * text) {
-	writeText(x, y, text, strlen(text));
-}
-
-void writeText(int x, int y, const CMSlice & textSlice) {
-	writeText(x, y, textSlice.data, textSlice.length);
-}
-
-void writeText(int x, int y, const char * text, size_t len) {
-	SDL_Rect src = {0, 0, 7, 14};
-	SDL_Rect dst = {x, y, 7, 14};
-	while (len) {
-		len--;
-		char ch = *text++;
-		if (ch == 10) {
-			dst.x = x;
-			dst.y += 16;
-		} else {
-			src.x = (ch & 0x0F) * 7;
-			src.y = ((ch & 0xF0) >> 4) * 14;
-			SDL_RenderCopy(gRenderer, gFont, &src, &dst);
-			dst.x += 8;
-		}
-	}
-}
-
-static void setDrawColour(uint32_t colour) {
-	SDL_SetRenderDrawColor(gRenderer, (colour >> 16) & 0xFF, (colour >> 8) & 0xFF, colour & 0xFF, (colour >> 24) & 0xFF);
-}
-
-void fillRect(const SDL_Rect rect, uint32_t colour) {
-	setDrawColour(colour);
-	SDL_RenderFillRect(gRenderer, &rect);
-}
-
-void drawLine(const SDL_Point a, const SDL_Point b, uint32_t colour) {
-	setDrawColour(colour);
-	SDL_RenderDrawLine(gRenderer, a.x, a.y, b.x, b.y);
-}
-
 void setState(CMState * state) {
 	if (gCurrentState != NULL)
 		gCurrentState->queueDelete();
@@ -76,16 +25,16 @@ int main(int argc, char ** argv) {
 	SDLNet_Init();
 
 	if (SDL_CreateWindowAndRenderer(640, 480, SDL_WINDOW_RESIZABLE, &gWindow, &gRenderer))
-		errorOut("wah! failed to create window/renderer!");
+		cmPanic("wah! failed to create window/renderer!");
 
 	SDL_Surface * s = SDL_LoadBMP_RW(SDL_RWFromConstMem(cm_page_start, cm_page_len), 1);
 	if (!s)
-		errorOut("wah! failed to open BMP!");
+		cmPanic("wah! failed to open BMP!");
 	puts("opened BMP");
 
 	gFont = SDL_CreateTextureFromSurface(gRenderer, s);
 	if (!gFont)
-		errorOut("wah! failed to create texture!");
+		cmPanic("wah! failed to create texture!");
 	puts("created texture");
 
 	setInitialState();

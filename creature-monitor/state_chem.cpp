@@ -35,13 +35,13 @@ public:
 				for (int i = 0; i < 256; i++) {
 					int x = (i & 7) * 192;
 					int y = (i >> 3) * 32;
-					writeText(x, y, cmChemicalNames[i]);
+					writeText({x, y}, cmChemicalNames[i]);
 					CMSlice line;
 					cmNextString(clean, line, '\n');
 					char * val = line.dupCStr();
 					double n = atof(val);
 					free(val);
-					writeText(x, y + 16, line);
+					writeText({x, y + 16}, line);
 					SDL_Rect fullBar = {x + 66, y + 16, 124, 16};
 					fillRect(fullBar, 0xFFFFFFFF);
 					fullBar.x += 1; fullBar.y += 1; fullBar.w -= 2; fullBar.h -= 2;
@@ -51,7 +51,7 @@ public:
 					fillRect(fullBar, 0xFFFFFFFF);
 				}
 			} else {
-				writeText(0, 0, result->content.data, result->content.length);
+				writeText({0, 0}, result->content.data, result->content.length);
 			}
 		}
 

@@ -26,7 +26,7 @@ public:
 
 	void frame(int w, int h) {
 		if (result)
-			writeText(0, 0, result->content.data, result->content.length);
+			writeText({0, 0}, result->content.data, result->content.length);
 
 		if (!updateTimer.shouldRun())
 			return;
