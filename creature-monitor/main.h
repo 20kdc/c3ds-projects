@@ -29,11 +29,10 @@ public:
 	}
 };
 
-class CMState : public CMObject {
+class CMState : public CMControl {
 public:
-	virtual const char * stateName() = 0;
-	virtual void frame(int w, int h) = 0;
-	virtual void event(int w, int h, SDL_Event & event) = 0;
+	virtual const char * stateName();
+	virtual void onKeyDown(int sym);
 };
 
 void setState(CMState * state);

@@ -24,7 +24,7 @@ public:
 
 	const char * stateName() { return "inforead"; }
 
-	void frame(int w, int h) {
+	void onDraw(const SDL_Point & mouseAt) {
 		if (result)
 			writeText({0, 0}, result->content.data, result->content.length);
 
@@ -57,8 +57,6 @@ public:
 			for (int i = 0; i < 256; i++)
 				cmNextString(infoCursor, cmChemicalNames[i], '\n');
 		}
-	}
-	void event(int w, int h, SDL_Event & event) {
 	}
 };
 

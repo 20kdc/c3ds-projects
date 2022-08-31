@@ -28,7 +28,7 @@ public:
 
 	const char * stateName() { return stateNameDetail; }
 
-	void frame(int w, int h) {
+	void onDraw(const SDL_Point & mouseAt) {
 		if (result) {
 			CMSlice clean;
 			if (result->verifyMagic(clean)) {
@@ -80,13 +80,11 @@ public:
 		result = cpxMakeRawRequest(request);
 		free(request);
 	}
-	void event(int w, int h, SDL_Event & event) {
-		if (event.type == SDL_KEYDOWN) {
-			if (event.key.keysym.sym == SDLK_BACKSPACE) {
-				setSelectorState();
-			} else if (event.key.keysym.sym == SDLK_RETURN) {
-				setBrainState(moniker);
-			}
+	void onKeyDown(int sym) {
+		if (sym == SDLK_BACKSPACE) {
+			setSelectorState();
+		} else if (sym == SDLK_RETURN) {
+			setBrainState(moniker);
 		}
 	}
 };

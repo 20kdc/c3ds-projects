@@ -26,8 +26,14 @@ public:
 
 	const char * stateName() { return "selector"; }
 
-	void frame(int w, int h) {
+	void updateSelectedLine(const SDL_Point & mouseAt) {
+		selectedLine = (mouseAt.y - LINE_START_Y) / LINE_HEIGHT;
+	}
+
+	void onDraw(const SDL_Point & mouseAt) {
+		updateSelectedLine(mouseAt);
 		if (result) {
+			SDL_Rect b = bounds();
 			CMSlice slice;
 			if (result->verifyMagic(slice)) {
 				if (slice.length > 0) {
@@ -37,8 +43,8 @@ public:
 					int lineId = 0;
 					while (cmNextString(slice, line, 10)) {
 						if (lineId == selectedLine)
-							fillRect({0, y, w, LINE_HEIGHT}, 0xFF000080);
-						writeText({w - 256, y}, line.data, line.length);
+							fillRect({0, y, b.w, LINE_HEIGHT}, 0xFF000080);
+						writeText({b.w - 256, y}, line.data, line.length);
 						cmNextString(slice, line, 10);
 						writeText({0, y}, line.data, line.length);
 						y += LINE_HEIGHT;
@@ -77,31 +83,26 @@ public:
 			);
 		}
 	}
-	void event(int w, int h, SDL_Event & event) {
-		if (event.type == SDL_MOUSEBUTTONDOWN) {
-			selectedLine = (event.button.y - LINE_START_Y) / LINE_HEIGHT;
-			if (result) {
-				CMSlice slice;
-				if (result->verifyMagic(slice)) {
-					if (slice.length > 0) {
-						int y = LINE_START_Y;
-						CMSlice line;
-						int lineId = 0;
-						while (cmNextString(slice, line, 10)) {
-							if (lineId == selectedLine) {
-								setChemState(line);
-								return;
-							}
-							cmNextString(slice, line, 10);
-							y += LINE_HEIGHT;
-							lineId++;
+	bool onClick(const SDL_Point & mouseAt) {
+		updateSelectedLine(mouseAt);
+		if (result) {
+			CMSlice slice;
+			if (result->verifyMagic(slice)) {
+				if (slice.length > 0) {
+					CMSlice line;
+					int lineId = 0;
+					while (cmNextString(slice, line, 10)) {
+						if (lineId == selectedLine) {
+							setChemState(line);
+							return true;
 						}
+						cmNextString(slice, line, 10);
+						lineId++;
 					}
 				}
 			}
-		} else if (event.type == SDL_MOUSEMOTION) {
-			selectedLine = (event.motion.y - LINE_START_Y) / LINE_HEIGHT;
 		}
+		return false;
 	}
 };
 

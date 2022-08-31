@@ -124,7 +124,7 @@ public:
 
 	const char * stateName() { return stateNameDetail; }
 
-	void frame(int w, int h) {
+	void onDraw(const SDL_Point & mouseAt) {
 		if (result) {
 			if (!result->resultCode) {
 				CMSlice cursor = result->content;
@@ -225,15 +225,13 @@ public:
 		result = cpxMakeRawRequest(requestC);
 		free(requestC);
 	}
-	void event(int w, int h, SDL_Event & event) {
-		if (event.type == SDL_KEYDOWN) {
-			if (event.key.keysym.sym == SDLK_BACKSPACE) {
-				setSelectorState();
-			} else if (event.key.keysym.sym == SDLK_d) {
-				dendritesView = !dendritesView;
-			} else if (event.key.keysym.sym == SDLK_RETURN) {
-				setChemState(moniker);
-			}
+	void onKeyDown(int sym) {
+		if (sym == SDLK_BACKSPACE) {
+			setSelectorState();
+		} else if (sym == SDLK_d) {
+			dendritesView = !dendritesView;
+		} else if (sym == SDLK_RETURN) {
+			setChemState(moniker);
 		}
 	}
 };
@@ -256,7 +254,7 @@ public:
 
 	const char * stateName() { return stateNameDetail; }
 
-	void frame(int w, int h) {
+	void onDraw(const SDL_Point & mouseAt) {
 		if (result)
 			writeText({0, 0}, result->content.data, result->content.length);
 
@@ -292,13 +290,11 @@ public:
 			setState(new CMBrainState(moniker, lobes, tracts));
 		}
 	}
-	void event(int w, int h, SDL_Event & event) {
-		if (event.type == SDL_KEYDOWN) {
-			if (event.key.keysym.sym == SDLK_BACKSPACE) {
-				setSelectorState();
-			} else if (event.key.keysym.sym == SDLK_RETURN) {
-				setChemState(moniker);
-			}
+	void onKeyDown(int sym) {
+		if (sym == SDLK_BACKSPACE) {
+			setSelectorState();
+		} else if (sym == SDLK_RETURN) {
+			setChemState(moniker);
 		}
 	}
 };

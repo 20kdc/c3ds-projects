@@ -71,25 +71,21 @@ public:
 	SDL_Rect bounds() {
 		return _bounds;
 	}
-	// also used to perform re-layouts
+	// run every frame for layout
 	virtual void setBounds(const SDL_Rect & rect);
 
-	virtual void onDraw();
+	virtual void onDraw(const SDL_Point & mouseAt);
 	// true: click counted as a hit
-	virtual bool onClick(const SDL_Point & pt);
+	virtual bool onClick(const SDL_Point & mouseAt);
 
 	// sizing
 	virtual int getHeightForWidth(int width);
 	virtual int getWidthForHeight(int height);
 	SDL_Point getIdealSize() { return _idealSize; }
 
-	virtual void onChildContentUpdate();
-
 	// Don't call in response to setBounds or such!
 	void updatedContents(const SDL_Point & size) {
 		_idealSize = size;
-		if (_parent)
-			_parent->onChildContentUpdate();
 	}
 private:
 	SDL_Rect _bounds = {};

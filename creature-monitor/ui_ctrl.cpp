@@ -108,18 +108,18 @@ void CMControl::setBounds(const SDL_Rect & rect) {
 	_bounds = rect;
 }
 
-void CMControl::onDraw() {
+void CMControl::onDraw(const SDL_Point & mouseAt) {
 	CMControl * iter = _firstChild;
 	while (iter) {
-		iter->onDraw();
+		iter->onDraw(mouseAt);
 		iter = iter->_next;
 	}
 }
 
-bool CMControl::onClick(const SDL_Point & pt) {
+bool CMControl::onClick(const SDL_Point & mouseAt) {
 	CMControl * iter = _lastChild;
 	while (iter) {
-		if (iter->onClick(pt))
+		if (iter->onClick(mouseAt))
 			return true;
 		iter = iter->_prev;
 	}
@@ -131,9 +131,5 @@ int CMControl::getHeightForWidth(int width) {
 }
 int CMControl::getWidthForHeight(int height) {
 	return _idealSize.x;
-}
-
-void CMControl::onChildContentUpdate() {
-	// nothing to do
 }
 
