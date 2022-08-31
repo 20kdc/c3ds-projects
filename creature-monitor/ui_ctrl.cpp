@@ -126,10 +126,68 @@ bool CMControl::onClick(const SDL_Point & mouseAt) {
 	return false;
 }
 
+void CMControl::onUpNotify(int id) {
+	if (_parent)
+		_parent->onUpNotify(id);
+}
+
 int CMControl::getHeightForWidth(int width) {
 	return _idealSize.y;
 }
 int CMControl::getWidthForHeight(int height) {
 	return _idealSize.x;
+}
+
+static SDL_Point measureText(const CMSlice & txt) {
+	SDL_Point emuWriter = {0, 16};
+	SDL_Point totalNecessary = {0, 16};
+	for (int i = 0; i < txt.length; i++) {
+		char ch = txt[i];
+		if (ch == 10) {
+			emuWriter.x = 0;
+			emuWriter.y += 16;
+		} else {
+			emuWriter.x += 8;
+		}
+		// max X/Y
+		if (totalNecessary.x < emuWriter.x)
+			totalNecessary.x = emuWriter.x;
+		if (totalNecessary.y < emuWriter.y)
+			totalNecessary.y = emuWriter.y;
+	}
+	return totalNecessary;
+}
+
+// label/button
+
+void CMText::setText(const CMSlice & txt) {
+	text = txt;
+	updatedContents(measureText(txt));
+}
+void CMText::onDraw(const SDL_Point & mouseAt) {
+	SDL_Rect b = bounds();
+	if (rcContains(b, mouseAt)) {
+		fillRect(b, 0xFF000040);
+	}
+	writeText({b.x, b.y}, text);
+}
+bool CMText::onClick(const SDL_Point & mouseAt) {
+	SDL_Rect b = bounds();
+	if (rcContains(b, mouseAt)) {
+		onUpNotify(notifyId);
+		return true;
+	}
+	return false;
+}
+
+// margin
+
+CMMargin::CMMargin(CMControl * innards, int m) : content(innards), margin(m) {
+	innards->setParent(this);
+}
+
+void CMMargin::setBounds(const SDL_Rect & rect) {
+	CMControl::setBounds(rect);
+	content->setBounds(rcMargin(rect, margin));
 }
 

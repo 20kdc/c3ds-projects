@@ -18,6 +18,14 @@ public:
 	CPXRequestResult * result = NULL;
 	CMPeriodic updateTimer = CMPeriodic(1000);
 
+	CMText * contentLabel;
+
+	CMInforeadState() {
+		contentLabel = new CMText();
+		fill = new CMMargin(contentLabel, 4);
+		fill->setParent(this);
+	}
+
 	~CMInforeadState() {
 		delete result;
 	}
@@ -26,7 +34,8 @@ public:
 
 	void onDraw(const SDL_Point & mouseAt) {
 		if (result)
-			writeText({0, 0}, result->content.data, result->content.length);
+			contentLabel->setText(result->content);
+		CMState::onDraw(mouseAt);
 
 		if (!updateTimer.shouldRun())
 			return;

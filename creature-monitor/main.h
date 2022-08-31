@@ -33,6 +33,8 @@ class CMState : public CMControl {
 public:
 	virtual const char * stateName();
 	virtual void onKeyDown(int sym);
+	virtual void setBounds(const SDL_Rect & rect);
+	CMControl * fill = NULL;
 };
 
 void setState(CMState * state);

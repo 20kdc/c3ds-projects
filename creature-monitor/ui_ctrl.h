@@ -46,6 +46,10 @@ inline static SDL_Point rcCentre(const SDL_Rect a) {
 	return {a.x + (a.w / 2), a.y + (a.h / 2)};
 }
 
+inline static bool rcContains(const SDL_Rect a, const SDL_Point b) {
+	return ((b.x >= a.x) && (b.x < a.x + a.w)) && ((b.y >= a.y) && (b.y < a.y + a.h));
+}
+
 // rects
 
 inline static SDL_Rect rcMargin(const SDL_Rect basis, int amount) {
@@ -77,6 +81,7 @@ public:
 	virtual void onDraw(const SDL_Point & mouseAt);
 	// true: click counted as a hit
 	virtual bool onClick(const SDL_Point & mouseAt);
+	virtual void onUpNotify(int id);
 
 	// sizing
 	virtual int getHeightForWidth(int width);
@@ -95,5 +100,33 @@ private:
 	CMControl * _lastChild = NULL;
 	CMControl * _prev = NULL;
 	CMControl * _next = NULL;
+};
+
+class CMText : public CMControl {
+public:
+	CMText() {}
+	CMText(const CMSlice & txt) { setText(txt); }
+	CMText(const CMSlice & txt, int id) { setText(txt); notifyId = id; }
+
+	void setText(const CMSlice & txt);
+	CMBuffer getText() { return text; }
+
+	void onDraw(const SDL_Point & mouseAt);
+	bool onClick(const SDL_Point & mouseAt);
+
+	int notifyId = 0;
+
+private:
+	CMBuffer text;
+};
+
+class CMMargin : public CMControl {
+public:
+	CMMargin(CMControl * innards, int m);
+
+	void setBounds(const SDL_Rect & rect);
+
+	CMControl * content = 0;
+	int margin = 0;
 };
 

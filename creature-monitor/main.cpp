@@ -27,6 +27,12 @@ const char * CMState::stateName() {
 void CMState::onKeyDown(int sym) {
 }
 
+void CMState::setBounds(const SDL_Rect & rect) {
+	CMControl::setBounds(rect);
+	if (fill)
+		fill->setBounds(rect);
+}
+
 int main(int argc, char ** argv) {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDLNet_Init();
