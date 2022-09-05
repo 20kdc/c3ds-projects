@@ -1,5 +1,7 @@
 extends Node
 
+signal cache_updated()
+
 var req: CPXRequest
 var req_cache_id = ""
 onready var catalogue_cache = {}
@@ -12,6 +14,7 @@ func _process(_delta):
 		if req.poll():
 			if req.result_code == 0:
 				catalogue_cache[req_cache_id] = req.result_str()
+				emit_signal("cache_updated")
 			req = null
 			check_lookup_queue()
 

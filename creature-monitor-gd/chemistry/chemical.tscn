@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://lib/catalogue_label.gd" type="Script" id=1]
+[ext_resource path="res://chemistry/chemical.gd" type="Script" id=2]
+
+[node name="Control" type="PanelContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 2 )
+
+[node name="VBC" type="VBoxContainer" parent="."]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 1017.0
+margin_bottom = 593.0
+
+[node name="CatalogueLabel" type="Label" parent="VBC"]
+margin_right = 1010.0
+margin_bottom = 14.0
+size_flags_horizontal = 3
+script = ExtResource( 1 )
+tag = "chemical_names"
+
+[node name="pb" type="ProgressBar" parent="VBC"]
+margin_top = 18.0
+margin_right = 1010.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 32, 32 )

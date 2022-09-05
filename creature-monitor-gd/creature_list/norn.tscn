@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://creature_list/norn.gd" type="Script" id=1]
+[ext_resource path="res://lib/catalogue_label.gd" type="Script" id=2]
 
 [node name="Control" type="PanelContainer"]
 anchor_right = 1.0
@@ -19,11 +20,27 @@ margin_top = 7.0
 margin_right = 1003.0
 margin_bottom = 579.0
 
-[node name="detail" type="Label" parent="ipc/hb"]
-margin_top = 279.0
+[node name="dt" type="VBoxContainer" parent="ipc/hb"]
 margin_right = 492.0
-margin_bottom = 293.0
+margin_bottom = 572.0
 size_flags_horizontal = 3
+
+[node name="name" type="Label" parent="ipc/hb/dt"]
+margin_right = 492.0
+margin_bottom = 14.0
+
+[node name="types" type="Label" parent="ipc/hb/dt"]
+margin_top = 18.0
+margin_right = 492.0
+margin_bottom = 32.0
+script = ExtResource( 2 )
+
+[node name="age" type="Label" parent="ipc/hb/dt"]
+margin_top = 36.0
+margin_right = 492.0
+margin_bottom = 50.0
+script = ExtResource( 2 )
+tag = "creature_history_life_stage"
 
 [node name="VSeparator" type="VSeparator" parent="ipc/hb"]
 margin_left = 496.0
