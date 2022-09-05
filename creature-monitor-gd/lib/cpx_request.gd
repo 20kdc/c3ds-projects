@@ -15,10 +15,10 @@ func _init(request: PoolByteArray):
 	spt = StreamPeerTCP.new()
 	spt.big_endian = false
 	if spt.connect_to_host("localhost", 19960) != OK:
-		_internal_error("client: failed to open connection")
+		_internal_error("client: failed to open connection - run caosprox.exe!")
 	spt.put_32(len(request))
 	if spt.put_data(request) != OK:
-		_internal_error("client: failed to write data")
+		_internal_error("client: failed to write request - run caosprox.exe!")
 
 static func from_caos(text: String) -> PoolByteArray:
 	return ("execute\n" + text + "\u0000").to_utf8()

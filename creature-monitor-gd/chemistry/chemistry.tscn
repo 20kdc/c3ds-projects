@@ -1,21 +1,34 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://chemistry/chemistry.gd" type="Script" id=1]
+[ext_resource path="res://lib/cpx_error_box.tscn" type="PackedScene" id=2]
 
 [node name="Chemistry" type="HSplitContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+split_offset = 500
 script = ExtResource( 1 )
 
 [node name="sc" type="ScrollContainer" parent="."]
+margin_right = 500.0
 margin_bottom = 600.0
 
 [node name="gc" type="GridContainer" parent="sc"]
 columns = 8
 
-[node name="Label" type="Label" parent="."]
-margin_left = 12.0
-margin_top = 293.0
+[node name="gv" type="VBoxContainer" parent="."]
+margin_left = 512.0
 margin_right = 1024.0
-margin_bottom = 307.0
+margin_bottom = 600.0
+
+[node name="CPXErrorBox" parent="gv" instance=ExtResource( 2 )]
+visible = false
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 512.0
+margin_bottom = 582.0
+
+[node name="Label" type="Label" parent="gv"]
+margin_right = 512.0
+margin_bottom = 14.0
 text = "Scary graph goes here."
