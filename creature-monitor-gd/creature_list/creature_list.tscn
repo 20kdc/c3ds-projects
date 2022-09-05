@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://lib/visibility_update_timer.gd" type="Script" id=1]
+[ext_resource path="res://creature_list/creature_list.gd" type="Script" id=2]
+[ext_resource path="res://lib/cpx_error_box.tscn" type="PackedScene" id=3]
+
+[node name="sc" type="ScrollContainer"]
+margin_right = 1016.0
+margin_bottom = 564.0
+size_flags_vertical = 3
+script = ExtResource( 2 )
+
+[node name="entries" type="VBoxContainer" parent="."]
+margin_right = 1016.0
+size_flags_horizontal = 3
+
+[node name="CPXErrorBox" parent="entries" instance=ExtResource( 3 )]
+visible = false
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 280.0
+margin_bottom = 139.0
+
+[node name="VisibilityUpdateTimer" type="Node" parent="."]
+script = ExtResource( 1 )
+interval = 2.0
+
+[connection signal="do_update" from="VisibilityUpdateTimer" to="." method="_on_VisibilityUpdateTimer_do_update"]

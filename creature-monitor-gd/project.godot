@@ -9,19 +9,41 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "PanelContainer",
+"class": "CPXErrorBox",
+"language": "GDScript",
+"path": "res://lib/cpx_error_box.gd"
+}, {
 "base": "Reference",
 "class": "CPXRequest",
 "language": "GDScript",
 "path": "res://lib/cpx_request.gd"
+}, {
+"base": "Node",
+"class": "VisibilityUpdateTimer",
+"language": "GDScript",
+"path": "res://lib/visibility_update_timer.gd"
 } ]
 _global_script_class_icons={
-"CPXRequest": ""
+"CPXErrorBox": "",
+"CPXRequest": "",
+"VisibilityUpdateTimer": ""
 }
 
 [application]
 
 config/name="creature-monitor"
 run/main_scene="res://entry.tscn"
+
+[autoload]
+
+CM2Globals="*res://lib/cm2_globals.gd"
+CatalogueTracker="*res://lib/catalogue_tracker.gd"
+
+[debug]
+
+gdscript/warnings/return_value_discarded=false
+gdscript/warnings/integer_division=false
 
 [gui]
 

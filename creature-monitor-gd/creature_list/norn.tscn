@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://creature_list/norn.gd" type="Script" id=1]
+
+[node name="Control" type="PanelContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+
+[node name="ipc" type="PanelContainer" parent="."]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 1017.0
+margin_bottom = 593.0
+
+[node name="hb" type="HBoxContainer" parent="ipc"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 1003.0
+margin_bottom = 579.0
+
+[node name="detail" type="Label" parent="ipc/hb"]
+margin_top = 279.0
+margin_right = 492.0
+margin_bottom = 293.0
+size_flags_horizontal = 3
+
+[node name="VSeparator" type="VSeparator" parent="ipc/hb"]
+margin_left = 496.0
+margin_right = 500.0
+margin_bottom = 572.0
+
+[node name="moniker" type="Button" parent="ipc/hb"]
+margin_left = 504.0
+margin_right = 996.0
+margin_bottom = 572.0
+size_flags_horizontal = 3

@@ -20,6 +20,15 @@ func _init(request: PoolByteArray):
 	if spt.put_data(request) != OK:
 		_internal_error("client: failed to write data")
 
+static func from_caos(text: String) -> PoolByteArray:
+	return ("execute\n" + text + "\u0000").to_utf8()
+
+func result_str() -> String:
+	var text: String = result.get_string_from_ascii()
+	if text.ends_with("\u0000"):
+		text = text.substr(0, len(text) - 1)
+	return text
+
 func _internal_error(text: String):
 	result = (text + "\u0000").to_utf8()
 	result_code = 2
