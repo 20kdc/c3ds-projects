@@ -1,0 +1,66 @@
+class_name CPXRequest
+extends Reference
+
+const STATE_CONNECTING = 0
+const STATE_READBACK = 1
+const STATE_FINISHED = 2
+
+var spt: StreamPeerTCP
+var result: PoolByteArray
+var result_code: int = 0
+var result_read_remainder: int = 0
+var state: int = STATE_CONNECTING
+
+func _init(request: PoolByteArray):
+	spt = StreamPeerTCP.new()
+	spt.big_endian = false
+	if spt.connect_to_host("localhost", 19960) != OK:
+		_internal_error("client: failed to open connection")
+	spt.put_32(len(request))
+	if spt.put_data(request) != OK:
+		_internal_error("client: failed to write data")
+
+func _internal_error(text: String):
+	result = (text + "\u0000").to_utf8()
+	result_code = 2
+	state = STATE_FINISHED
+
+# True == done!
+func poll() -> bool:
+	if state == STATE_FINISHED:
+		return true
+	elif state == STATE_CONNECTING:
+		if spt.get_available_bytes() >= 48:
+			var res = spt.get_data(48)
+			var res_err = res[0]
+			var res_data: PoolByteArray = res[1]
+			if res_err != OK:
+				_internal_error("client: could not get headers")
+			else:
+				var data_stream_peer = StreamPeerBuffer.new()
+				data_stream_peer.data_array = res_data
+				data_stream_peer.big_endian = false
+				data_stream_peer.seek(24 + 8)
+				result_code = data_stream_peer.get_32()
+				result_read_remainder = data_stream_peer.get_32()
+				if result_read_remainder > 0:
+					state = STATE_READBACK
+				else:
+					state = STATE_FINISHED
+		elif spt.get_status() == StreamPeerTCP.STATUS_ERROR:
+			_internal_error("client: connection error")
+	elif state == STATE_READBACK:
+		if spt.get_available_bytes() >= 0:
+			var res = spt.get_data(result_read_remainder)
+			var res_err = res[0]
+			var res_data: PoolByteArray = res[1]
+			if res_err != OK:
+				_internal_error("client: interruption during data read")
+			else:
+				result.append_array(res_data)
+				result_read_remainder -= len(res_data)
+				if result_read_remainder == 0:
+					state = STATE_FINISHED
+		elif spt.get_status() == StreamPeerTCP.STATUS_ERROR:
+			_internal_error("client: connection error")
+	return state == STATE_FINISHED
