@@ -8,13 +8,15 @@ const STATE_FINISHED = 2
 var spt: StreamPeerTCP
 var result: PoolByteArray
 var result_code: int = 0
+var result_error_internal: bool = false
 var result_read_remainder: int = 0
 var state: int = STATE_CONNECTING
 
 func _init(request: PoolByteArray):
 	spt = StreamPeerTCP.new()
 	spt.big_endian = false
-	if spt.connect_to_host("localhost", 19960) != OK:
+	# NOTE: Don't make this "localhost", it doesn't work on Windows
+	if spt.connect_to_host("127.0.0.1", 19960) != OK:
 		_internal_error("client: failed to open connection - run caosprox.exe!")
 	spt.put_32(len(request))
 	if spt.put_data(request) != OK:
@@ -32,6 +34,7 @@ func result_str() -> String:
 func _internal_error(text: String):
 	result = (text + "\u0000").to_utf8()
 	result_code = 2
+	result_error_internal = true
 	state = STATE_FINISHED
 
 # True == done!

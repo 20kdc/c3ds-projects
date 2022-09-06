@@ -5,8 +5,8 @@ extends Reference
 var chemicals: PoolRealArray
 
 func _init():
-	for v in range(256):
-		chemicals.push_back(0)
+	chemicals.resize(256)
+	chemicals.fill(0)
 
 static func snapshot_request(moniker: String) -> PoolByteArray:
 	var caos = ""

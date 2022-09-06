@@ -14,7 +14,6 @@ func update_norn(k: String, norn: String, infos: Array):
 		add_stylebox_override("panel", preload("selected_norn.tres"))
 	else:
 		add_stylebox_override("panel", preload("not_selected_norn.tres"))
-	var ag = "Agent Help 4 " + infos[2] + " " + infos[3]
 	$ipc/hb/moniker.text = k
 	$ipc/hb/dt/name.text = infos[1]
 	$ipc/hb/dt/types.tag = "Agent Help 4 " + infos[2] + " " + infos[3]

@@ -3,6 +3,7 @@ extends Node
 signal cache_updated()
 
 var req: CPXRequest
+var req_command = ""
 var req_cache_id = ""
 onready var catalogue_cache = {}
 onready var catalogue_queued = {}
@@ -15,6 +16,12 @@ func _process(_delta):
 			if req.result_code == 0:
 				catalogue_cache[req_cache_id] = req.result_str()
 				emit_signal("cache_updated")
+			else:
+				if req.result_error_internal:
+					# internal error, re-attempt
+					catalogue_lookup_queue_commands.push_back(req_command)
+					catalogue_lookup_queue_ids.push_back(req_cache_id)
+				push_error("Error fetching catalogue: " + req_cache_id + ": " + req.result_str())
 			req = null
 			check_lookup_queue()
 
@@ -24,6 +31,7 @@ func check_lookup_queue():
 	if len(catalogue_lookup_queue_commands) > 0:
 		var cmd = catalogue_lookup_queue_commands.pop_front()
 		req = CPXRequest.new(CPXRequest.from_caos(cmd))
+		req_command = cmd
 		req_cache_id = catalogue_lookup_queue_ids.pop_front()
 
 func lookup(name: String, index: int):
