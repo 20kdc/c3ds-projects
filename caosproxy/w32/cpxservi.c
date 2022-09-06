@@ -15,6 +15,9 @@
 
 #include "libcpx.h"
 
+extern HWND globalWindow;
+extern UINT msgTrayBlink;
+
 static SOCKET serverSocket;
 // Initialize
 int cpxservi_serverInit(int host, int port) {
@@ -244,6 +247,8 @@ void cpxservi_serverLoop() {
 		handleClient(client);
 		// and now we're done
 		closesocket(client);
+		// notify UI thread for blinkenlights
+		PostMessageA(globalWindow, msgTrayBlink, 1, 0);
 	}
 }
 
