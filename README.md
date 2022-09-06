@@ -2,7 +2,7 @@
 
 ## The Obvious Disclaimer
 
-I'm in no way affiliated with Creature Labs, this is all unofficial, and it might turn your hair blue.
+c3ds-projects contributors are in no way affiliated with Creature Labs, this is all unofficial, and it might turn your hair blue.
 
 ## Contents
 
@@ -10,6 +10,7 @@ I'm in no way affiliated with Creature Labs, this is all unofficial, and it migh
 + ciesetup: CIE setup improvements
 + colour-depth-fix: improves Linux & Mac compatibilty of Docking Station through renderer patching
 + creature-monitor: hasn't gone anywhere yet, don't get your hopes up
++ creature-monitor-gd: previous, attempt 2
 
 ## License
 
@@ -23,4 +24,6 @@ Note that some parts of this repository use SDL2 ( https://www.libsdl.org/index.
 While c3ds-projects is under CC0, SDL2 is not.
 
 For information on SDL2's licensing, please see the thirdparty directory.
+
+`creature-monitor-gd` uses Godot Engine, licensing details will be included in release archives.
 
