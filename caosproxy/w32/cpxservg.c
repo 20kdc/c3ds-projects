@@ -18,21 +18,33 @@ extern const char * cpxservi_gameID;
 // this uses stdio, so we need to be sure we stop using it from main thread if in UI mode!
 extern void cpxservi_serverLoop();
 
-static HWND globalWindow;
+HWND globalWindow;
+UINT msgTrayCallback = WM_USER;
+UINT msgTrayBlink = WM_USER + 1;
+
 static int mbMutex = 0;
+static NOTIFYICONDATAA notifyIcon = {};
+static NOTIFYICONDATAA notifyIconBlink = {};
 
 static LRESULT WINAPI cpxservg_wp(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	if (uMsg == 0x7000) {
+	if (uMsg == msgTrayCallback) { // system tray callback
 		if (lParam == WM_LBUTTONDOWN) {
 			if (!mbMutex) {
 				mbMutex = 1;
 				if (MessageBoxA(NULL, "Do you want to shutdown the CAOS Proxy (CPX) server?\r\nThis may cause applications connected to a Creatures series game via this server to malfunction.", "CAOS Proxy (CPX) Server", MB_YESNO) == IDYES) {
+					Shell_NotifyIconA(NIM_DELETE, &notifyIcon);
 					ExitProcess(0);
 				}
 				mbMutex = 0;
 			}
 		}
+	} else if (uMsg == msgTrayBlink) { // blink tray icon, from network thread
+		Shell_NotifyIconA(NIM_MODIFY, &notifyIconBlink);
+		SetTimer(globalWindow, msgTrayBlink, 250, NULL);
+	} else if (uMsg == WM_TIMER && wParam == msgTrayBlink) { // timer for ending blink finished
+		Shell_NotifyIconA(NIM_MODIFY, &notifyIcon);
 	}
+
 	return DefWindowProcA(hwnd, uMsg, wParam, lParam);
 }
 
@@ -47,13 +59,17 @@ static void cpxservg_ui() {
 	// create window
 	globalWindow = CreateWindowA("CAOSProxServerClass", "CAOSProx", WS_OVERLAPPEDWINDOW, 0, 0, 800, 600, NULL, NULL, NULL, NULL);
 
-	// create notification icon
-	NOTIFYICONDATAA notifyIcon = {};
+	// create notification icon(s)
 	notifyIcon.cbSize = sizeof(notifyIcon);
 	notifyIcon.hWnd = globalWindow;
 	notifyIcon.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-	notifyIcon.uCallbackMessage = 0x7000;
+	notifyIcon.uCallbackMessage = msgTrayCallback;
 	notifyIcon.hIcon = LoadIconA(GetModuleHandleA(NULL), MAKEINTRESOURCEA(1000));
+	notifyIcon.uID = 1;
+
+	notifyIconBlink = notifyIcon;
+	notifyIconBlink.hIcon = LoadIconA(GetModuleHandleA(NULL), MAKEINTRESOURCEA(1001));
+	
 	strcpy(notifyIcon.szTip, "CPX Server for Creatures 3/DS");
 	Shell_NotifyIconA(NIM_ADD, &notifyIcon);
 
