@@ -27,10 +27,10 @@ creature-monitor/creature-monitor.exe: $(CREATURE_MONITOR_SOURCES) $(CREATURE_MO
 	$(W32_STRIP) $@
 
 creature-monitor/SDL2.dll:
-	cp /usr/local/i686-w64-mingw32/bin/SDL2.dll $@ || cp /usr/i686-w64-mingw32/bin/SDL2.dll $@ || cp /mingw32/bin/SDL2.dll $@
+	cp /mingw32/bin/SDL2.dll $@ || cp /usr/local/i686-w64-mingw32/bin/SDL2.dll $@ || cp /usr/i686-w64-mingw32/bin/SDL2.dll $@ || cp /mingw32/bin/SDL2.dll $@
 
 creature-monitor/SDL2_net.dll:
-	cp /usr/local/i686-w64-mingw32/bin/SDL2_net.dll $@ || cp /usr/i686-w64-mingw32/bin/SDL2_net.dll $@ || cp /mingw32/bin/SDL2_net.dll $@
+	cp /mingw32/bin/SDL2_net.dll $@ || cp /usr/local/i686-w64-mingw32/bin/SDL2_net.dll $@ || cp /usr/i686-w64-mingw32/bin/SDL2_net.dll $@ || cp /mingw32/bin/SDL2_net.dll $@
 
 endif
 
