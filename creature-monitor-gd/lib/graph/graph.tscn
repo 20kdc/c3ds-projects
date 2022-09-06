@@ -1,0 +1,110 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://lib/graph/graph_widget.gd" type="Script" id=1]
+[ext_resource path="res://lib/graph/drawing_area.gd" type="Script" id=2]
+
+[node name="Control" type="VBoxContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+
+[node name="hb" type="HBoxContainer" parent="."]
+margin_right = 1024.0
+margin_bottom = 572.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="vb" type="VBoxContainer" parent="hb"]
+margin_right = 27.0
+margin_bottom = 572.0
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="hb/vb"]
+margin_right = 27.0
+margin_bottom = 188.0
+size_flags_vertical = 7
+text = "TOP"
+
+[node name="Label2" type="Label" parent="hb/vb"]
+margin_top = 192.0
+margin_right = 27.0
+margin_bottom = 380.0
+size_flags_vertical = 7
+text = "MID"
+valign = 1
+
+[node name="Label3" type="Label" parent="hb/vb"]
+margin_top = 384.0
+margin_right = 27.0
+margin_bottom = 572.0
+size_flags_vertical = 7
+text = "BOT"
+valign = 2
+
+[node name="DrawingArea" type="Control" parent="hb"]
+margin_left = 31.0
+margin_right = 1024.0
+margin_bottom = 572.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource( 2 )
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+margin_top = 576.0
+margin_right = 1024.0
+margin_bottom = 600.0
+
+[node name="Button" type="Button" parent="HBoxContainer"]
+margin_right = 51.0
+margin_bottom = 24.0
+text = "CLEAR"
+
+[node name="Label3" type="Label" parent="HBoxContainer"]
+margin_left = 55.0
+margin_top = 5.0
+margin_right = 107.0
+margin_bottom = 19.0
+text = "Y Zoom:"
+
+[node name="y_zoom" type="SpinBox" parent="HBoxContainer"]
+margin_left = 111.0
+margin_right = 185.0
+margin_bottom = 24.0
+allow_greater = true
+allow_lesser = true
+
+[node name="Label4" type="Label" parent="HBoxContainer"]
+margin_left = 189.0
+margin_top = 5.0
+margin_right = 232.0
+margin_bottom = 19.0
+text = "Offset:"
+
+[node name="y_offset" type="SpinBox" parent="HBoxContainer"]
+margin_left = 236.0
+margin_right = 310.0
+margin_bottom = 24.0
+allow_greater = true
+allow_lesser = true
+
+[node name="Label2" type="Label" parent="HBoxContainer"]
+margin_left = 314.0
+margin_top = 5.0
+margin_right = 392.0
+margin_bottom = 19.0
+text = "Time Range:"
+
+[node name="time_range" type="SpinBox" parent="HBoxContainer"]
+margin_left = 396.0
+margin_right = 470.0
+margin_bottom = 24.0
+min_value = 1.0
+value = 100.0
+allow_greater = true
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+margin_left = 474.0
+margin_top = 5.0
+margin_right = 597.0
+margin_bottom = 19.0
+text = "Vertical Range: ? - ?"

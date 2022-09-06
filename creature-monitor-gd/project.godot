@@ -29,6 +29,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://lib/chemical_snapshot.gd"
 }, {
+"base": "Control",
+"class": "GraphWidget",
+"language": "GDScript",
+"path": "res://lib/graph/graph_widget.gd"
+}, {
 "base": "Node",
 "class": "VisibilityUpdateTimer",
 "language": "GDScript",
@@ -39,6 +44,7 @@ _global_script_class_icons={
 "CPXRequest": "",
 "CatalogueLabel": "",
 "ChemicalSnapshot": "",
+"GraphWidget": "",
 "VisibilityUpdateTimer": ""
 }
 
