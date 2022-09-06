@@ -54,7 +54,7 @@ static void cpxservg_ui() {
 	notifyIcon.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 	notifyIcon.uCallbackMessage = 0x7000;
 	notifyIcon.hIcon = LoadIconA(GetModuleHandleA(NULL), MAKEINTRESOURCEA(1000));
-	strcpy(notifyIcon.szTip, "CAOS Proxy (CPX) Server");
+	strcpy(notifyIcon.szTip, "CPX Server for Creatures 3/DS");
 	Shell_NotifyIconA(NIM_ADD, &notifyIcon);
 
 	// standard message loop

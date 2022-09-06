@@ -142,7 +142,7 @@ static SDL_Point measureText(const CMSlice & txt) {
 	SDL_Point emuWriter = {0, 16};
 	SDL_Point totalNecessary = {0, 16};
 	for (int i = 0; i < txt.length; i++) {
-		char ch = txt[i];
+		char ch = txt.data[i];
 		if (ch == 10) {
 			emuWriter.x = 0;
 			emuWriter.y += 16;
