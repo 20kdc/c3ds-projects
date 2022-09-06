@@ -8,7 +8,7 @@ INTERMEDIATES := release-id.txt
 
 all:
 
-rel: COPYING.txt README.md
+rel: COPYING.txt README.md CREDITS.txt
 	echo `date +%s` > release-id.txt
 	rm -f release.zip
 	zip release.zip $^

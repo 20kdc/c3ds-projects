@@ -4,7 +4,7 @@
 # We can muck with things later, but we shouldn't be outright patching things in this step!
 
 # ciesetup - The ultimate workarounds to fix an ancient game
-# Written starting in 2022 by 20kdc
+# Written starting in 2022 by contributors (see CREDITS.txt)
 # To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 # You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
