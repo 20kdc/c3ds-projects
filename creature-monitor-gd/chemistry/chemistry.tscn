@@ -14,7 +14,7 @@ split_offset = 500
 script = ExtResource( 1 )
 
 [node name="tc" type="TabContainer" parent="."]
-margin_right = 415.0
+margin_right = 508.0
 margin_bottom = 600.0
 
 [node name="All" type="ScrollContainer" parent="tc"]
@@ -28,7 +28,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="gc" type="GridContainer" parent="tc/All"]
-margin_right = 407.0
+margin_right = 500.0
 margin_bottom = 564.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -44,7 +44,7 @@ visible = false
 visible = false
 
 [node name="gv" type="VBoxContainer" parent="."]
-margin_left = 427.0
+margin_left = 520.0
 margin_right = 1024.0
 margin_bottom = 600.0
 
@@ -58,7 +58,7 @@ margin_bottom = 582.0
 [node name="Control" parent="gv" instance=ExtResource( 3 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_right = 597.0
+margin_right = 504.0
 margin_bottom = 600.0
 size_flags_horizontal = 3
 size_flags_vertical = 3

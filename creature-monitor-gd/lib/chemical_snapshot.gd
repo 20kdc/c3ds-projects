@@ -1,6 +1,8 @@
 class_name ChemicalSnapshot
 extends Reference
 
+var time: float = 0
+
 # Chemicals (by ID)
 var chemicals: PoolRealArray
 
@@ -12,6 +14,8 @@ static func snapshot_caos(moniker: String) -> String:
 	var caos = ""
 	caos += "targ mtoc \"" + moniker + "\"\n"
 	caos += """
+		outv wtik
+		outs "\\n"
 		setv va00 0
 		loop
 		outv chem va00
@@ -22,9 +26,13 @@ static func snapshot_caos(moniker: String) -> String:
 	return caos
 
 func import(req: CPXRequest):
-	var idx = 0
+	var idx = -1
 	for v in req.result_str().split("\n"):
-		if idx >= 256:
+		var vf = float(v)
+		if idx == -1:
+			time = vf
+		elif idx >= 256:
 			break
-		chemicals[idx] = float(v)
+		else:
+			chemicals[idx] = vf
 		idx += 1

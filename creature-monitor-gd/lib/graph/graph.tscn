@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://lib/graph/graph_widget.gd" type="Script" id=1]
-[ext_resource path="res://lib/graph/drawing_area.gd" type="Script" id=2]
+[ext_resource path="res://lib/graph/graph_viewport.gd" type="Script" id=2]
 
 [node name="Control" type="VBoxContainer"]
 anchor_right = 1.0
@@ -15,36 +15,42 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="vb" type="VBoxContainer" parent="hb"]
-margin_right = 27.0
+margin_right = 64.0
 margin_bottom = 572.0
+rect_min_size = Vector2( 64, 0 )
+rect_clip_content = true
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="hb/vb"]
-margin_right = 27.0
+[node name="lb_top" type="Label" parent="hb/vb"]
+margin_right = 64.0
 margin_bottom = 188.0
 size_flags_vertical = 7
 text = "TOP"
+clip_text = true
 
-[node name="Label2" type="Label" parent="hb/vb"]
+[node name="lb_mid" type="Label" parent="hb/vb"]
 margin_top = 192.0
-margin_right = 27.0
+margin_right = 64.0
 margin_bottom = 380.0
 size_flags_vertical = 7
 text = "MID"
 valign = 1
+clip_text = true
 
-[node name="Label3" type="Label" parent="hb/vb"]
+[node name="lb_bot" type="Label" parent="hb/vb"]
 margin_top = 384.0
-margin_right = 27.0
+margin_right = 64.0
 margin_bottom = 572.0
 size_flags_vertical = 7
 text = "BOT"
 valign = 2
+clip_text = true
 
 [node name="DrawingArea" type="Control" parent="hb"]
-margin_left = 31.0
+margin_left = 68.0
 margin_right = 1024.0
 margin_bottom = 572.0
+rect_clip_content = true
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource( 2 )
@@ -55,20 +61,13 @@ margin_right = 1024.0
 margin_bottom = 600.0
 
 [node name="Button" type="Button" parent="HBoxContainer"]
-margin_right = 51.0
+margin_right = 48.0
 margin_bottom = 24.0
-text = "CLEAR"
-
-[node name="Label" type="Label" parent="HBoxContainer"]
-margin_left = 55.0
-margin_top = 5.0
-margin_right = 178.0
-margin_bottom = 19.0
-text = "Vertical Range: ? - ?"
+text = "RESET"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer"]
-margin_left = 182.0
-margin_right = 312.0
+margin_left = 52.0
+margin_right = 182.0
 margin_bottom = 24.0
 
 [node name="Label3" type="Label" parent="HBoxContainer/HBoxContainer"]
@@ -85,8 +84,8 @@ allow_greater = true
 allow_lesser = true
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="HBoxContainer"]
-margin_left = 316.0
-margin_right = 437.0
+margin_left = 186.0
+margin_right = 307.0
 margin_bottom = 24.0
 
 [node name="Label4" type="Label" parent="HBoxContainer/HBoxContainer2"]
@@ -103,8 +102,8 @@ allow_greater = true
 allow_lesser = true
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="HBoxContainer"]
-margin_left = 441.0
-margin_right = 597.0
+margin_left = 311.0
+margin_right = 467.0
 margin_bottom = 24.0
 
 [node name="Label2" type="Label" parent="HBoxContainer/HBoxContainer3"]
@@ -120,3 +119,8 @@ margin_bottom = 24.0
 min_value = 1.0
 value = 100.0
 allow_greater = true
+
+[connection signal="pressed" from="HBoxContainer/Button" to="." method="_on_Button_pressed"]
+[connection signal="value_changed" from="HBoxContainer/HBoxContainer/y_zoom" to="." method="_on_y_zoom_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/HBoxContainer2/y_offset" to="." method="_on_y_offset_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/HBoxContainer3/time_range" to="." method="_on_time_range_value_changed"]

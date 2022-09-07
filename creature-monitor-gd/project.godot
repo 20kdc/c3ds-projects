@@ -30,6 +30,11 @@ _global_script_classes=[ {
 "path": "res://lib/chemical_snapshot.gd"
 }, {
 "base": "Control",
+"class": "GraphViewport",
+"language": "GDScript",
+"path": "res://lib/graph/graph_viewport.gd"
+}, {
+"base": "Control",
 "class": "GraphWidget",
 "language": "GDScript",
 "path": "res://lib/graph/graph_widget.gd"
@@ -44,6 +49,7 @@ _global_script_class_icons={
 "CPXRequest": "",
 "CatalogueLabel": "",
 "ChemicalSnapshot": "",
+"GraphViewport": "",
 "GraphWidget": "",
 "VisibilityUpdateTimer": ""
 }

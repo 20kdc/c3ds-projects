@@ -19,3 +19,8 @@ func _dispositions_updated():
 
 func _on_override_item_selected(index):
 	ChemicalTracker.set_disposition(chemical_id, index)
+
+func _gui_input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == BUTTON_LEFT and event.pressed:
+			ChemicalTracker.emit_signal("chemistry_graph_should_show", chemical_id)

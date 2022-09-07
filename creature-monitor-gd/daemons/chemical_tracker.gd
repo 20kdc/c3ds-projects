@@ -17,6 +17,9 @@ var disposition_moniker: String = ""
 signal snapshot_updated()
 signal dispositions_updated()
 
+# just for routing, emitted from chemical.gd
+signal chemistry_graph_should_show(chemical_id)
+
 func _init():
 	snapshot = ChemicalSnapshot.new()
 	dispositions.resize(256)
