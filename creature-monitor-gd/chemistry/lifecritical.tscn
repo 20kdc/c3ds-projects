@@ -86,7 +86,7 @@ align = 1
 [node name="short" type="GridContainer" parent="GridContainer"]
 margin_top = 150.0
 margin_right = 1024.0
-margin_bottom = 260.0
+margin_bottom = 222.0
 columns = 2
 
 [node name="oxygen" parent="GridContainer/short" instance=ExtResource( 1 )]
@@ -125,16 +125,65 @@ margin_bottom = 72.0
 size_flags_horizontal = 3
 chemical_id = 68
 
-[node name="gid165-atp-d" parent="GridContainer/short" instance=ExtResource( 1 )]
+[node name="Label3" type="Label" parent="GridContainer"]
+margin_top = 226.0
+margin_right = 1024.0
+margin_bottom = 240.0
+text = "DS BACTERIA"
+align = 1
+
+[node name="short2" type="GridContainer" parent="GridContainer"]
+margin_top = 244.0
+margin_right = 1024.0
+margin_bottom = 468.0
+columns = 2
+
+[node name="toxin70" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 510.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 70
+
+[node name="toxin71" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_right = 1024.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 71
+
+[node name="toxin72" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 38.0
+margin_right = 510.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 72
+
+[node name="toxin73" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 38.0
+margin_right = 1024.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 73
+
+[node name="toxin74" parent="GridContainer/short2" instance=ExtResource( 1 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
 margin_top = 76.0
 margin_right = 510.0
 margin_bottom = 110.0
 size_flags_horizontal = 3
-chemical_id = 78
+chemical_id = 74
 
-[node name="gid095-co1" parent="GridContainer/short" instance=ExtResource( 1 )]
+[node name="toxin75" parent="GridContainer/short2" instance=ExtResource( 1 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
 margin_left = 514.0
@@ -142,25 +191,61 @@ margin_top = 76.0
 margin_right = 1024.0
 margin_bottom = 110.0
 size_flags_horizontal = 3
-chemical_id = 79
+chemical_id = 75
 
-[node name="Label3" type="Label" parent="GridContainer"]
-margin_top = 264.0
-margin_right = 1024.0
-margin_bottom = 278.0
-text = "LONG-TERM RISK (injury-causers/etc.)"
-align = 1
-
-[node name="short2" type="GridContainer" parent="GridContainer"]
-margin_top = 282.0
-margin_right = 1024.0
-margin_bottom = 316.0
-columns = 2
-
-[node name="gid146-gly" parent="GridContainer/short2" instance=ExtResource( 1 )]
+[node name="toxin76" parent="GridContainer/short2" instance=ExtResource( 1 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_right = 512.0
-margin_bottom = 34.0
+margin_top = 114.0
+margin_right = 510.0
+margin_bottom = 148.0
 size_flags_horizontal = 3
-chemical_id = 70
+chemical_id = 76
+
+[node name="toxin77" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 114.0
+margin_right = 1024.0
+margin_bottom = 148.0
+size_flags_horizontal = 3
+chemical_id = 77
+
+[node name="toxin78" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 152.0
+margin_right = 510.0
+margin_bottom = 186.0
+size_flags_horizontal = 3
+chemical_id = 78
+
+[node name="toxin79" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 152.0
+margin_right = 1024.0
+margin_bottom = 186.0
+size_flags_horizontal = 3
+chemical_id = 79
+
+[node name="toxin80" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 190.0
+margin_right = 510.0
+margin_bottom = 224.0
+size_flags_horizontal = 3
+chemical_id = 80
+
+[node name="toxin81" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 190.0
+margin_right = 1024.0
+margin_bottom = 224.0
+size_flags_horizontal = 3
+chemical_id = 81
