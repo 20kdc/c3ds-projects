@@ -8,7 +8,7 @@ func _init():
 	chemicals.resize(256)
 	chemicals.fill(0)
 
-static func snapshot_request(moniker: String) -> PoolByteArray:
+static func snapshot_caos(moniker: String) -> String:
 	var caos = ""
 	caos += "targ mtoc \"" + moniker + "\"\n"
 	caos += """
@@ -19,7 +19,7 @@ static func snapshot_request(moniker: String) -> PoolByteArray:
 		addv va00 1
 		untl va00 eq 256
 	"""
-	return CPXRequest.from_caos(caos)
+	return caos
 
 func import(req: CPXRequest):
 	var idx = 0

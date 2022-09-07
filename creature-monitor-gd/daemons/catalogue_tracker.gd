@@ -21,7 +21,7 @@ func _process(_delta):
 					# internal error, re-attempt
 					catalogue_lookup_queue_commands.push_back(req_command)
 					catalogue_lookup_queue_ids.push_back(req_cache_id)
-				push_error("Error fetching catalogue: " + req_cache_id + ": " + req.result_str())
+				# push_error("Error fetching catalogue: " + req_cache_id + ": " + req.result_str())
 			req = null
 			check_lookup_queue()
 

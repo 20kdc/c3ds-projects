@@ -22,14 +22,14 @@ margin_bottom = 593.0
 mouse_filter = 2
 
 [node name="CenterContainer" type="MarginContainer" parent="VBC"]
-margin_right = 994.0
+margin_right = 969.0
 margin_bottom = 586.0
 mouse_filter = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="pb" type="ProgressBar" parent="VBC/CenterContainer"]
-margin_right = 994.0
+margin_right = 969.0
 margin_bottom = 586.0
 mouse_filter = 2
 size_flags_horizontal = 3
@@ -41,7 +41,7 @@ value = 0.25
 percent_visible = false
 
 [node name="CatalogueLabel" type="Label" parent="VBC/CenterContainer"]
-margin_right = 994.0
+margin_right = 969.0
 margin_bottom = 586.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -53,7 +53,12 @@ valign = 1
 script = ExtResource( 1 )
 tag = "chemical_names"
 
-[node name="Button" type="Button" parent="VBC"]
-margin_left = 998.0
+[node name="override" type="OptionButton" parent="VBC"]
+margin_left = 973.0
 margin_right = 1010.0
 margin_bottom = 586.0
+text = "~"
+items = [ "~", null, false, 0, null, "0", null, false, 1, null, "1", null, false, 2, null ]
+selected = 0
+
+[connection signal="item_selected" from="VBC/override" to="." method="_on_override_item_selected"]

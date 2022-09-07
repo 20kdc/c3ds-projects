@@ -1,0 +1,164 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://chemistry/chemical.tscn" type="PackedScene" id=1]
+
+[node name="Disease" type="ScrollContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="GridContainer" type="GridContainer" parent="."]
+margin_right = 1024.0
+margin_bottom = 600.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 2
+
+[node name="AG0" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 510.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 82
+
+[node name="AB0" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_right = 1024.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 102
+
+[node name="AG1" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 38.0
+margin_right = 510.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 83
+
+[node name="AB1" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 38.0
+margin_right = 1024.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 103
+
+[node name="AG2" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 76.0
+margin_right = 510.0
+margin_bottom = 110.0
+size_flags_horizontal = 3
+chemical_id = 84
+
+[node name="AB2" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 76.0
+margin_right = 1024.0
+margin_bottom = 110.0
+size_flags_horizontal = 3
+chemical_id = 104
+
+[node name="AG3" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 114.0
+margin_right = 510.0
+margin_bottom = 148.0
+size_flags_horizontal = 3
+chemical_id = 85
+
+[node name="AB3" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 114.0
+margin_right = 1024.0
+margin_bottom = 148.0
+size_flags_horizontal = 3
+chemical_id = 105
+
+[node name="AG4" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 152.0
+margin_right = 510.0
+margin_bottom = 186.0
+size_flags_horizontal = 3
+chemical_id = 86
+
+[node name="AB4" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 152.0
+margin_right = 1024.0
+margin_bottom = 186.0
+size_flags_horizontal = 3
+chemical_id = 106
+
+[node name="AG5" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 190.0
+margin_right = 510.0
+margin_bottom = 224.0
+size_flags_horizontal = 3
+chemical_id = 87
+
+[node name="AB5" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 190.0
+margin_right = 1024.0
+margin_bottom = 224.0
+size_flags_horizontal = 3
+chemical_id = 107
+
+[node name="AG6" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 228.0
+margin_right = 510.0
+margin_bottom = 262.0
+size_flags_horizontal = 3
+chemical_id = 88
+
+[node name="AB6" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 228.0
+margin_right = 1024.0
+margin_bottom = 262.0
+size_flags_horizontal = 3
+chemical_id = 108
+
+[node name="AG7" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 266.0
+margin_right = 510.0
+margin_bottom = 300.0
+size_flags_horizontal = 3
+chemical_id = 89
+
+[node name="AB7" parent="GridContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 266.0
+margin_right = 1024.0
+margin_bottom = 300.0
+size_flags_horizontal = 3
+chemical_id = 109

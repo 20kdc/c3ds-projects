@@ -1,0 +1,205 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://chemistry/chemical.tscn" type="PackedScene" id=1]
+
+[node name="HScrollBar" type="ScrollContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+scroll_horizontal_enabled = false
+
+[node name="Drives" type="GridContainer" parent="."]
+margin_right = 1024.0
+margin_bottom = 600.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 2
+
+[node name="148" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 510.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 148
+
+[node name="149" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_right = 1024.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 149
+
+[node name="150" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 38.0
+margin_right = 510.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 150
+
+[node name="151" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 38.0
+margin_right = 1024.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 151
+
+[node name="152" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 76.0
+margin_right = 510.0
+margin_bottom = 110.0
+size_flags_horizontal = 3
+chemical_id = 152
+
+[node name="153" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 76.0
+margin_right = 1024.0
+margin_bottom = 110.0
+size_flags_horizontal = 3
+chemical_id = 153
+
+[node name="154" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 114.0
+margin_right = 510.0
+margin_bottom = 148.0
+size_flags_horizontal = 3
+chemical_id = 154
+
+[node name="155" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 114.0
+margin_right = 1024.0
+margin_bottom = 148.0
+size_flags_horizontal = 3
+chemical_id = 155
+
+[node name="156" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 152.0
+margin_right = 510.0
+margin_bottom = 186.0
+size_flags_horizontal = 3
+chemical_id = 156
+
+[node name="157" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 152.0
+margin_right = 1024.0
+margin_bottom = 186.0
+size_flags_horizontal = 3
+chemical_id = 157
+
+[node name="158" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 190.0
+margin_right = 510.0
+margin_bottom = 224.0
+size_flags_horizontal = 3
+chemical_id = 158
+
+[node name="159" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 190.0
+margin_right = 1024.0
+margin_bottom = 224.0
+size_flags_horizontal = 3
+chemical_id = 159
+
+[node name="160" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 228.0
+margin_right = 510.0
+margin_bottom = 262.0
+size_flags_horizontal = 3
+chemical_id = 160
+
+[node name="161" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 228.0
+margin_right = 1024.0
+margin_bottom = 262.0
+size_flags_horizontal = 3
+chemical_id = 161
+
+[node name="162" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 266.0
+margin_right = 510.0
+margin_bottom = 300.0
+size_flags_horizontal = 3
+chemical_id = 162
+
+[node name="199" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 266.0
+margin_right = 1024.0
+margin_bottom = 300.0
+size_flags_horizontal = 3
+chemical_id = 199
+
+[node name="200" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 304.0
+margin_right = 510.0
+margin_bottom = 338.0
+size_flags_horizontal = 3
+chemical_id = 200
+
+[node name="201" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 304.0
+margin_right = 1024.0
+margin_bottom = 338.0
+size_flags_horizontal = 3
+chemical_id = 201
+
+[node name="202" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 342.0
+margin_right = 510.0
+margin_bottom = 376.0
+size_flags_horizontal = 3
+chemical_id = 202
+
+[node name="203" parent="Drives" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 342.0
+margin_right = 1024.0
+margin_bottom = 376.0
+size_flags_horizontal = 3
+chemical_id = 203

@@ -1,0 +1,166 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://chemistry/chemical.tscn" type="PackedScene" id=1]
+
+[node name="Life-Critical" type="ScrollContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GridContainer" type="VBoxContainer" parent="."]
+margin_right = 1024.0
+margin_bottom = 600.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="GridContainer"]
+margin_right = 1024.0
+margin_bottom = 14.0
+text = "INSTANT RISK (genetic/engine/CAOS kill marker)"
+align = 1
+
+[node name="instant" type="GridContainer" parent="GridContainer"]
+margin_top = 18.0
+margin_right = 1024.0
+margin_bottom = 128.0
+columns = 2
+
+[node name="gid067-life" parent="GridContainer/instant" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 510.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 125
+
+[node name="gid070-energy" parent="GridContainer/instant" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_right = 1024.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 34
+
+[node name="gid163-atp" parent="GridContainer/instant" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 38.0
+margin_right = 510.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 35
+
+[node name="Node" type="Node" parent="GridContainer/instant/gid163-atp"]
+__meta__ = {
+"_editor_description_": "engine itself consumes ATP \"on behalf\" of creature biochem complexity, and if it can't find it it starts doing organ damage."
+}
+
+[node name="injury" parent="GridContainer/instant" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 38.0
+margin_right = 1024.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 127
+
+[node name="gid158-w" parent="GridContainer/instant" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 76.0
+margin_right = 510.0
+margin_bottom = 110.0
+size_flags_horizontal = 3
+chemical_id = 90
+
+[node name="Label2" type="Label" parent="GridContainer"]
+margin_top = 132.0
+margin_right = 1024.0
+margin_bottom = 146.0
+text = "SHORT-TERM RISK"
+align = 1
+
+[node name="short" type="GridContainer" parent="GridContainer"]
+margin_top = 150.0
+margin_right = 1024.0
+margin_bottom = 260.0
+columns = 2
+
+[node name="oxygen" parent="GridContainer/short" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 510.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 30
+
+[node name="air" parent="GridContainer/short" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_right = 1024.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 29
+
+[node name="gid164-cya" parent="GridContainer/short" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 38.0
+margin_right = 510.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 67
+
+[node name="gid090-bel" parent="GridContainer/short" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 38.0
+margin_right = 1024.0
+margin_bottom = 72.0
+size_flags_horizontal = 3
+chemical_id = 68
+
+[node name="gid165-atp-d" parent="GridContainer/short" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 76.0
+margin_right = 510.0
+margin_bottom = 110.0
+size_flags_horizontal = 3
+chemical_id = 78
+
+[node name="gid095-co1" parent="GridContainer/short" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_top = 76.0
+margin_right = 1024.0
+margin_bottom = 110.0
+size_flags_horizontal = 3
+chemical_id = 79
+
+[node name="Label3" type="Label" parent="GridContainer"]
+margin_top = 264.0
+margin_right = 1024.0
+margin_bottom = 278.0
+text = "LONG-TERM RISK (injury-causers/etc.)"
+align = 1
+
+[node name="short2" type="GridContainer" parent="GridContainer"]
+margin_top = 282.0
+margin_right = 1024.0
+margin_bottom = 316.0
+columns = 2
+
+[node name="gid146-gly" parent="GridContainer/short2" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 512.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+chemical_id = 70

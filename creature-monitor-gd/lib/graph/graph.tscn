@@ -49,7 +49,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource( 2 )
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HFlowContainer" parent="."]
 margin_top = 576.0
 margin_right = 1024.0
 margin_bottom = 600.0
@@ -59,52 +59,64 @@ margin_right = 51.0
 margin_bottom = 24.0
 text = "CLEAR"
 
-[node name="Label3" type="Label" parent="HBoxContainer"]
+[node name="Label" type="Label" parent="HBoxContainer"]
 margin_left = 55.0
 margin_top = 5.0
-margin_right = 107.0
+margin_right = 178.0
+margin_bottom = 19.0
+text = "Vertical Range: ? - ?"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer"]
+margin_left = 182.0
+margin_right = 312.0
+margin_bottom = 24.0
+
+[node name="Label3" type="Label" parent="HBoxContainer/HBoxContainer"]
+margin_top = 5.0
+margin_right = 52.0
 margin_bottom = 19.0
 text = "Y Zoom:"
 
-[node name="y_zoom" type="SpinBox" parent="HBoxContainer"]
-margin_left = 111.0
-margin_right = 185.0
+[node name="y_zoom" type="SpinBox" parent="HBoxContainer/HBoxContainer"]
+margin_left = 56.0
+margin_right = 130.0
 margin_bottom = 24.0
 allow_greater = true
 allow_lesser = true
 
-[node name="Label4" type="Label" parent="HBoxContainer"]
-margin_left = 189.0
+[node name="HBoxContainer2" type="HBoxContainer" parent="HBoxContainer"]
+margin_left = 316.0
+margin_right = 437.0
+margin_bottom = 24.0
+
+[node name="Label4" type="Label" parent="HBoxContainer/HBoxContainer2"]
 margin_top = 5.0
-margin_right = 232.0
+margin_right = 43.0
 margin_bottom = 19.0
 text = "Offset:"
 
-[node name="y_offset" type="SpinBox" parent="HBoxContainer"]
-margin_left = 236.0
-margin_right = 310.0
+[node name="y_offset" type="SpinBox" parent="HBoxContainer/HBoxContainer2"]
+margin_left = 47.0
+margin_right = 121.0
 margin_bottom = 24.0
 allow_greater = true
 allow_lesser = true
 
-[node name="Label2" type="Label" parent="HBoxContainer"]
-margin_left = 314.0
+[node name="HBoxContainer3" type="HBoxContainer" parent="HBoxContainer"]
+margin_left = 441.0
+margin_right = 597.0
+margin_bottom = 24.0
+
+[node name="Label2" type="Label" parent="HBoxContainer/HBoxContainer3"]
 margin_top = 5.0
-margin_right = 392.0
+margin_right = 78.0
 margin_bottom = 19.0
 text = "Time Range:"
 
-[node name="time_range" type="SpinBox" parent="HBoxContainer"]
-margin_left = 396.0
-margin_right = 470.0
+[node name="time_range" type="SpinBox" parent="HBoxContainer/HBoxContainer3"]
+margin_left = 82.0
+margin_right = 156.0
 margin_bottom = 24.0
 min_value = 1.0
 value = 100.0
 allow_greater = true
-
-[node name="Label" type="Label" parent="HBoxContainer"]
-margin_left = 474.0
-margin_top = 5.0
-margin_right = 597.0
-margin_bottom = 19.0
-text = "Vertical Range: ? - ?"

@@ -1,8 +1,11 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://chemistry/chemistry.gd" type="Script" id=1]
 [ext_resource path="res://lib/cpx_error_box.tscn" type="PackedScene" id=2]
 [ext_resource path="res://lib/graph/graph.tscn" type="PackedScene" id=3]
+[ext_resource path="res://chemistry/drives.tscn" type="PackedScene" id=4]
+[ext_resource path="res://chemistry/lifecritical.tscn" type="PackedScene" id=5]
+[ext_resource path="res://chemistry/disease.tscn" type="PackedScene" id=6]
 
 [node name="Chemistry" type="HSplitContainer"]
 anchor_right = 1.0
@@ -10,12 +13,35 @@ anchor_bottom = 1.0
 split_offset = 500
 script = ExtResource( 1 )
 
-[node name="sc" type="ScrollContainer" parent="."]
+[node name="tc" type="TabContainer" parent="."]
 margin_right = 415.0
 margin_bottom = 600.0
 
-[node name="gc" type="GridContainer" parent="sc"]
+[node name="All" type="ScrollContainer" parent="tc"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="gc" type="GridContainer" parent="tc/All"]
+margin_right = 407.0
+margin_bottom = 564.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
 columns = 8
+
+[node name="Drives" parent="tc" instance=ExtResource( 4 )]
+visible = false
+
+[node name="Critical" parent="tc" instance=ExtResource( 5 )]
+visible = false
+
+[node name="Disease" parent="tc" instance=ExtResource( 6 )]
+visible = false
 
 [node name="gv" type="VBoxContainer" parent="."]
 margin_left = 427.0
