@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://chemistry/chemistry.gd" type="Script" id=1]
 [ext_resource path="res://lib/cpx_error_box.tscn" type="PackedScene" id=2]
@@ -6,6 +6,8 @@
 [ext_resource path="res://chemistry/drives.tscn" type="PackedScene" id=4]
 [ext_resource path="res://chemistry/lifecritical.tscn" type="PackedScene" id=5]
 [ext_resource path="res://chemistry/disease.tscn" type="PackedScene" id=6]
+[ext_resource path="res://lib/catalogue_label.gd" type="Script" id=7]
+[ext_resource path="res://chemistry/chem_time_range_box.gd" type="Script" id=8]
 
 [node name="Chemistry" type="HSplitContainer"]
 anchor_right = 1.0
@@ -55,9 +57,45 @@ anchor_bottom = 0.0
 margin_right = 512.0
 margin_bottom = 582.0
 
+[node name="HBoxContainer" type="HBoxContainer" parent="gv"]
+margin_right = 504.0
+margin_bottom = 24.0
+
+[node name="Label" type="Label" parent="gv/HBoxContainer"]
+margin_top = 5.0
+margin_right = 114.0
+margin_bottom = 19.0
+text = "Current Chemical:"
+
+[node name="CatalogueLabel" type="Label" parent="gv/HBoxContainer"]
+margin_left = 118.0
+margin_top = 5.0
+margin_right = 344.0
+margin_bottom = 19.0
+size_flags_horizontal = 3
+script = ExtResource( 7 )
+tag = "chemical_names"
+
+[node name="Label2" type="Label" parent="gv/HBoxContainer"]
+margin_left = 348.0
+margin_top = 5.0
+margin_right = 426.0
+margin_bottom = 19.0
+text = "Time Range:"
+
+[node name="SpinBox" type="SpinBox" parent="gv/HBoxContainer"]
+margin_left = 430.0
+margin_right = 504.0
+margin_bottom = 24.0
+min_value = 1.0
+value = 1.0
+allow_greater = true
+script = ExtResource( 8 )
+
 [node name="Control" parent="gv" instance=ExtResource( 3 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
+margin_top = 28.0
 margin_right = 504.0
 margin_bottom = 600.0
 size_flags_horizontal = 3

@@ -12,22 +12,57 @@ var last_request: CPXRequest
 
 var snapshot: ChemicalSnapshot
 var dispositions: PoolIntArray
-var disposition_moniker: String = ""
+var history: Array
+var _last_moniker: String = ""
+var chemical_range: Array
+var history_time_range: float = 100 setget set_history_time_range
 
 signal snapshot_updated()
 signal dispositions_updated()
+signal time_range_updated()
 
 # just for routing, emitted from chemical.gd
+# warning-ignore:unused_signal
 signal chemistry_graph_should_show(chemical_id)
 
 func _init():
 	snapshot = ChemicalSnapshot.new()
 	dispositions.resize(256)
 	dispositions.fill(DISPOSITION.IGNORE)
+	history = []
+	chemical_range = range(256)
+	for _i in chemical_range:
+		var cgl = CMGraphLine.new()
+		cgl.time_range = history_time_range
+		history.push_back(cgl)
+
+func set_history_time_range(f: float):
+	history_time_range = f
+	for v in history:
+		v.time_range = history_time_range
+	emit_signal("time_range_updated")
+
+func _ready():
+	TargetCreature.connect("target_creature_changed", self, "_target_creature_changed")
+
+func chemical_history(id: int) -> CMGraphLine:
+	return history[id]
+
+func _target_creature_changed():
+	# debounce name changes
+	if TargetCreature.moniker != _last_moniker:
+		# clear chemical dispositions if user changed target creature
+		# to prevent "accidents"
+		dispositions.fill(DISPOSITION.IGNORE)
+		_last_moniker = TargetCreature.moniker
+		emit_signal("dispositions_updated")
+		for v in history:
+			var gl: CMGraphLine = v
+			gl.clear()
 
 func set_disposition(chemical_id: int, val: int):
 	dispositions[chemical_id] = val
-	disposition_moniker = TargetCreature.moniker
+	_last_moniker = TargetCreature.moniker
 	emit_signal("dispositions_updated")
 
 func _process(delta):
@@ -39,6 +74,9 @@ func _process(delta):
 			last_request = req
 			if req.result_code == 0:
 				snapshot.import(req)
+				for i in chemical_range:
+					var gl: CMGraphLine = history[i]
+					gl.add(snapshot.time, snapshot.chemicals[i])
 				emit_signal("snapshot_updated")
 			req = null
 		else:
@@ -48,12 +86,6 @@ func _process(delta):
 	if time > 0.05:
 		time = 0
 		var mon = TargetCreature.moniker
-		if mon != disposition_moniker:
-			# clear chemical dispositions if user changed target creature
-			# to prevent "accidents"
-			dispositions.fill(DISPOSITION.IGNORE)
-			disposition_moniker = mon
-			emit_signal("dispositions_updated")
 		if mon != "":
 			var code = ChemicalSnapshot.snapshot_caos(mon)
 			var chem_idx = 0

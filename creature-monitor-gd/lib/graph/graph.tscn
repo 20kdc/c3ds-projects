@@ -101,26 +101,6 @@ margin_bottom = 24.0
 allow_greater = true
 allow_lesser = true
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="HBoxContainer"]
-margin_left = 311.0
-margin_right = 467.0
-margin_bottom = 24.0
-
-[node name="Label2" type="Label" parent="HBoxContainer/HBoxContainer3"]
-margin_top = 5.0
-margin_right = 78.0
-margin_bottom = 19.0
-text = "Time Range:"
-
-[node name="time_range" type="SpinBox" parent="HBoxContainer/HBoxContainer3"]
-margin_left = 82.0
-margin_right = 156.0
-margin_bottom = 24.0
-min_value = 1.0
-value = 100.0
-allow_greater = true
-
 [connection signal="pressed" from="HBoxContainer/Button" to="." method="_on_Button_pressed"]
 [connection signal="value_changed" from="HBoxContainer/HBoxContainer/y_zoom" to="." method="_on_y_zoom_value_changed"]
 [connection signal="value_changed" from="HBoxContainer/HBoxContainer2/y_offset" to="." method="_on_y_offset_value_changed"]
-[connection signal="value_changed" from="HBoxContainer/HBoxContainer3/time_range" to="." method="_on_time_range_value_changed"]

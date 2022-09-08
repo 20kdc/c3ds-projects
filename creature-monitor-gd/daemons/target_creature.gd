@@ -2,6 +2,7 @@ extends Node
 
 signal target_creature_changed()
 # sent from creature_list if it notices a creature is dead
+# warning-ignore:unused_signal
 signal creature_dead_notify(moniker)
 
 var moniker = ""
