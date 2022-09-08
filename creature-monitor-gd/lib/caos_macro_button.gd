@@ -3,6 +3,7 @@ extends Button
 var req: CPXRequest
 
 export var caos = ""
+export var caos_release = ""
 
 func _process(_delta):
 	if req != null:
@@ -10,5 +11,14 @@ func _process(_delta):
 			req = null
 
 func _pressed():
-	if req == null:
-		req = CPXRequest.new(CPXRequest.from_caos(caos))
+	if not toggle_mode:
+		if req == null:
+			req = CPXRequest.new(CPXRequest.from_caos(caos))
+
+func _toggled(button_pressed):
+	if toggle_mode:
+		if req == null:
+			if button_pressed:
+				req = CPXRequest.new(CPXRequest.from_caos(caos))
+			else:
+				req = CPXRequest.new(CPXRequest.from_caos(caos_release))

@@ -37,6 +37,12 @@ func _internal_error(text: String):
 	result_error_internal = true
 	state = STATE_FINISHED
 
+func _finish_metadata():
+	state = STATE_FINISHED
+	if result_code != 0:
+		if result_str().begins_with("caosprox: "):
+			result_error_internal = true
+
 # True == done!
 func poll() -> bool:
 	if state == STATE_FINISHED:
@@ -58,7 +64,7 @@ func poll() -> bool:
 				if result_read_remainder > 0:
 					state = STATE_READBACK
 				else:
-					state = STATE_FINISHED
+					_finish_metadata()
 		elif spt.get_status() == StreamPeerTCP.STATUS_ERROR:
 			_internal_error("client: connection error")
 	elif state == STATE_READBACK:
@@ -72,7 +78,7 @@ func poll() -> bool:
 				result.append_array(res_data)
 				result_read_remainder -= len(res_data)
 				if result_read_remainder == 0:
-					state = STATE_FINISHED
+					_finish_metadata()
 		elif spt.get_status() == StreamPeerTCP.STATUS_ERROR:
 			_internal_error("client: connection error")
 	return state == STATE_FINISHED

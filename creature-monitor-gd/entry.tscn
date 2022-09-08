@@ -38,63 +38,49 @@ script = ExtResource( 4 )
 
 [node name="Control" type="Control" parent="VBoxContainer/HBoxContainer"]
 margin_left = 144.0
-margin_right = 538.0
+margin_right = 671.0
 margin_bottom = 24.0
 size_flags_horizontal = 3
 
 [node name="Button4" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 542.0
-margin_right = 604.0
+margin_left = 675.0
+margin_right = 737.0
 margin_bottom = 24.0
 text = "WOLF 6"
 script = ExtResource( 6 )
 caos = "outv wolf 0 6"
 
 [node name="Button5" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 608.0
-margin_right = 628.0
+margin_left = 741.0
+margin_right = 761.0
 margin_bottom = 24.0
 text = "3"
 script = ExtResource( 6 )
 caos = "outv wolf 0 3"
 
 [node name="Button6" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 632.0
-margin_right = 652.0
+margin_left = 765.0
+margin_right = 785.0
 margin_bottom = 24.0
 text = "1"
 script = ExtResource( 6 )
 caos = "outv wolf 0 1"
 
 [node name="dbg_paws" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 656.0
-margin_right = 742.0
+margin_left = 789.0
+margin_right = 842.0
 margin_bottom = 24.0
-text = "DBG: PAWS"
+toggle_mode = true
+text = "PAUSE"
 script = ExtResource( 6 )
-caos = "dbg: paws"
-
-[node name="Button2" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 746.0
-margin_right = 789.0
-margin_bottom = 24.0
-text = "PLAY"
-script = ExtResource( 6 )
-caos = "dbg: play"
-
-[node name="Button3" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 793.0
-margin_right = 839.0
-margin_bottom = 24.0
-text = "TOCK"
-script = ExtResource( 6 )
-caos = "dbg: tock"
+caos = "enum 0 0 0 paus 1 next wpau 1"
+caos_release = "enum 0 0 0 paus 0 next wpau 0"
 
 [node name="halt_on_death" type="CheckBox" parent="VBoxContainer/HBoxContainer"]
-margin_left = 843.0
+margin_left = 846.0
 margin_right = 1010.0
 margin_bottom = 24.0
-text = "PAWS ON ANY DEATH"
+text = "PAUSE ON ANY DEAD"
 script = ExtResource( 7 )
 
 [node name="Creatures" parent="VBoxContainer" instance=ExtResource( 3 )]
