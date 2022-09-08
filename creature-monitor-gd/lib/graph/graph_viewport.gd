@@ -40,10 +40,17 @@ func _draw():
 
 		var has_last_point = false
 		var last_point: Vector2 = Vector2.ZERO
+
+		# point indicator lines
 		for v in graph_line.array():
 			var this_point: Vector2 = v
 			var this_point_xf = dp.xform(this_point)
 			draw_line(Vector2(this_point_xf.x, 0), Vector2(this_point_xf.x, rs.y), Color(0.125, 0.125, 0.125))
+
+		# main line
+		for v in graph_line.array():
+			var this_point: Vector2 = v
+			var this_point_xf = dp.xform(this_point)
 			if has_last_point:
 				draw_line(dp.xform(last_point), this_point_xf, Color.green, 0.5, true)
 			last_point = this_point

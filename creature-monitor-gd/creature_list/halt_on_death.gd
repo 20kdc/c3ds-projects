@@ -5,5 +5,5 @@ func _ready():
 
 func _cdn(_mon):
 	if pressed:
-		$"../dbg_paws"._pressed()
+		$"../dbg_paws".pressed = true
 		pressed = false

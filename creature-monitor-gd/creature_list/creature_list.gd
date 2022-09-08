@@ -4,7 +4,7 @@ var req: CPXRequest
 
 onready var controls: Dictionary = {}
 onready var errorbox = $CPXErrorBox
-onready var entries = $entries
+onready var entries = $sc/entries
 
 func _ready():
 	pass
