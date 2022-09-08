@@ -7,19 +7,21 @@
 [node name="sc" type="ScrollContainer"]
 margin_right = 1016.0
 margin_bottom = 564.0
-size_flags_vertical = 3
+scroll_vertical_enabled = false
 script = ExtResource( 2 )
 
-[node name="entries" type="VBoxContainer" parent="."]
-margin_right = 1016.0
-size_flags_horizontal = 3
-
-[node name="CPXErrorBox" parent="entries" instance=ExtResource( 3 )]
+[node name="CPXErrorBox" parent="." instance=ExtResource( 3 )]
 visible = false
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_right = 280.0
-margin_bottom = 139.0
+margin_right = 1016.0
+margin_bottom = 564.0
+
+[node name="entries" type="HBoxContainer" parent="."]
+margin_right = 1016.0
+margin_bottom = 564.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
 [node name="VisibilityUpdateTimer" type="Node" parent="."]
 script = ExtResource( 1 )

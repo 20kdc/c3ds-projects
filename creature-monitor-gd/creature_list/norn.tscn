@@ -14,41 +14,59 @@ margin_top = 7.0
 margin_right = 1017.0
 margin_bottom = 593.0
 
-[node name="hb" type="HBoxContainer" parent="ipc"]
+[node name="hb" type="VBoxContainer" parent="ipc"]
 margin_left = 7.0
 margin_top = 7.0
 margin_right = 1003.0
 margin_bottom = 579.0
 
-[node name="dt" type="VBoxContainer" parent="ipc/hb"]
-margin_right = 492.0
-margin_bottom = 572.0
+[node name="hbc" type="HBoxContainer" parent="ipc/hb"]
+margin_right = 996.0
+margin_bottom = 32.0
+
+[node name="dt" type="VBoxContainer" parent="ipc/hb/hbc"]
+margin_right = 496.0
+margin_bottom = 32.0
 size_flags_horizontal = 3
 
-[node name="name" type="Label" parent="ipc/hb/dt"]
-margin_right = 492.0
+[node name="f_name" type="Label" parent="ipc/hb/hbc/dt"]
+margin_right = 496.0
 margin_bottom = 14.0
 
-[node name="types" type="Label" parent="ipc/hb/dt"]
+[node name="x" type="HBoxContainer" parent="ipc/hb/hbc/dt"]
 margin_top = 18.0
-margin_right = 492.0
+margin_right = 496.0
 margin_bottom = 32.0
+
+[node name="f_types" type="Label" parent="ipc/hb/hbc/dt/x"]
+margin_bottom = 14.0
 script = ExtResource( 2 )
 
-[node name="age" type="Label" parent="ipc/hb/dt"]
-margin_top = 36.0
-margin_right = 492.0
-margin_bottom = 50.0
+[node name="f_age" type="Label" parent="ipc/hb/hbc/dt/x"]
+margin_left = 4.0
+margin_right = 4.0
+margin_bottom = 14.0
 script = ExtResource( 2 )
 tag = "creature_history_life_stage"
 
-[node name="VSeparator" type="VSeparator" parent="ipc/hb"]
-margin_left = 496.0
-margin_right = 500.0
-margin_bottom = 572.0
-
-[node name="moniker" type="Button" parent="ipc/hb"]
-margin_left = 504.0
+[node name="f_status" type="Label" parent="ipc/hb/hbc"]
+margin_left = 500.0
+margin_top = 9.0
 margin_right = 996.0
-margin_bottom = 572.0
+margin_bottom = 23.0
+size_flags_horizontal = 3
+size_flags_vertical = 6
+text = "OK"
+align = 1
+valign = 1
+
+[node name="VSeparator" type="HSeparator" parent="ipc/hb"]
+margin_top = 36.0
+margin_right = 996.0
+margin_bottom = 40.0
+
+[node name="f_moniker" type="Button" parent="ipc/hb"]
+margin_top = 44.0
+margin_right = 996.0
+margin_bottom = 64.0
 size_flags_horizontal = 3

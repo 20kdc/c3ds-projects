@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://caos_console/caos_console.tscn" type="PackedScene" id=1]
 [ext_resource path="res://credits/third_party.tscn" type="PackedScene" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://current_track.gd" type="Script" id=4]
 [ext_resource path="res://chemistry/chemistry.tscn" type="PackedScene" id=5]
 [ext_resource path="res://lib/caos_macro_button.gd" type="Script" id=6]
+[ext_resource path="res://creature_list/halt_on_death.gd" type="Script" id=7]
 
 [node name="Control" type="PanelContainer"]
 anchor_right = 1.0
@@ -19,68 +20,99 @@ margin_bottom = 593.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 margin_right = 1010.0
-margin_bottom = 20.0
+margin_bottom = 24.0
 
 [node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
-margin_top = 3.0
+margin_top = 5.0
 margin_right = 118.0
-margin_bottom = 17.0
+margin_bottom = 19.0
 text = "Currently Tracking:"
 
 [node name="current_track" type="Label" parent="VBoxContainer/HBoxContainer"]
 margin_left = 122.0
-margin_top = 3.0
+margin_top = 5.0
 margin_right = 140.0
-margin_bottom = 17.0
+margin_bottom = 19.0
 text = "???"
 script = ExtResource( 4 )
 
 [node name="Control" type="Control" parent="VBoxContainer/HBoxContainer"]
 margin_left = 144.0
-margin_right = 823.0
-margin_bottom = 20.0
+margin_right = 538.0
+margin_bottom = 24.0
 size_flags_horizontal = 3
 
-[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 827.0
-margin_right = 913.0
-margin_bottom = 20.0
+[node name="Button4" type="Button" parent="VBoxContainer/HBoxContainer"]
+margin_left = 542.0
+margin_right = 604.0
+margin_bottom = 24.0
+text = "WOLF 6"
+script = ExtResource( 6 )
+caos = "outv wolf 0 6"
+
+[node name="Button5" type="Button" parent="VBoxContainer/HBoxContainer"]
+margin_left = 608.0
+margin_right = 628.0
+margin_bottom = 24.0
+text = "3"
+script = ExtResource( 6 )
+caos = "outv wolf 0 3"
+
+[node name="Button6" type="Button" parent="VBoxContainer/HBoxContainer"]
+margin_left = 632.0
+margin_right = 652.0
+margin_bottom = 24.0
+text = "1"
+script = ExtResource( 6 )
+caos = "outv wolf 0 1"
+
+[node name="dbg_paws" type="Button" parent="VBoxContainer/HBoxContainer"]
+margin_left = 656.0
+margin_right = 742.0
+margin_bottom = 24.0
 text = "DBG: PAWS"
 script = ExtResource( 6 )
 caos = "dbg: paws"
 
 [node name="Button2" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 917.0
-margin_right = 960.0
-margin_bottom = 20.0
+margin_left = 746.0
+margin_right = 789.0
+margin_bottom = 24.0
 text = "PLAY"
 script = ExtResource( 6 )
 caos = "dbg: play"
 
 [node name="Button3" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 964.0
-margin_right = 1010.0
-margin_bottom = 20.0
+margin_left = 793.0
+margin_right = 839.0
+margin_bottom = 24.0
 text = "TOCK"
 script = ExtResource( 6 )
 caos = "dbg: tock"
 
+[node name="halt_on_death" type="CheckBox" parent="VBoxContainer/HBoxContainer"]
+margin_left = 843.0
+margin_right = 1010.0
+margin_bottom = 24.0
+text = "PAWS ON ANY DEATH"
+script = ExtResource( 7 )
+
+[node name="Creatures" parent="VBoxContainer" instance=ExtResource( 3 )]
+margin_top = 28.0
+margin_right = 1010.0
+margin_bottom = 42.0
+
 [node name="TabContainer" type="TabContainer" parent="VBoxContainer"]
-margin_top = 24.0
+margin_top = 46.0
 margin_right = 1010.0
 margin_bottom = 586.0
 size_flags_vertical = 3
 
-[node name="Creatures" parent="VBoxContainer/TabContainer" instance=ExtResource( 3 )]
-anchor_right = 1.0
-anchor_bottom = 1.0
+[node name="Chemistry" parent="VBoxContainer/TabContainer" instance=ExtResource( 5 )]
 margin_left = 4.0
 margin_top = 32.0
 margin_right = -4.0
 margin_bottom = -4.0
-
-[node name="Chemistry" parent="VBoxContainer/TabContainer" instance=ExtResource( 5 )]
-visible = false
 
 [node name="CAOS Console" parent="VBoxContainer/TabContainer" instance=ExtResource( 1 )]
 visible = false

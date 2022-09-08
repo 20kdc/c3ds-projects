@@ -3,7 +3,7 @@ extends Control
 var req: CPXRequest
 
 onready var controls: Dictionary = {}
-onready var errorbox = $entries/CPXErrorBox
+onready var errorbox = $CPXErrorBox
 onready var entries = $entries
 
 func _ready():
@@ -20,7 +20,7 @@ func _process(_delta):
 				var norn = lines[0]
 				var info = {}
 				# collate mapped information
-				var entry_size = 5
+				var entry_size = 6
 				var ejr = range(entry_size)
 				for i in range((len(lines) - base_size) / entry_size):
 					var base = (i * entry_size) + base_size
@@ -47,7 +47,11 @@ func update_ui(norn: String, infos: Dictionary):
 			controls[k] = c
 	# Update
 	for k in names_keys:
-		controls[k].update_norn(k, norn, infos[k])
+		var info = infos[k]
+		controls[k].update_norn(k, norn, info)
+		# Check for creature death
+		if info[5] != "0":
+			TargetCreature.emit_signal("creature_dead_notify", k)
 
 func _on_VisibilityUpdateTimer_do_update():
 	if req != null:
@@ -68,6 +72,8 @@ func _on_VisibilityUpdateTimer_do_update():
 			outv spcs
 			outs "\\n"
 			outv cage
+			outs "\\n"
+			outv dead
 			outs "\\n"
 		next
 	"""))
