@@ -10,6 +10,7 @@ export var prefix_targ_creature = false
 func _process(_delta):
 	if req != null:
 		if req.poll():
+			print(req.result_str())
 			req = null
 
 func _run_caos(tc: String):

@@ -23,7 +23,17 @@ func _on_VisibilityUpdateTimer_do_update():
 		outv orgn outs "\\n"
 		setv va00 0
 		reps orgn
-			outv orgf va00 1
+			outv orgf va00 4
+			outs "\\n"
+			outv orgf va00 5
+			outs "\\n"
+			outv orgf va00 6
+			outs "\\n"
+			outv orgi va00 0
+			outs "\\n"
+			outv orgi va00 1
+			outs "\\n"
+			outv orgi va00 2
 			outs "\\n"
 			addv va00 1
 		repe
@@ -55,7 +65,17 @@ func _process(_delta):
 					organ_controls.push_back(ctrl)
 				# continue
 				for idx in range(orgn):
-					var lf = float(res[ptr])
+					var ilf = float(res[ptr])
 					ptr += 1
-					organ_controls[idx].update_status(lf)
+					var slf = float(res[ptr])
+					ptr += 1
+					var llf = float(res[ptr])
+					ptr += 1
+					var rcp = int(res[ptr])
+					ptr += 1
+					var emi = int(res[ptr])
+					ptr += 1
+					var rea = int(res[ptr])
+					ptr += 1
+					organ_controls[idx].update_status(ilf, slf, llf, rcp, emi, rea)
 			req = null
