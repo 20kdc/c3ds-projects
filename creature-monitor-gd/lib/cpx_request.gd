@@ -23,16 +23,20 @@ func _init(request: PoolByteArray):
 		_internal_error("client: failed to write request - run caosprox.exe!")
 
 static func from_caos(text: String) -> PoolByteArray:
-	return ("execute\n" + text + "\u0000").to_utf8()
+	var pba = ("execute\n" + text).to_utf8()
+	pba.push_back(0)
+	return pba
 
 func result_str() -> String:
-	var text: String = result.get_string_from_ascii()
-	if text.ends_with("\u0000"):
-		text = text.substr(0, len(text) - 1)
-	return text
+	var tmp: PoolByteArray = result
+	if len(tmp) > 0:
+		if tmp[len(tmp) - 1] == 0:
+			tmp.remove(len(tmp) - 1)
+	return tmp.get_string_from_ascii()
 
 func _internal_error(text: String):
-	result = (text + "\u0000").to_utf8()
+	result = text.to_utf8()
+	result.push_back(0)
 	result_code = 2
 	result_error_internal = true
 	state = STATE_FINISHED
@@ -66,7 +70,7 @@ func poll() -> bool:
 				else:
 					_finish_metadata()
 		elif spt.get_status() == StreamPeerTCP.STATUS_ERROR:
-			_internal_error("client: connection error")
+			_internal_error("client: connection error - run caosprox.exe?")
 	elif state == STATE_READBACK:
 		if spt.get_available_bytes() >= 0:
 			var res = spt.get_data(result_read_remainder)
@@ -80,5 +84,5 @@ func poll() -> bool:
 				if result_read_remainder == 0:
 					_finish_metadata()
 		elif spt.get_status() == StreamPeerTCP.STATUS_ERROR:
-			_internal_error("client: connection error")
+			_internal_error("client: connection error during readback")
 	return state == STATE_FINISHED
