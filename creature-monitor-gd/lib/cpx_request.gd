@@ -39,13 +39,19 @@ func _internal_error(text: String):
 	result.push_back(0)
 	result_code = 2
 	result_error_internal = true
-	state = STATE_FINISHED
+	_finish_closeoff()
 
 func _finish_metadata():
-	state = STATE_FINISHED
 	if result_code != 0:
 		if result_str().begins_with("caosprox: "):
 			result_error_internal = true
+	state = STATE_FINISHED
+
+func _finish_closeoff():
+	state = STATE_FINISHED
+	if spt.is_connected_to_host():
+		spt.disconnect_from_host()
+	spt = null
 
 # True == done!
 func poll() -> bool:
