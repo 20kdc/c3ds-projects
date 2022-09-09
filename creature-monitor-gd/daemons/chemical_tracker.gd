@@ -76,6 +76,9 @@ func _process(delta):
 				snapshot.import(req)
 				for i in chemical_range:
 					var gl: CMGraphLine = history[i]
+					if gl.points() != 0 and gl.latest().x > snapshot.time:
+						# we went back in time, something's wrong!
+						gl.clear()
 					gl.add(snapshot.time, snapshot.chemicals[i])
 				emit_signal("snapshot_updated")
 			req = null
