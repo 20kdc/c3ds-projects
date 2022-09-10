@@ -29,6 +29,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://lib/cpx_request.gd"
 }, {
+"base": "Control",
+"class": "CPXRequestViewEntry",
+"language": "GDScript",
+"path": "res://caos_console/cpx_request_view_entry.gd"
+}, {
 "base": "Label",
 "class": "CatalogueLabel",
 "language": "GDScript",
@@ -59,6 +64,7 @@ _global_script_class_icons={
 "CMGraphLine": "",
 "CPXErrorBox": "",
 "CPXRequest": "",
+"CPXRequestViewEntry": "",
 "CatalogueLabel": "",
 "ChemicalSnapshot": "",
 "GraphViewport": "",
@@ -76,6 +82,7 @@ run/main_scene="res://entry.tscn"
 TargetCreature="*res://daemons/target_creature.gd"
 CatalogueTracker="*res://daemons/catalogue_tracker.gd"
 ChemicalTracker="*res://daemons/chemical_tracker.gd"
+CPXDaemon="*res://daemons/cpx_daemon.gd"
 
 [debug]
 

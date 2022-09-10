@@ -7,12 +7,6 @@ export var caos = ""
 export var caos_release = ""
 export var prefix_targ_creature = false
 
-func _process(_delta):
-	if req != null:
-		if req.poll():
-			print(req.result_str())
-			req = null
-
 func _run_caos(tc: String):
 	if prefix_targ_creature:
 		var moniker = TargetCreature.moniker
@@ -21,8 +15,13 @@ func _run_caos(tc: String):
 		tc = "targ mtoc \"" + moniker + "\"\n" + tc
 	if req != null:
 		return false
-	req = CPXRequest.new(CPXRequest.from_caos(tc))
+	req = CPXDaemon.caos_request("Macro", tc)
+	req.connect("completed", self, "_req_completed")
 	return true
+
+func _req_completed():
+	print(req.result_str())
+	req = null
 
 func _pressed():
 	if not toggle_mode:

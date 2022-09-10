@@ -66,26 +66,10 @@ func set_disposition(chemical_id: int, val: int):
 	emit_signal("dispositions_updated")
 
 func _process(delta):
-	# update ongoing requests
-	if req != null:
-		if req.poll():
-			# Note that this is updated here
-			# The error dialog kept flashing in the interim
-			last_request = req
-			if req.result_code == 0:
-				snapshot.import(req)
-				for i in chemical_range:
-					var gl: CMGraphLine = history[i]
-					if gl.points() != 0 and gl.latest().x > snapshot.time:
-						# we went back in time, something's wrong!
-						gl.clear()
-					gl.add(snapshot.time, snapshot.chemicals[i])
-				emit_signal("snapshot_updated")
-			req = null
-		else:
-			return
-	# spawn next request
 	time += delta
+	if req != null:
+		return
+	# spawn next request
 	if time > 0.05:
 		time = 0
 		var mon = TargetCreature.moniker
@@ -98,4 +82,20 @@ func _process(delta):
 				elif chem_disposition == DISPOSITION.ZERO:
 					code += "\nchem " + str(chem_idx) + " -1"
 				chem_idx += 1
-			req = CPXRequest.new(CPXRequest.from_caos(code))
+			req = CPXDaemon.caos_request("Chemical Tracker", code)
+			req.connect("completed", self, "_completed_req")
+
+func _completed_req():
+	# Note that this is updated here
+	# The error dialog kept flashing in the interim
+	last_request = req
+	if req.result_code == 0:
+		snapshot.import(req)
+		for i in chemical_range:
+			var gl: CMGraphLine = history[i]
+			if gl.points() != 0 and gl.latest().x > snapshot.time:
+				# we went back in time, something's wrong!
+				gl.clear()
+			gl.add(snapshot.time, snapshot.chemicals[i])
+		emit_signal("snapshot_updated")
+	req = null

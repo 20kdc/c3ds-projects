@@ -9,28 +9,6 @@ onready var entries = $sc/entries
 func _ready():
 	pass
 
-func _process(_delta):
-	if req != null:
-		if req.poll():
-			errorbox.update_from(req)
-			if req.result_code == 0:
-				# collate information
-				var lines = req.result_str().split("\n")
-				var base_size = 1
-				var norn = lines[0]
-				var info = {}
-				# collate mapped information
-				var entry_size = 6
-				var ejr = range(entry_size)
-				for i in range((len(lines) - base_size) / entry_size):
-					var base = (i * entry_size) + base_size
-					var total = []
-					for j in ejr:
-						total.push_back(lines[base + j])
-					info[total[0]] = total
-				update_ui(norn, info)
-			req = null
-
 func update_ui(norn: String, infos: Dictionary):
 	# Remove old controls
 	for k in controls.keys():
@@ -56,7 +34,7 @@ func update_ui(norn: String, infos: Dictionary):
 func _on_VisibilityUpdateTimer_do_update():
 	if req != null:
 		return
-	req = CPXRequest.new(CPXRequest.from_caos("""
+	req = CPXDaemon.caos_request("Creature List", """
 		targ norn
 		doif targ ne null
 			outs gtos 0
@@ -76,4 +54,25 @@ func _on_VisibilityUpdateTimer_do_update():
 			outv dead
 			outs "\\n"
 		next
-	"""))
+	""")
+	req.connect("completed", self, "_completed_req")
+
+func _completed_req():
+	errorbox.update_from(req)
+	if req.result_code == 0:
+		# collate information
+		var lines = req.result_str().split("\n")
+		var base_size = 1
+		var norn = lines[0]
+		var info = {}
+		# collate mapped information
+		var entry_size = 6
+		var ejr = range(entry_size)
+		for i in range((len(lines) - base_size) / entry_size):
+			var base = (i * entry_size) + base_size
+			var total = []
+			for j in ejr:
+				total.push_back(lines[base + j])
+			info[total[0]] = total
+		update_ui(norn, info)
+	req = null

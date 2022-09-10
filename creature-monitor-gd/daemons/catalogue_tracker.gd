@@ -11,8 +11,9 @@ onready var catalogue_lookup_queue_commands = []
 onready var catalogue_lookup_queue_ids = []
 
 func _process(_delta):
+	# done this way because otherwise it will endlessly spam requests
 	if req != null:
-		if req.poll():
+		if req.state == CPXRequest.STATE_FINISHED:
 			if req.result_code == 0:
 				catalogue_cache[req_cache_id] = req.result_str()
 				emit_signal("cache_updated")
@@ -30,7 +31,7 @@ func check_lookup_queue():
 		return
 	if len(catalogue_lookup_queue_commands) > 0:
 		var cmd = catalogue_lookup_queue_commands.pop_front()
-		req = CPXRequest.new(CPXRequest.from_caos(cmd))
+		req = CPXDaemon.caos_request("Catalogue", cmd)
 		req_command = cmd
 		req_cache_id = catalogue_lookup_queue_ids.pop_front()
 
