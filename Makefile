@@ -19,6 +19,9 @@ rel: thirdparty/COPYING-SDL.txt thirdparty/README-SDL.txt
 include colour-depth-fix/index.mk
 include caosproxy/index.mk
 include creature-monitor/index.mk
+include creature-monitor-gd-export/index.mk
+
+
 
 # Stuff that has compilation steps that require Linux.
 # As such these will basically just assume you have Linux for everything.

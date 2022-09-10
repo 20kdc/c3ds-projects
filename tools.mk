@@ -20,7 +20,11 @@ W32_SDL2 ?= 1
 # Windows
 W32_CC ?= i686-w64-mingw32-gcc
 W32_STRIP ?= i686-w64-mingw32-strip
+ifeq ($(shell uname),Linux)
 W32_WINDRES ?= i686-w64-mingw32-windres
+else
+W32_WINDRES ?= windres
+endif
 
 # This is a thing because of bad defaults.
 W32_SDL2_CFG ?= -I/usr/local/i686-w64-mingw32/include -L/usr/local/i686-w64-mingw32/lib
