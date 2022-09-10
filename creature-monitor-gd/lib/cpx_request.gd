@@ -29,9 +29,9 @@ func to_string() -> String:
 	elif state == STATE_CONNECTING:
 		state_str = "CONNECTING"
 	elif state == STATE_READBACK:
-		state_str = "READBACK"
+		state_str = "READBACK (" + str(len(result)) + "/" + str(result_read_remainder) + ")"
 	elif state == STATE_FINISHED:
-		state_str = "FINISHED"
+		state_str = "FINISHED (code: " + str(result_code) + ", internal: " + str(result_error_internal) + ")"
 	return purpose + ": " + state_str
 
 func result_str() -> String:
@@ -41,7 +41,9 @@ func result_str() -> String:
 			tmp.remove(len(tmp) - 1)
 	return tmp.get_string_from_ascii()
 
-func _internal_error(text: String):
+func terminate(text: String):
+	if state == STATE_FINISHED:
+		return
 	result = text.to_utf8()
 	result.push_back(0)
 	result_code = 2
@@ -56,9 +58,10 @@ func _finish_metadata():
 
 func _finish_closeoff():
 	state = STATE_FINISHED
-	if spt.is_connected_to_host():
-		spt.disconnect_from_host()
-	spt = null
+	if spt != null:
+		if spt.is_connected_to_host():
+			spt.disconnect_from_host()
+		spt = null
 	emit_signal("completed")
 
 # True == done!
@@ -71,11 +74,11 @@ func poll() -> bool:
 		spt.big_endian = false
 		# NOTE: Don't make this "localhost", it doesn't work on Windows
 		if spt.connect_to_host("127.0.0.1", 19960) != OK:
-			_internal_error("client: failed to open connection - run caosprox.exe!")
+			terminate("client: failed to open connection - run caosprox.exe!")
 			return true
 		spt.put_32(len(request))
 		if spt.put_data(request) != OK:
-			_internal_error("client: failed to write request - run caosprox.exe!")
+			terminate("client: failed to write request - run caosprox.exe!")
 			return true
 		state = STATE_CONNECTING
 	if state == STATE_CONNECTING:
@@ -84,7 +87,7 @@ func poll() -> bool:
 			var res_err = res[0]
 			var res_data: PoolByteArray = res[1]
 			if res_err != OK:
-				_internal_error("client: could not get headers")
+				terminate("client: could not get headers")
 				return true
 			else:
 				var data_stream_peer = StreamPeerBuffer.new()
@@ -99,7 +102,7 @@ func poll() -> bool:
 					_finish_metadata()
 					return true
 		elif spt.get_status() == StreamPeerTCP.STATUS_ERROR:
-			_internal_error("client: connection error - run caosprox.exe?")
+			terminate("client: connection error - run caosprox.exe?")
 			return true
 	if state == STATE_READBACK:
 		if spt.get_available_bytes() >= 0:
@@ -107,7 +110,7 @@ func poll() -> bool:
 			var res_err = res[0]
 			var res_data: PoolByteArray = res[1]
 			if res_err != OK:
-				_internal_error("client: interruption during data read")
+				terminate("client: interruption during data read")
 				return true
 			else:
 				result.append_array(res_data)
@@ -116,6 +119,6 @@ func poll() -> bool:
 					_finish_metadata()
 					return true
 		elif spt.get_status() == StreamPeerTCP.STATUS_ERROR:
-			_internal_error("client: connection error during readback")
+			terminate("client: connection error during readback")
 			return true
 	return false

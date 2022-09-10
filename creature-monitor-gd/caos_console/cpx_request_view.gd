@@ -9,19 +9,17 @@ func _init():
 
 func _process(_delta):
 	var reqs = CPXDaemon.requests
-	if not photosensitivity_lock:
-		for req in request_controls.keys():
-			if not reqs.has(req):
-				request_controls[req].queue_free()
-				request_controls.erase(req)
-	for req in reqs.keys():
-		var ctrl: CPXRequestViewEntry
-		if not request_controls.has(req):
-			if not photosensitivity_lock:
-				ctrl = preload("cpx_request_view_entry.tscn").instance()
-				add_child(ctrl)
-				request_controls[req] = ctrl
+	for req in request_controls.keys():
+		if (not photosensitivity_lock) and (not reqs.has(req)):
+			request_controls[req].queue_free()
+			request_controls.erase(req)
 		else:
-			ctrl = request_controls[req]
-		if ctrl != null:
+			var ctrl: CPXRequestViewEntry = request_controls[req]
 			ctrl.update_request(req)
+	if not photosensitivity_lock:
+		for req in reqs.keys():
+			if not request_controls.has(req):
+				var ctrl: CPXRequestViewEntry = preload("cpx_request_view_entry.tscn").instance()
+				add_child(ctrl)
+				ctrl.update_request(req)
+				request_controls[req] = ctrl

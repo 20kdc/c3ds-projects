@@ -7,8 +7,24 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 1 )
 
-[node name="Label" type="Label" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
 margin_left = 7.0
-margin_top = 293.0
+margin_top = 7.0
 margin_right = 1017.0
-margin_bottom = 307.0
+margin_bottom = 593.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+margin_right = 967.0
+margin_bottom = 586.0
+size_flags_horizontal = 3
+size_flags_vertical = 7
+
+[node name="Button" type="Button" parent="HBoxContainer"]
+margin_left = 971.0
+margin_right = 1010.0
+margin_bottom = 586.0
+text = "KILL"
+
+[connection signal="pressed" from="HBoxContainer/Button" to="." method="_on_Button_pressed"]
