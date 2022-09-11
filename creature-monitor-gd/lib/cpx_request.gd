@@ -87,7 +87,10 @@ func poll() -> bool:
 			return true
 		state = STATE_CONNECTING
 	if state == STATE_CONNECTING:
-		if spt.get_status() != StreamPeerTCP.STATUS_CONNECTING:
+		var status = spt.get_status()
+		if status == StreamPeerTCP.STATUS_ERROR:
+			terminate("client: failed to connect - run caosprox.exe!")
+		elif status != StreamPeerTCP.STATUS_CONNECTING:
 			spt.set_no_delay(true)
 			if spt.put_data(request) != OK:
 				terminate("client: failed to write request - run caosprox.exe!")
