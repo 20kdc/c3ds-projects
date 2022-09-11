@@ -2,9 +2,10 @@ class_name CPXRequest
 extends Reference
 
 const STATE_INIT = 0
-const STATE_CONNECTING = 1
-const STATE_READBACK = 2
-const STATE_FINISHED = 3
+const STATE_HEADER1 = 1
+const STATE_HEADER2 = 2
+const STATE_READBACK = 3
+const STATE_FINISHED = 4
 
 var purpose: String
 var spt: StreamPeerTCP
@@ -30,8 +31,10 @@ func to_string() -> String:
 	var state_str = "unknown state"
 	if state == STATE_INIT:
 		state_str = "INIT"
-	elif state == STATE_CONNECTING:
-		state_str = "CONNECTING (" + str(spt.get_available_bytes()) + " AVB)"
+	elif state == STATE_HEADER1:
+		state_str = "HEADER1 (" + str(spt.get_available_bytes()) + " AVB)"
+	elif state == STATE_HEADER2:
+		state_str = "HEADER2 (" + str(spt.get_available_bytes()) + " AVB)"
 	elif state == STATE_READBACK:
 		state_str = "READBACK (" + str(len(result)) + "/" + str(result_read_remainder) + ")"
 	elif state == STATE_FINISHED:
@@ -83,10 +86,21 @@ func poll() -> bool:
 		if spt.put_data(request) != OK:
 			terminate("client: failed to write request - run caosprox.exe!")
 			return true
-		state = STATE_CONNECTING
-	if state == STATE_CONNECTING:
-		if spt.get_available_bytes() >= 48:
-			var res = spt.get_data(48)
+		state = STATE_HEADER1
+	if state == STATE_HEADER1:
+		if spt.get_available_bytes() >= 24:
+			var res = spt.get_data(24)
+			var res_err = res[0]
+			if res_err != OK:
+				terminate("client: could not get headers")
+				return true
+			state = STATE_HEADER2
+		elif spt.get_status() == StreamPeerTCP.STATUS_ERROR:
+			terminate("client: connection error - run caosprox.exe?")
+			return true
+	if state == STATE_HEADER2:
+		if spt.get_available_bytes() >= 24:
+			var res = spt.get_data(24)
 			var res_err = res[0]
 			var res_data: PoolByteArray = res[1]
 			if res_err != OK:
@@ -96,7 +110,7 @@ func poll() -> bool:
 				var data_stream_peer = StreamPeerBuffer.new()
 				data_stream_peer.data_array = res_data
 				data_stream_peer.big_endian = false
-				data_stream_peer.seek(24 + 8)
+				data_stream_peer.seek(8)
 				result_code = data_stream_peer.get_32()
 				result_read_remainder = data_stream_peer.get_32()
 				if result_read_remainder > 0:
