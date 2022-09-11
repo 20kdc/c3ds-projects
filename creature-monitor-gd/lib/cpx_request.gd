@@ -2,10 +2,11 @@ class_name CPXRequest
 extends Reference
 
 const STATE_INIT = 0
-const STATE_HEADER1 = 1
-const STATE_HEADER2 = 2
-const STATE_READBACK = 3
-const STATE_FINISHED = 4
+const STATE_CONNECTING = 1
+const STATE_HEADER1 = 2
+const STATE_HEADER2 = 3
+const STATE_READBACK = 4
+const STATE_FINISHED = 5
 
 var purpose: String
 var spt: StreamPeerTCP
@@ -31,6 +32,8 @@ func to_string() -> String:
 	var state_str = "unknown state"
 	if state == STATE_INIT:
 		state_str = "INIT"
+	elif state == STATE_CONNECTING:
+		state_str = "CONNECTING"
 	elif state == STATE_HEADER1:
 		state_str = "HEADER1 (" + str(spt.get_available_bytes()) + " AVB)"
 	elif state == STATE_HEADER2:
@@ -82,11 +85,14 @@ func poll() -> bool:
 		if spt.connect_to_host("127.0.0.1", 19960) != OK:
 			terminate("client: failed to open connection - run caosprox.exe!")
 			return true
-		spt.set_no_delay(true)
-		if spt.put_data(request) != OK:
-			terminate("client: failed to write request - run caosprox.exe!")
-			return true
-		state = STATE_HEADER1
+		state = STATE_CONNECTING
+	if state == STATE_CONNECTING:
+		if spt.get_status() != StreamPeerTCP.STATUS_CONNECTING:
+			spt.set_no_delay(true)
+			if spt.put_data(request) != OK:
+				terminate("client: failed to write request - run caosprox.exe!")
+				return true
+			state = STATE_HEADER1
 	if state == STATE_HEADER1:
 		if spt.get_available_bytes() >= 24:
 			var res = spt.get_data(24)
