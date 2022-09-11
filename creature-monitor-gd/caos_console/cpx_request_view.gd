@@ -1,13 +1,14 @@
 extends VBoxContainer
 
 var request_controls
-# disables showing new incoming requests or hiding existing requests
-var photosensitivity_lock = false
 
 func _init():
 	request_controls = {}
 
 func _process(_delta):
+	update_request_data(true)
+
+func update_request_data(photosensitivity_lock):
 	var reqs = CPXDaemon.requests
 	for req in request_controls.keys():
 		if (not photosensitivity_lock) and (not reqs.has(req)):

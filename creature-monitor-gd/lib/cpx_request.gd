@@ -20,14 +20,18 @@ signal completed()
 # WARNING: Don't create directly, use CPXDaemon
 func _init(s: String, r: PoolByteArray):
 	purpose = s
-	request = r
+	var rdx = StreamPeerBuffer.new()
+	rdx.big_endian = false
+	rdx.put_32(len(r))
+	rdx.put_data(r)
+	request = rdx.data_array
 
 func to_string() -> String:
 	var state_str = "unknown state"
 	if state == STATE_INIT:
 		state_str = "INIT"
 	elif state == STATE_CONNECTING:
-		state_str = "CONNECTING"
+		state_str = "CONNECTING (" + str(spt.get_available_bytes()) + " AVB)"
 	elif state == STATE_READBACK:
 		state_str = "READBACK (" + str(len(result)) + "/" + str(result_read_remainder) + ")"
 	elif state == STATE_FINISHED:
@@ -71,12 +75,11 @@ func poll() -> bool:
 		return true
 	if state == STATE_INIT:
 		spt = StreamPeerTCP.new()
-		spt.big_endian = false
 		# NOTE: Don't make this "localhost", it doesn't work on Windows
 		if spt.connect_to_host("127.0.0.1", 19960) != OK:
 			terminate("client: failed to open connection - run caosprox.exe!")
 			return true
-		spt.put_32(len(request))
+		spt.set_no_delay(true)
 		if spt.put_data(request) != OK:
 			terminate("client: failed to write request - run caosprox.exe!")
 			return true

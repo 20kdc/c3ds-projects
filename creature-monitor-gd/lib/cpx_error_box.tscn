@@ -17,13 +17,31 @@ margin_bottom = 593.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="header" type="Label" parent="vbox"]
+[node name="hb" type="HBoxContainer" parent="vbox"]
+margin_right = 1010.0
+margin_bottom = 14.0
+
+[node name="header" type="Label" parent="vbox/hb"]
+margin_right = 114.0
+margin_bottom = 14.0
+size_flags_vertical = 5
+custom_colors/font_color = Color( 0.894118, 0.109804, 0.109804, 1 )
+text = "CPX Request Error"
+
+[node name="divider" type="Label" parent="vbox/hb"]
+margin_left = 118.0
+margin_right = 123.0
+margin_bottom = 14.0
+size_flags_vertical = 5
+text = "-"
+
+[node name="component" type="Label" parent="vbox/hb"]
+margin_left = 127.0
 margin_right = 1010.0
 margin_bottom = 14.0
 size_flags_horizontal = 3
 size_flags_vertical = 5
-custom_colors/font_color = Color( 0.894118, 0.109804, 0.109804, 1 )
-text = "CPX Request Error"
+text = "Bleh"
 
 [node name="HSeparator" type="HSeparator" parent="vbox"]
 margin_top = 18.0

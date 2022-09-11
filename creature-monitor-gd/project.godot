@@ -9,7 +9,7 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "Button",
+"base": "Reference",
 "class": "CAOSMacroButton",
 "language": "GDScript",
 "path": "res://lib/caos_macro_button.gd"
@@ -19,7 +19,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://lib/graph/graph_line.gd"
 }, {
-"base": "PanelContainer",
+"base": "Reference",
 "class": "CPXErrorBox",
 "language": "GDScript",
 "path": "res://lib/cpx_error_box.gd"
@@ -34,7 +34,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://caos_console/cpx_request_view_entry.gd"
 }, {
-"base": "Label",
+"base": "Reference",
 "class": "CatalogueLabel",
 "language": "GDScript",
 "path": "res://lib/catalogue_label.gd"
@@ -44,17 +44,17 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://lib/chemical_snapshot.gd"
 }, {
-"base": "Control",
+"base": "Reference",
 "class": "GraphViewport",
 "language": "GDScript",
 "path": "res://lib/graph/graph_viewport.gd"
 }, {
-"base": "Control",
+"base": "Reference",
 "class": "GraphWidget",
 "language": "GDScript",
 "path": "res://lib/graph/graph_widget.gd"
 }, {
-"base": "Node",
+"base": "Reference",
 "class": "VisibilityUpdateTimer",
 "language": "GDScript",
 "path": "res://lib/visibility_update_timer.gd"
