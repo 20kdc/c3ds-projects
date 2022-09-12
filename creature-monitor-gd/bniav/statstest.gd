@@ -7,4 +7,4 @@ func update_from_snapshot(snapshot: BrainSnapshot):
 		text += lobe.name + " LOBE W:" + str(lobe.w) + "x" + str(lobe.h) + "\n"
 	for v in snapshot.tracts:
 		var tract: BrainTractSnapshot = v
-		text += "TRACT S:" + snapshot.lobes[tract.src_lobe].name + " D:" + snapshot.lobes[tract.dst_lobe].name + "\n"
+		text += "TRACT " + snapshot.lobes[tract.src_lobe].name + " -> " + snapshot.lobes[tract.dst_lobe].name + "\n"

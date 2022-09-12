@@ -36,8 +36,14 @@ margin_right = 284.0
 margin_bottom = 582.0
 size_flags_vertical = 1
 
-[node name="Label" type="Label" parent="VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 margin_right = 284.0
+margin_bottom = 600.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/ScrollContainer"]
+margin_right = 161.0
 margin_bottom = 14.0
 text = "some stuff might go here"
 script = ExtResource( 5 )
@@ -46,5 +52,5 @@ script = ExtResource( 5 )
 script = ExtResource( 2 )
 interval = 0.05
 
-[connection signal="snapshot_updated" from="." to="VBoxContainer/Label" method="update_from_snapshot"]
+[connection signal="snapshot_updated" from="." to="VBoxContainer/ScrollContainer/Label" method="update_from_snapshot"]
 [connection signal="do_update" from="VisibilityUpdateTimer" to="." method="_on_VisibilityUpdateTimer_do_update"]
