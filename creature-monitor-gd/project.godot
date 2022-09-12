@@ -9,6 +9,16 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Reference",
+"class": "BrainConfig",
+"language": "GDScript",
+"path": "res://lib/snapshots/brain_cfg.gd"
+}, {
+"base": "Reference",
+"class": "BrainSnapshot",
+"language": "GDScript",
+"path": "res://lib/snapshots/brain_snapshot.gd"
+}, {
 "base": "Button",
 "class": "CAOSMacroButton",
 "language": "GDScript",
@@ -42,7 +52,7 @@ _global_script_classes=[ {
 "base": "Reference",
 "class": "ChemicalSnapshot",
 "language": "GDScript",
-"path": "res://lib/chemical_snapshot.gd"
+"path": "res://lib/snapshots/chemical_snapshot.gd"
 }, {
 "base": "Control",
 "class": "GraphViewport",
@@ -60,6 +70,8 @@ _global_script_classes=[ {
 "path": "res://lib/visibility_update_timer.gd"
 } ]
 _global_script_class_icons={
+"BrainConfig": "",
+"BrainSnapshot": "",
 "CAOSMacroButton": "",
 "CMGraphLine": "",
 "CPXErrorBox": "",

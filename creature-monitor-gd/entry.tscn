@@ -108,6 +108,7 @@ margin_bottom = -4.0
 visible = false
 
 [node name="Brain" parent="VBoxContainer/TabContainer" instance=ExtResource( 9 )]
+visible = false
 
 [node name="CAOS Console" parent="VBoxContainer/TabContainer" instance=ExtResource( 1 )]
 visible = false

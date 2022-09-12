@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://bniav/mainview.gd" type="Script" id=1]
 [ext_resource path="res://lib/visibility_update_timer.gd" type="Script" id=2]
 [ext_resource path="res://bniav/bniav.gd" type="Script" id=3]
+[ext_resource path="res://lib/cpx_error_box.tscn" type="PackedScene" id=4]
+[ext_resource path="res://bniav/statstest.gd" type="Script" id=5]
 
 [node name="Brain" type="HSplitContainer"]
 anchor_right = 1.0
@@ -26,13 +28,23 @@ margin_left = 740.0
 margin_right = 1024.0
 margin_bottom = 600.0
 
+[node name="CPXErrorBox" parent="VBoxContainer" instance=ExtResource( 4 )]
+visible = false
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 284.0
+margin_bottom = 582.0
+size_flags_vertical = 1
+
 [node name="Label" type="Label" parent="VBoxContainer"]
 margin_right = 284.0
 margin_bottom = 14.0
 text = "some stuff might go here"
+script = ExtResource( 5 )
 
 [node name="VisibilityUpdateTimer" type="Node" parent="."]
 script = ExtResource( 2 )
 interval = 0.05
 
+[connection signal="snapshot_updated" from="." to="VBoxContainer/Label" method="update_from_snapshot"]
 [connection signal="do_update" from="VisibilityUpdateTimer" to="." method="_on_VisibilityUpdateTimer_do_update"]
