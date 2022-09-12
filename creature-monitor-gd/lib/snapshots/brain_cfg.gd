@@ -6,7 +6,9 @@ extends Reference
 # However, the chance of this mattering is effectively nil...
 
 var lobe_count: int = 0
+var lobe_range: Array
 var tract_count: int = 0
+var tract_range: Array
 
 static func snapshot_caos(moniker: String) -> String:
 	var caos = ""
@@ -22,7 +24,9 @@ func import(req: CPXRequest):
 	var line2 = splitoff(line1[1])
 	var line2a: PoolByteArray = line2[0]
 	lobe_count = int(line1a.get_string_from_ascii())
+	lobe_range = range(lobe_count)
 	tract_count = int(line2a.get_string_from_ascii())
+	tract_range = range(tract_count)
 
 func splitoff(a: PoolByteArray) -> Array:
 	var firstzero = a.find(0)
