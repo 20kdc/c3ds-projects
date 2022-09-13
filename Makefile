@@ -12,6 +12,10 @@ rel: COPYING.txt README.md CREDITS.txt
 	echo "r`date +%s`" > release-id.txt
 	echo "Linux host:" $(HOST_LINUX) >> release-id.txt
 	echo "Godot available:" $(HOST_GODOT) >> release-id.txt
+	echo "git status:" >> release-id.txt
+	git status >> release-id.txt
+	echo "Latest commit:" >> release-id.txt
+	git log HEAD^..HEAD >> release-id.txt
 	rm -f release.zip
 	zip release.zip $^
 	zip release.zip release-id.txt
