@@ -9,19 +9,19 @@ INTERMEDIATES := release-id.txt
 all:
 
 rel: COPYING.txt README.md CREDITS.txt
-	echo `date +%s` > release-id.txt
+	echo "r`date +%s`" > release-id.txt
+	echo "Linux host:" $(HOST_LINUX) >> release-id.txt
+	echo "Godot available:" $(HOST_GODOT) >> release-id.txt
 	rm -f release.zip
 	zip release.zip $^
 	zip release.zip release-id.txt
 
-rel: thirdparty/COPYING-SDL.txt thirdparty/README-SDL.txt
-
 include colour-depth-fix/index.mk
 include caosproxy/index.mk
-include creature-monitor/index.mk
-include creature-monitor-gd-export/index.mk
 
-
+ifeq ($(HOST_GODOT),1)
+	include creature-monitor-gd-export/index.mk
+endif
 
 # Stuff that has compilation steps that require Linux.
 # As such these will basically just assume you have Linux for everything.
