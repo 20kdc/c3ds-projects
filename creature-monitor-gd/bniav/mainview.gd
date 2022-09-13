@@ -10,6 +10,7 @@ var highlighted_row = -1 setget set_highlighted_row
 var highlighted_column = -1 setget set_highlighted_column
 
 var show_dendrites = true setget set_show_dendrites
+var show_dendrites_back = true setget set_show_dendrites_back
 
 func _ready():
 	update()
@@ -58,6 +59,8 @@ func _draw():
 					var dst_pt = translate_and_scale(neuron_dst_rect).get_center()
 					var weight = dendrite.values[0]
 					var value = lobe_src.neuron(dendrite.src_neuron).values[0]
+					if show_dendrites_back:
+						draw_line(src_pt, dst_pt, Color(0.5, 0.5, 0.5), 2, true)
 					draw_line(src_pt, dst_pt, neuron_to_colour(weight * value))
 
 func neuron_to_colour(f: float) -> Color:
@@ -77,4 +80,8 @@ func set_snapshot(sn):
 
 func set_show_dendrites(button_pressed):
 	show_dendrites = button_pressed
+	update()
+
+func set_show_dendrites_back(button_pressed):
+	show_dendrites_back = button_pressed
 	update()

@@ -114,6 +114,13 @@ margin_bottom = 24.0
 pressed = true
 text = "Show Dendrites"
 
+[node name="CheckBox2" type="CheckBox" parent="VBoxContainer/TabContainer/ViewOpt"]
+margin_top = 28.0
+margin_right = 290.0
+margin_bottom = 52.0
+pressed = true
+text = "Show Dendrites Back"
+
 [node name="RowCol" type="TabContainer" parent="VBoxContainer/TabContainer"]
 visible = false
 anchor_right = 1.0
@@ -180,4 +187,5 @@ interval = 0.05
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/snapload" to="." method="_on_snapload_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/snapunload" to="." method="_on_snapunload_pressed"]
 [connection signal="toggled" from="VBoxContainer/TabContainer/ViewOpt/CheckBox" to="bva/main_brain_view/pull_snapshots_from_root" method="_on_CheckBox_toggled"]
+[connection signal="toggled" from="VBoxContainer/TabContainer/ViewOpt/CheckBox2" to="bva/main_brain_view/pull_snapshots_from_root" method="_on_CheckBox2_toggled"]
 [connection signal="do_update" from="VisibilityUpdateTimer" to="." method="_on_VisibilityUpdateTimer_do_update"]
