@@ -94,6 +94,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://lib/graph/graph_widget.gd"
 }, {
+"base": "HSplitContainer",
+"class": "LCOGDThirdParty",
+"language": "GDScript",
+"path": "res://addons/lco_gd/third_party.gd"
+}, {
 "base": "Node",
 "class": "VisibilityUpdateTimer",
 "language": "GDScript",
@@ -117,6 +122,7 @@ _global_script_class_icons={
 "ChemicalSnapshot": "",
 "GraphViewport": "",
 "GraphWidget": "",
+"LCOGDThirdParty": "",
 "VisibilityUpdateTimer": ""
 }
 
@@ -136,6 +142,10 @@ CPXDaemon="*res://daemons/cpx_daemon.gd"
 
 gdscript/warnings/return_value_discarded=false
 gdscript/warnings/integer_division=false
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/lco_gd/plugin.cfg" )
 
 [gui]
 

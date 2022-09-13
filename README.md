@@ -19,11 +19,13 @@ c3ds-projects contributors are in no way affiliated with Creature Labs, this is 
 	To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 	You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-Note that some parts of this repository use SDL2 ( https://www.libsdl.org/index.php ) at a later date.
+Note that some parts of this repository use SDL2 ( https://www.libsdl.org/index.php ).
 
-While c3ds-projects is under CC0, SDL2 is not.
+Other parts of this repository use Godot Engine ( https://godotengine.org/ ) and dependencies thereof.
+
+While c3ds-projects is under CC0, these dependencies are mostly not.
 
 For information on SDL2's licensing, please see the thirdparty directory.
 
-`creature-monitor-gd` uses Godot Engine, licensing details will be included in release archives.
+Information on Godot's licensing is stored as COPYING-godot.txt in release archives, in the standard form as reported by Godot Engine's "Third-party Licenses" panel.
 
