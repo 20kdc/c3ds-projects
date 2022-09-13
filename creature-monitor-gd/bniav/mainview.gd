@@ -9,6 +9,8 @@ var relative_canvas_nu: Rect2
 var highlighted_row = -1 setget set_highlighted_row
 var highlighted_column = -1 setget set_highlighted_column
 
+var show_dendrites = true setget set_show_dendrites
+
 func _ready():
 	update()
 
@@ -43,21 +45,20 @@ func _draw():
 			for cidx in range(4):
 				base_text_pos.x += draw_char(font, base_text_pos, lobe.name.substr(cidx, 1), "")
 			draw_rect(lobe_rect_scaled, Color.white, false)
-		for idx in cfg.tract_range:
-			var tract = snapshot.tract(idx)
-			var lobe_src = snapshot.lobe(tract.src_lobe)
-			var lobe_src_rect = lobe_src.as_rect()
-			var lobe_dst = snapshot.lobe(tract.dst_lobe)
-			var lobe_dst_rect = lobe_src.as_rect()
-			for d in tract.dendrites:
-				var dendrite: BrainDendriteSnapshot = d
-				var neuron_src_rect = lobe_src.neuron_as_rect(dendrite.src_neuron)
-				var neuron_dst_rect = lobe_dst.neuron_as_rect(dendrite.dst_neuron)
-				var src_pt = translate_and_scale(neuron_src_rect).get_center()
-				var dst_pt = translate_and_scale(neuron_dst_rect).get_center()
-				var weight = dendrite.values[0]
-				var value = lobe_src.neuron(dendrite.src_neuron).values[0]
-				draw_line(src_pt, dst_pt, neuron_to_colour(weight * value))
+		if show_dendrites:
+			for idx in cfg.tract_range:
+				var tract = snapshot.tract(idx)
+				var lobe_src = snapshot.lobe(tract.src_lobe)
+				var lobe_dst = snapshot.lobe(tract.dst_lobe)
+				for d in tract.dendrites:
+					var dendrite: BrainDendriteSnapshot = d
+					var neuron_src_rect = lobe_src.neuron_as_rect(dendrite.src_neuron)
+					var neuron_dst_rect = lobe_dst.neuron_as_rect(dendrite.dst_neuron)
+					var src_pt = translate_and_scale(neuron_src_rect).get_center()
+					var dst_pt = translate_and_scale(neuron_dst_rect).get_center()
+					var weight = dendrite.values[0]
+					var value = lobe_src.neuron(dendrite.src_neuron).values[0]
+					draw_line(src_pt, dst_pt, neuron_to_colour(weight * value))
 
 func neuron_to_colour(f: float) -> Color:
 	return Color(f * -16, abs(f), f * 16)
@@ -72,4 +73,8 @@ func set_snapshot(sn):
 	var irect = snapshot.as_rect()
 	relative_canvas_nu = irect.grow(1)
 	rect_min_size = relative_canvas_nu.size * CELL_SIZE
+	update()
+
+func set_show_dendrites(button_pressed):
+	show_dendrites = button_pressed
 	update()
