@@ -1,16 +1,18 @@
 class_name BrainTractSnapshot
-extends Reference
+extends Resource
 
-var src_lobe: int
-var src_min: int
+export var src_lobe: int
+export var src_min: int
 
-var dst_lobe: int
-var dst_min: int
+export var dst_lobe: int
+export var dst_min: int
 
-var ruleset_init: BrainRuleset
-var ruleset_update: BrainRuleset
+# Need to figure out what to do about the native type export restriction...
+export var ruleset_init: Resource # BrainRuleset
+export var ruleset_update: Resource # BrainRuleset
 
-var dendrites: Array
+# of BrainDendriteSnapshot
+export var dendrites: Array
 
 func _init():
 	ruleset_init = BrainRuleset.new()

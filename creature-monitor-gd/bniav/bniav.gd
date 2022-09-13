@@ -3,6 +3,7 @@ extends Node
 var config: BrainConfig
 var snapshot: BrainSnapshot
 var req: CPXRequest
+var file_view: bool = false
 
 signal snapshot_updated(snapshot)
 
@@ -14,6 +15,8 @@ func _invalidate_config():
 
 func _on_VisibilityUpdateTimer_do_update():
 	if req != null:
+		return
+	if file_view:
 		return
 	var mon = TargetCreature.moniker
 	if mon == "":
@@ -32,7 +35,7 @@ func _completed_config():
 	_completed_gen()
 
 func _completed_snapshot():
-	if req.result_code == 0:
+	if req.result_code == 0 and not file_view:
 		if config != null:
 			snapshot = BrainSnapshot.new()
 			snapshot.import(config, req)
@@ -42,3 +45,17 @@ func _completed_snapshot():
 func _completed_gen():
 	$VBoxContainer/CPXErrorBox.update_from(req)
 	req = null
+
+func _on_snapload_pressed():
+	snapshot = load("user://snapshot.tres")
+	$VBoxContainer/CPXErrorBox.visible = false
+	file_view = true
+	emit_signal("snapshot_updated", snapshot)
+
+func _on_snapunload_pressed():
+	file_view = false
+
+func _on_snapsave_pressed():
+	print("SNAPSHOT SAVE: " + OS.get_user_data_dir())
+	if snapshot != null:
+		ResourceSaver.save("user://snapshot.tres", snapshot)

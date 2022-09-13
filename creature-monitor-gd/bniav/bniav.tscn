@@ -28,6 +28,35 @@ margin_left = 740.0
 margin_right = 1024.0
 margin_bottom = 600.0
 
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+margin_right = 284.0
+margin_bottom = 20.0
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
+margin_top = 3.0
+margin_right = 141.0
+margin_bottom = 17.0
+size_flags_horizontal = 3
+text = "Snapshot IO:"
+
+[node name="snapsave" type="Button" parent="VBoxContainer/HBoxContainer"]
+margin_left = 145.0
+margin_right = 188.0
+margin_bottom = 20.0
+text = "SAVE"
+
+[node name="snapload" type="Button" parent="VBoxContainer/HBoxContainer"]
+margin_left = 192.0
+margin_right = 241.0
+margin_bottom = 20.0
+text = "LOAD"
+
+[node name="snapunload" type="Button" parent="VBoxContainer/HBoxContainer"]
+margin_left = 245.0
+margin_right = 284.0
+margin_bottom = 20.0
+text = "LIVE"
+
 [node name="CPXErrorBox" parent="VBoxContainer" instance=ExtResource( 4 )]
 visible = false
 anchor_right = 0.0
@@ -36,7 +65,13 @@ margin_right = 284.0
 margin_bottom = 582.0
 size_flags_vertical = 1
 
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+margin_top = 24.0
+margin_right = 284.0
+margin_bottom = 28.0
+
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+margin_top = 32.0
 margin_right = 284.0
 margin_bottom = 600.0
 size_flags_horizontal = 3
@@ -52,5 +87,9 @@ script = ExtResource( 5 )
 script = ExtResource( 2 )
 interval = 0.05
 
+[connection signal="snapshot_updated" from="." to="bva/mainview" method="_on_Brain_snapshot_updated"]
 [connection signal="snapshot_updated" from="." to="VBoxContainer/ScrollContainer/Label" method="update_from_snapshot"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/snapsave" to="." method="_on_snapsave_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/snapload" to="." method="_on_snapload_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/snapunload" to="." method="_on_snapunload_pressed"]
 [connection signal="do_update" from="VisibilityUpdateTimer" to="." method="_on_VisibilityUpdateTimer_do_update"]

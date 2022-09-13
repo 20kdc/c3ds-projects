@@ -1,10 +1,10 @@
 class_name ChemicalSnapshot
-extends Reference
+extends Resource
 
-var time: float = 0
+export var time: float = 0
 
 # Chemicals (by ID)
-var chemicals: PoolRealArray
+export var chemicals: PoolRealArray
 
 func _init():
 	chemicals.resize(256)

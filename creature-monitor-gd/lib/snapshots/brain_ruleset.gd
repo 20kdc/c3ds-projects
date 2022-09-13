@@ -1,5 +1,5 @@
 class_name BrainRuleset
-extends Reference
+extends Resource
 
 func import(stream: StreamPeerBuffer):
 	# don't REALLY need to store this

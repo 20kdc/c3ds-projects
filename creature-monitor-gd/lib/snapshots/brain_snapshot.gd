@@ -1,14 +1,23 @@
 class_name BrainSnapshot
-extends Reference
+extends Resource
 
 # metadata
-var bytes: int
-var config: BrainConfig
+export var bytes: int
+export var config: Resource # BrainConfig
 
 # of BrainLobeSnapshot
-var lobes: Array
+export var lobes: Array
 # of BrainTractSnapshot
-var tracts: Array
+export var tracts: Array
+
+func lobe(idx: int) -> BrainLobeSnapshot:
+	return lobes[idx]
+
+func tract(idx: int) -> BrainTractSnapshot:
+	return tracts[idx]
+
+func cfg() -> BrainConfig:
+	return config as BrainConfig
 
 static func snapshot_caos(cfg: BrainConfig, moniker: String) -> String:
 	var caos = ""
@@ -36,3 +45,12 @@ func import(c: BrainConfig, req: CPXRequest):
 		var tract = BrainTractSnapshot.new()
 		tract.import(stream)
 		tracts.push_back(tract)
+
+func as_rect() -> Rect2:
+	if len(lobes) > 0:
+		var rect: Rect2 = lobe(0).as_rect()
+		for idx in range(len(lobes) - 1):
+			rect = rect.merge(lobe(idx + 1).as_rect())
+		return rect
+	else:
+		return Rect2()

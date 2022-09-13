@@ -1,18 +1,26 @@
 class_name BrainLobeSnapshot
-extends Reference
+extends Resource
 
-var name: String
-var ruleset_init: BrainRuleset
-var ruleset_update: BrainRuleset
-var x: int
-var y: int
-var w: int
-var h: int
-var neurons: Array
+export var name: String
+
+export var x: int
+export var y: int
+export var w: int
+export var h: int
+
+# Need to figure out what to do about the native type export restriction...
+export var ruleset_init: Resource
+export var ruleset_update: Resource
+
+# of BrainNeuronSnapshot
+export var neurons: Array
 
 func _init():
 	ruleset_init = BrainRuleset.new()
 	ruleset_update = BrainRuleset.new()
+
+func as_rect() -> Rect2:
+	return Rect2(x, y, w, h)
 
 func import(stream: StreamPeerBuffer):
 	stream.get_32()
