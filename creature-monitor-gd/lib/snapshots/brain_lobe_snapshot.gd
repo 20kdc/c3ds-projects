@@ -19,8 +19,13 @@ func _init():
 	ruleset_init = BrainRuleset.new()
 	ruleset_update = BrainRuleset.new()
 
+func neuron(i: int) -> BrainNeuronSnapshot:
+	return neurons[i]
+
 func as_rect() -> Rect2:
 	return Rect2(x, y, w, h)
+func neuron_as_rect(n: int) -> Rect2:
+	return Rect2(x + (n % w), y + (n / w), 1, 1)
 
 func import(stream: StreamPeerBuffer):
 	stream.get_32()
@@ -46,6 +51,6 @@ func import(stream: StreamPeerBuffer):
 	for _idx in range(w * h):
 		var neuron = BrainNeuronSnapshot.new()
 		neurons.push_back(neuron)
-		neuron.import(stream)
+		neuron.import(stream, w)
 	# random footer
 	stream.get_data(10)

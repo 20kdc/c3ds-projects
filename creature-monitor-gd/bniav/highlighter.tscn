@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://lib/catalogue_label.gd" type="Script" id=1]
+[ext_resource path="res://bniav/highlighter.gd" type="Script" id=2]
+
+[node name="HBoxContainer" type="HBoxContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+script = ExtResource( 2 )
+
+[node name="Button" type="Button" parent="."]
+margin_right = 86.0
+margin_bottom = 600.0
+text = "HIGHLIGHT"
+
+[node name="CatalogueLabel" type="Label" parent="."]
+margin_left = 90.0
+margin_top = 293.0
+margin_right = 1024.0
+margin_bottom = 307.0
+size_flags_horizontal = 3
+script = ExtResource( 1 )
+
+[connection signal="pressed" from="Button" to="." method="_on_Button_pressed"]

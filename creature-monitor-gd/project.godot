@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Control",
+"class": "BNIAVMainBrainView",
+"language": "GDScript",
+"path": "res://bniav/mainview.gd"
+}, {
 "base": "Resource",
 "class": "BrainConfig",
 "language": "GDScript",
@@ -95,6 +100,7 @@ _global_script_classes=[ {
 "path": "res://lib/visibility_update_timer.gd"
 } ]
 _global_script_class_icons={
+"BNIAVMainBrainView": "",
 "BrainConfig": "",
 "BrainDendriteSnapshot": "",
 "BrainLobeSnapshot": "",
