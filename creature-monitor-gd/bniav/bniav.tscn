@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://bniav/mainview.gd" type="Script" id=1]
 [ext_resource path="res://lib/visibility_update_timer.gd" type="Script" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://bniav/statstest.gd" type="Script" id=5]
 [ext_resource path="res://bniav/verbs.gd" type="Script" id=6]
 [ext_resource path="res://bniav/pull_snapshots_from_root.gd" type="Script" id=7]
+[ext_resource path="res://bniav/nouns.gd" type="Script" id=8]
 
 [node name="Brain" type="HSplitContainer"]
 anchor_right = 1.0
@@ -142,8 +143,7 @@ margin_bottom = -4.0
 margin_right = 282.0
 size_flags_horizontal = 3
 script = ExtResource( 6 )
-tag = "Creature Actions"
-count = 17
+entries = PoolStringArray( "look", "push", "get", "drop", "eat", "pull", "approach", "hit", "retreat", "express", "rest", "left", "right" )
 
 [node name="noun" type="ScrollContainer" parent="VBoxContainer/TabContainer/RowCol"]
 visible = false
@@ -157,7 +157,7 @@ margin_bottom = -4.0
 [node name="nouns" type="VBoxContainer" parent="VBoxContainer/TabContainer/RowCol/noun"]
 margin_right = 282.0
 size_flags_horizontal = 3
-script = ExtResource( 6 )
+script = ExtResource( 8 )
 column = true
 
 [node name="driv" type="ScrollContainer" parent="VBoxContainer/TabContainer/RowCol"]
@@ -172,7 +172,7 @@ margin_bottom = -4.0
 [node name="drives" type="VBoxContainer" parent="VBoxContainer/TabContainer/RowCol/driv"]
 margin_right = 282.0
 size_flags_horizontal = 3
-script = ExtResource( 6 )
+script = ExtResource( 8 )
 tag = "Creature Drives"
 column = true
 count = 20

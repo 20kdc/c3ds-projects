@@ -38,7 +38,7 @@ func _draw():
 				var nr = lobe.neuron_as_rect(neuron.index)
 				var nrs = translate_and_scale(nr)
 				if highlighted_column == neuron.x or highlighted_row == neuron.y:
-					draw_rect(nrs, Color(0.5, 0.5, 0.5), false)
+					draw_rect(nrs, Color(0.3, 0.3, 0.3), true)
 				var nrs_dg = nrs.grow(-4)
 				draw_rect(nrs_dg, neuron_to_colour(neuron.values[0]), true)
 			# lobe details
