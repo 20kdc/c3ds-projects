@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-14T23:00:19+01:00
+
+====== CBabelAsyncCore ======
+
+Currently assumed to be 52 bytes
+

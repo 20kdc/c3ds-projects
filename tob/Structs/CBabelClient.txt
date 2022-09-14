@@ -1,0 +1,32 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-14T22:57:09+01:00
+
+====== CBabelClient ======
+
+hopelessly incomplete description, held together by computer assistance and hope
+
+===== Structure =====
+
+* +16: switch box
+	* [[CBabelSwitchBox]] switchBox
+* +32: random buin
+	* [[B_UIN]] aBUIN
+* +40: async core
+	* [[CBabelAsyncCore]] asyncCore
+* +100: embedded interface implementation? seems to be a vtbl pointer
+* +144: server info?
+	* [[CBabelServerInfo]] * serverInfo
+* +212: critical section
+	* _RTL_CRITICAL_SECTION criticalSection
+* +260: ???
+	* [[CBabelAsyncCoreChild]] ** ???
+* +312: user data???
+	* [[CBabelShortUserDataObject]]
+* +384: message queue
+	* [[CBabelMessage]]? ** messageQueue
+* +416: critical section 2
+	* _RTL_CRITICAL_SECTION criticalSection2
+* +440: async core 2
+	* [[CBabelAsyncCore]] asyncCore2
+* more as of yet unknown

@@ -1,0 +1,27 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-14T23:15:35+01:00
+
+====== WWR Packet ======
+
+Seen in [[:Structs:CBabelClient|CBabelClient]]::AddWWREntry / CBabelClient::RemoveWWREntry.
+Transmitted using CBabelClient::SendMessageA.
+
+===== Structure =====
+
+32 bytes
+
+'''
++0: Type. Set to 0x10 for add, 0x11 for remove.
+    int type
++4: sender HID ???
++8: sender UID ???
++12: HID
+    int hid
++16: UID
+    int uid
++20: padding?
++24: padding?
++28: padding?
+'''
+

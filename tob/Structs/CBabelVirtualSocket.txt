@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-14T23:56:51+01:00
+
+====== CBabelVirtualSocket ======
+
+0x40 bytes (CERTAIN)
+
+* +16: Virtual socket number acquired with GetNewVirtualSocket
+	* short virtualSocketNum
+* +18: padding?
+* +20: client pointer
+	* [[CBabelClient]] * client
+* +40: _RTL_CRITICAL_SECTION (16 bytes)

@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-14T23:28:28+01:00
+
+====== BABEL MESSAGE ======
+
+''1: BABEL_MESSAGE_BINARY''

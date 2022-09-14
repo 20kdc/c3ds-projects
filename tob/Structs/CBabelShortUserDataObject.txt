@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-14T23:10:17+01:00
+
+====== CBabelShortUserDataObject ======
+
+Might be 60 bytes?
+
+* +12: string
+	* [[std_string]] string
+* +28: string
+	* [[std_string]] string
+* +44: string
+	* [[std_string]] string

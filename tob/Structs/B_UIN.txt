@@ -1,0 +1,19 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-14T22:36:57+01:00
+
+====== B UIN ======
+
+Identifies a specific user.
+Represented by the form ''0+1'' where 0 is the UID and 1 is the HID.
+
+===== Structure =====
+
+'''
++0: UID
+    int UID
++4: HID
+    short HID
++6: 2 bytes of padding?
+    short padding
+'''

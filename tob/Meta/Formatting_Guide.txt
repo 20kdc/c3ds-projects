@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-14T22:00:04+01:00
+
+====== Formatting Guide ======
+
+VTables are called vtbl always, and have their own struct definitions.
+
+~~Use codeblocks for lists of fields~~, and use the following style:
+
+* +4: Amounts of space octopi fought today.
+	* int spaceOctopiFought;
+
+Ideally use links when other pages are involved.
