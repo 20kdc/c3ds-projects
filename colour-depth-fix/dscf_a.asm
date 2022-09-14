@@ -10,6 +10,8 @@ dd suite_2p286_b195cd, suite_2p286_b195cd_name ; DS   (with check)
 dd suite_2p286_b195, suite_2p286_b195_name     ; DS   (no check)
 dd suite_1p162cd, suite_1p162cd_name           ; C3u2 (with check)
 dd suite_1p162, suite_1p162_name               ; C3u2 (no check)
+dd suite_1p158cd, suite_1p158cd_name           ; C3u1 (with check)
+dd suite_1p158, suite_1p158_name               ; C3u1 (no check)
 dd suite_1p147cd, suite_1p147cd_name           ; C3   (with check)
 dd suite_1p147, suite_1p147_name               ; C3   (no check)
 dd 0, 0
@@ -25,6 +27,12 @@ db "Engine 1.162 - Creatures 3 Update 2 (with check)", 0
 
 suite_1p162_name:
 db "Engine 1.162 - Creatures 3 Update 2 (no check)", 0
+
+suite_1p158cd_name:
+db "Engine 1.158 - Creatures 3 Update 1 (with check)", 0
+
+suite_1p158_name:
+db "Engine 1.158 - Creatures 3 Update 1 (no check)", 0
 
 suite_1p147cd_name:
 db "Engine 1.147 - Creatures 3 (with check)", 0
@@ -70,6 +78,24 @@ dd 0x00481A32, cs_hook_code, cs_hook_edx_test
 dd 0x00481A53, cs_hook_code, cs_hook_edx_test
 dd 0, 0, 0
 
+suite_1p158cd:
+dd 0x00554BF0, cfcd_hook_code, cfcd_hook_test
+suite_1p158:
+; CreateFullscreenDisplaySurfaces
+dd 0x0047DA3B, cs_hook_code, cs_hook_ecx_test
+dd 0x0047DAAC, cs_hook_code, cs_hook_edx_test
+dd 0x0047DACC, cs_hook_code, cs_hook_edx_test
+; CreateWindowedDisplaySurfaces
+dd 0x0047DCDD, cs_hook_code, cs_hook_ecx_test
+dd 0x0047DD21, cs_hook_code, cs_hook_edx_test
+; FlipScreenHorizontally
+dd 0x0047E8B3, cs_hook_code, cs_hook_edx_test
+dd 0x0047E8CF, cs_hook_code, cs_hook_edx_test
+; CreateSurface
+dd 0x00481BE2, cs_hook_code, cs_hook_edx_test
+dd 0x00481C03, cs_hook_code, cs_hook_edx_test
+dd 0, 0, 0
+
 suite_1p147cd:
 dd 0x00553100, cfcd_hook_code, cfcd_hook_test
 suite_1p147:
@@ -91,10 +117,13 @@ dd 0, 0, 0
 ; sanity check strings
 cs_hook_ecx_test:
 db 0xFF, 0x51, 0x18, 0x85, 0xC0
+; PRESS S, THEN PASTE: FF 51 18 85 C0
 cs_hook_edx_test:
 db 0xFF, 0x52, 0x18, 0x85, 0xC0
+; PRESS S, THEN PASTE: FF 52 18 85 C0
 cfcd_hook_test:
 db 0x6A, 0xFF, 0x64, 0xA1, 0x00
+; PRESS S, THEN PASTE: 6A FF 64 A1 00
 
 ; actual code
 
