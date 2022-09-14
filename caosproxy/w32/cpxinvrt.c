@@ -93,7 +93,7 @@ static void setupRegistryKeys(const char * gameName, const char * gamePath) {
 			"Body Data Directory", "%s\\Body Data\\",
 			"Bootstrap Directory", "%s\\Bootstrap\\",
 			"Catalogue Directory", "%s\\Catalogue\\",
-			"Creature Galleries Directory", "%s\\Creature Galleries\\",
+			"Creature Database Directory", "%s\\Creature Galleries\\",
 			"Exported Creatures Directory", "%s\\Exported Creatures\\",
 			"Genetics Directory", "%s\\Genetics\\",
 			"Images Directory", "%s\\Images\\",
