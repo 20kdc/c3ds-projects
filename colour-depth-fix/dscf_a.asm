@@ -6,17 +6,35 @@ global _ddraw_hook_table
 
 ; Null-terminated list of hook suite/string pairs.
 _ddraw_hook_table:
-dd suite_2p286_b195, suite_2p286_b195_name
-dd suite_1p162, suite_1p162_name
+dd suite_2p286_b195cd, suite_2p286_b195cd_name ; DS   (with check)
+dd suite_2p286_b195, suite_2p286_b195_name     ; DS   (no check)
+dd suite_1p162cd, suite_1p162cd_name           ; C3u2 (with check)
+dd suite_1p162, suite_1p162_name               ; C3u2 (no check)
+dd suite_1p147cd, suite_1p147cd_name           ; C3   (with check)
+dd suite_1p147, suite_1p147_name               ; C3   (no check)
 dd 0, 0
 
+suite_2p286_b195cd_name:
+db "Engine 2.286 B195 - Docking Station (with check)", 0
+
 suite_2p286_b195_name:
-db "Engine 2.286 B195 - Docking Station", 0
+db "Engine 2.286 B195 - Docking Station (no check)", 0
+
+suite_1p162cd_name:
+db "Engine 1.162 - Creatures 3 Update 2 (with check)", 0
 
 suite_1p162_name:
-db "Engine 1.162 - Creatures 3 Update 2", 0
+db "Engine 1.162 - Creatures 3 Update 2 (no check)", 0
+
+suite_1p147cd_name:
+db "Engine 1.147 - Creatures 3 (with check)", 0
+
+suite_1p147_name:
+db "Engine 1.147 - Creatures 3 (no check)", 0
 
 ; These tables contain sets of 3: the absolute address, a pointer to the jump target, and a pointer to the expected 5 bytes.
+suite_2p286_b195cd:
+dd 0x00556030, cfcd_hook_code, cfcd_hook_test
 suite_2p286_b195:
 ; CreateFullscreenDisplaySurfaces
 dd 0x00472FE1, cs_hook_code, cs_hook_ecx_test
@@ -34,6 +52,8 @@ dd 0x0047628C, cs_hook_code, cs_hook_edx_test
 ; done!
 dd 0, 0, 0
 
+suite_1p162cd:
+dd 0x005550B0, cfcd_hook_code, cfcd_hook_test
 suite_1p162:
 ; CreateFullscreenDisplaySurfaces
 dd 0x0047D87B, cs_hook_code, cs_hook_ecx_test
@@ -50,11 +70,31 @@ dd 0x00481A32, cs_hook_code, cs_hook_edx_test
 dd 0x00481A53, cs_hook_code, cs_hook_edx_test
 dd 0, 0, 0
 
+suite_1p147cd:
+dd 0x00553100, cfcd_hook_code, cfcd_hook_test
+suite_1p147:
+; CreateFullscreenDisplaySurfaces
+dd 0x0047BA2B, cs_hook_code, cs_hook_ecx_test
+dd 0x0047BA9C, cs_hook_code, cs_hook_edx_test
+dd 0x0047BABC, cs_hook_code, cs_hook_edx_test
+; CreateWindowedDisplaySurfaces
+dd 0x0047BCCD, cs_hook_code, cs_hook_ecx_test
+dd 0x0047BD11, cs_hook_code, cs_hook_edx_test
+; FlipScreenHorizontally
+dd 0x0047C8A3, cs_hook_code, cs_hook_edx_test
+dd 0x0047C8BF, cs_hook_code, cs_hook_edx_test
+; CreateSurface
+dd 0x0047FBD2, cs_hook_code, cs_hook_edx_test
+dd 0x0047FBF3, cs_hook_code, cs_hook_edx_test
+dd 0, 0, 0
+
 ; sanity check strings
 cs_hook_ecx_test:
 db 0xFF, 0x51, 0x18, 0x85, 0xC0
 cs_hook_edx_test:
 db 0xFF, 0x52, 0x18, 0x85, 0xC0
+cfcd_hook_test:
+db 0x6A, 0xFF, 0x64, 0xA1, 0x00
 
 ; actual code
 
@@ -109,5 +149,11 @@ call [ecx + 0x18]
 add esp, 0x10
 
 test eax, eax
+ret
+
+; all hooks are calls, so discard that return address, then return true from the caller
+cfcd_hook_code:
+pop eax
+mov eax, 1
 ret
 
