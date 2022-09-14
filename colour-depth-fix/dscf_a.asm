@@ -7,10 +7,14 @@ global _ddraw_hook_table
 ; Null-terminated list of hook suite/string pairs.
 _ddraw_hook_table:
 dd suite_2p286_b195, suite_2p286_b195_name
+dd suite_1p162, suite_1p162_name
 dd 0, 0
 
 suite_2p286_b195_name:
 db "Engine 2.286 B195 - Docking Station", 0
+
+suite_1p162_name:
+db "Engine 1.162 - Creatures 3 Update 2", 0
 
 ; These tables contain sets of 3: the absolute address, a pointer to the jump target, and a pointer to the expected 5 bytes.
 suite_2p286_b195:
@@ -30,6 +34,22 @@ dd 0x0047628C, cs_hook_code, cs_hook_edx_test
 ; done!
 dd 0, 0, 0
 
+suite_1p162:
+; CreateFullscreenDisplaySurfaces
+dd 0x0047D87B, cs_hook_code, cs_hook_ecx_test
+dd 0x0047D8EC, cs_hook_code, cs_hook_edx_test
+dd 0x0047D90C, cs_hook_code, cs_hook_edx_test
+; CreateWindowedDisplaySurfaces
+dd 0x0047DB1D, cs_hook_code, cs_hook_ecx_test
+dd 0x0047DB61, cs_hook_code, cs_hook_edx_test
+; FlipScreenHorizontally
+dd 0x0047E6F3, cs_hook_code, cs_hook_edx_test
+dd 0x0047E70F, cs_hook_code, cs_hook_edx_test
+; CreateSurface
+dd 0x00481A32, cs_hook_code, cs_hook_edx_test
+dd 0x00481A53, cs_hook_code, cs_hook_edx_test
+dd 0, 0, 0
+
 ; sanity check strings
 cs_hook_ecx_test:
 db 0xFF, 0x51, 0x18, 0x85, 0xC0
@@ -41,6 +61,8 @@ db 0xFF, 0x52, 0x18, 0x85, 0xC0
 cs_hook_code:
 
 ; ATTENTION: What this code does is wrap a IDirectDraw.CreateSurface call ([e*x + 0x18]) & patch in the RGB565 pixel format.
+; It also includes the "test eax, eax" that follows, as otherwise 5 bytes would not be consumed properly.
+; See the test strings above for expected code to replace.
 
 ; frame: (ret, this, p1, p2, p3)
 
