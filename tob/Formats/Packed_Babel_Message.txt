@@ -8,6 +8,8 @@ Packed using [[:Structs:CBabelMessage|CBabelMessage]].
 
 ===== Binary "Packed" Format =====
 
+Firstly, the 24-byte header:
+
 * +0: total size of message, including this field
 	* size_t fullLen
 * +4: UID
@@ -22,3 +24,6 @@ Packed using [[:Structs:CBabelMessage|CBabelMessage]].
 	* size_t somethingElseLen
 * +20: major type (see BABEL_MESSAGE)
 	* int majorType
+
+Secondly, the message data follows.
+Thirdly, the "something else" follows.
