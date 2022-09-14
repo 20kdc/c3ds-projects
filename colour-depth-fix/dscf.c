@@ -12,39 +12,77 @@
 #include <windows.h>
 #include <ddraw.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 
-extern void ddraw_createsurface_hook_ecx_code();
-extern void ddraw_createsurface_hook_ecx_test();
-#define DDRAW_CREATESURFACE_HOOK_ECX ddraw_createsurface_hook_ecx_code, ddraw_createsurface_hook_ecx_test
+typedef struct {
+	uint32_t address;
+	const void * target;
+	const char * expected;
+} hook_t;
 
-extern void ddraw_createsurface_hook_edx_code();
-extern void ddraw_createsurface_hook_edx_test();
-#define DDRAW_CREATESURFACE_HOOK_EDX ddraw_createsurface_hook_edx_code, ddraw_createsurface_hook_edx_test
+typedef struct {
+	const hook_t * hooks;
+	const char * name;
+} suite_t;
 
-static void patchCall(uint32_t address, const void * target, const void * expected) {
-	const char * expectedChr = (char *) expected;
-	char * adr = (char *) address;
+// exported from the ASM side
+extern const suite_t ddraw_hook_table[];
+
+static int hookValid(const hook_t * hook) {
+	const char * expectedChr = hook->expected;
+	char * adr = (char *) hook->address;
+	for (int i = 0; i < 5; i++)
+		if (expectedChr[i] != adr[i])
+			return 0;
+	return 1;
+}
+
+static void hookPatch(const hook_t * hook) {
+	const char * expectedChr = (char *) hook->expected;
+	char * adr = (char *) hook->address;
 	DWORD ignoreMe = 0;
-	VirtualProtect((void *) address, 5, 0x80, &ignoreMe);
-	if (expected != 0) {
-		for (int i = 0; i < 5; i++) {
-			if (expectedChr[i] != adr[i]) {
-				MessageBoxA(NULL, "Hook target mismatch - this engine.exe is of the wrong version. Your window title should contain \"Engine 2.286 B195\".", "Ragnarok", MB_OK);
-				return;
-			}
-		}
-	}
+	VirtualProtect((void *) adr, 5, 0x80, &ignoreMe);
 	adr[0] = 0xE8;
-	*((uint32_t*) (adr + 1)) = ((uint32_t) target) - (address + 5);
-	FlushInstructionCache(0, (void *) address, 5);
+	*((uint32_t*) (adr + 1)) = ((uint32_t) hook->target) - (hook->address + 5);
+	FlushInstructionCache(0, (void *) adr, 5);
 }
 
 static HMODULE ddrawModule;
 
+// I keep thinking this is marked WINAPI (stdcall). Be aware: this is NOT stdcall.
 __declspec(dllexport) HRESULT DirectDrawHooked(GUID * lpGUID, LPDIRECTDRAW * ddraw, IUnknown * unkOuter) {
 	HRESULT (*ddc)(GUID *, LPDIRECTDRAW *, IUnknown *) = (void *) GetProcAddress(ddrawModule, "DirectDrawCreate");
 	return ddc(lpGUID, ddraw, unkOuter);
+}
+
+static void attemptHooks() {
+	const suite_t * hookSuite = ddraw_hook_table;
+	fprintf(stderr, "colour-depth-fix: scanning hooksites\n");
+	while (hookSuite->hooks) {
+		const hook_t * hook = hookSuite->hooks;
+		while (hook->address) {
+			if (!hookValid(hook)) {
+				fprintf(stderr, "colour-depth-fix: engine: %s failed because at hook %x\n", hookSuite->name, hook->address);
+				break;
+			}
+			hook++;
+		}
+		if (!hook->address) {
+			// got to end, so valid!
+			fprintf(stderr, "colour-depth-fix: hooksite analysis indicates engine: %s\n", hookSuite->name);
+			hook = hookSuite->hooks;
+			while (hook->address) {
+				hookPatch(hook);
+				hook++;
+			}
+			return;
+		}
+		hookSuite++;
+	}
+	MessageBoxA(NULL, "engine.exe not supported, your window title should contain one of:\r\n"
+		"Engine 2.286 B195\r\n"
+		"", "colour-depth-fix", MB_OK);
 }
 
 BOOL WINAPI DllMain(HINSTANCE x, DWORD y, void * z) {
@@ -52,19 +90,7 @@ BOOL WINAPI DllMain(HINSTANCE x, DWORD y, void * z) {
 	{
 		case DLL_PROCESS_ATTACH:
 			ddrawModule = LoadLibraryA("DDRAW.dll");
-			// CreateFullscreenDisplaySurfaces
-			patchCall(0x00472FE1, DDRAW_CREATESURFACE_HOOK_ECX);
-			patchCall(0x0047304B, DDRAW_CREATESURFACE_HOOK_EDX);
-			patchCall(0x00473069, DDRAW_CREATESURFACE_HOOK_EDX);
-			// CreateWindowedDisplaySurfaces
-			patchCall(0x0047327B, DDRAW_CREATESURFACE_HOOK_ECX);
-			patchCall(0x004732BA, DDRAW_CREATESURFACE_HOOK_EDX);
-			// FlipScreenHorizontally
-			patchCall(0x004737B9, DDRAW_CREATESURFACE_HOOK_EDX);
-			patchCall(0x004737D6, DDRAW_CREATESURFACE_HOOK_EDX);
-			// CreateSurface
-			patchCall(0x0047626E, DDRAW_CREATESURFACE_HOOK_EDX);
-			patchCall(0x0047628C, DDRAW_CREATESURFACE_HOOK_EDX);
+			attemptHooks();
 			break;
 		case DLL_PROCESS_DETACH:
 			FreeLibrary(ddrawModule);
