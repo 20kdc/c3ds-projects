@@ -1,0 +1,28 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-15T21:47:26+01:00
+
+====== C2E Message ======
+
+12 bytes - meant to act as an extensible type indicator, but seemingly never got expanded.
+
+* +0: Always 12 (the length of this format). Note this does NOT include data.
+	* int length
+* +4: Type
+	* int type
+* +8: 0
+	* int zero
+
+===== Type 0: PRAY File =====
+
+Literally just a PRAY file.
+
+Note though that [[:Structs:NetManager|NetManager]] will spool these with [[:InboxOutbox|InboxOutbox.]]
+
+===== Type 1: NET: WRIT =====
+
+* int channelLength
+* char channel[channelLength]
+* int messageId
+* [[:Formats:PackedCaosVar|PackedCaosVar]] param1
+* [[:Formats:PackedCaosVar|PackedCaosVar]] param2

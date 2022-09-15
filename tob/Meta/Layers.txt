@@ -34,12 +34,17 @@ From "send/recv calls at system level" outwards.
 * Atop this is the CAOS commands and such.
 ===== Specifics: NET WRIT =====
 
+//**Big important warning here! NET: WRIT isn't actually used by the game's CAOS.**//
+//**NET: WRIT is the only caller of NetManager::PostDirectMessage - which is itself the only caller of CBabelClient::ConnectToPeer.**//
+//**This may imply that NetDirectLink/etc. are deprecated. Which would be really useful, if true...**//
+
 * NetHandlers::SubCommand_NET_WRIT
 	* [[:Structs:NetManager|NetManager]]::PostDirectMessage
-	* [[:Structs:NetManager|NetManager]]::ConnectToPeer
-		* [[:Structs:CBabelClient|CBabelClient]]::ConnectToPeer
-			* [[:Structs:CBabelClient|CBabelClient]]::GetConnectionDetail
-				* [[:Structs:CBabelSocket|CBabelSocket]]::Write
-	* [[:Structs:NetDirectLink|NetDirectLink]]::SendData
-		* //Can go via virtual circuits or via a direct link. Realistically, virtual circuits.//
-			* [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Write
+		* [[:Structs:NetManager|NetManager]]::ConnectToPeer
+			* [[:Structs:CBabelClient|CBabelClient]]::ConnectToPeer
+				* [[:Structs:CBabelClient|CBabelClient]]::GetConnectionDetail
+					* [[:Structs:CBabelSocket|CBabelSocket]]::Write (to server)
+		* [[:Structs:NetDirectLink|NetDirectLink]]::SendData
+			* //Can go via virtual circuits or via a direct link. Realistically, virtual circuits.//
+				* [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Write
+					* [[:Structs:CBabelSocket|CBabelSocket]]::Write (to server)

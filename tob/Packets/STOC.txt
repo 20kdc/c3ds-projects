@@ -41,23 +41,26 @@ Note that this acts as a "base" for other packets.
 
 ===== C_TID_MESSAGE =====
 
-//name is a guess//
-H//as a CTOS equivalent but it is not the same format!//
+* Name is a guess
+* Has a CTOS equivalent but it is not the same format!
+
+This is used to send PRAY data. It might do some other things, but that's what the packet dumps show.
+In particular, this packet type is how Norns are sent over the Warp!
+
 32 bytes + message data
 
 * Type: 0x09
 * A/B: Ignored
 * C/D: Ignored
 * Ticket number: Ignored
-* Further data: Length of the following [[Formats:Packed Babel Message]] in bytes. Note this is the whole thing including it's framing.
+* Further data: Length of the following [[Formats:Packed Babel Message]] in bytes. Note this includes its header.
 * E: Ignored
 
 This is followed by the actual message as described with the length.
 
-Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::MessageDispatch
-
-For a received packet, see dsprotocol/pk/norn1
-NOTE: This packet type is how Norns are sent over the Warp!
+* Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::MessageDispatch
+* Example: dsprotocol/pk/norn1
+* Example: dsprotocol/pk/chat1
 
 ===== C_TID_HANDSHAKE_RESPONSE =====
 
@@ -87,7 +90,8 @@ NOTE: This packet type is how Norns are sent over the Warp!
 Followed by additional data.
 The additional data appears to be (from rebabel's login-ok1) part of a mechanism to remotely update the server list.
 
-Seen in [[:Structs:CBabelClient|CBabelClient]]::Connectx
+* Received by [[:Structs:CBabelClient|CBabelClient]]::Connectx
+* Example: dsprotocol/pk/login-ok1
 
 ===== C_TID_USER_LINE =====
 
@@ -106,8 +110,11 @@ Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOnline / [[:St
 
 ===== C_TID_CLIENT_COMMAND =====
 
-//name is a guess//
-//Has a CTOS equivalent//
+* Name is a guess
+* Has a CTOS equivalent
+
+Used to notify the client of events.
+
 36 bytes
 
 * Type: 0x14
@@ -136,24 +143,24 @@ Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::ClientClientComman
 * +32: ?
 * +36: ?
 * +40: ?
-* +44: ?
 
-Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *)
-Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuitConnect
-Responded to with a C_TID_CLIENT_COMMAND
+* Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuitConnect
+
+Responded to with a C_TID_CLIENT_COMMAND (details not written) (see CTOS page for further details)
 
 ===== C_TID_VIRTUAL_CIRCUIT =====
 
 Transmission of data through a virtual circuit
 32 + 12 + N bytes
 
-Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuit
+* Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuit
 
 ===== C_TID_VIRTUAL_CIRCUIT_CLOSE =====
 
-Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuitClose
+* Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuitClose
 
 ===== C_TID_MIGRATE =====
 
 Client dials ctlcpc180.cyberlife.co.uk - fat chance of getting //that //back up...
-Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::Migrate
+
+* Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::Migrate

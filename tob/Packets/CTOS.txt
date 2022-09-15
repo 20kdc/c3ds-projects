@@ -46,15 +46,14 @@ H//as a STOC equivalent but it is not the same format!//
 * A/B: Server UID/HID
 * C/D: User UID/HID (as if from [[:Structs:CBabelClient|CBabelClient]]::GetUser)
 * Ticket number: 0
-* Further data: Length of the following [[Formats:Packed Babel Message]] in bytes. Note this is the whole thing including framing.
+* Further data: Length of the following [[Formats:Packed Babel Message]] in bytes. Note this includes its header.
 * E: 0
 * +32: Target UID/HID
 	* int targetUID, targetHID
 
 This is followed by the actual message as described with the length.
 
-See [[:Structs:CBabelClient|CBabelClient]]::SendBinaryMessage
-For a sent packet, see dsprotocol/pk/chat1
+* Sent by [[:Structs:CBabelClient|CBabelClient]]::SendBinaryMessage
 
 ===== C_TID_GET_CLIENT_INFO =====
 
