@@ -48,6 +48,11 @@ Note that this acts as a "base" for other packets.
 * +24: Length of the following [[Formats:Packed Babel Message]] in bytes. Note this is the whole thing including framing.
 	* int babelMsgLen
 
+This is followed by the actual message as described with the length.
+
+NOTE: This packet type is how Norns are sent over the WARP!
+See [[:Structs:CBabelClient|CBabelClient]]::SendBinaryMessage, and dsprotocol/pk/norn1
+
 ===== C_TID_HANDSHAKE_RESPONSE =====
 
 //name is a guess//
@@ -61,8 +66,15 @@ Note that this acts as a "base" for other packets.
 	* int serverUID
 * +8: Server HID
 	* int serverHID
+* +12: New user UID
+	* int userUID
+* +16: New user HID
+	* int userHID
 * +44: Additional data length
 	* int addDataLen
+
+Followed by additional data.
+The additional data appears to be (from rebabel's login-ok1) part of a mechanism to remotely update the server list.
 
 Seen in [[:Structs:CBabelClient|CBabelClient]]::Connectx
 
