@@ -9,9 +9,10 @@ Before going into this, it's worth noting that it seems different formats are us
 From "send/recv calls at system level" outwards.
 
 * [[:Structs:CBabelAsyncCore|CBabelAsyncCore]] pokes send/recv.
-* [[:Structs:CBabelDConnection|CBabelDConnection]] handles the higher-level framing, and in particular appears to receive [[Structs:C_TID_BASE|C_TID_BASE]] packets.
+* [[:Structs:CBabelDConnection|CBabelDConnection]] handles the higher-level framing, and in particular appears to receive C_TID_BASE packets.
 	* These packets can be MessageDispatch packets, and thus [[:Structs:CBabelMessage|CBabelMessage]] shows up.
 	* Note however that data is //sent// via CBabelDConnection essentially directly.
+	* The socket is written to by [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *) directly
 * [[:Structs:CBabelClient|CBabelClient]] uses SendMessageA to send raw bytes.
 	* This is used in 5 places, with the given formats:
 		* WWR Packet
@@ -20,5 +21,5 @@ From "send/recv calls at system level" outwards.
 			* NotifyListeningPort
 			* SendBinaryMessage
 		* VSC Packet
-			* [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect
+			* [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *)
 	* But then it wraps that with SendBinaryMessage.

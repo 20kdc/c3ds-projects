@@ -22,11 +22,11 @@ Really really abstract.
 * +4: Read
 	* read
 * +8: Write
-	* write
+	* undefined4 __thiscall cbabelsocket_write_t(CBabelSocket *, undefined4, undefined4)
 * +12: BytesReady
 	* bytesReadyA
 * +16: Close
-	* close
+	* undefined4 __thiscall cbabelsocket_close_t(CBabelSocket *)
 * +20: Accept
 	* accept
 * +24: BytesReady

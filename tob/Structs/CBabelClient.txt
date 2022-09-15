@@ -10,25 +10,39 @@ hopelessly incomplete description, held together by computer assistance and hope
 
 * +16: switch box
 	* [[CBabelSwitchBox]] switchBox
-* +32: random buin
-	* [[B_UIN]] aBUIN
+* +32: User BUIN (as returned by GetUser)
+	* [[B_UIN]] userBUIN
 * +40: async core
 	* [[CBabelAsyncCore]] asyncCore
 * +100:
 	* [[CBabelDConnection]] connection
 * +144: server info?
 	* [[CBabelServerInfo]] * serverInfo
-* +172: UID maybe? (i.e. "sender" details in Formats:WWR Packet )
-* +176: HID maybe?
+* +156: [[std_vector]]<[[B_UIN]]> Online user IDs
+	* [[B_UIN]] * usersOnline
+	* [[B_UIN]] * usersOnlineEnd
+* +172: Server HID (?)
+	* int serverHID
+* +176: Server UID (?)
+	* int serverUID
+* +180: Next ticket number (as seen in GetConnectionDetail)
 * +212: critical section
 	* _RTL_CRITICAL_SECTION criticalSection
-* +240: Pointer to array of [[CBabelTransactionTicket]] pointers.
-* +244: A pointer inside the previous array that is one value past the end (std::vector?)
+* +240: [[std_vector]]<[[CBabelTransactionTicket]] *> Transaction tickets
+	* [[CBabelTransactionTicket]] ** transactionTickets
+	* [[CBabelTransactionTicket]] ** transactionTicketsEnd
+* +252: Error code
+	* int errorCode
 * +260: ???
 	* [[CBabelAsyncCoreChild]] ** ???
 * +268: client message callback
+	* [[NetManager]] sets this to NetManager::BabelCallbackStatic(CBabelClient *param_1,uint param_2,int param_3,int param_4)
+* +288: port (as returned by GetPort)
+	* int port
 * +312: user data???
 	* [[CBabelShortUserDataObject]]
+* +376: "IChannel" socket (see CloseIChannel)
+	* SOCKET iChannelSocket
 * +384: message queue
 	* [[CBabelMessage]]? ** messageQueue
 * +416: critical section 2

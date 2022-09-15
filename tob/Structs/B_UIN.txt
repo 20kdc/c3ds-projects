@@ -7,6 +7,8 @@ Creation-Date: 2022-09-14T22:36:57+01:00
 Identifies a specific user.
 Represented by the form ''0+1'' where 0 is the UID and 1 is the HID.
 
+To verify this, check NetUtilities::UserToString.
+
 ===== Structure =====
 
 '''
