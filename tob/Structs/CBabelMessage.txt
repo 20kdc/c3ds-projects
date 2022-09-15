@@ -16,13 +16,13 @@ Said packed form is described at [[:Formats:Packed Babel Message|Packed Babel Me
 	* void * messageData
 * +8: Message data length
 	* size_t messageDataLen
-* +12: major type (see [[:Enums:BABEL_MESSAGE|BABEL_MESSAGE]])
+* +12: major type (see BABEL_MESSAGE)
 	* int majorType
 * +16: Something ELSE
 	* void * somethingElse
 * +20: Something ELSE len
 	* size_t somethingElseLen
-* +24: ?
+* +24: Flag (as passed by [[CBabelClient]]::SendBinaryMessage)
 * +28: something (8 bytes)
 	* [[:Structs:B_UIN|B_UIN]] b_uin
 

@@ -1,0 +1,23 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-15T13:59:46+01:00
+
+====== ClientMessages ======
+
+These go through [[:Structs:CBabelClient|CBabelClient]]::ClientMessage through to [[:Structs:NetManager|NetManager]]::BabelCallback.
+They consist of 3 integers, the first seemingly being type.
+
+* 2,0,X: Fired from [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOnline
+	* X: Pointer to a [[:Structs:CBabelShortUserDataObject|CBabelShortUserDataObject]]
+* 3,0,X: Fired from [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOffline
+	* X: Pointer to a [[:Structs:CBabelShortUserDataObject|CBabelShortUserDataObject]]
+* 5,0,X: Fired from [[:Structs:CBabelDConnection|CBabelDConnection]]::MessageDispatch
+	* X: Amount of packets in [[:Structs:CBabelClient|CBabelClient]] message queue
+* 7,X,Y: Fired from [[:Structs:CBabelDConnection|CBabelDConnection]]::ClientClientCommand
+	* X: Sub-command number.
+	* Y: Pointer to an unknown structure describing things.
+* 9,0,0: Fired from [[:Structs:CBabelClient|CBabelClient]]::ConnectionLost
+* 12,X,Y: Fired from [[:Structs:CBabelRemoteSwitch|CBabelRemoteSwitch]]::Disconnected
+	* X: ?
+	* Y: ?
+* 13,0,0: Fired from [[:Structs:CBabelClient|CBabelClient]]::OnlineChange

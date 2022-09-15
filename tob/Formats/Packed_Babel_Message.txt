@@ -27,3 +27,9 @@ Firstly, the 24-byte header:
 
 Secondly, the message data follows.
 Thirdly, the "something else" follows.
+
+===== Major Types =====
+
+===== 1: BABEL_MESSAGE_BINARY =====
+
+This is what's output by [[:Structs:CBabelClient|CBabelClient]]::SendBinaryMessage.

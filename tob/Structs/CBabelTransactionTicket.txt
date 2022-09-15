@@ -1,0 +1,12 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-15T16:16:51+01:00
+
+====== CBabelTransactionTicket ======
+
+16 bytes
+
+* +8: Inherent response size
+	* int inherentResponseSize
+* +12: Received data buffer
+	* void * receivedBuffer

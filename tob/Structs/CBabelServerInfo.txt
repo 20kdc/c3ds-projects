@@ -5,13 +5,16 @@ Creation-Date: 2022-09-15T11:26:21+01:00
 ====== CBabelServerInfo ======
 
 Useful notes:
-''SetServer(host, engName, port, id)''
+''SetServer(host, name, port, id)''
 
 ===== Structure =====
 
 40 bytes
 
-* string 1
-	* [[std_string]] s1 (16 bytes)
-* string 2
-	* [[std_string]] s2 (16 bytes)
+* +0: host
+	* [[std_string]] host (16 bytes)
+* +16: friendly name
+	* [[std_string]] name (16 bytes)
+* +32: port
+	* int port
+

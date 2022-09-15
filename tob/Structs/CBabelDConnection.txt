@@ -10,7 +10,11 @@ Appears to handle the basic client receipt framing - see CBabelDConnection::Hand
 
 ===== Structure =====
 
+Presently assumed to be 76 bytes.
+
 * +0: async core base
 	* [[CBabelAsyncCore]] baseAsyncCore
 * +60: socket base
 	* [[CBabelSocket]] baseSocket
+* +72: parent client
+	* [[:Structs:CBabelClient|CBabelClient]] * client

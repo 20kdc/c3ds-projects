@@ -12,7 +12,6 @@ From "send/recv calls at system level" outwards.
 * [[:Structs:CBabelDConnection|CBabelDConnection]] handles the higher-level framing, and in particular appears to receive C_TID_BASE packets.
 	* These packets can be MessageDispatch packets, and thus [[:Structs:CBabelMessage|CBabelMessage]] shows up.
 	* Note however that data is //sent// via CBabelDConnection essentially directly.
-	* The socket is written to by [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *) directly
 * [[:Structs:CBabelClient|CBabelClient]] //usually// uses SendMessageA to send raw bytes.
 	* This is used in 5 places, with the given formats:
 		* WWR Packet
@@ -26,6 +25,8 @@ From "send/recv calls at system level" outwards.
 	* There is also Connectx, which is wrapped by Connect - Connectx lets you supply an arbitrary handshake packet, while Connect generates the Docking Station login packet
 		* The received packet is always 0x0A (C_TID_HANDSHAKE_RESPONSE)
 		* The sent packet in practice is 0x25 (C_TID_HANDSHAKE)
+	* The socket is written to by [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *) directly
+	* GetClientInfo writes to the socket as well.
 * Atop the Babel layer is the NetManager/C2E layer.
 	* Worth noting is that while there appears to be some encryption involved for some high-level packets, it //may not be relevant to a Babel server.//
 

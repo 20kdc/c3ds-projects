@@ -1,159 +1,27 @@
 Content-Type: text/x-zim-wiki
 Wiki-Format: zim 0.6
-Creation-Date: 2022-09-15T10:05:28+01:00
+Creation-Date: 2022-09-15T15:53:22+01:00
 
 ====== Packets ======
 
-===== C_TID_BASE =====
+===== Master list of packet numbers =====
 
-Note that this acts as a "base" for other packets.
+* 0x09: MessageDispatch (CTOS, STOC)
+* 0x0A: Handshake Response (STOC)
+* 0x0D: UserOnline (STOC)
+* 0x0E: UserOffline (STOC)
+* 0x0F: GetClientInfo (CTOS)
+* 0x10: AddWWREntry (CTOS)
+* 0x11: RemoveWWREntry (CTOS)
+* 0x12: NotifyListeningPort (CTOS)
+* 0x13: GetConnectionDetail (CTOS)
+* 0x14: ClientCommand (CTOS, STOC)
+* 0x1D: OnlineChange (STOC)
+* 0x1E: VirtualCircuitConnect (CTOS, STOC)
+* 0x1F: VirtualCircuit (STOC)
+* 0x20: VirtualCircuitClose (STOC)
+* 0x21 through 0x24 inclusive: STOC shunts around weirdly, may imply something odd going on in [[:Structs:CBabelDConnection|CBabelDConnection]]
+	* 0x0221: DSFetchRandomUser (CTOS)
+* 0x25: Handshake (CTOS)
 
-32 bytes
-
-* +0: Type.
-	* int type
-	* 0x09: MessageDispatch (CTOS, STOC) - C_TID_MESSAGE
-	* 0x0A: Handshake Response (STOC) - C_TID_HANDSHAKE_RESPONSE
-		* This particular handler interprets the first (lowest) byte of the type as a char, using the second byte as an error code.
-	* 0x0D: UserOnline (STOC)
-	* 0x0E: UserOffline (STOC)
-	* 0x10: AddWWREntry (CTOS) - C_TID_WWR
-	* 0x11: RemoveWWREntry (CTOS) - C_TID_WWR
-	* 0x12: NotifyListeningPort (CTOS) - C_TID_NOTIFY_LISTENING_PORT
-	* 0x13: GetConnectionDetail (CTOS)
-	* 0x14: ClientCommand (CTOS, STOC)
-	* 0x1D: OnlineChange (STOC)
-	* 0x1E: VirtualCircuitConnect (CTOS, STOC) - C_TID_VIRTUAL_CONNECT
-	* 0x1F: VirtualCircuit (STOC)
-	* 0x20: VirtualCircuitClose (STOC)
-	* 0x21 through 0x24 inclusive: STOC shunts around weirdly, may imply something odd going on in [[:Structs:CBabelDConnection|CBabelDConnection]]
-	* 0x25: Handshake (CTOS) - C_TID_HANDSHAKE
-* +4: Field A
-* +8: Field B
-* +12: Field C
-* +16: Field D
-* +20: If non-zero, client will pass this to TicketDispatch. The importance of this overrides and bypasses the Type list above.
-	* int ticketDispatch
-* +24: Usually indicates the length of further data (but only in packets with variable-length further data).
-	* int furtherData
-* +28: Field E
-
-===== C_TID_MESSAGE =====
-
-//name is a guess//
-40 bytes + message data
-
-* +0: Type 0x09
-	* int type
-* +24: Length of the following [[Formats:Packed Babel Message]] in bytes. Note this is the whole thing including framing.
-	* int babelMsgLen
-
-This is followed by the actual message as described with the length.
-
-NOTE: This packet type is how Norns are sent over the WARP!
-See [[:Structs:CBabelClient|CBabelClient]]::SendBinaryMessage, and dsprotocol/pk/norn1
-
-===== C_TID_HANDSHAKE_RESPONSE =====
-
-//name is a guess//
-48 bytes + data
-
-* +0: Type 0x0A
-	* char type
-* +1: Error code
-	* unsigned char errorCode
-* +4: Server UID - if 0, considered an error
-	* int serverUID
-* +8: Server HID
-	* int serverHID
-* +12: New user UID
-	* int userUID
-* +16: New user HID
-	* int userHID
-* +44: Additional data length
-	* int addDataLen
-
-Followed by additional data.
-The additional data appears to be (from rebabel's login-ok1) part of a mechanism to remotely update the server list.
-
-Seen in [[:Structs:CBabelClient|CBabelClient]]::Connectx
-
-===== C_TID_WWR =====
-
-//name is a guess//
-32 bytes
-
-'''
-+0: Type. Set 0x10 for add, 0x11 for remove
-    int type
-+4: server UID
-+8: server HID
-+12: target UID
-    int uid
-+16: target HID
-    int hid
-+20: zero
-+24: zero
-+28: zero
-'''
-
-Seen in [[:Structs:CBabelClient|CBabelClient]]::AddWWREntry / CBabelClient::RemoveWWREntry.
-
-===== C_TID_NOTIFY_LISTENING_PORT =====
-
-todo
-
-===== C_TID_VIRTUAL_CONNECT =====
-
-44 bytes
-
-* +0: Type (int, 0x1e)
-	* int type
-
-Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *)
-Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuitConnect
-Responded to with a C_TID_CLIENT_COMMAND
-
-===== C_TID_CLIENT_COMMAND =====
-
-//name is a guess//
-36 bytes
-
-* +0: Type? (int, 0x14)
-	* int type
-* +4 & +8: same mysterious "sender?" fields as in WWR Packet
-* +12: presumably receiver UID
-* +16: presumably receiver HID
-* +20: ?
-* +24: ?
-* +28: 
-* +32: always set to 0xE here
-	* int unknown
-
-===== C_TID_HANDSHAKE =====
-
-//name is a guess//
-52 bytes + additional bytes
-
-* +0: Type (0x25)
-	* int type
-* +4, +8: 0
-	* int zero, zero
-* +12: Current UID (as if from [[CBabelClient]]::GetUser)
-	* int currentUID
-* +16: Current HID
-	* int currentHID
-* +20: Ticket number
-	* int ticketNumber
-* +24, +28: 0
-	* int zero, zero
-* +32: 1
-	* int one
-* +36: 2
-	* int two
-* +40: 0
-* +44: Length of zero-terminated username
-* +48: Length of zero-terminated password
-Username and password, with zero terminators, follow.
-
-Sent from [[:Structs:CBabelClient|CBabelClient]]::Connect(char const *,char const *,char const *,int,bool,bool)
+//For call sites or pretty much any further information, please see either STOC or CTOS.//

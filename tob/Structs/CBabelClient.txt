@@ -26,6 +26,11 @@ hopelessly incomplete description, held together by computer assistance and hope
 * +176: Server UID (?)
 	* int serverUID
 * +180: Next ticket number (as seen in GetConnectionDetail)
+* +184: Client peer link
+	* [[:Structs:CBabelClientPeerLink|CBabelClientPeerLink]] * peerLink
+* +192: [[std_vector]] of dwords
+	* ? unks
+	* ? unksEnd
 * +212: critical section
 	* _RTL_CRITICAL_SECTION criticalSection
 * +240: [[std_vector]]<[[CBabelTransactionTicket]] *> Transaction tickets
@@ -43,8 +48,9 @@ hopelessly incomplete description, held together by computer assistance and hope
 	* [[CBabelShortUserDataObject]]
 * +376: "IChannel" socket (see CloseIChannel)
 	* SOCKET iChannelSocket
-* +384: message queue
-	* [[CBabelMessage]]? ** messageQueue
+* +384: [[std_vector]]<[[CBabelMessage]] *> Message queue for MessageDispatch packets
+	* [[CBabelMessage]] ** messageQueue
+	* [[CBabelMessage]] ** messageQueueEnd
 * +416: critical section 2
 	* _RTL_CRITICAL_SECTION criticalSection2
 * +440: async core 2

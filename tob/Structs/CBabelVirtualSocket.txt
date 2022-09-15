@@ -6,6 +6,7 @@ Creation-Date: 2022-09-14T23:56:51+01:00
 
 0x40 bytes (CERTAIN)
 
+* +0: VTable Pointer
 * +16: Virtual socket number acquired with GetNewVirtualSocket
 	* short virtualSocketNum
 * +18: padding?
