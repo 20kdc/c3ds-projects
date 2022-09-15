@@ -19,12 +19,15 @@ Note that this acts as a "base" for other packets.
 			* This particular handler interprets the first (lowest) byte of the type as a char, using the second byte as an error code.
 		* 0x0D: UserOnline - C_TID_USER_LINE
 		* 0x0E: UserOffline - C_TID_USER_LINE
+		* 0x0F: GetClientInfo transaction response, see CTOS
+		* 0x13: GetConnectionDetail transaction response, see CTOS
 		* 0x14: ClientCommand - C_TID_CLIENT_COMMAND
 		* 0x1D: OnlineChange - C_TID_ONLINE_CHANGE
 		* 0x1E: VirtualCircuitConnect - C_TID_VIRTUAL_CONNECT
 		* 0x1F: VirtualCircuit - C_TID_VIRTUAL_CIRCUIT
 		* 0x20: VirtualCircuitClose - C_TID_VIRTUAL_CIRCUIT_CLOSE
 		* 0x21 through 0x24 inclusive: STOC shunts around weirdly, may imply something odd going on in [[:Structs:CBabelDConnection|CBabelDConnection]]
+			* No evidence these are used here, but there's the implication that this is how the CTOS Docking Station-specific "Get Random User" packet is handled, at least conceptually.
 		* 0x2A: Migrate - C_TID_MIGRATE
 * +4: Field A
 * +8: Field B
@@ -64,7 +67,10 @@ This is followed by the actual message as described with the length.
 
 ===== C_TID_HANDSHAKE_RESPONSE =====
 
-//name is a guess//
+* Name is a guess
+
+The response to the CTOS C_TID_HANDSHAKE.
+
 48 bytes + data
 
 * Type: 0x0A
@@ -81,21 +87,31 @@ This is followed by the actual message as described with the length.
 	* 7: Client needs update (//HAHAHAHAHA YEAH LIKE RIGHT//)
 * A/B: Server UID/HID - if UID is 0, considered an error.
 * C/D: Client's new UID/HID
-* Ticket number: ?
-* Further data: ?
-* E: ?
+* Ticket number: Ignored
+* Further data: Ignored
+* E: Ignored
+* (...Ignored...)
 * +44: Additional data length
 	* int addDataLen
 
-Followed by additional data.
-The additional data appears to be (from rebabel's login-ok1) part of a mechanism to remotely update the server list.
+Followed by additional data:
+* +0: If not 1, server list updates are disabled.
+	* int servInfoFlagA
+* +4: If not 1, server list updates are disabled.
+	* int servInfoFlagB
+* +8: Amount of server info records.
+Each server info record (representing a [[:Structs:CBabelServerInfo|CBabelServerInfo]]):
+* +0: Port
+* +4: ID
+* +8: Two zero-terminated strings, the IP address and server name.
 
 * Received by [[:Structs:CBabelClient|CBabelClient]]::Connectx
 * Example: dsprotocol/pk/login-ok1
 
 ===== C_TID_USER_LINE =====
 
-//name is a guess//
+* Name is a guess
+
 32 bytes + additional data
 
 * Type: 0x0D for online, 0x0E for offline
@@ -106,7 +122,8 @@ The additional data appears to be (from rebabel's login-ok1) part of a mechanism
 * E: Ignored
 Followed by a [[:Formats:Packed Babel Short User Data|Packed Babel Short User Data Object.]]
 
-Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOnline / [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOffline
+* Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOnline / [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOffline
+* Example: dsprotocol/dsd/don.dump packet number 11
 
 ===== C_TID_CLIENT_COMMAND =====
 
@@ -132,6 +149,8 @@ Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::ClientClientComman
 
 ===== C_TID_VIRTUAL_CONNECT =====
 
+* Has a CTOS equivalent
+
 44 bytes
 
 * Type: 0x1e
@@ -150,6 +169,9 @@ Responded to with a C_TID_CLIENT_COMMAND (details not written) (see CTOS page fo
 
 ===== C_TID_VIRTUAL_CIRCUIT =====
 
+* Name is a guess
+* Has a CTOS equivalent
+
 Transmission of data through a virtual circuit
 32 + 12 + N bytes
 
@@ -157,9 +179,14 @@ Transmission of data through a virtual circuit
 
 ===== C_TID_VIRTUAL_CIRCUIT_CLOSE =====
 
+* Name is a guess
+* Has a CTOS equivalent
+
 * Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuitClose
 
 ===== C_TID_MIGRATE =====
+
+* Name is a guess
 
 Client dials ctlcpc180.cyberlife.co.uk - fat chance of getting //that //back up...
 

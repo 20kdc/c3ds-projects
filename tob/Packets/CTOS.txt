@@ -38,8 +38,12 @@ Note that this acts as a "base" for other packets.
 
 ===== C_TID_MESSAGE =====
 
-//name is a guess//
-H//as a STOC equivalent but it is not the same format!//
+* Name is a guess
+* Has a STOC equivalent but it is not the same format!
+
+This in practice is used for [[:Formats:C2E Message|C2E Message]] sending (unless the API feels like using a NetDirectLink).
+It's the main "workload" packet.
+
 40 bytes + message data
 
 * Type: 0x09
@@ -57,12 +61,15 @@ This is followed by the actual message as described with the length.
 
 ===== C_TID_GET_CLIENT_INFO =====
 
-//name is a guess//
+* Name is a guess
+* Transactional
 
+request/response show up as packet numbers 18/19 in don.dump
 
 ===== C_TID_WWR =====
 
-//name is a guess//
+* Name is a guess
+
 32 bytes
 
 * Type: 0x10 for add, 0x11 for remove
@@ -81,7 +88,8 @@ Seen in [[:Structs:CBabelClient|CBabelClient]]::AddWWREntry / CBabelClient::Remo
 
 ===== C_TID_NOTIFY_LISTENING_PORT =====
 
-//name is a guess//
+* Name is a guess
+
 32 bytes
 
 * Type: 0x12
@@ -98,7 +106,9 @@ Sent by [[:Structs:CBabelClient|CBabelClient]]::NotifyListeningPort
 
 ===== C_TID_GET_CONNECTION_DETAIL =====
 
-//name is a guess//
+* Name is a guess
+* Transactional
+
 32 bytes
 
 * Type: 0x13
@@ -107,11 +117,13 @@ Sent by [[:Structs:CBabelClient|CBabelClient]]::NotifyListeningPort
 * Ticket number: Allocated
 * Further data: 0
 * E: A parameter? Seems to always be false, so 0.
+ shows up as packet number 16/17 in don.dump.
 
 ==== Response ====
 
 * Type: ?
-* A/B: meaning unknown
+* A: IP address //in network order.// That is, passable directly to inet_ntoa - lowest byte is first in the IP address.
+* B: ?
 * C/D: ?
 * Ticket number: As expected
 * Further data: Not checked
@@ -119,8 +131,9 @@ Sent by [[:Structs:CBabelClient|CBabelClient]]::NotifyListeningPort
 
 ===== C_TID_CLIENT_COMMAND =====
 
-//name is a guess//
-//Has an STOC equivalent//
+* Name is a guess
+* Has an STOC equivalent
+
 36 bytes
 
 * Type: 0x14
@@ -136,7 +149,9 @@ Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(C_TID_VI
 
 ===== C_TID_VIRTUAL_CONNECT =====
 
-//Has an STOC equivalent//
+* Name is a guess
+* Has an STOC equivalent
+
 44 bytes
 
 * +0: Type (int, 0x1e)
@@ -147,8 +162,8 @@ Responded to with a C_TID_CLIENT_COMMAND
 
 ===== C_TID_VIRTUAL_CIRCUIT =====
 
-//name is a guess//
-//Has an STOC equivalent//
+* Name is a guess
+* Has an STOC equivalent
 
 Transmission of data through a virtual circuit
 32 + 12 + N bytes
@@ -157,12 +172,14 @@ Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Write
 
 ===== C_TID_VIRTUAL_CIRCUIT_CLOSE =====
 
-//name is a guess//
-//Has an STOC equivalent//
+* Name is a guess
+* Has an STOC equivalent
 
 ===== C_TID_DS_FETCH_RANDOM_USER =====
 
-//name is a guess//
+* Name is a guess
+* Transactional
+
 32 bytes
 
 * Type: 0x0221
@@ -186,7 +203,8 @@ Sent and response received in [[:Structs:DSNetManager|DSNetManager]]::AsyncDSFet
 
 ===== C_TID_HANDSHAKE =====
 
-//name is a guess//
+* Name is a guess
+
 52 bytes + additional bytes
 
 * Type: 0x25
