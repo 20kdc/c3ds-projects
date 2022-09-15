@@ -1,0 +1,24 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-15T01:07:16+01:00
+
+====== Layers ======
+
+Before going into this, it's worth noting that it seems different formats are used for the sending and receiving paths, though they go through the same classes.
+
+From "send/recv calls at system level" outwards.
+
+* [[:Structs:CBabelAsyncCore|CBabelAsyncCore]] pokes send/recv.
+* [[:Structs:CBabelDConnection|CBabelDConnection]] handles the higher-level framing, and in particular appears to receive [[Structs:C_TID_BASE|C_TID_BASE]] packets.
+	* These packets can be MessageDispatch packets, and thus [[:Structs:CBabelMessage|CBabelMessage]] shows up.
+	* Note however that data is //sent// via CBabelDConnection essentially directly.
+* [[:Structs:CBabelClient|CBabelClient]] uses SendMessageA to send raw bytes.
+	* This is used in 5 places, with the given formats:
+		* WWR Packet
+			* AddWWREntry
+			* RemoveWWREntry
+			* NotifyListeningPort
+			* SendBinaryMessage
+		* VSC Packet
+			* [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect
+	* But then it wraps that with SendBinaryMessage.

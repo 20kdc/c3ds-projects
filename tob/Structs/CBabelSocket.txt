@@ -1,0 +1,34 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-15T00:38:07+01:00
+
+====== CBabelSocket ======
+
+Really really abstract.
+
+===== Structure =====
+
+4 bytes (it's very abstract)
+
+* +0: VTable pointer
+	* cbabelsocket_vtable_t vtbl
+
+===== VTable =====
+
+''cbabelsocket_vtbl_t''
+
+* +0: scalar destructor
+	* scalarDestructor
+* +4: Read
+	* read
+* +8: Write
+	* write
+* +12: BytesReady
+	* bytesReadyA
+* +16: Close
+	* close
+* +20: Accept
+	* accept
+* +24: BytesReady
+	* bytesReadyB
+
