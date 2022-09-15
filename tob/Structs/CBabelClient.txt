@@ -31,6 +31,9 @@ hopelessly incomplete description, held together by computer assistance and hope
 * +192: [[std_vector]] of dwords
 	* ? unks
 	* ? unksEnd
+* +204: client peer handler callback
+	* void * peerHandlerCallback
+	* [[NetManager]] sets this to NetManager::PeerHandlerStatic(C_BABELCLIENT_BASE *, CBabelSocket *, CBabelClient *)
 * +212: critical section
 	* _RTL_CRITICAL_SECTION criticalSection
 * +240: [[std_vector]]<[[CBabelTransactionTicket]] *> Transaction tickets
@@ -40,8 +43,11 @@ hopelessly incomplete description, held together by computer assistance and hope
 	* int errorCode
 * +260: ???
 	* [[CBabelAsyncCoreChild]] ** ???
+* +264: client callbacks (4 of them)
+	* FPTR * rawPacketCallbacks
 * +268: client message callback
-	* [[NetManager]] sets this to NetManager::BabelCallbackStatic(CBabelClient *param_1,uint param_2,int param_3,int param_4)
+	* void * clientMessageCallback
+	* [[NetManager]] sets this to NetManager::BabelCallbackStatic(CBabelClient *,uint,int,int)
 * +288: port (as returned by GetPort)
 	* int port
 * +312: user data???

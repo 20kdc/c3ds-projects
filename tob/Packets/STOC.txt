@@ -17,14 +17,15 @@ Note that this acts as a "base" for other packets.
 		* 0x09: MessageDispatch - C_TID_MESSAGE
 		* 0x0A: Handshake Response - C_TID_HANDSHAKE_RESPONSE
 			* This particular handler interprets the first (lowest) byte of the type as a char, using the second byte as an error code.
-		* 0x0D: UserOnline
-		* 0x0E: UserOffline
+		* 0x0D: UserOnline - C_TID_USER_LINE
+		* 0x0E: UserOffline - C_TID_USER_LINE
 		* 0x14: ClientCommand - C_TID_CLIENT_COMMAND
-		* 0x1D: OnlineChange
+		* 0x1D: OnlineChange - C_TID_ONLINE_CHANGE
 		* 0x1E: VirtualCircuitConnect - C_TID_VIRTUAL_CONNECT
-		* 0x1F: VirtualCircuit
-		* 0x20: VirtualCircuitClose
+		* 0x1F: VirtualCircuit - C_TID_VIRTUAL_CIRCUIT
+		* 0x20: VirtualCircuitClose - C_TID_VIRTUAL_CIRCUIT_CLOSE
 		* 0x21 through 0x24 inclusive: STOC shunts around weirdly, may imply something odd going on in [[:Structs:CBabelDConnection|CBabelDConnection]]
+		* 0x2A: Migrate - C_TID_MIGRATE
 * +4: Field A
 * +8: Field B
 * +12: Field C
@@ -41,33 +42,20 @@ Note that this acts as a "base" for other packets.
 ===== C_TID_MESSAGE =====
 
 //name is a guess//
-40 bytes + message data
+H//as a CTOS equivalent but it is not the same format!//
+32 bytes + message data
 
-* +0: Type 0x09
-	* int type
-* +4: Server UID
-	* int serverUID
-* +8: Server HID
-	* int serverHID
-* +12: User UID (as if from [[:Structs:CBabelClient|CBabelClient]]::GetUser)
-	* int userUID
-* +16: User HID
-	* int userHID
-* +20: 0
-	* int zero
-* +24: Length of the following [[Formats:Packed Babel Message]] in bytes. Note this is the whole thing including framing.
-	* int babelMsgLen
-* +28: 0
-	* int zero
-* +32: Target UID
-	* int targetUID
-* +36: Target HID
-	* int targetHID
+* Type: 0x09
+* A/B: Ignored
+* C/D: Ignored
+* Ticket number: Ignored
+* Further data: Length of the following [[Formats:Packed Babel Message]] in bytes. Note this is the whole thing including it's framing.
+* E: Ignored
 
 This is followed by the actual message as described with the length.
 
-See [[:Structs:CBabelClient|CBabelClient]]::SendBinaryMessage
-For a sent packet, see dsprotocol/pk/chat1
+Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::MessageDispatch
+
 For a received packet, see dsprotocol/pk/norn1
 NOTE: This packet type is how Norns are sent over the Warp!
 
@@ -76,18 +64,23 @@ NOTE: This packet type is how Norns are sent over the Warp!
 //name is a guess//
 48 bytes + data
 
-* +0: Type 0x0A
-	* char type
+* Type: 0x0A
+	* char type - not int!
 * +1: Error code
 	* unsigned char errorCode
-* +4: Server UID - if 0, considered an error
-	* int serverUID
-* +8: Server HID
-	* int serverHID
-* +12: New user UID
-	* int userUID
-* +16: New user HID
-	* int userHID
+	* 0: Unknown reason
+	* 1: Connection OK
+	* 2: Client/server offline
+	* 3: Invalid nickname/password
+	* 4: Nickname already logged on
+	* 5: Too many users on server
+	* 6: Internal error
+	* 7: Client needs update (//HAHAHAHAHA YEAH LIKE RIGHT//)
+* A/B: Server UID/HID - if UID is 0, considered an error.
+* C/D: Client's new UID/HID
+* Ticket number: ?
+* Further data: ?
+* E: ?
 * +44: Additional data length
 	* int addDataLen
 
@@ -96,10 +89,25 @@ The additional data appears to be (from rebabel's login-ok1) part of a mechanism
 
 Seen in [[:Structs:CBabelClient|CBabelClient]]::Connectx
 
+===== C_TID_USER_LINE =====
+
+//name is a guess//
+32 bytes + additional data
+
+* Type: 0x0D for online, 0x0E for offline
+* A/B: Ignored
+* C/D: Ignored
+* Ticket number: Ignored
+* Further data: Length of ensuing object.
+* E: Ignored
+Followed by a [[:Formats:Packed Babel Short User Data|Packed Babel Short User Data Object.]]
+
+Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOnline / [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOffline
+
 ===== C_TID_CLIENT_COMMAND =====
 
 //name is a guess//
-//Has an CTOS equivalent//
+//Has a CTOS equivalent//
 36 bytes
 
 * Type: 0x14
@@ -119,9 +127,33 @@ Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::ClientClientComman
 
 44 bytes
 
-* +0: Type (int, 0x1e)
-	* int type
+* Type: 0x1e
+* A/B: ?
+* C/D: ?
+* Ticket number: ?
+* Further data: ?
+* E: ?
+* +32: ?
+* +36: ?
+* +40: ?
+* +44: ?
 
 Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *)
 Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuitConnect
 Responded to with a C_TID_CLIENT_COMMAND
+
+===== C_TID_VIRTUAL_CIRCUIT =====
+
+Transmission of data through a virtual circuit
+32 + 12 + N bytes
+
+Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuit
+
+===== C_TID_VIRTUAL_CIRCUIT_CLOSE =====
+
+Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuitClose
+
+===== C_TID_MIGRATE =====
+
+Client dials ctlcpc180.cyberlife.co.uk - fat chance of getting //that //back up...
+Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::Migrate

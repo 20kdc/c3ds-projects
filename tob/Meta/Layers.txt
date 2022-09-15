@@ -8,6 +8,8 @@ Before going into this, it's worth noting that it seems different formats are us
 
 From "send/recv calls at system level" outwards.
 
+===== General =====
+
 * [[:Structs:CBabelAsyncCore|CBabelAsyncCore]] pokes send/recv.
 * [[:Structs:CBabelDConnection|CBabelDConnection]] handles the higher-level framing, and in particular appears to receive C_TID_BASE packets.
 	* These packets can be MessageDispatch packets, and thus [[:Structs:CBabelMessage|CBabelMessage]] shows up.
@@ -27,7 +29,17 @@ From "send/recv calls at system level" outwards.
 		* The sent packet in practice is 0x25 (C_TID_HANDSHAKE)
 	* The socket is written to by [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *) directly
 	* GetClientInfo writes to the socket as well.
-* Atop the Babel layer is the NetManager/C2E layer.
-	* Worth noting is that while there appears to be some encryption involved for some high-level packets, it //may not be relevant to a Babel server.//
+* Atop the Babel layer is the [[:Structs:NetManager|NetManager]]/C2E layer.
+	* Worth noting is that there seems to be no encryption, though PRAY obfuscates things some (by accident, possibly).
+* Atop this is the CAOS commands and such.
+===== Specifics: NET WRIT =====
 
-
+* NetHandlers::SubCommand_NET_WRIT
+	* [[:Structs:NetManager|NetManager]]::PostDirectMessage
+	* [[:Structs:NetManager|NetManager]]::ConnectToPeer
+		* [[:Structs:CBabelClient|CBabelClient]]::ConnectToPeer
+			* [[:Structs:CBabelClient|CBabelClient]]::GetConnectionDetail
+				* [[:Structs:CBabelSocket|CBabelSocket]]::Write
+	* [[:Structs:NetDirectLink|NetDirectLink]]::SendData
+		* //Can go via virtual circuits or via a direct link. Realistically, virtual circuits.//
+			* [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Write
