@@ -14,7 +14,7 @@ Note that this acts as a "base" for other packets.
 	* int type
 		* This is really really weird. It's treated as either char[4] or an int depending on the whim of the function.
 	* [[:Structs:CBabelDConnection|CBabelDConnection]]::Handle
-		* 0x09: MessageDispatch - C_TID_MESSAGE
+		* 0x09: MessageDispatch - C_TID_MESSAGE_STOC
 		* 0x0A: Handshake Response - C_TID_HANDSHAKE_RESPONSE
 			* This particular handler interprets the first (lowest) byte of the type as a char, using the second byte as an error code.
 		* 0x0D: UserOnline - C_TID_USER_LINE
@@ -42,7 +42,7 @@ Note that this acts as a "base" for other packets.
 	* int furtherData
 * +28: Field E
 
-===== C_TID_MESSAGE =====
+===== C_TID_MESSAGE_STOC =====
 
 * Name is a guess
 * Has a CTOS equivalent but it is not the same format!
@@ -60,6 +60,7 @@ In particular, this packet type is how Norns are sent over the Warp!
 * E: Ignored
 
 This is followed by the actual message as described with the length.
+//NOTE: The sender HID/UID is embedded in the Packed Babel Message. Server should be checking these!//
 
 * Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::MessageDispatch
 * Example: dsprotocol/pk/norn1
@@ -124,28 +125,6 @@ Followed by a [[:Formats:Packed Babel Short User Data|Packed Babel Short User Da
 
 * Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOnline / [[:Structs:CBabelDConnection|CBabelDConnection]]::UserOffline
 * Example: dsprotocol/dsd/don.dump packet number 11
-
-===== C_TID_CLIENT_COMMAND =====
-
-* Name is a guess
-* Has a CTOS equivalent
-
-Used to notify the client of events.
-
-36 bytes
-
-* Type: 0x14
-* A/B: Server UID/HID
-* C/D: //Presumably// sender UID/HID (but uncertain)
-* Ticket number: Ignored
-* Further data: Ignored
-* E: Relevant to the Virtual Circuit system, but not yet sure how
-* +32: Sub-command
-	* int subCommand
-	* If this is 0xE, this is passed into some as-of-yet not understood guts of the Virtual Circuit system.
-	* //Otherwise//, this is passed to [[:ClientMessages|ClientMessages]].
-
-Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::ClientClientCommand
 
 ===== C_TID_VIRTUAL_CONNECT =====
 

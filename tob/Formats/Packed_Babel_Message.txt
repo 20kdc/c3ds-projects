@@ -12,12 +12,12 @@ Firstly, the 24-byte header:
 
 * +0: total size of message, including this field
 	* size_t fullLen
-* +4: UID
-	* short uid
+* +4: Sender HID (Yes, this is in reverse order.)
+	* short hid
 * +6: 2 bytes of uninitialized padding
 	* short padding
-* +8: HID
-	* int hid
+* +8: Sender UID
+	* int uid
 * +12: Message data length
 	* size_t messageDataLen
 * +16: Something ELSE length

@@ -32,6 +32,7 @@ From "send/recv calls at system level" outwards.
 * Atop the Babel layer is the [[:Structs:NetManager|NetManager]]/C2E layer.
 	* Worth noting is that there seems to be no encryption, though PRAY obfuscates things some (by accident, possibly).
 * Atop this is the CAOS commands and such.
+
 ===== Specifics: NET WRIT =====
 
 //**Big important warning here! NET: WRIT isn't actually used by the game's CAOS.**//
@@ -48,3 +49,11 @@ From "send/recv calls at system level" outwards.
 			* //Can go via virtual circuits or via a direct link. Realistically, virtual circuits.//
 				* [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Write
 					* [[:Structs:CBabelSocket|CBabelSocket]]::Write (to server)
+
+===== Specifics: Creature History =====
+
+* NetManager::somethingsomethingsomething
+	* HistoryTransferOut
+	* HistoryQueuedMessage::Send
+		* DSNetManager::DSFeedHistory <- FANCY 0x21 EXTENSION PACKET
+			* //regular transaction infrastructure//

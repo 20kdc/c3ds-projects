@@ -1,0 +1,27 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-16T10:24:05+01:00
+
+====== Both ======
+
+===== C_TID_CLIENT_COMMAND =====
+
+* Name is a guess
+
+Used to notify the client/another client of events.
+
+36 bytes
+
+* Type: 0x14
+* A/B: Server UID/HID
+* C/D: presumably receiver UID/HID (copied from STOC C_TID_VIRTUAL_CONNECT)
+* Ticket number: 0/Ignored
+* Further data: 0/Ignored
+* E: Relevant to the Virtual Circuit system, but not yet sure how
+* +32: 0xE is a special value here.
+	* int subCommand
+	* If this is 0xE, a client receiving this passes it into some as-of-yet not understood guts of the Virtual Circuit system.
+	* //Otherwise//, this is passed to [[:ClientMessages|ClientMessages]].
+
+* Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(C_TID_VIRTUAL_CONNECT *)
+* Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::ClientClientCommand

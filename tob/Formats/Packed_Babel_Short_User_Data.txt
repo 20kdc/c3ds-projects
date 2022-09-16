@@ -1,0 +1,15 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.6
+Creation-Date: 2022-09-16T13:19:00+01:00
+
+====== Packed Babel Short User Data ======
+
+SCRIBBLES: don.dump packet 11, data offset 0x20
+
++0: int len
++4: B_UIN (distinction from two-int: the upper short is padding)
++12: int firstNameLen
++16: int lastNameLen
++20: int nickNameLen
++24: the three name components
+

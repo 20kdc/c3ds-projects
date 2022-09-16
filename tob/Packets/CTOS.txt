@@ -13,7 +13,7 @@ Note that this acts as a "base" for other packets.
 * +0: Type
 	* int type
 		* This is really really weird. It's treated as either char[4] or an int depending on the whim of the function.
-	* 0x09: MessageDispatch - C_TID_MESSAGE
+	* 0x09: MessageDispatch - C_TID_MESSAGE_CTOS
 	* 0x0F: GetClientInfo - C_TID_GET_CLIENT_INFO
 	* 0x10: AddWWREntry - C_TID_WWR
 	* 0x11: RemoveWWREntry - C_TID_WWR
@@ -23,6 +23,7 @@ Note that this acts as a "base" for other packets.
 	* 0x1E: VirtualCircuitConnect - C_TID_VIRTUAL_CONNECT
 	* 0x1F: VirtualCircuit - C_TID_VIRTUAL_CIRCUIT
 	* 0x0221: DSFetchRandomUser - C_TID_DS_FETCH_RANDOM_USER
+	* 0x0321: DSFeedHistory - C_TID_DS_FEED_HISTORY
 	* 0x25: Handshake - C_TID_HANDSHAKE
 * +4: Field A (usually server UID)
 * +8: Field B (usually server HID)
@@ -36,7 +37,7 @@ Note that this acts as a "base" for other packets.
 	* int furtherData
 * +28: Field E
 
-===== C_TID_MESSAGE =====
+===== C_TID_MESSAGE_CTOS =====
 
 * Name is a guess
 * Has a STOC equivalent but it is not the same format!
@@ -58,33 +59,55 @@ It's the main "workload" packet.
 This is followed by the actual message as described with the length.
 
 * Sent by [[:Structs:CBabelClient|CBabelClient]]::SendBinaryMessage
+* Example: don.dump packet number 29
 
 ===== C_TID_GET_CLIENT_INFO =====
 
 * Name is a guess
 * Transactional
 
-request/response show up as packet numbers 18/19 in don.dump
+Used to turn an abstract UID/HID pair into meaningful details, i.e. NET: ULIN and NET: UNIK.
+
+* Type: 0x0F
+* A/B: Server UID/HID
+* C/D: Target UID/HID
+* Ticket number: Allocated
+* Further data: 0
+* E: Boolean parameter to function - as seemingly usual, always 0
+
+==== Response ====
+
+* Type: 0x0F
+* A/B: Ignored
+* C/D: Ignored
+* Ticket number: Expected
+* Further data: Size of the following user data...
+* E: Ignored
+
+Followed by a [[:Formats:Packed Babel Short User Data|Packed Babel Short User Data]].
+
+* Sent by [[:Structs:CBabelClient|CBabelClient]]::GetClientInfo
+* Example: don.dump packet numbers 18/19
 
 ===== C_TID_WWR =====
 
 * Name is a guess
 
+Tells the server that the client particularly cares if this user is online or offline.
+The server will thus send C_TID_USER_LINE updates.
+
 32 bytes
 
 * Type: 0x10 for add, 0x11 for remove
 	* int type
-* +4: Server UID
-* +8: Server HID
-* +12: Target UID
-	* int uid
-* +16: Target HID
-	* int hid
-* +20: 0
-* +24: 0
-* +28: 0
+* A/B: Server UID/HID
+* C/D: Target UID/HID
+* Ticket number: 0
+* Further data: 0
+* E: 0
 
-Seen in [[:Structs:CBabelClient|CBabelClient]]::AddWWREntry / CBabelClient::RemoveWWREntry.
+* Sent by [[:Structs:CBabelClient|CBabelClient]]::AddWWREntry / CBabelClient::RemoveWWREntry
+* Example: don.dump packet number 10, which immediately leads to an STOC C_TID_USER_LINE in packet 11.
 
 ===== C_TID_NOTIFY_LISTENING_PORT =====
 
@@ -128,24 +151,6 @@ Sent by [[:Structs:CBabelClient|CBabelClient]]::NotifyListeningPort
 * Ticket number: As expected
 * Further data: Not checked
 * E: ???
-
-===== C_TID_CLIENT_COMMAND =====
-
-* Name is a guess
-* Has an STOC equivalent
-
-36 bytes
-
-* Type: 0x14
-* A/B: Server UID/HID
-* C/D: presumably receiver UID/HID
-* Ticket number: 0
-* Further data: 0
-* E: a parameter?
-* +32: 0xE is a special value here?
-	* int unknown
-
-Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(C_TID_VIRTUAL_CONNECT *)
 
 ===== C_TID_VIRTUAL_CONNECT =====
 
@@ -200,6 +205,11 @@ Assumed to be just a C_TID_BASE:
 * E: Expected to be 1 for success
 
 Sent and response received in [[:Structs:DSNetManager|DSNetManager]]::AsyncDSFetchRandomUser
+
+===== C_TID_DS_FEED_HISTORY =====
+
+* Name is a guess
+* Transactional
 
 ===== C_TID_HANDSHAKE =====
 
