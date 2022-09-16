@@ -8,20 +8,72 @@ Creation-Date: 2022-09-16T10:24:05+01:00
 
 * Name is a guess
 
-Used to notify the client/another client of events.
+Used to notify the client/another client of events, at least in theory.
+In practice, this packet is basically a landmine.
+It does moonlight as a "connection accepted" mechanism for the Virtual Circuits mechanism, which is always fun...
 
 36 bytes
 
 * Type: 0x14
-* A/B: Server UID/HID
+* A/B: Server UID/HID (STOC ignores)
 * C/D: presumably receiver UID/HID (copied from STOC C_TID_VIRTUAL_CONNECT)
+	* STOC-wise, for "normal" subCommand values, this information is put into a newly made struct which is promptly memory-leaked on the [[:Structs:NetManager|NetManager]] side.
 * Ticket number: 0/Ignored
 * Further data: 0/Ignored
 * E: Relevant to the Virtual Circuit system, but not yet sure how
 * +32: 0xE is a special value here.
 	* int subCommand
 	* If this is 0xE, a client receiving this passes it into some as-of-yet not understood guts of the Virtual Circuit system.
-	* //Otherwise//, this is passed to [[:ClientMessages|ClientMessages]].
+	* //Otherwise//, this is passed to [[:Concepts:ClientMessages|ClientMessages]].
 
 * Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(C_TID_VIRTUAL_CONNECT *)
 * Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::ClientClientCommand
+* //No known example//
+
+===== C_TID_VIRTUAL_CONNECT =====
+
+Opens a virtual socket between two clients.
+For further information, see [[:Concepts:Virtual Circuits And Direct Links|Virtual Circuits And Direct Links]].
+
+44 bytes
+
+* Type: 0x1E
+* A/B: Server UID/HID
+	* The client sending this (CTOS-wise) sets this - it's ignored by the receiving client.
+* C/D: Initiator UID/HID
+	* The client sending this (CTOS-wise) sets this as if from [[:Structs:CBabelClient|CBabelClient]]::GetUser.
+	* Receiving client (STOC-wise) uses this as expected.
+* Ticket number: 0/Ignored
+* Further data: 0/Ignored
+* E: Newly allocated Virtual Socket Number on CTOS side
+* +32/+36: Target UID/HID (STOC ignores)
+* +40: 2 (STOC ignores)
+
+* Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *)
+* Received by [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(CBabelVirtualSocket *, C_TID_VIRTUAL_CONNECT *)
+* //No known example//
+
+===== C_TID_VIRTUAL_CIRCUIT =====
+
+* Name is a guess
+
+Transmission of data through a virtual circuit.
+For further information, see [[:Concepts:Virtual Circuits And Direct Links|Virtual Circuits And Direct Links]].
+
+44 bytes + data
+
+* Type: 0x1F
+* A/B: Server UID/HID
+	* The client sending this (CTOS-wise) sets this - it's ignored by the receiving client.
+* C/D: Sender UID/HID
+	* The client sending this (CTOS-wise) sets this as if from [[:Structs:CBabelClient|CBabelClient]]::GetUser - it's ignored by the receiving client.
+* Ticket number: 0
+* Further data: Exactly as much data as is being written.
+* E: High short is target VSN, low short is sender VSN
+	* STOC checks these - target must match the sender VSN of a [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket,]] and sender should match the target VSN of that socket.
+* +32/+36: Target UID/HID  (STOC ignores)
+* +40: 2 (STOC ignores)
+
+* Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Write
+* Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuit
+* //No known example//

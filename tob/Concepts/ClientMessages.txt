@@ -14,7 +14,11 @@ They consist of 3 integers, the first seemingly being type.
 	* X: Amount of packets in [[:Structs:CBabelClient|CBabelClient]] message queue
 * 7,X,Y: Fired from [[:Structs:CBabelDConnection|CBabelDConnection]]::ClientClientCommand
 	* X: Sub-command number.
-	* Y: Pointer to an unknown structure describing things.
+	* Y: Pointer to a structure, 12 bytes:
+		* int targetUID
+		* int targetHID
+		* int subCommand (equal to X)
+	* [[:Structs:NetManager|NetManager]] memory-leaks said structure.
 * 9,0,0: Fired from [[:Structs:CBabelClient|CBabelClient]]::ConnectionLost
 * 12,X,Y: Fired from [[:Structs:CBabelRemoteSwitch|CBabelRemoteSwitch]]::Disconnected
 	* X: ?

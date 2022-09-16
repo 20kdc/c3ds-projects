@@ -17,7 +17,7 @@ Creation-Date: 2022-09-15T21:47:26+01:00
 
 Literally just a PRAY file.
 
-Note though that [[:Structs:NetManager|NetManager]] will spool these with [[:InboxOutbox|InboxOutbox.]]
+Note though that [[:Structs:NetManager|NetManager]] will spool these with [[:Concepts:InboxOutbox|InboxOutbox.]]
 
 ===== Type 1: NET: WRIT =====
 

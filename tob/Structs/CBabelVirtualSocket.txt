@@ -12,6 +12,6 @@ Creation-Date: 2022-09-14T23:56:51+01:00
 * +18: padding?
 * +20: client pointer
 	* [[CBabelClient]] * client
-* +24: During Connect(B_UIN *), this is 0 and it's waited on to see if it goes to 1.
-	* int connectWaiter
+* +24: Remote VSN. 0 is invalid. Also used as an "am I connected?" flag.
+	* int remoteVSN
 * +40: _RTL_CRITICAL_SECTION (16 bytes)

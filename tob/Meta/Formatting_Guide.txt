@@ -43,5 +43,5 @@ Packet description
 * A/B: Server UID/HID
 * C/D: ?
 * Ticket number: Expected
-* Further data: 0
+* Further data: [Discarded/other meaning - remember that the client //always// reads further data for responses.]
 * E: ?

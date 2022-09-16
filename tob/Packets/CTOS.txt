@@ -68,6 +68,8 @@ This is followed by the actual message as described with the length.
 
 Used to turn an abstract UID/HID pair into meaningful details, i.e. NET: ULIN and NET: UNIK.
 
+32 bytes
+
 * Type: 0x0F
 * A/B: Server UID/HID
 * C/D: Target UID/HID
@@ -113,6 +115,10 @@ The server will thus send C_TID_USER_LINE updates.
 
 * Name is a guess
 
+Used to notify the server about the port on which the client listens for incoming peer links.
+//**It's worth noting that the client code will never actually send this - SetPeerListener is a NOP which always fails.**//
+//**But the peer link mechanism itself might still be in use, as VirtualCircuit-related functions still use it.**//
+
 32 bytes
 
 * Type: 0x12
@@ -122,10 +128,8 @@ The server will thus send C_TID_USER_LINE updates.
 * Further data: 0
 * E: Parameter to NotifyListeningPort - presumably would have been a port number.
 
-Sent by [[:Structs:CBabelClient|CBabelClient]]::NotifyListeningPort
-
-//**It's worth noting that the client code will never actually send this - SetPeerListener is a NOP which always fails.**//
-//**But the peer link mechanism itself might still be in use, as VirtualCircuit-related functions still use it.**//
+* Sent by [[:Structs:CBabelClient|CBabelClient]]::NotifyListeningPort
+* //No known example//
 
 ===== C_TID_GET_CONNECTION_DETAIL =====
 
@@ -144,41 +148,16 @@ Sent by [[:Structs:CBabelClient|CBabelClient]]::NotifyListeningPort
 
 ==== Response ====
 
-* Type: ?
+* Type: Ignored
 * A: IP address //in network order.// That is, passable directly to inet_ntoa - lowest byte is first in the IP address.
-* B: ?
-* C/D: ?
-* Ticket number: As expected
-* Further data: Not checked
-* E: ???
+* B: //Presumably// port
+* C/D: Ignored
+* Ticket number: Expected
+* Further data: Discarded
+* E: GetConnectionDetail goes to the trouble of retrieving this as a short, but it's discarded by all known callers.
 
-===== C_TID_VIRTUAL_CONNECT =====
-
-* Name is a guess
-* Has an STOC equivalent
-
-44 bytes
-
-* +0: Type (int, 0x1e)
-	* int type
-
-Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(B_UIN *)
-Responded to with a C_TID_CLIENT_COMMAND
-
-===== C_TID_VIRTUAL_CIRCUIT =====
-
-* Name is a guess
-* Has an STOC equivalent
-
-Transmission of data through a virtual circuit
-32 + 12 + N bytes
-
-Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Write
-
-===== C_TID_VIRTUAL_CIRCUIT_CLOSE =====
-
-* Name is a guess
-* Has an STOC equivalent
+* Sent by [[:Structs:CBabelClient|CBabelClient]]::GetConnectionDetail
+* //No known example//
 
 ===== C_TID_DS_FETCH_RANDOM_USER =====
 
@@ -189,7 +168,7 @@ Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Write
 
 * Type: 0x0221
 * A/B: Server UID/HID
-* C/D: User UID/HID
+* C/D: User UID/HID (as if from [[:Structs:CBabelClient|CBabelClient]]::GetUser)
 * Ticket number: Allocated
 * Further data: 0
 * E: 3
@@ -197,23 +176,52 @@ Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Write
 ==== Response ====
 
 Assumed to be just a C_TID_BASE:
-* Type: ?
-* A/B: ?
+* Type: Ignored
+* A/B: Ignored
 * C/D: Response UID/HID
-* Ticket number: As expected
-* Further data: Not checked
+* Ticket number: Expected
+* Further data: Discarded
 * E: Expected to be 1 for success
 
-Sent and response received in [[:Structs:DSNetManager|DSNetManager]]::AsyncDSFetchRandomUser
+* Sent by [[:Structs:DSNetManager|DSNetManager]]::AsyncDSFetchRandomUser
+* //No known example//
 
 ===== C_TID_DS_FEED_HISTORY =====
 
 * Name is a guess
 * Transactional
 
+Used to upload Creature History.
+Note that the reason this is a transaction is because the caller really really wants to make sure the server actually //got// these events.
+Otherwise bad stuff could happen, like the server missing events.
+
+* Type: 0x0321
+* A/B: Server UID/HID
+* C/D: User UID/HID (as if from [[:Structs:CBabelClient|CBabelClient]]::GetUser)
+* Ticket number: Allocated
+* Further data: The size of the creature history blob.
+* E: 0
+
+This is followed by the creature history blob, described at [[Formats:Creature History Blob|Creature History Blob]]
+
+==== Response ====
+
+* Type: Ignored
+* A/B: Ignored
+* C/D: Ignored
+* Ticket number: Expected
+* Further data: Discarded
+* E: Ignored
+
+* Sent by [[:Structs:DSNetManager|DSNetManager]]::DSFeedHistory
+* Example: don.dump packet number 210/211
+
 ===== C_TID_HANDSHAKE =====
 
 * Name is a guess
+
+The first data sent on the connection.
+This provides the username and password for login.
 
 52 bytes + additional bytes
 
@@ -236,4 +244,5 @@ Sent and response received in [[:Structs:DSNetManager|DSNetManager]]::AsyncDSFet
 
 Username and password, with zero terminators, follow.
 
-Sent from [[:Structs:CBabelClient|CBabelClient]]::Connect(char const *,char const *,char const *,int,bool,bool)
+* Sent by [[:Structs:CBabelClient|CBabelClient]]::Connect(char const *,char const *,char const *,int,bool,bool)
+* Example: don.dump packet number 1
