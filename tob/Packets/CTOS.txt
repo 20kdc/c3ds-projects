@@ -20,6 +20,7 @@ Note that this acts as a "base" for other packets.
 	* 0x12: NotifyListeningPort - C_TID_NOTIFY_LISTENING_PORT
 	* 0x13: GetConnectionDetail - C_TID_GET_CONNECTION_DETAIL
 	* 0x14: ClientCommand - C_TID_CLIENT_COMMAND
+	* 0x18: GetStatus - C_TID_GET_STATUS
 	* 0x1E: VirtualCircuitConnect - C_TID_VIRTUAL_CONNECT
 	* 0x1F: VirtualCircuit - C_TID_VIRTUAL_CIRCUIT
 	* 0x0221: DSFetchRandomUser - C_TID_DS_FETCH_RANDOM_USER
@@ -159,10 +160,40 @@ Used to notify the server about the port on which the client listens for incomin
 * Sent by [[:Structs:CBabelClient|CBabelClient]]::GetConnectionDetail
 * //No known example//
 
+===== C_TID_GET_STATUS =====
+
+* Name is a guess
+* Transactional
+
+32 bytes
+
+* Type: 0x18
+* A/B: Server UID/HID
+* C/D: 0
+* Ticket number: allocated
+* Further data: 0
+* E: 0
+
+==== Response ====
+
+48 bytes
+
+* Type: Ignored
+* A/B: Ignored
+* C/D: Ignored
+* Ticket number: Expected
+* Further data: Discarded
+* +32: See [[:Structs:C_BABEL_STATUS|C_BABEL_STATUS]].
+
+* Sent by [[:Structs:CBabelClient|CBabelClient]]::GetStatus
+* //No known example//
+
 ===== C_TID_DS_FETCH_RANDOM_USER =====
 
 * Name is a guess
 * Transactional
+
+Pretty much the core of NET: RUSO.
 
 32 bytes
 

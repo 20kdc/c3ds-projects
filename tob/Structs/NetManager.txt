@@ -10,4 +10,6 @@ Creation-Date: 2022-09-15T11:39:05+01:00
 	* netmanager_vtable_t vtbl
 * +72: Babel client
 	* [[CBabelClient]] babelClient
+* +852: Babel status
+	* [[C_BABEL_STATUS]] babelStatus
 
