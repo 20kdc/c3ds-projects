@@ -156,9 +156,23 @@ Informs the client that a user has gone online or offline, without corresponding
 
 * Name is a guess
 
-Client dials ctlcpc180.cyberlife.co.uk - fat chance of getting //that //back up...
+Client dials ctlcpc180.cyberlife.co.uk - fat chance of getting //that //back up.
+This entry is only here for completeness's sake.
+It looks like there's a secondary login mechanism in the servers for migrating clients using 0x2B (CTOS) and 0x2C (STOC).
+Relevant code is in CBabelMigrateConnection::AttemptMigrate.
+If you really want to investigate that further, do it yourself!
+
+32 bytes
+
+* Type: 0x2A
+* A/B: Ignored
+* C/D: User UID/HID
+* Ticket number: Ignored
+* Further data: Ignored
+* E: Passed to the AttemptMigrate function as what I can only assume is some sort of authentication token.
 
 * Received by [[:Structs:CBabelDConnection|CBabelDConnection]]::Migrate
+* //No known example//
 
 ===== C_TID_VIRTUAL_CIRCUIT_CLOSE =====
 

@@ -47,8 +47,8 @@ This layers diagram has to be outwards-in because there's different paths and st
 		* [[:Structs:CBabelDConnection|CBabelDConnection]]::VirtualCircuitClose
 
 * Creature history sending
-	* NetManager::somethingsomethingsomething
-		* HistoryTransferOut
+	* NetworkImplementation::HistoryFeed
+		* HistoryTransferOut::GetAddress does the actual packing //and knowing this will save you much pain//
 		* HistoryQueuedMessage::Send
 			* DSNetManager::DSFeedHistory <- FANCY 0x21 EXTENSION PACKET
 				* //regular transaction infrastructure//

@@ -4,4 +4,52 @@ Creation-Date: 2022-09-16T19:01:20+01:00
 
 ====== Creature History Blob ======
 
-Under construction.
+===== Format Structure =====
+
+* string moniker
+* byte hasCreatureState
+* if hasCreatureState != 0:
+	* int gender
+		* //This isn't absolutely certain.//
+	* int genus
+		* //This isn't absolutely certain.//
+	* int variant
+		* //This isn't absolutely certain (though more certain than other entries here)//
+	* int lifeStage
+		* //This isn't absolutely certain.//
+	* int unknown
+* int eventCount
+* Event[eventCount] events
+* string name
+* string userText
+
+===== Events =====
+
+* int eventType
+	* As in HIST TYPE. Also see "creature_history_event_names".
+* int worldTime
+	* As in HIST WTIK.
+* int ageTicks
+	* As in HIST TAGE.
+* int unixTime
+	* As in HIST RTIM.
+* int lifeStage
+	* As in HIST CAGE.
+	* //This isn't absolutely certain.//
+* string moniker1
+	* As in HIST MON1.
+* string moniker2
+	* As in HIST MON2.
+* string worldName
+	* As in HIST WNAM.
+* string worldID
+	* As in HIST WUID.
+* string userID
+	* As in HIST NETU.
+* int index
+	* Appears to uniquely identify an event within a creature's history (i.e. as deduplication).
+
+===== Strings/Monikers/User IDs =====
+
+Strings are encoded here with an int-length-prefix followed by that many bytes, without null terminators.
+Monikers, user IDs, world IDs (...) are strings.
