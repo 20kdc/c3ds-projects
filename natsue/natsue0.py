@@ -15,14 +15,16 @@ import socket
 import struct
 import math
 import time
+import traceback
 
 # -- libraryey stuff --
 
-log = open("log/" + int(math.floor(time.time())) + ".snoop", "wb")
+log = open("log/" + str(int(math.floor(time.time()))) + ".snoop", "wb")
 log.write(b"snoop\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x09")
 log_buffer = b""
 
 def cut_log():
+	global log_buffer
 	time_sd = time.time()
 	time_s = int(math.floor(time_sd))
 	time_sw = time_s & 0xFFFFFFFF # quick, how fast can you say YEAR 2038 PROBLEM!
@@ -49,6 +51,7 @@ def g32(b: bytes, ofs):
 
 server_buin = b"\x01\x00\x00\x00" + b"\x02\x00\x00\x00"
 user_buin = b"\x03\x00\x00\x00" + b"\x04\x00\x00\x00"
+other_buin = b"\x05\x00\x00\x00" + b"\x06\x00\x00\x00" # for NET: RUSO so that natsue0 has someone to send Norns to
 
 # -- it begins --
 
@@ -79,17 +82,17 @@ def handle_conn(s: socket.socket):
 		base = ral(s, 0x20)
 		further_data = g32(base, 0x18)
 		ticket_number = base[0x14:0x18]
+		#                  T               A               B               C               D               T                     F               E
+		blank_response = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + ticket_number + b"\x00\x00\x00\x00\x00\x00\x00\x00"
 		if base[0] == 0x09:
 			# C_TID_MESSAGE_CTOS
 			ral(s, 8 + further_data)
 		elif base[0] == 0x0F:
 			# C_TID_GET_CLIENT_INFO
-			#           T               A               B               C               D               T                    F               E
-			s.sendall(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + ticket_number + "\x00\x00\x00\x00\x00\x00\x00\x00")
+			s.sendall(blank_response)
 		elif base[0] == 0x13:
 			# C_TID_GET_CONNECTION_DETAIL
-			#           T               A               B               C               D               T                    F               E
-			s.sendall(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + ticket_number + "\x00\x00\x00\x00\x00\x00\x00\x00")
+			s.sendall(blank_response)
 		elif base[0] == 0x14:
 			# C_TID_CLIENT_COMMAND
 			ral(s, 4)
@@ -97,8 +100,7 @@ def handle_conn(s: socket.socket):
 			# C_TID_GET_STATUS
 			#          A               B               C               D
 			status = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-			#           T               A               B               C               D               T                    F               E
-			s.sendall(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + ticket_number + "\x00\x00\x00\x00\x00\x00\x00\x00" + status)
+			s.sendall(blank_response + status)
 		elif base[0] == 0x1E:
 			# C_TID_VIRTUAL_CONNECT
 			ral(s, 12)
@@ -108,12 +110,12 @@ def handle_conn(s: socket.socket):
 		elif base[0] == 0x21:
 			if base[1] == 0x02:
 				# C_TID_DS_FETCH_RANDOM_USER
-				#           T               A               B               C               D               T                    F               E
-				s.sendall(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + ticket_number + "\x00\x00\x00\x00\x00\x00\x00\x00")
+				#           T               A               B               CD               T                 F               E
+				s.sendall(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + other_buin + ticket_number + b"\x00\x00\x00\x00\x01\x00\x00\x00")
 			elif base[1] == 0x03:
 				# C_TID_DS_FEED_HISTORY
-				#           T               A               B               C               D               T                    F               E
-				s.sendall(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + ticket_number + "\x00\x00\x00\x00\x00\x00\x00\x00")
+				ral(s, further_data)
+				s.sendall(blank_response)
 		cut_log()
 
 while True:
