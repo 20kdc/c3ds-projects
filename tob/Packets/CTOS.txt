@@ -84,10 +84,10 @@ Used to turn an abstract UID/HID pair into meaningful details, i.e. NET: ULIN an
 * A/B: Ignored
 * C/D: Ignored
 * Ticket number: Expected
-* Further data: Size of the following user data...
+* Further data: Size of the following user data, or 0 to indicate failure.
 * E: Ignored
 
-Followed by a [[:Formats:Packed Babel Short User Data|Packed Babel Short User Data]].
+Followed by nothing (failure) or a [[:Formats:Packed Babel Short User Data|Packed Babel Short User Data]] (success).
 
 * Sent by [[:Structs:CBabelClient|CBabelClient]]::GetClientInfo
 * Example: don.dump packet numbers 18/19
@@ -157,6 +157,10 @@ Used to notify the server about the port on which the client listens for incomin
 * Further data: Discarded
 * E: GetConnectionDetail goes to the trouble of retrieving this as a short, but it's discarded by all known callers.
 
+Worth noting: The response is considered a success if and only if one of these two cases occur:
+* A and B are not zero
+* E is not zero
+
 * Sent by [[:Structs:CBabelClient|CBabelClient]]::GetConnectionDetail
 * //No known example//
 
@@ -212,7 +216,7 @@ Assumed to be just a C_TID_BASE:
 * C/D: Response UID/HID
 * Ticket number: Expected
 * Further data: Discarded
-* E: Expected to be 1 for success
+* E: Expected to be 1 for success (//and therefore otherwise is failure!//)
 
 * Sent by [[:Structs:DSNetManager|DSNetManager]]::AsyncDSFetchRandomUser
 * //No known example//
