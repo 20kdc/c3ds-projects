@@ -91,42 +91,70 @@ def handle_conn(s: socket.socket):
 	# now we get the lovely task of watching for the various CTOS packets and pretending everything is fine, just FINE
 	while True:
 		base = ral(s, 0x20)
+		# common stuff that has to be looked at or checked or such
+		# remember this is a workbench, optimization is not key
 		further_data = g32(base, 0x18)
 		ticket_number = base[0x14:0x18]
+		lookup_uid = g32(base, 12)
+		lookup_hid = g32(base, 16)
+		lookup_str = str(lookup_uid) + "+" + str(lookup_hid)
+		lookup_name = lookup_str.encode("latin1")
+		lookup_user = struct.pack("<IIIIII", len(lookup_name) + 32, lookup_uid, lookup_hid, 4, 4, len(lookup_name)) + b"nonenone" + lookup_name
 		#                  T               A               B               C               D               T                     F               E
 		blank_response = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + ticket_number + b"\x00\x00\x00\x00\x00\x00\x00\x00"
 		if base[0] == 0x09:
 			# C_TID_MESSAGE_CTOS
+			print("C_TID_MESSAGE_CTOS")
 			ral(s, 8 + further_data)
 		elif base[0] == 0x0F:
 			# C_TID_GET_CLIENT_INFO
-			s.sendall(blank_response)
+			# give some details for debugging
+			print("C_TID_GET_CLIENT_INFO: " + lookup_str)
+			#           T               A               B               C               D                   T               F                                       E
+			s.sendall(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + ticket_number + struct.pack("<I", len(lookup_user)) + b"\x00\x00\x00\x00" + lookup_user)
+		elif base[0] == 0x10:
+			# C_TID_WWR add
+			print("C_TID_WWR add: " + lookup_str)
+			# respond by pretending they always were there
+			#           T               A               B               C               D               T                   F                                       E
+			s.sendall(b"\x0D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + struct.pack("<I", len(lookup_user)) + b"\x00\x00\x00\x00" + lookup_user)
 		elif base[0] == 0x13:
 			# C_TID_GET_CONNECTION_DETAIL
-			s.sendall(blank_response)
+			# everybody we ask for is online, honest!
+			print("C_TID_GET_CONNECTION_DETAIL: " + lookup_str)
+			#           T               A               B               C               D                   T                 F               E
+			s.sendall(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + ticket_number + b"\x00\x00\x00\x00\x01\x00\x00\x00")
 		elif base[0] == 0x14:
 			# C_TID_CLIENT_COMMAND
+			print("C_TID_CLIENT_COMMAND")
 			ral(s, 4)
 		elif base[0] == 0x18:
 			# C_TID_GET_STATUS
+			print("C_TID_GET_STATUS")
 			#          A               B               C               D
 			status = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 			s.sendall(blank_response + status)
 		elif base[0] == 0x1E:
 			# C_TID_VIRTUAL_CONNECT
+			print("C_TID_VIRTUAL_CONNECT")
 			ral(s, 12)
 		elif base[0] == 0x1F:
 			# C_TID_VIRTUAL_CIRCUIT
+			print("C_TID_VIRTUAL_CIRCUIT")
 			ral(s, 12 + further_data)
 		elif base[0] == 0x21:
 			if base[1] == 0x02:
 				# C_TID_DS_FETCH_RANDOM_USER
+				print("C_TID_DS_FETCH_RANDOM_USER")
 				#           T               A               B               CD               T                 F               E
 				s.sendall(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + other_buin + ticket_number + b"\x00\x00\x00\x00\x01\x00\x00\x00")
 			elif base[1] == 0x03:
 				# C_TID_DS_FEED_HISTORY
+				print("C_TID_DS_FEED_HISTORY")
 				ral(s, further_data)
 				s.sendall(blank_response)
+		else:
+			print("packet with no special handling, i.e. removal from WWR, etc.")
 		cut_log()
 
 while True:
