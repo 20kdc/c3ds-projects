@@ -42,7 +42,7 @@ db "Engine 1.147 - Creatures 3 (no check)", 0
 
 ; These tables contain sets of 3: the absolute address, a pointer to the jump target, and a pointer to the expected 5 bytes.
 suite_2p286_b195cd:
-dd 0x00556030, cfcd_hook_code, cfcd_hook_test
+dd 0x00556030, cfcd_hook_code, cfcd_hook_test_ds
 suite_2p286_b195:
 ; CreateFullscreenDisplaySurfaces
 dd 0x00472FE1, cs_hook_code, cs_hook_ecx_test
