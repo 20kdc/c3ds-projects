@@ -80,7 +80,9 @@ Used to turn an abstract UID/HID pair into meaningful details, i.e. NET: ULIN an
 
 ==== Response ====
 
-* Type: 0x0F
+32 bytes + further data
+
+* Type: 0x0F/Ignored
 * A/B: Ignored
 * C/D: Ignored
 * Ticket number: Expected
@@ -149,6 +151,8 @@ Used to notify the server about the port on which the client listens for incomin
 
 ==== Response ====
 
+32 bytes
+
 * Type: Ignored
 * A: IP address //in network order.// That is, passable directly to inet_ntoa - lowest byte is first in the IP address.
 * B: //Presumably// port
@@ -210,7 +214,8 @@ Pretty much the core of NET: RUSO.
 
 ==== Response ====
 
-Assumed to be just a C_TID_BASE:
+32 bytes
+
 * Type: Ignored
 * A/B: Ignored
 * C/D: Response UID/HID
@@ -240,6 +245,8 @@ Otherwise bad stuff could happen, like the server missing events.
 This is followed by the creature history blob, described at [[Formats:Creature History Blob|Creature History Blob]]
 
 ==== Response ====
+
+32 bytes
 
 * Type: Ignored
 * A/B: Ignored
@@ -274,8 +281,10 @@ This provides the username and password for login.
 	* int zero
 * +44: Length of zero-terminated username
 	* int usernameLen
+	* Just to clarify, this length includes the null terminator, so an empty username would still be 1 here.
 * +48: Length of zero-terminated password
 	* int passwordLen
+	* Just to clarify, this length includes the null terminator, so an empty password would still be 1 here.
 
 Username and password, with zero terminators, follow.
 

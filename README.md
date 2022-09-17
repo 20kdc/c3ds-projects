@@ -10,6 +10,8 @@ c3ds-projects contributors are in no way affiliated with Creature Labs, this is 
 + ciesetup: CIE setup improvements
 + colour-depth-fix: improves Linux & Mac compatibilty of Docking Station through renderer patching
 + creature-monitor-gd: tool for monitoring creatures that is hopefully more reliable than alternatives
++ tob: Babel protocol documentation attempt
++ natsue: ???
 
 ## License
 
