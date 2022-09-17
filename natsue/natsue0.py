@@ -16,6 +16,7 @@ import struct
 import math
 import time
 import traceback
+import sys
 
 # -- libraryey stuff --
 
@@ -31,6 +32,7 @@ def cut_log():
 	time_us = int(math.floor((time_sd - time_s) * 1000000))
 	log.write(struct.pack(">IIIIII", len(log_buffer), len(log_buffer), len(log_buffer) + 24, 0, time_sw, time_us))
 	log.write(log_buffer)
+	log.flush()
 	log_buffer = b""
 
 def ral(s: socket.socket, l: int) -> bytes:
@@ -55,9 +57,17 @@ other_buin = b"\x05\x00\x00\x00" + b"\x06\x00\x00\x00" # for NET: RUSO so that n
 
 # -- it begins --
 
+send_after_login = b""
+
+if len(sys.argv) == 2:
+	ftmp = open(sys.argv[1], "rb")
+	send_after_login = ftmp.read()
+	ftmp.close()
+
 server_socket = socket.create_server(("127.0.0.1", 49152))
 
 def handle_conn(s: socket.socket):
+	global send_after_login
 	# expect a handshake packet
 	base = ral(s, 0x34)
 	if base[0] != 0x25:
@@ -77,6 +87,7 @@ def handle_conn(s: socket.socket):
 	base += b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 	s.sendall(base)
 	# right, we're officially logged in!
+	s.sendall(send_after_login)
 	# now we get the lovely task of watching for the various CTOS packets and pretending everything is fine, just FINE
 	while True:
 		base = ral(s, 0x20)
