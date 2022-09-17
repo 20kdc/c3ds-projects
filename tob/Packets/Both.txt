@@ -20,10 +20,10 @@ It does moonlight as a "connection accepted" mechanism for the Virtual Circuits 
 	* STOC-wise, for "normal" subCommand values, this information is put into a newly made struct which is promptly memory-leaked on the [[:Structs:NetManager|NetManager]] side.
 * Ticket number: 0/Ignored
 * Further data: 0/Ignored
-* E: Relevant to the Virtual Circuit system, but not yet sure how
+* E: Only matters for virtual circuit accept packets. Upper half is the original VSN from the C_TID_VIRTUAL_CONNECT packet, lower half is the local VSN. See [[:Concepts:Virtual Circuits And Direct Links|Virtual Circuits And Direct Links]].
 * +32: 0xE is a special value here.
 	* int subCommand
-	* If this is 0xE, a client receiving this passes it into some as-of-yet not understood guts of the Virtual Circuit system.
+	* If this is 0xE, a client receiving this passes it into the virtual circuit system - see [[:Concepts:Virtual Circuits And Direct Links|Virtual Circuits And Direct Links]].
 	* //Otherwise//, this is passed to [[:Concepts:ClientMessages|ClientMessages]].
 
 * Sent from [[:Structs:CBabelVirtualSocket|CBabelVirtualSocket]]::Connect(C_TID_VIRTUAL_CONNECT *)
@@ -34,6 +34,7 @@ It does moonlight as a "connection accepted" mechanism for the Virtual Circuits 
 
 Opens a virtual socket between two clients.
 For further information, see [[:Concepts:Virtual Circuits And Direct Links|Virtual Circuits And Direct Links]].
+//Worth noting: in the one situation in which the client will send this packet, a response must be given or the game freezes.//
 
 44 bytes
 

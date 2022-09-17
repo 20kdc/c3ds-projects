@@ -138,6 +138,12 @@ def handle_conn(s: socket.socket):
 			# C_TID_VIRTUAL_CONNECT
 			print("C_TID_VIRTUAL_CONNECT")
 			ral(s, 12)
+			# game will crash without this!
+			vsn = g32(base, 0x1C) & 0xFFFF
+			# copy lower VSN to upper VSN, this is just an imitation after all
+			vsns = (vsn << 16) | vsn
+			#           T               A               B               C               D               T               F               E                               SC
+			s.sendall(b"\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + struct.pack("<I", vsns) + b"\x0E\x00\x00\x00")
 		elif base[0] == 0x1F:
 			# C_TID_VIRTUAL_CIRCUIT
 			print("C_TID_VIRTUAL_CIRCUIT")

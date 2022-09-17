@@ -15,6 +15,12 @@ Wrapping this is [[:Structs:NetDirectLink|NetDirectLink,]] which can either conn
 Simply put, NetDirectLink is a socket that //may// be connected virtually or directly, and a caller does not have to care which.
 There are other components to this but none of them matter.
 
+//**It is worth noting that as far as I'm aware, the only functionality that initiates a Direct Link connection is NET: WRIT.**//
+//**NET: WRIT also isn't actually used in the game, and has a bug where it can and will freeze the game if anything goes wrong whatsoever.**//
+//**Plus, NET: WRIT can be used to trivially forge messages. There are no checks.**//
+//**With this in mind, a server reimplementation should pretend to accept the virtual circuit connection on the receiver's behalf, using the initiator's VSN as the recipient's VSN.**//
+//**It is up to the server reimplementation to decide how it wants to handle the contents - discarding them entirely or attempting to parse them are perfectly valid choices.**//
+
 ===== Virtual Circuits =====
 
 The clients will be referred to as //Initiator//  and //Recipient// as they do not follow a strict client/server relationship, and this gets confusing anyway.
