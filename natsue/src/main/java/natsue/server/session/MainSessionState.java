@@ -9,6 +9,7 @@ package natsue.server.session;
 
 import java.io.IOException;
 
+import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.server.hub.IHub;
 import natsue.server.hub.IHubClient;
@@ -17,18 +18,18 @@ import natsue.server.hub.IHubClient;
  * This session state is used while connected to the hub.
  */
 public class MainSessionState extends BaseSessionState implements IHubClient {
-	public final long myUIN;
+	public final BabelShortUserData userData;
 	public final IHub hub;
 
-	public MainSessionState(ISessionClient c, IHub h, long uin) {
+	public MainSessionState(ISessionClient c, IHub h, BabelShortUserData uin) {
 		super(c);
-		myUIN = uin;
+		userData = uin;
 		hub = h;
 	}
 
 	@Override
-	public long getUIN() {
-		return myUIN;
+	public BabelShortUserData getUserData() {
+		return userData;
 	}
 
 	@Override

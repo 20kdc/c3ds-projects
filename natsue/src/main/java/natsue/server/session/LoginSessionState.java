@@ -9,6 +9,7 @@ package natsue.server.session;
 
 import java.io.IOException;
 
+import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSHandshake;
@@ -44,8 +45,8 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 			return;
 		}
 		// -- attempt normal login --
-		long myUIN = hub.usernameAndPasswordToUIN(handshake.username, handshake.password);
-		if (myUIN == 0) {
+		BabelShortUserData data = hub.usernameAndPasswordToShortUserData(handshake.username, handshake.password);
+		if (data == null) {
 			if (client.logFailedAuth())
 				logTo(client, "Failed authentication for username: " + handshake.username);
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_INVALID_USER, 0L, 0L));
@@ -53,13 +54,13 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 			return;
 		}
 		// -- login ensured --
-		MainSessionState mainHub = new MainSessionState(client, hub, myUIN);
+		MainSessionState mainHub = new MainSessionState(client, hub, data);
 		if (!hub.login(mainHub)) {
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_ALREADY_LOGGED_IN, 0L, 0L));
 			client.setSessionState(null);
 			return;
 		} else {
-			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, hub.getServerUIN(), myUIN));
+			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, hub.getServerUIN(), data.uin));
 			client.setSessionState(mainHub);
 			return;
 		}

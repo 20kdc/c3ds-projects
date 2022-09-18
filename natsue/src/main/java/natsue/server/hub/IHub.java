@@ -7,6 +7,8 @@
 
 package natsue.server.hub;
 
+import natsue.data.babel.BabelShortUserData;
+
 /**
  * Represents the server.
  */
@@ -16,12 +18,17 @@ public interface IHub {
 	 * *This name need not be the user's username.*
 	 * Can and will return null.
 	 */
-	public String getNameByUIN(long uin);
+	public BabelShortUserData getShortUserDataByUIN(long uin);
 
 	/**
-	 * Given a user's username and password, provides a UIN, or zero.
+	 * Returns true if the given UIN is online.
 	 */
-	public long usernameAndPasswordToUIN(String username, String password);
+	public boolean isUINOnline(long uin);
+
+	/**
+	 * Given a user's username and password, provides a BabelShortUserData (successful login), or null.
+	 */
+	public BabelShortUserData usernameAndPasswordToShortUserData(String username, String password);
 
 	/**
 	 * Gets a UIN reserved for this server.

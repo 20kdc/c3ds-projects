@@ -8,13 +8,21 @@
 package natsue.server.hub;
 
 import natsue.data.babel.BabelShortUserData;
+import natsue.data.babel.UINUtils;
 
 /**
- * Interface for a client connected to the hub (this means AUTHENTICATED!!!)
+ * This client represents a user called System meant to handle fancy tasks.
  */
-public interface IHubClient {
-	/**
-	 * Returns user data, which includes the UIN.
-	 */
-	BabelShortUserData getUserData();
+public class SystemUserHubClient implements IHubClient {
+	public final ServerHub hub;
+	public final BabelShortUserData userData = new BabelShortUserData("none", "none", "*System", UINUtils.SERVER_UIN);
+	public SystemUserHubClient(ServerHub h) {
+		hub = h;
+	}
+
+
+	@Override
+	public BabelShortUserData getUserData() {
+		return userData;
+	}
 }

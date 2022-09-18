@@ -16,6 +16,8 @@ public class UINUtils {
 	// This isn't necessarily authentic, but who cares?
 	public static final int HID_USER = 1;
 	public static final int HID_SYSTEM = 2;
+	// For the server, but also for the system user
+	public static final long SERVER_UIN = UINUtils.make(1, UINUtils.HID_SYSTEM);
 
 	public static int uid(long uin) {
 		return (int) ((uin >> 32) & 0xFFFFFFFFL);

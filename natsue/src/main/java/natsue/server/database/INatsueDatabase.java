@@ -8,6 +8,7 @@
 package natsue.server.database;
 
 import natsue.config.IConfigProvider;
+import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.UINUtils;
 
 /**
@@ -43,6 +44,10 @@ public interface INatsueDatabase extends IConfigProvider {
 
 		public long getUIN() {
 			return UINUtils.make(uid, UINUtils.HID_USER);
+		}
+
+		public BabelShortUserData convertToBabel() {
+			return new BabelShortUserData("none", "none", username, UINUtils.make(uid, UINUtils.HID_USER));
 		}
 	}
 }

@@ -15,15 +15,13 @@ public class BabelShortUserData {
 	public final String lastName;
 	public final String nickName;
 	public final long uin;
+	public final byte[] packed;
 
 	public BabelShortUserData(String f, String l, String n, long u) {
 		firstName = f;
 		lastName = l;
 		nickName = n;
 		uin = u;
-	}
-
-	public byte[] toByteArray() {
 		byte[] fn = firstName.getBytes(PacketReader.CHARSET);
 		byte[] ln = lastName.getBytes(PacketReader.CHARSET);
 		byte[] nn = nickName.getBytes(PacketReader.CHARSET);
@@ -39,6 +37,6 @@ public class BabelShortUserData {
 		bb.putInt(12, fn.length);
 		bb.putInt(16, ln.length);
 		bb.putInt(20, nn.length);
-		return total;
+		packed = total;
 	}
 }
