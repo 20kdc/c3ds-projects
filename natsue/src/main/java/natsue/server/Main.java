@@ -56,7 +56,7 @@ public class Main {
 		ilp.log(mySource, "Bound ServerSocket to port " + port + " - ready to accept connections.");
 		while (true) {
 			Socket skt = sv.accept();
-			new SocketThread(skt, serverHub, ilp, new PacketReader(config)).start();
+			new SocketThread(skt, serverHub, actualDB, ilp, new PacketReader(config)).start();
 		}
 	}
 }

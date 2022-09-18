@@ -31,11 +31,6 @@ public class ServerHub implements IClientServerInterface {
 	}
 
 	@Override
-	public long userLookup(String username, String password) {
-		return 0;
-	}
-
-	@Override
 	public boolean attemptLoginConfirm(long uin, IConnectedClient cc) {
 		return false;
 	}

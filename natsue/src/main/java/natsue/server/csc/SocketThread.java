@@ -22,6 +22,7 @@ import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.csi.IClientServerInterface;
 import natsue.server.csi.IConnectedClient;
+import natsue.server.database.IAuthProvider;
 
 /**
  * Thread for a given client.
@@ -33,13 +34,15 @@ public class SocketThread extends Thread implements ILogSource, IConnectedClient
 	private final Object sendPacketLock = new Object();
 	public final IClientServerInterface serverHub;
 	public final ILogProvider log;
+	public final IAuthProvider auth;
 	public final PacketReader packetReader;
 	public long myUIN;
 
-	public SocketThread(Socket skt, IClientServerInterface csi, ILogProvider ilp, PacketReader pr) {
+	public SocketThread(Socket skt, IClientServerInterface csi, IAuthProvider a, ILogProvider ilp, PacketReader pr) {
 		socket = skt;
 		serverHub = csi;
 		log = ilp;
+		auth = a;
 		packetReader = pr;
 	}
 
@@ -64,6 +67,7 @@ public class SocketThread extends Thread implements ILogSource, IConnectedClient
 			if (packet != null) {
 				if (packet instanceof CTOSHandshake) {
 					if (handleHandshakePacket((CTOSHandshake) packet)) {
+						// This is the main loop!
 						while (true) {
 							packet = packetReader.readPacket(socketInput);
 							if (packet == null)
@@ -94,12 +98,22 @@ public class SocketThread extends Thread implements ILogSource, IConnectedClient
 		if (theHandshake.username.equals("coral")) {
 			sendPacket(PacketWriter.writeHandshakeResponse(Integer.valueOf(theHandshake.password), 0L, 0L));
 			return false;
-		} else if (theHandshake.username.equals("username") && theHandshake.password.equals("password")) {
-			sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, 7L, 7L));
-			return true;
-		} else {
+		}
+		// -- attempt normal login --
+		myUIN = auth.usernameAndPasswordToUIN(handshake.username, handshake.password);
+		if (myUIN == 0) {
 			sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_INVALID_USER, 0L, 0L));
 			return false;
+		}
+		// -- login ensured --
+		if (!serverHub.attemptLoginConfirm(myUIN, this)) {
+			// Already logged in, fail.
+			myUIN = 0;
+			sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_ALREADY_LOGGED_IN, 0L, 0L));
+			return false;
+		} else {
+			sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, auth.getServerUIN(), myUIN));
+			return true;
 		}
 	}
 
