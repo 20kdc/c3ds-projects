@@ -17,9 +17,14 @@ import java.nio.charset.StandardCharsets;
 
 import natsue.config.IConfigProvider;
 import natsue.data.babel.ctos.BaseCTOS;
+import natsue.data.babel.ctos.CTOSFeedHistory;
+import natsue.data.babel.ctos.CTOSFetchRandomUser;
+import natsue.data.babel.ctos.CTOSGetClientInfo;
+import natsue.data.babel.ctos.CTOSGetConnectionDetail;
 import natsue.data.babel.ctos.CTOSHandshake;
 import natsue.data.babel.ctos.CTOSMessage;
 import natsue.data.babel.ctos.CTOSUnknown;
+import natsue.data.babel.ctos.CTOSWWRModify;
 
 /**
  * General reference on reading packets.
@@ -78,6 +83,10 @@ public class PacketReader {
 		return dataW;
 	}
 
+	public long getUIN(ByteBuffer initial, int ofs) {
+		return UINUtils.make(initial.getInt(ofs), initial.getInt(ofs + 4));
+	}
+
 	/**
 	 * Reads the next packet from an input stream.
 	 * Returns null if the connection ended gracefully.
@@ -94,30 +103,33 @@ public class PacketReader {
 	}
 
 	private BaseCTOS packetInstanceByType(int type) {
-		BaseCTOS packetBase = null;
 		switch (type) {
 		case 0x09:
 			return new CTOSMessage();
 		case 0x0F:
-			return new CTOSUnknown(0, 32, false);
+			return new CTOSGetClientInfo();
 		case 0x10:
-			return new CTOSUnknown(0, 0, false);
+			return new CTOSWWRModify(true);
 		case 0x11:
-			return new CTOSUnknown(0, 0, false);
+			return new CTOSWWRModify(false);
 		case 0x12:
+			// C_TID_NOTIFY_LISTENING_PORT
 			return new CTOSUnknown(0, 0, false);
 		case 0x13:
-			return new CTOSUnknown(0, 32, false);
+			return new CTOSGetConnectionDetail();
 		case 0x18:
+			// C_TID_GET_STATUS
 			return new CTOSUnknown(0, 48, false);
 		case 0x1E:
+			// C_TID_VIRTUAL_CONNECT
 			return new CTOSUnknown(12, 0, false);
 		case 0x1F:
+			// C_TID_VIRTUAL_CIRCUIT
 			return new CTOSUnknown(12, 0, true);
 		case 0x0221:
-			return new CTOSUnknown(0, 32, false);
+			return new CTOSFetchRandomUser();
 		case 0x0321:
-			return new CTOSUnknown(0, 32, true);
+			return new CTOSFeedHistory();
 		case 0x25:
 			return new CTOSHandshake();
 		}

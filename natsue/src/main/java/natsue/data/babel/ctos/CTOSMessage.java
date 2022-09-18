@@ -33,6 +33,11 @@ public class CTOSMessage extends BaseCTOS {
 	}
 
 	@Override
+	public String toString() {
+		return "CTOSMessage{to: " + UINUtils.toString(targetUIN) + ", data:byte[" + messageData.length + "]}";
+	}
+
+	@Override
 	public void initializeAndReadRemainder(PacketReader pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
 		int msgDataSize = initial.getInt(BASE_FIELD_FDLEN);

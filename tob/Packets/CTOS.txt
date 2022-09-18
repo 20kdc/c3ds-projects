@@ -161,7 +161,7 @@ Used to notify the server about the port on which the client listens for incomin
 * Further data: Discarded
 * E: GetConnectionDetail goes to the trouble of retrieving this as a short, but it's discarded by all known callers.
 
-Worth noting: The response is considered a success if and only if one of these two cases occur:
+Worth noting: The response is considered a success if and only if at least one of these two cases occur:
 * A and B are not zero
 * E is not zero
 

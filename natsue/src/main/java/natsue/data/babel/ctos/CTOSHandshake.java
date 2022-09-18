@@ -33,6 +33,11 @@ public class CTOSHandshake extends BaseCTOS {
 	}
 
 	@Override
+	public String toString() {
+		return "CTOSHandshake[" + username + "]";
+	}
+
+	@Override
 	public void initializeAndReadRemainder(PacketReader pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
 		ByteBuffer hdrExt = pcfg.getWrappedBytes(inputStream, 20, false);

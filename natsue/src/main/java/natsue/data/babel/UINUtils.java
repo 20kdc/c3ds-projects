@@ -28,4 +28,8 @@ public class UINUtils {
 		long hidl = hid & 0x0000FFFFL;
 		return (uidl << 32) | hidl;
 	}
+
+	public static String toString(long targetUIN) {
+		return uid(targetUIN) + "+" + hid(targetUIN);
+	}
 }
