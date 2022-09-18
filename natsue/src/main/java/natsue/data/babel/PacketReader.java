@@ -78,9 +78,17 @@ public class PacketReader {
 		byte[] data = getBytes(socketInput, len, canEOF);
 		if (data == null)
 			return null;
-		ByteBuffer dataW = ByteBuffer.wrap(data);
-		dataW.order(ByteOrder.LITTLE_ENDIAN);
-		return dataW;
+		return wrapLE(data);
+	}
+
+	public static ByteBuffer wrapLE(byte[] total) {
+		return wrapLE(total, 0, total.length);
+	}
+
+	public static ByteBuffer wrapLE(byte[] total, int ofs, int len) {
+		ByteBuffer bb = ByteBuffer.wrap(total, ofs, len);
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+		return bb;
 	}
 
 	public long getUIN(ByteBuffer initial, int ofs) {

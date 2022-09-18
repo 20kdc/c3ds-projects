@@ -24,13 +24,12 @@ public class CTOSGetClientInfo extends TargetUIDCTOS {
 	public byte[] makeResponse(byte[] shortUserData) {
 		if (shortUserData == null)
 			return makeDummy();
-		byte[] data = new byte[shortUserData.length + 32];
-		ByteBuffer bb = ByteBuffer.wrap(data);
+		ByteBuffer bb = ByteBuffer.allocate(shortUserData.length + 32);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 		bb.putInt(BASE_FIELD_TICKET, ticketNumber);
 		bb.putInt(BASE_FIELD_FDLEN, shortUserData.length);
-		System.arraycopy(shortUserData, 0, data, 32, shortUserData.length);
-		return data;
+		System.arraycopy(shortUserData, 0, bb.array(), 32, shortUserData.length);
+		return bb.array();
 	}
 
 	@Override

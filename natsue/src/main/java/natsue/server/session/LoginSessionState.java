@@ -54,15 +54,18 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 			return;
 		}
 		// -- login ensured --
-		MainSessionState mainHub = new MainSessionState(client, hub, data);
-		if (!hub.login(mainHub)) {
+		final MainSessionState mainHub = new MainSessionState(client, hub, data);
+		if (!hub.clientLogin(mainHub, () -> {
+			client.setSessionState(mainHub);
+			try {
+				client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, hub.getServerUIN(), data.uin));
+			} catch (Exception ex) {
+				if (client.logFailedAuth())
+					logTo(client, ex);
+			}
+		})) {
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_ALREADY_LOGGED_IN, 0L, 0L));
 			client.setSessionState(null);
-			return;
-		} else {
-			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, hub.getServerUIN(), data.uin));
-			client.setSessionState(mainHub);
-			return;
 		}
 	}
 

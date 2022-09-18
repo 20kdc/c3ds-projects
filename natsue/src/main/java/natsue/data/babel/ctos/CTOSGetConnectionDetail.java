@@ -25,12 +25,11 @@ public class CTOSGetConnectionDetail extends TargetUIDCTOS {
 	 * Makes an OK response without IP/port. You can use the dummy response otherwise.
 	 */
 	public byte[] makeOkResponse() {
-		byte[] data = new byte[32];
-		ByteBuffer bb = ByteBuffer.wrap(data);
+		ByteBuffer bb = ByteBuffer.allocate(32);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 		bb.putInt(BASE_FIELD_TICKET, ticketNumber);
 		bb.putInt(BASE_FIELD_E, 1);
-		return data;
+		return bb.array();
 	}
 
 	@Override

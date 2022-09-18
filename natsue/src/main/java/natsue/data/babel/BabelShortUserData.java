@@ -29,8 +29,7 @@ public class BabelShortUserData {
 		System.arraycopy(fn, 0, total, 24, fn.length);
 		System.arraycopy(ln, 0, total, 24 + fn.length, ln.length);
 		System.arraycopy(nn, 0, total, 24 + fn.length + ln.length, nn.length);
-		ByteBuffer bb = ByteBuffer.wrap(total);
-		bb.order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer bb = PacketReader.wrapLE(total);
 		bb.putInt(0, total.length);
 		bb.putInt(4, UINUtils.uid(uin));
 		bb.putInt(8, UINUtils.hid(uin));

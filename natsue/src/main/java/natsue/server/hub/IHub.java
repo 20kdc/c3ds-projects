@@ -7,7 +7,10 @@
 
 package natsue.server.hub;
 
+import java.io.IOException;
+
 import natsue.data.babel.BabelShortUserData;
+import natsue.data.babel.PackedMessage;
 
 /**
  * Represents the server.
@@ -36,13 +39,28 @@ public interface IHub {
 	public long getServerUIN();
 
 	/**
+	 * Forcibly route a message without any sanity checks.
+	 * Returns false if the user was not available.
+	 */
+	boolean forceRouteMessage(long destinationUID, PackedMessage message) throws IOException;
+
+	/**
 	 * Adds a client to the system, or returns false if that couldn't happen due to a conflict.
 	 * Note that you can't turn back if this returns true, you have to logout again.
+	 * The runnable provided here runs at a very specific time such that:
+	 * + No functions will quite have been called yet on the client
+	 * + The client will definitely be logging in at this point
 	 */
-	boolean login(IHubClient cc);
+	boolean clientLogin(IHubClient cc, Runnable confirmOk);
 
 	/**
 	 * Removes a client from the system.
 	 */
-	void logout(IHubClient cc);
+	void clientLogout(IHubClient cc);
+
+	/**
+	 * A client sent a message, what do we do with it?
+	 * (Verification happens here.)
+	 */
+	void clientGiveMessage(IHubClient cc, long destinationUID, PackedMessage message);
 }

@@ -29,14 +29,13 @@ public class CTOSFetchRandomUser extends BaseCTOS {
 		if (uin == 0)
 			return makeDummy();
 
-		byte[] rsp = new byte[32];
-		ByteBuffer bb = ByteBuffer.wrap(rsp);
+		ByteBuffer bb = ByteBuffer.allocate(32);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 		bb.putInt(BASE_FIELD_TICKET, ticketNumber);
 		bb.putInt(BASE_FIELD_C, UINUtils.uid(uin));
 		bb.putInt(BASE_FIELD_D, UINUtils.hid(uin));
 		bb.putInt(BASE_FIELD_E, 1);
-		return rsp;
+		return bb.array();
 	}
 
 	@Override

@@ -7,7 +7,10 @@
 
 package natsue.server.hub;
 
+import java.io.IOException;
+
 import natsue.data.babel.BabelShortUserData;
+import natsue.data.babel.PackedMessage;
 
 /**
  * Interface for a client connected to the hub (this means AUTHENTICATED!!!)
@@ -17,4 +20,14 @@ public interface IHubClient {
 	 * Returns user data, which includes the UIN.
 	 */
 	BabelShortUserData getUserData();
+
+	/**
+	 * For online/offline notifications.
+	 */
+	void wwrNotify(boolean online, BabelShortUserData userData);
+
+	/**
+	 * Incoming message! Can throw IOException, which counts as failure.
+	 */
+	void incomingMessage(PackedMessage message) throws IOException;
 }

@@ -25,10 +25,14 @@ public class PacketWriter {
 	public static int HANDSHAKE_RESPONSE_NEEDS_UPDATE = 14;
 	public static int HANDSHAKE_RESPONSE_UNKNOWN = 16;
 
+	public static ByteBuffer newBuffer(int size) {
+		ByteBuffer res = ByteBuffer.allocate(size);
+		res.order(ByteOrder.LITTLE_ENDIAN);
+		return res;
+	}
+
 	public static byte[] writeHandshakeResponse(int errorCode, long serverUIN, long clientUIN) {
-		byte[] bt = new byte[60];
-		ByteBuffer packet = ByteBuffer.wrap(bt);
-		packet.order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer packet = newBuffer(60);
 		packet.put(BaseCTOS.BASE_FIELD_TYPE, (byte) 10);
 		packet.put(1, (byte) errorCode);
 		packet.putInt(BaseCTOS.BASE_FIELD_A, UINUtils.uid(serverUIN));
@@ -36,6 +40,24 @@ public class PacketWriter {
 		packet.putInt(BaseCTOS.BASE_FIELD_C, UINUtils.uid(clientUIN));
 		packet.putInt(BaseCTOS.BASE_FIELD_D, UINUtils.hid(clientUIN));
 		packet.putInt(44, 12);
-		return bt;
+		return packet.array();
+	}
+
+	public static byte[] writeMessage(byte[] message) {
+		ByteBuffer packet = newBuffer(message.length + 32);
+		packet.putInt(BaseCTOS.BASE_FIELD_TYPE, 9);
+		packet.putInt(BaseCTOS.BASE_FIELD_FDLEN, message.length);
+		packet.position(32);
+		packet.put(message);
+		return packet.array();
+	}
+
+	public static byte[] writeUserLine(boolean online, byte[] userData) {
+		ByteBuffer packet = newBuffer(userData.length + 32);
+		packet.putInt(BaseCTOS.BASE_FIELD_TYPE, online ? 0x0D : 0x0E);
+		packet.putInt(BaseCTOS.BASE_FIELD_FDLEN, userData.length);
+		packet.position(32);
+		packet.put(userData);
+		return packet.array();
 	}
 }
