@@ -35,15 +35,6 @@ public class Main {
 			throw new RuntimeException("Natsue Server expects a single parameter: the JDBC connection path to the database. This can be, for instance, \"jdbc:sqlite:sample.db\".");
 		}
 
-		INatsueDatabase firstDB = new JDBCNatsueDatabase(DriverManager.getConnection(args[0]));
-
-		IConfigProvider config = firstDB;
-
-		INatsueDatabase actualDB = firstDB;
-		String otherDB = config.getConfigString("Main.actualDB", "");
-		if (!otherDB.equals(""))
-			actualDB = new JDBCNatsueDatabase(DriverManager.getConnection(otherDB));
-
 		ILogProvider ilp = new ILogProvider() {
 			@Override
 			public void log(String source, String text) {
@@ -57,7 +48,18 @@ public class Main {
 			}
 		};
 		String mySource = Main.class.toString();
-		ilp.log(mySource, "Opened connections to DBs and started logger.");
+		ilp.log(mySource, "Started logger.");
+
+		INatsueDatabase firstDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(args[0]));
+
+		IConfigProvider config = firstDB;
+
+		INatsueDatabase actualDB = firstDB;
+		String otherDB = config.getConfigString("Main.actualDB", "");
+		if (!otherDB.equals(""))
+			actualDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(otherDB));
+
+		ilp.log(mySource, "Opened DB connections.");
 
 		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
 

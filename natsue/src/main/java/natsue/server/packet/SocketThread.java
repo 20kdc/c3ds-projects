@@ -64,12 +64,12 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 
 	@Override
 	public void log(String source, String text) {
-		log.log(this + ":" + source, text);
+		log.log(this + ": " + source, text);
 	}
 
 	@Override
 	public void log(String source, Throwable ex) {
-		log.log(this + ":" + source, ex);
+		log.log(this + ": " + source, ex);
 	}
 
 	@Override
@@ -83,12 +83,13 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 			if (config.logAllConnections)
 				logTo(log, "Accepted");
 			sessionState = initialSessionStateBuilder.apply(this);
-			BaseCTOS packet = packetReader.readPacket(socketInput);
 			// This is the main loop!
 			while (sessionState != null) {
-				packet = packetReader.readPacket(socketInput);
+				BaseCTOS packet = packetReader.readPacket(socketInput);
 				if (packet == null)
 					break;
+				if (config.logAllIncomingPackets)
+					logTo(log, packet.toString());
 				sessionState.handlePacket(packet);
 			}
 			// nevermind then

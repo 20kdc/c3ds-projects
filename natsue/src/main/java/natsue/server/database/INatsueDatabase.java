@@ -8,10 +8,41 @@
 package natsue.server.database;
 
 import natsue.config.IConfigProvider;
+import natsue.data.babel.UINUtils;
 
 /**
  * Abstract interface to enforce clean separation of SQL-handling code from everything else.
  * REMEMBER: STUFF HERE CAN BE ACCESSED FROM MULTIPLE THREADS.
  */
 public interface INatsueDatabase extends IConfigProvider {
+	/**
+	 * Gets a user by UID.
+	 * Returns null on failure.
+	 */
+	UserInfo getUserByUID(int uid);
+
+	/**
+	 * Gets a user by username.
+	 * Returns null on failure.
+	 */
+	UserInfo getUserByUsername(String username);
+
+	public static class UserInfo {
+		public final String username;
+		/**
+		 * Hex-encoded lowercase sha256 hash of the password.
+		 */
+		public final String passwordHash;
+		public final int uid;
+
+		public UserInfo(String u, String p, int ui) {
+			username = u;
+			passwordHash = p;
+			uid = ui;
+		}
+
+		public long getUIN() {
+			return UINUtils.make(uid, UINUtils.HID_USER);
+		}
+	}
 }

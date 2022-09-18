@@ -12,14 +12,14 @@ import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
 import natsue.server.database.INatsueDatabase;
+import natsue.server.database.INatsueDatabase.UserInfo;
 import natsue.server.session.ISessionClient;
 
 /**
  * Class that contains everything important to everything ever.
  */
 public class ServerHub implements IHub {
-	public static final long SERVER_UIN = UINUtils.make(1, 1);
-	public static final long TEST_UIN = UINUtils.make(1, 2);
+	public static final long SERVER_UIN = UINUtils.make(UINUtils.HID_SYSTEM, 1);
 
 	public final IConfigProvider config;
 	public final ILogProvider log;
@@ -35,15 +35,23 @@ public class ServerHub implements IHub {
 	public String getNameByUIN(long uin) {
 		if (uin == SERVER_UIN)
 			return "Server";
-		if (uin == TEST_UIN)
-			return "test";
+		if (UINUtils.hid(uin) == UINUtils.HID_USER) {
+			UserInfo ui = database.getUserByUID(UINUtils.uid(uin));
+			if (ui != null)
+				return ui.username;
+		}
 		return null;
 	}
 
 	@Override
 	public long usernameAndPasswordToUIN(String username, String password) {
-		if (username.equals("test"))
-			return TEST_UIN;
+		UserInfo ui = database.getUserByUsername(username);
+		if (ui == null)
+			return 0;
+		// this isn't how this is supposed to work but let's ignore that right now
+		if (ui.passwordHash != null)
+			if (ui.passwordHash.equals(password))
+				return UINUtils.make(ui.uid, UINUtils.HID_USER);
 		return 0;
 	}
 

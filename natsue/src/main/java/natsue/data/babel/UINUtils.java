@@ -12,6 +12,11 @@ package natsue.data.babel;
  * This class deals with that.
  */
 public class UINUtils {
+	// Natsue uses HIDs as a namespacing mechanism.
+	// This isn't necessarily authentic, but who cares?
+	public static final int HID_USER = 1;
+	public static final int HID_SYSTEM = 2;
+
 	public static int uid(long uin) {
 		return (int) ((uin >> 32) & 0xFFFFFFFFL);
 	}

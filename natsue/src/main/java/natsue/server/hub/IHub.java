@@ -13,6 +13,7 @@ package natsue.server.hub;
 public interface IHub {
 	/**
 	 * Gets the name of a user by their UIN.
+	 * *This name need not be the user's username.*
 	 * Can and will return null.
 	 */
 	public String getNameByUIN(long uin);
