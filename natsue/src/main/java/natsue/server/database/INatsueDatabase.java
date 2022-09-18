@@ -5,10 +5,13 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue;
+package natsue.server.database;
 
-public class Main {
-	public static void main(String[] args) {
-		// :D
-	}
+import natsue.IConfigProvider;
+
+/**
+ * Abstract interface to enforce clean separation of SQL-handling code from everything else.
+ * REMEMBER: STUFF HERE CAN BE ACCESSED FROM MULTIPLE THREADS.
+ */
+public interface INatsueDatabase extends IConfigProvider {
 }
