@@ -109,6 +109,24 @@ public class ServerHub implements IHub, ILogSource {
 	}
 
 	@Override
+	public void spoolMessage(long destinationUIN, PackedMessage message) {
+		boolean success = false;
+		try {
+			success = forceRouteMessage(destinationUIN, message);
+		} catch (Exception ex) {
+			// expected, so don't bother logging
+		}
+		if (!success) {
+			// Message stops with us. But only spool to users in the database.
+			if (UINUtils.hid(destinationUIN) == UINUtils.HID_USER) {
+				int uid = UINUtils.uid(destinationUIN);
+				if (database.getUserByUID(uid) != null)
+					database.spoolMessage(uid, message.toByteArray());
+			}
+		}
+	}
+
+	@Override
 	public boolean clientLogin(IHubClient cc, Runnable onConfirm) {
 		BabelShortUserData userData = cc.getUserData();
 		Long uin = userData.uin;
@@ -126,6 +144,24 @@ public class ServerHub implements IHub, ILogSource {
 		}
 		for (IHubClient ihc : wwrNotify)
 			ihc.wwrNotify(true, userData);
+		if (UINUtils.hid(uin) == UINUtils.HID_USER) {
+			int uid = UINUtils.uid(uin);
+			// This is presumably a user in the database, dump all spool contents
+			while (true) {
+				byte[] pm = database.popFirstSpooledMessage(uid);
+				if (pm != null) {
+					try {
+						cc.incomingMessage(new PackedMessage(pm));
+					} catch (Exception ex) {
+						// Something went wrong, re-spool the message
+						database.spoolMessage(uid, pm);
+						break;
+					}
+				} else {
+					break;
+				}
+			}
+		}
 		return true;
 	}
 
@@ -148,11 +184,6 @@ public class ServerHub implements IHub, ILogSource {
 	public void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message) {
 		if (message.senderUIN != cc.getUserData().uin)
 			return;
-		try {
-			forceRouteMessage(destinationUIN, message);
-		} catch (Exception ex) {
-			// :( message lost
-			logTo(log, ex);
-		}
+		spoolMessage(destinationUIN, message);
 	}
 }

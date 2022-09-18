@@ -9,6 +9,7 @@ package natsue.server.database;
 
 import natsue.config.IConfigProvider;
 import natsue.data.babel.BabelShortUserData;
+import natsue.data.babel.PackedMessage;
 import natsue.data.babel.UINUtils;
 
 /**
@@ -27,6 +28,17 @@ public interface INatsueDatabase extends IConfigProvider {
 	 * Returns null on failure.
 	 */
 	UserInfo getUserByUsername(String username);
+
+	/**
+	 * Spools a PackedMessage.
+	 * Note that a spooled message can only be sent to someone in the database for sanity reasons.
+	 */
+	void spoolMessage(int uid, byte[] pm);
+
+	/**
+	 * Removes an arbitrary PackedMessage from a user's spool, or returns null if it's not there.
+	 */
+	byte[] popFirstSpooledMessage(int uid);
 
 	public static class UserInfo {
 		public final String username;

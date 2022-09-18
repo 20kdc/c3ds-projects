@@ -7,12 +7,14 @@
 
 package natsue.server.database;
 
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import natsue.data.babel.PackedMessage;
 import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
@@ -28,12 +30,17 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 			// 1: prepare version table
 			"INSERT INTO natsue_version VALUES (0)",
 			// 2: create users table
-			"CREATE TABLE natsue_users(username TEXT NOT NULL UNIQUE, psha256 TEXT, uid INTEGER NOT NULL CHECK(uid != 0) UNIQUE, PRIMARY KEY(uid AUTOINCREMENT))"
+			"CREATE TABLE natsue_users(username TEXT NOT NULL UNIQUE, psha256 TEXT, uid INTEGER NOT NULL CHECK(uid != 0) UNIQUE, PRIMARY KEY(uid AUTOINCREMENT))",
+			// 3: create spooled messages table
+			"CREATE TABLE natsue_spool(id INTEGER NOT NULL UNIQUE, uid INTEGER NOT NULL, data BLOB NOT NULL, PRIMARY KEY(id AUTOINCREMENT))"
 	};
 	public final ILogProvider log;
 	private final Connection database;
 	private final PreparedStatement stmUserByUID;
 	private final PreparedStatement stmUserByName;
+	private final PreparedStatement stmStoreOnSpool;
+	private final PreparedStatement stmDeleteFromSpool;
+	private final PreparedStatement stmGetFromSpool;
 
 	public JDBCNatsueDatabase(ILogProvider ilp, Connection conn) throws SQLException {
 		database = conn;
@@ -54,8 +61,11 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 			workspace.execute("UPDATE natsue_version SET version=" + i);
 		}
 		workspace.close();
-		stmUserByUID = conn.prepareStatement("SELECT * from natsue_users WHERE uid=?");
-		stmUserByName = conn.prepareStatement("SELECT * from natsue_users WHERE username=?");
+		stmUserByUID = conn.prepareStatement("SELECT * FROM natsue_users WHERE uid=?");
+		stmUserByName = conn.prepareStatement("SELECT * FROM natsue_users WHERE username=?");
+		stmStoreOnSpool = conn.prepareStatement("INSERT INTO natsue_spool(uid, data) VALUES (?, ?)");
+		stmDeleteFromSpool = conn.prepareStatement("DELETE FROM natsue_spool WHERE id=? and uid=?");
+		stmGetFromSpool = conn.prepareStatement("SELECT * FROM natsue_spool WHERE uid=?");
 	}
 
 	@Override
@@ -97,5 +107,41 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 				return null;
 			}
 		}
+	}
+
+	@Override
+	public void spoolMessage(int uid, byte[] pm) {
+		synchronized (this) {
+			try {
+				stmStoreOnSpool.setInt(1, uid);
+				stmStoreOnSpool.setBytes(2, pm);
+				stmStoreOnSpool.executeUpdate();
+			} catch (Exception ex) {
+				logTo(log, ex);
+			}
+		}
+	}
+
+	@Override
+	public byte[] popFirstSpooledMessage(int uid) {
+		byte[] message = null;
+		synchronized (this) {
+			try {
+				stmGetFromSpool.setInt(1, uid);
+				ResultSet rs = stmGetFromSpool.executeQuery();
+				if (rs.next()) {
+					int id = rs.getInt(1);
+					message = rs.getBytes(3);
+					// and now remove from the spool
+					stmDeleteFromSpool.setInt(1, id);
+					stmDeleteFromSpool.setInt(2, uid);
+					stmDeleteFromSpool.execute();
+				}
+				rs.close();
+			} catch (Exception ex) {
+				logTo(log, ex);
+			}
+		}
+		return message;
 	}
 }
