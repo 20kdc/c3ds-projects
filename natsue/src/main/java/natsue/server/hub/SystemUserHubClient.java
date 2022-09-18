@@ -29,6 +29,11 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
+	public boolean isSystem() {
+		return true;
+	}
+
+	@Override
 	public void wwrNotify(boolean online, BabelShortUserData theirData) {
 		byte[] writ = WritVal.encodeWrit("add_to_contact_book", 2468, UINUtils.toString(userData.uin), null);
 		try {

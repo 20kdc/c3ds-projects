@@ -8,8 +8,11 @@
 package natsue.server.hub;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Random;
 
 import natsue.config.IConfigProvider;
 import natsue.data.babel.BabelShortUserData;
@@ -29,6 +32,8 @@ public class ServerHub implements IHub, ILogSource {
 	public final INatsueDatabase database;
 
 	public final HashMap<Long, IHubClient> connectedClients = new HashMap<>();
+	public final ArrayList<Long> randomPool = new ArrayList<>();
+	public final Random randomGen = new Random();
 
 	public ServerHub(IConfigProvider cfg, ILogProvider logProvider, INatsueDatabase db) {
 		config = cfg;
@@ -81,10 +86,21 @@ public class ServerHub implements IHub, ILogSource {
 	}
 
 	@Override
-	public boolean forceRouteMessage(long destinationUID, PackedMessage message) throws IOException {
+	public long getRandomOnlineNonSystemUIN() {
+		synchronized (this) {
+			int size = randomPool.size();
+			if (size == 0)
+				return 0;
+			int idx = randomGen.nextInt(size);
+			return randomPool.get(idx);
+		}
+	}
+
+	@Override
+	public boolean forceRouteMessage(long destinationUIN, PackedMessage message) throws IOException {
 		IHubClient ihc;
 		synchronized (this) {
-			ihc = connectedClients.get(destinationUID);
+			ihc = connectedClients.get(destinationUIN);
 		}
 		if (ihc == null)
 			return false;
@@ -104,6 +120,8 @@ public class ServerHub implements IHub, ILogSource {
 				wwrNotify.addAll(connectedClients.values());
 				connectedClients.put(uin, cc);
 				onConfirm.run();
+				if (!cc.isSystem())
+					randomPool.add(uin);
 			}
 		}
 		for (IHubClient ihc : wwrNotify)
@@ -117,6 +135,7 @@ public class ServerHub implements IHub, ILogSource {
 		Long uin = userData.uin;
 		LinkedList<IHubClient> wwrNotify = new LinkedList<>();
 		synchronized (this) {
+			randomPool.remove(uin);
 			if (connectedClients.get(uin) == cc) {
 				connectedClients.remove(uin);
 			}
@@ -126,11 +145,11 @@ public class ServerHub implements IHub, ILogSource {
 	}
 
 	@Override
-	public void clientGiveMessage(IHubClient cc, long destinationUID, PackedMessage message) {
+	public void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message) {
 		if (message.senderUIN != cc.getUserData().uin)
 			return;
 		try {
-			forceRouteMessage(destinationUID, message);
+			forceRouteMessage(destinationUIN, message);
 		} catch (Exception ex) {
 			// :( message lost
 			logTo(log, ex);

@@ -22,6 +22,12 @@ public interface IHubClient {
 	BabelShortUserData getUserData();
 
 	/**
+	 * Is this a system user (and thus ineligible for random user selection)?
+	 * NOTE: This is checked on login and at no other points.
+	 */
+	boolean isSystem();
+
+	/**
 	 * For online/offline notifications.
 	 */
 	void wwrNotify(boolean online, BabelShortUserData userData);

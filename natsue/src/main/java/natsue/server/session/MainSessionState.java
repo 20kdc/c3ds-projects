@@ -13,8 +13,10 @@ import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PackedMessage;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
+import natsue.data.babel.ctos.CTOSFetchRandomUser;
 import natsue.data.babel.ctos.CTOSGetClientInfo;
 import natsue.data.babel.ctos.CTOSGetConnectionDetail;
+import natsue.data.babel.ctos.CTOSMessage;
 import natsue.data.babel.ctos.CTOSWWRModify;
 import natsue.log.ILogSource;
 import natsue.server.hub.IHub;
@@ -36,6 +38,11 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	@Override
 	public BabelShortUserData getUserData() {
 		return userData;
+	}
+
+	@Override
+	public boolean isSystem() {
+		return false;
 	}
 
 	@Override
@@ -63,6 +70,13 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 				if (bsud != null)
 					wwrNotify(hub.isUINOnline(pkt.targetUIN), bsud);
 			}
+		} else if (packet instanceof CTOSFetchRandomUser) {
+			CTOSFetchRandomUser pkt = (CTOSFetchRandomUser) packet;
+			client.sendPacket(pkt.makeResponse(hub.getRandomOnlineNonSystemUIN()));
+		} else if (packet instanceof CTOSMessage) {
+			CTOSMessage pkt = (CTOSMessage) packet;
+			PackedMessage pm = new PackedMessage(pkt.messageData);
+			hub.clientGiveMessage(this, pkt.targetUIN, pm);
 		} else {
 			dummyResponse(packet);
 		}

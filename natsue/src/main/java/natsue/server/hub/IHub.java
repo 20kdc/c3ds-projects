@@ -39,10 +39,16 @@ public interface IHub {
 	public long getServerUIN();
 
 	/**
+	 * Returns a random online UIN that isn't the system.
+	 * Returns 0 if none could be found.
+	 */
+	public long getRandomOnlineNonSystemUIN();
+
+	/**
 	 * Forcibly route a message without any sanity checks.
 	 * Returns false if the user was not available.
 	 */
-	boolean forceRouteMessage(long destinationUID, PackedMessage message) throws IOException;
+	boolean forceRouteMessage(long destinationUIN, PackedMessage message) throws IOException;
 
 	/**
 	 * Adds a client to the system, or returns false if that couldn't happen due to a conflict.
@@ -62,5 +68,5 @@ public interface IHub {
 	 * A client sent a message, what do we do with it?
 	 * (Verification happens here.)
 	 */
-	void clientGiveMessage(IHubClient cc, long destinationUID, PackedMessage message);
+	void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message);
 }
