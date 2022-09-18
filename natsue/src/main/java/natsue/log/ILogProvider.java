@@ -5,19 +5,19 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue;
+package natsue.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * Convenience class for logging.
+ * Always gotta be one.
  */
-public interface ILogSource {
-	default void logTo(ILogProvider ilp, String text) {
-		ilp.log(toString(), text);
-	}
-	default void logTo(ILogProvider ilp, Exception ex) {
-		ilp.log(toString(), ex);
+public interface ILogProvider {
+	void log(String source, String text);
+	default void log(String source, Exception ex) {
+		StringWriter sw = new StringWriter();
+		ex.printStackTrace(new PrintWriter(sw));
+		log(source, sw.toString());
 	}
 }

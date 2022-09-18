@@ -5,20 +5,10 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue;
+package natsue.server.csi;
 
 /**
- * Just to simplify things.
+ * Represents a connected client.
  */
-public interface IConfigProvider {
-	default int getConfigInt(String name, int defaultVal) {
-		String res = getConfigString(name, Integer.toString(defaultVal));
-		try {
-			return Integer.parseInt(res);
-		} catch (Exception ex) {
-			// nope
-			return defaultVal;
-		}
-	}
-	String getConfigString(String name, String defaultVal);
+public interface IConnectedClient {
 }

@@ -10,37 +10,40 @@ package natsue.data.babel.ctos;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 
 /**
- * Messages!
+ * Handshaking
  */
-public class CTOSMessage extends BaseCTOS {
+public class CTOSHandshake extends BaseCTOS {
 	/**
-	 * Which UIN the message is to be sent to.
+	 * Username
 	 */
-	public long targetUIN;
-	/**
-	 * Message data. This is a Packed Babel Message.
-	 * Be sure to overwrite the sender UIN or people can forge messages from anyone.
-	 * No prizes for guessing what happens then.
-	 */
-	public byte[] messageData;
+	public String username;
 
-	public CTOSMessage() {
+	/**
+	 * Password
+	 */
+	public String password;
+
+	public CTOSHandshake() {
 	}
 
 	@Override
 	public void initializeAndReadRemainder(PacketReader pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
-		int msgDataSize = initial.getInt(BASE_FIELD_FDLEN);
-		if (msgDataSize < 0 || msgDataSize > pcfg.maximumBabelBinaryMessageSize)
+		ByteBuffer hdrExt = pcfg.getWrappedBytes(inputStream, 20, false);
+		int usernameLen = hdrExt.getInt(12);
+		int passwordLen = hdrExt.getInt(16);
+		int totalLen = usernameLen + passwordLen;
+		if (totalLen < 0 || totalLen > pcfg.maximumLoginInfoSize)
 			throw new IOException("Invalid message size!");
-		ByteBuffer data = pcfg.getWrappedBytes(inputStream, 8, false);
-		targetUIN = UINUtils.make(data.getInt(0), data.getInt(4));
-		messageData = pcfg.getBytes(inputStream, msgDataSize, false);
+		byte[] data = pcfg.getBytes(inputStream, totalLen, false);
+		username = new String(data, 0, usernameLen - 1, PacketReader.CHARSET);
+		password = new String(data, usernameLen, passwordLen - 1, PacketReader.CHARSET);
 	}
 
 	@Override

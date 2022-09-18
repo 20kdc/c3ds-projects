@@ -14,8 +14,11 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Date;
 
-import natsue.IConfigProvider;
-import natsue.ILogProvider;
+import natsue.config.IConfigProvider;
+import natsue.data.babel.PacketReader;
+import natsue.log.ILogProvider;
+import natsue.server.csc.ServerHub;
+import natsue.server.csc.SocketThread;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.JDBCNatsueDatabase;
 
@@ -28,10 +31,12 @@ public class Main {
 			throw new RuntimeException("Natsue Server expects a single parameter: the JDBC connection path to the database. This can be, for instance, \"jdbc:sqlite:sample.db\".");
 		}
 
-		INatsueDatabase configDB = new JDBCNatsueDatabase(DriverManager.getConnection(args[0]));
+		INatsueDatabase firstDB = new JDBCNatsueDatabase(DriverManager.getConnection(args[0]));
 
-		INatsueDatabase actualDB = configDB;
-		String otherDB = configDB.getConfigString("Main.actualDB", "");
+		IConfigProvider config = firstDB;
+
+		INatsueDatabase actualDB = firstDB;
+		String otherDB = config.getConfigString("Main.actualDB", "");
 		if (!otherDB.equals(""))
 			actualDB = new JDBCNatsueDatabase(DriverManager.getConnection(otherDB));
 
@@ -44,14 +49,14 @@ public class Main {
 		String mySource = Main.class.toString();
 		ilp.log(mySource, "Opened connections to DBs and started logger.");
 
-		ServerHub serverHub = new ServerHub(configDB, ilp, actualDB);
+		ServerHub serverHub = new ServerHub(config, ilp, actualDB);
 
 		int port = serverHub.config.getConfigInt("Main.port", 49152);
 		ServerSocket sv = new ServerSocket(port);
 		ilp.log(mySource, "Bound ServerSocket to port " + port + " - ready to accept connections.");
 		while (true) {
 			Socket skt = sv.accept();
-			new SocketThread(skt, serverHub).start();
+			new SocketThread(skt, serverHub, ilp, new PacketReader(config)).start();
 		}
 	}
 }

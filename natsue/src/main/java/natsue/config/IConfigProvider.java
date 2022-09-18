@@ -5,22 +5,20 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.data.babel;
+package natsue.config;
 
 /**
- * Natsue Server stores UINs as longs for convenience's sake.
- * This class deals with that.
+ * Just to simplify things.
  */
-public class UINUtils {
-	public static int uid(long uin) {
-		return (int) ((uin >> 32) & 0xFFFFFFFFL);
+public interface IConfigProvider {
+	default int getConfigInt(String name, int defaultVal) {
+		String res = getConfigString(name, Integer.toString(defaultVal));
+		try {
+			return Integer.parseInt(res);
+		} catch (Exception ex) {
+			// nope
+			return defaultVal;
+		}
 	}
-	public static int hid(long uin) {
-		return (short) (uin & 0xFFFF);
-	}
-	public static long make(int uid, int hid) {
-		long uidl = uid & 0xFFFFFFFFL;
-		long hidl = hid & 0x0000FFFFL;
-		return (uidl << 32) | hidl;
-	}
+	String getConfigString(String name, String defaultVal);
 }

@@ -5,19 +5,19 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
+package natsue.server.csi;
 
 /**
- * Always gotta be one.
+ * Represents the server.
  */
-public interface ILogProvider {
-	void log(String source, String text);
-	default void log(String source, Exception ex) {
-		StringWriter sw = new StringWriter();
-		ex.printStackTrace(new PrintWriter(sw));
-		log(source, sw.toString());
-	}
+public interface IClientServerInterface {
+	/**
+	 * Completes the login process, or returns false if that couldn't happen due to an existing user.
+	 */
+	boolean attemptLoginConfirm(long uin, IConnectedClient cc);
+
+	/**
+	 * Removes a client from the system.
+	 */
+	void logout(long uin, IConnectedClient cc);
 }

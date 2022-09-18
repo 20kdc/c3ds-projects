@@ -9,13 +9,17 @@ package natsue.server.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
+
+import natsue.data.babel.UINUtils;
 
 /**
  * JDBC-based Natsue database implementation.
  * REMEMBER: STUFF HERE CAN BE ACCESSED FROM MULTIPLE THREADS.
  */
 public class JDBCNatsueDatabase implements INatsueDatabase {
+	public static final long SERVER_UIN = UINUtils.make(1, 1);
+	public static final long TEST_UIN = UINUtils.make(1, 2);
+
 	public JDBCNatsueDatabase(Connection conn) throws SQLException {
 		/*
 		Statement st = conn.createStatement();
@@ -26,5 +30,26 @@ public class JDBCNatsueDatabase implements INatsueDatabase {
 	@Override
 	public String getConfigString(String name, String defaultVal) {
 		return defaultVal;
+	}
+
+	@Override
+	public String getNameByUIN(long uin) {
+		if (uin == SERVER_UIN)
+			return "Server";
+		if (uin == TEST_UIN)
+			return "test";
+		return null;
+	}
+
+	@Override
+	public long usernameAndPasswordToUIN(String username, String password) {
+		if (username.equals("test"))
+			return TEST_UIN;
+		return 0;
+	}
+
+	@Override
+	public long getServerUIN() {
+		return SERVER_UIN;
 	}
 }

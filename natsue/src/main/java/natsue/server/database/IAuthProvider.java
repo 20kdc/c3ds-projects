@@ -5,22 +5,25 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.data.babel;
+package natsue.server.database;
 
 /**
- * Natsue Server stores UINs as longs for convenience's sake.
- * This class deals with that.
+ * Abstract interface for authentication tasks.
  */
-public class UINUtils {
-	public static int uid(long uin) {
-		return (int) ((uin >> 32) & 0xFFFFFFFFL);
-	}
-	public static int hid(long uin) {
-		return (short) (uin & 0xFFFF);
-	}
-	public static long make(int uid, int hid) {
-		long uidl = uid & 0xFFFFFFFFL;
-		long hidl = hid & 0x0000FFFFL;
-		return (uidl << 32) | hidl;
-	}
+public interface IAuthProvider {
+	/**
+	 * Gets the name of a user by their UIN.
+	 * Can and will return null.
+	 */
+	public String getNameByUIN(long uin);
+
+	/**
+	 * Given a user's username and password, provides a UIN, or zero.
+	 */
+	public long usernameAndPasswordToUIN(String username, String password);
+
+	/**
+	 * Gets a UIN reserved for this server.
+	 */
+	public long getServerUIN();
 }

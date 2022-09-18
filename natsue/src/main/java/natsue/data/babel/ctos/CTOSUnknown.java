@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import natsue.data.babel.PacketReader;
+
 /**
  * This is used for any packet we don't particularly care about (or don't care about *yet*).
  */

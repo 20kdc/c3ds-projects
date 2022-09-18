@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import natsue.data.babel.PacketReader;
+
 /**
  * Just the obvious bits...
  */

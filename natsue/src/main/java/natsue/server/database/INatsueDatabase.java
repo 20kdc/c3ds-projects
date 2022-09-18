@@ -7,11 +7,11 @@
 
 package natsue.server.database;
 
-import natsue.IConfigProvider;
+import natsue.config.IConfigProvider;
 
 /**
  * Abstract interface to enforce clean separation of SQL-handling code from everything else.
  * REMEMBER: STUFF HERE CAN BE ACCESSED FROM MULTIPLE THREADS.
  */
-public interface INatsueDatabase extends IConfigProvider {
+public interface INatsueDatabase extends IConfigProvider, IAuthProvider {
 }

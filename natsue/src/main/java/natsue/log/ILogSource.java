@@ -5,22 +5,19 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.data.babel;
+package natsue.log;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
- * Natsue Server stores UINs as longs for convenience's sake.
- * This class deals with that.
+ * Convenience class for logging.
  */
-public class UINUtils {
-	public static int uid(long uin) {
-		return (int) ((uin >> 32) & 0xFFFFFFFFL);
+public interface ILogSource {
+	default void logTo(ILogProvider ilp, String text) {
+		ilp.log(toString(), text);
 	}
-	public static int hid(long uin) {
-		return (short) (uin & 0xFFFF);
-	}
-	public static long make(int uid, int hid) {
-		long uidl = uid & 0xFFFFFFFFL;
-		long hidl = hid & 0x0000FFFFL;
-		return (uidl << 32) | hidl;
+	default void logTo(ILogProvider ilp, Exception ex) {
+		ilp.log(toString(), ex);
 	}
 }

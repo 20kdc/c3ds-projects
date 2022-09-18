@@ -5,21 +5,32 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.data.babel.ctos;
+package natsue.data.babel;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-import natsue.IConfigProvider;
+import natsue.config.IConfigProvider;
+import natsue.data.babel.ctos.BaseCTOS;
+import natsue.data.babel.ctos.CTOSHandshake;
+import natsue.data.babel.ctos.CTOSMessage;
+import natsue.data.babel.ctos.CTOSUnknown;
 
 /**
  * General reference on reading packets.
  * Contains the configuration.
  */
 public class PacketReader {
+	/**
+	 * The standard character set used by the game.
+	 */
+	public static final Charset CHARSET = StandardCharsets.ISO_8859_1;
+
 	// Maximum size of the username/password section of a handshake.
 	public int maximumLoginInfoSize;
 	// Maximum message size. Need to be careful with this as it's an upper bound on creature sizes.
@@ -102,14 +113,13 @@ public class PacketReader {
 		case 0x1E:
 			return new CTOSUnknown(12, 0, false);
 		case 0x1F:
-			break;
+			return new CTOSUnknown(12, 0, true);
 		case 0x0221:
 			return new CTOSUnknown(0, 32, false);
 		case 0x0321:
-			return new CTOSUnknown(0, 32, false);
+			return new CTOSUnknown(0, 32, true);
 		case 0x25:
-			// TODO
-			break;
+			return new CTOSHandshake();
 		}
 		return new CTOSUnknown(0, 0, false);
 	}
