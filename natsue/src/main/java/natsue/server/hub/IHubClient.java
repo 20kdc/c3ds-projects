@@ -5,10 +5,14 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.server.csi;
+package natsue.server.hub;
 
 /**
- * Represents a connected client.
+ * Interface for a client connected to the hub (this means AUTHENTICATED!!!)
  */
-public interface IConnectedClient {
+public interface IHubClient {
+	/**
+	 * Returns the UIN. This can't be 0 because to even be an IHubClient you're supposed to have gone through some form of authentication.
+	 */
+	long getUIN();
 }

@@ -81,14 +81,24 @@ The response to the CTOS C_TID_HANDSHAKE.
 	* char type - not int!
 * +1: Error code
 	* unsigned char errorCode
-	* 0: Unknown reason
-	* 1: Connection OK
-	* 2: Client/server offline
+	* 0: Connecting to the server failed but internet connection seems okay
+	* 1: Nickname already logged on
+	* 2: Internal Error
 	* 3: Invalid nickname/password
-	* 4: Nickname already logged on
-	* 5: Too many users on server
-	* 6: Internal error
-	* 7: Client needs update (//HAHAHAHAHA YEAH LIKE RIGHT//)
+	* 4: Internal Error
+	* 5: Internal Error
+	* 6: Invalid nickname/password
+	* 7: You or CL server not connected to internet
+	* 8: Internal Error
+	* 9: Internal Error
+	* 10: Internal Error
+	* 11: Internal Error
+	* 12: Too many users connected
+	* 13: You or CL server not connected to internet
+	* 14: Docking Station needs an update (This is //never// going to happen, but I think it's the reasoning behind the 1/2/0 numbers in the handshake).
+	* 15: You or CL server not connected to internet
+	* 16: Unknown Error (distinct from Internal Error)
+	* 17: (...This seems to continue for a while)
 * A/B: Server UID/HID - if UID is 0, considered an error.
 * C/D: Client's new UID/HID
 * Ticket number: Ignored

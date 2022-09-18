@@ -17,7 +17,7 @@ public interface ILogSource {
 	default void logTo(ILogProvider ilp, String text) {
 		ilp.log(toString(), text);
 	}
-	default void logTo(ILogProvider ilp, Exception ex) {
+	default void logTo(ILogProvider ilp, Throwable ex) {
 		ilp.log(toString(), ex);
 	}
 }

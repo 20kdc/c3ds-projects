@@ -16,14 +16,14 @@ import natsue.data.babel.ctos.BaseCTOS;
  * Functions to write out packets.
  */
 public class PacketWriter {
-	public static int HANDSHAKE_RESPONSE_UNKNOWN = 0;
-	public static int HANDSHAKE_RESPONSE_OK = 1;
-	public static int HANDSHAKE_RESPONSE_OFFLINE = 2;
+	// not exhaustive but good enough
+	public static int HANDSHAKE_RESPONSE_OK = 0;
+	public static int HANDSHAKE_RESPONSE_ALREADY_LOGGED_IN = 1;
+	public static int HANDSHAKE_RESPONSE_INTERNAL = 2;
 	public static int HANDSHAKE_RESPONSE_INVALID_USER = 3;
-	public static int HANDSHAKE_RESPONSE_ALREADY_LOGGED_IN = 4;
-	public static int HANDSHAKE_RESPONSE_TOO_MANY_USERS = 5;
-	public static int HANDSHAKE_RESPONSE_INTERNAL_ERROR = 6;
-	public static int HANDSHAKE_RESPONSE_NEEDS_UPDATE = 7;
+	public static int HANDSHAKE_RESPONSE_TOO_MANY_USERS = 12;
+	public static int HANDSHAKE_RESPONSE_NEEDS_UPDATE = 14;
+	public static int HANDSHAKE_RESPONSE_UNKNOWN = 16;
 
 	public static byte[] writeHandshakeResponse(int errorCode, long serverUIN, long clientUIN) {
 		byte[] bt = new byte[60];

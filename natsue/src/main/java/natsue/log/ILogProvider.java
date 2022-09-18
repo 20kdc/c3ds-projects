@@ -15,9 +15,5 @@ import java.io.StringWriter;
  */
 public interface ILogProvider {
 	void log(String source, String text);
-	default void log(String source, Exception ex) {
-		StringWriter sw = new StringWriter();
-		ex.printStackTrace(new PrintWriter(sw));
-		log(source, sw.toString());
-	}
+	void log(String source, Throwable ex);
 }

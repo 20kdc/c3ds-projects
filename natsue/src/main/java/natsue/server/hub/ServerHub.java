@@ -5,37 +5,60 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.server.csc;
+package natsue.server.hub;
 
 import natsue.config.IConfigProvider;
 import natsue.data.babel.PacketReader;
+import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
-import natsue.server.csi.IClientServerInterface;
-import natsue.server.csi.IConnectedClient;
 import natsue.server.database.INatsueDatabase;
+import natsue.server.session.ISessionClient;
 
 /**
  * Class that contains everything important to everything ever.
  */
-public class ServerHub implements IClientServerInterface {
+public class ServerHub implements IHub {
+	public static final long SERVER_UIN = UINUtils.make(1, 1);
+	public static final long TEST_UIN = UINUtils.make(1, 2);
+
 	public final IConfigProvider config;
 	public final ILogProvider log;
 	public final INatsueDatabase database;
-	public final PacketReader packetReader;
 
 	public ServerHub(IConfigProvider cfg, ILogProvider logProvider, INatsueDatabase db) {
 		config = cfg;
 		log = logProvider;
 		database = db;
-		packetReader = new PacketReader(config);
 	}
 
 	@Override
-	public boolean attemptLoginConfirm(long uin, IConnectedClient cc) {
-		return false;
+	public String getNameByUIN(long uin) {
+		if (uin == SERVER_UIN)
+			return "Server";
+		if (uin == TEST_UIN)
+			return "test";
+		return null;
 	}
 
 	@Override
-	public void logout(long uin, IConnectedClient cc) {
+	public long usernameAndPasswordToUIN(String username, String password) {
+		if (username.equals("test"))
+			return TEST_UIN;
+		return 0;
 	}
+
+	@Override
+	public long getServerUIN() {
+		return SERVER_UIN;
+	}
+
+	@Override
+	public boolean login(IHubClient cc) {
+		return true;
+	}
+
+	@Override
+	public void logout(IHubClient cc) {
+	}
+
 }

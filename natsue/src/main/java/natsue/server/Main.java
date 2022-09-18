@@ -7,6 +7,8 @@
 
 package natsue.server;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
@@ -17,10 +19,12 @@ import java.util.Date;
 import natsue.config.IConfigProvider;
 import natsue.data.babel.PacketReader;
 import natsue.log.ILogProvider;
-import natsue.server.csc.ServerHub;
-import natsue.server.csc.SocketThread;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.JDBCNatsueDatabase;
+import natsue.server.hub.ServerHub;
+import natsue.server.packet.SocketThread;
+import natsue.server.packet.SocketThreadConfig;
+import natsue.server.session.LoginSessionState;
 
 /**
  * It all starts here.
@@ -45,18 +49,30 @@ public class Main {
 			public void log(String source, String text) {
 				System.out.println(new Date() + ": " + source + ": " + text);
 			}
+			@Override
+			public void log(String source, Throwable ex) {
+				StringWriter sw = new StringWriter();
+				ex.printStackTrace(new PrintWriter(sw));
+				log(source, sw.toString());
+			}
 		};
 		String mySource = Main.class.toString();
 		ilp.log(mySource, "Opened connections to DBs and started logger.");
 
-		ServerHub serverHub = new ServerHub(config, ilp, actualDB);
+		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
 
 		int port = serverHub.config.getConfigInt("Main.port", 49152);
 		ServerSocket sv = new ServerSocket(port);
 		ilp.log(mySource, "Bound ServerSocket to port " + port + " - ready to accept connections.");
+
+		PacketReader pr = new PacketReader(config);
+		SocketThreadConfig stc = new SocketThreadConfig(config);
+
 		while (true) {
 			Socket skt = sv.accept();
-			new SocketThread(skt, serverHub, actualDB, ilp, new PacketReader(config)).start();
+			new SocketThread(skt, (st) -> {
+				return new LoginSessionState(st, serverHub);
+			}, ilp, pr, stc).start();
 		}
 	}
 }
