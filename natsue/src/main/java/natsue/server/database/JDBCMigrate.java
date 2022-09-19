@@ -16,14 +16,14 @@ import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 
 public class JDBCMigrate {
-	public static void migrate(Connection conn, ILogSource ils, ILogProvider ilp) throws SQLException {
+	public static void migrate(Connection conn, ILogProvider ils) throws SQLException {
 		String[] migrations = {
 			// 0: create version table
 			"CREATE TABLE natsue_version(version INT)",
 			// 1: prepare version table
 			"INSERT INTO natsue_version VALUES (0)",
 			// 2: create users table
-			"CREATE TABLE natsue_users(uid INT NOT NULL UNIQUE, username TEXT NOT NULL UNIQUE, psha256 TEXT, PRIMARY KEY(uid))",
+			"CREATE TABLE natsue_users(uid INT NOT NULL UNIQUE, username TEXT NOT NULL UNIQUE, nickname TEXT NOT NULL UNIQUE, nickname_folded TEXT NOT NULL UNIQUE, psha256 TEXT, PRIMARY KEY(uid))",
 			// 3: create spooled messages table
 			"CREATE TABLE natsue_spool(id BIGINT NOT NULL UNIQUE, uid INT NOT NULL, data BLOB NOT NULL, PRIMARY KEY(id))",
 			// 4: create natsue_history_creatures table
@@ -41,10 +41,10 @@ public class JDBCMigrate {
 			rs.next();
 			dbVersion = rs.getInt(1);
 		} catch (Exception ex) {
-			ils.logTo(ilp, "natsue_version table error " + ex + " - DB version assumed to be -1");
+			ils.log("JDBCMigrate", "natsue_version table error " + ex + " - DB version assumed to be -1");
 		}
 		for (int i = dbVersion + 1; i < migrations.length; i++) {
-			ils.logTo(ilp, "Performing DB migration " + i);
+			ils.log("JDBCMigrate", "Performing DB migration " + i);
 			workspace.execute(migrations[i]);
 			workspace.execute("UPDATE natsue_version SET version=" + i);
 		}

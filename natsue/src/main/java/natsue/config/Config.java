@@ -43,6 +43,11 @@ public class Config extends BaseConfig {
 	public final Int maxDecompressedPRAYSize = new Int("maxDecompressedPRAYSize", 0x1000000);
 
 	/**
+	 * Allow registration.
+	 */
+	public final Bool allowRegistration = new Bool("allowRegistration", true);
+
+	/**
 	 * Log failed authentication attempts.
 	 */
 	public final Bool logFailedAuthentication = new Bool("logFailedAuthentication", true);

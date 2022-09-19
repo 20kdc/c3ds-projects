@@ -7,7 +7,6 @@
 
 package natsue.server.hub;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +14,6 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import natsue.config.Config;
-import natsue.config.IConfigProvider;
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PackedMessage;
 import natsue.data.babel.UINUtils;
@@ -25,25 +23,42 @@ import natsue.server.database.INatsueDatabase;
 import natsue.server.database.PWHash;
 import natsue.server.database.UsernameVerifier;
 import natsue.server.database.INatsueDatabase.UserInfo;
+import natsue.server.firewall.IFirewall;
+import natsue.server.hubapi.IHubClient;
+import natsue.server.hubapi.IHubPrivilegedClientAPI;
 
 /**
  * Class that contains everything important to everything ever.
  */
-public class ServerHub implements IHub, ILogSource {
+public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	public final Config config;
-	public final ILogProvider log;
+	private final ILogProvider logParent;
 	public final INatsueDatabase database;
+	/**
+	 * The firewall. This should be set before the server receives any clients, on pain of malfunction.
+	 */
+	private IFirewall firewall;
 
+	public final HashSet<IWWRListener> wwrListeners = new HashSet<>();
 	public final HashMap<Long, IHubClient> connectedClients = new HashMap<>();
+	public final HashMap<String, IHubClient> connectedClientsByNickname = new HashMap<>();
 	public final ArrayList<Long> randomPool = new ArrayList<>();
 	public final Random randomGen = new Random();
 
 	public ServerHub(Config cfg, ILogProvider logProvider, INatsueDatabase db) {
 		config = cfg;
-		log = logProvider;
+		logParent = logProvider;
 		database = db;
-		// login the system user
-		clientLogin(new SystemUserHubClient(this), () -> {});
+	}
+
+	@Override
+	public ILogProvider getLogParent() {
+		return logParent;
+	}
+
+	public void setFirewall(IFirewall fw) {
+		firewall = fw;
+		wwrListeners.add(fw);
 	}
 
 	@Override
@@ -65,6 +80,24 @@ public class ServerHub implements IHub, ILogSource {
 	}
 
 	@Override
+	public BabelShortUserData getShortUserDataByNickname(String name) {
+		name = UsernameVerifier.foldNickname(name);
+		IHubClient ihc;
+		synchronized (this) {
+			ihc = connectedClientsByNickname.get(name);
+		}
+		if (ihc != null)
+			return ihc.getUserData();
+		// Ok, now check with database
+		if (!UsernameVerifier.verifyNickname(name))
+			return null;
+		UserInfo ui = database.getUserByFoldedNickname(name);
+		if (ui != null)
+			return ui.convertToBabel();
+		return null;
+	}
+
+	@Override
 	public boolean isUINOnline(long uin) {
 		synchronized (this) {
 			return connectedClients.containsKey(uin);
@@ -73,25 +106,27 @@ public class ServerHub implements IHub, ILogSource {
 
 	@Override
 	public BabelShortUserData usernameAndPasswordToShortUserData(String username, String password, boolean allowedToRegister) {
-		username = UsernameVerifier.fold(username);
-		if (!UsernameVerifier.verify(username))
+		String usernameFolded = UsernameVerifier.foldUsername(username);
+		if (!UsernameVerifier.verifyUsername(usernameFolded))
 			return null;
-		UserInfo ui = database.getUserByUsername(username);
-		while (allowedToRegister && ui == null) {
-			int uid;
-			synchronized (this) {
-				uid = randomGen.nextInt();
+		UserInfo ui = database.getUserByFoldedUsername(usernameFolded);
+		if (allowedToRegister && ui == null && config.allowRegistration.getValue()) {
+			while (ui == null) {
+				int uid;
+				synchronized (this) {
+					uid = randomGen.nextInt();
+				}
+				// don't register with 0 or negative numbers
+				// negative numbers will probably fry the Warp inbox system!!!
+				if (uid <= 0)
+					continue;
+				boolean success = database.tryCreateUser(uid, usernameFolded, username, UsernameVerifier.foldNickname(username), PWHash.hash(uid, password));
+				if (success)
+					log("Registered user: " + username + " as UID " + uid);
+				// It's possible that a username collision occurred during the registration process.
+				// In that event, we obviously should be seeing a username here.
+				ui = database.getUserByFoldedUsername(usernameFolded);
 			}
-			// don't register with 0 or negative numbers
-			// negative numbers will probably fry the Warp inbox system!!!
-			if (uid <= 0)
-				continue;
-			boolean success = database.tryCreateUser(uid, username, PWHash.hash(uid, password));
-			if (success)
-				logTo(log, "Registered user: " + username + " as UID " + uid);
-			// It's possible that a username collision occurred during the registration process.
-			// In that event, we obviously should be seeing a username here.
-			ui = database.getUserByUsername(username);
 		}
 		if (ui == null)
 			return null;
@@ -150,19 +185,21 @@ public class ServerHub implements IHub, ILogSource {
 	public boolean clientLogin(IHubClient cc, Runnable onConfirm) {
 		BabelShortUserData userData = cc.getUserData();
 		Long uin = userData.uin;
-		LinkedList<IHubClient> wwrNotify = new LinkedList<>();
+		LinkedList<IWWRListener> wwrNotify;
 		synchronized (this) {
 			if (connectedClients.containsKey(uin)) {
 				return false;
 			} else {
-				wwrNotify.addAll(connectedClients.values());
+				wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
 				connectedClients.put(uin, cc);
+				String foldedNick = UsernameVerifier.foldNickname(userData.nickName);
+				connectedClientsByNickname.put(foldedNick, cc);
 				onConfirm.run();
 				if (!cc.isSystem())
 					randomPool.add(uin);
 			}
 		}
-		for (IHubClient ihc : wwrNotify)
+		for (IWWRListener ihc : wwrNotify)
 			ihc.wwrNotify(true, userData);
 		if (UINUtils.hid(uin) == UINUtils.HID_USER) {
 			int uid = UINUtils.uid(uin);
@@ -185,21 +222,23 @@ public class ServerHub implements IHub, ILogSource {
 	public void clientLogout(IHubClient cc) {
 		BabelShortUserData userData = cc.getUserData();
 		Long uin = userData.uin;
-		LinkedList<IHubClient> wwrNotify = new LinkedList<>();
+		LinkedList<IWWRListener> wwrNotify;
 		synchronized (this) {
 			randomPool.remove(uin);
 			if (connectedClients.get(uin) == cc) {
 				connectedClients.remove(uin);
+				String foldedNick = UsernameVerifier.foldNickname(userData.nickName);
+				connectedClientsByNickname.remove(foldedNick);
 			}
+			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
+			wwrListeners.remove(cc);
 		}
-		for (IHubClient ihc : wwrNotify)
+		for (IWWRListener ihc : wwrNotify)
 			ihc.wwrNotify(false, userData);
 	}
 
 	@Override
 	public void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message) {
-		if (message.senderUIN != cc.getUserData().uin)
-			return;
-		sendMessage(destinationUIN, message, false);
+		firewall.handleMessage(cc.getUserData(), destinationUIN, message);
 	}
 }

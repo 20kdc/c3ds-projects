@@ -23,6 +23,16 @@ public class PRAYBlock {
 	public final byte[] name = new byte[128];
 	public byte[] data;
 
+	public PRAYBlock() {
+		
+	}
+
+	public PRAYBlock(String string, String str2, byte[] byteArray) {
+		setType(string);
+		setName(str2);
+		data = byteArray;
+	}
+
 	public void setType(String t) {
 		IOUtils.setFixedLength(type, 4, t);
 	}
@@ -34,6 +44,10 @@ public class PRAYBlock {
 	}
 	public String getName() {
 		return IOUtils.getFixedLength(name);
+	}
+
+	public int calcSize() {
+		return 16 + 128 + data.length;
 	}
 
 	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, int maxDecompressedSize) throws IOException {
@@ -64,7 +78,7 @@ public class PRAYBlock {
 		if (decompressedDataSize > maxBlockSize)
 			throw new IOException("Too much data in PRAY block!");
 
-		block.data = new byte[maxBlockSize];
+		block.data = new byte[decompressedDataSize];
 
 		if ((flags & 1) != 0) {
 			ByteArrayInputStream bais = new ByteArrayInputStream(dataSlice.array(), dataSlice.arrayOffset() + dataSlice.position(), compressedDataSize);
@@ -84,20 +98,29 @@ public class PRAYBlock {
 		return block;
 	}
 
+	private static void putBlock(ByteBuffer total, PRAYBlock pb) {
+		total.put(pb.type);
+		total.put(pb.name);
+		total.putInt(pb.data.length);
+		total.putInt(pb.data.length);
+		total.putInt(0);
+		total.put(pb.data);
+	}
 	public static byte[] write(Iterable<PRAYBlock> blocks) {
 		int totalLen = 4;
 		for (PRAYBlock pb : blocks)
-			totalLen += 16 + 128 + pb.data.length;
+			totalLen += pb.calcSize();
 		ByteBuffer total = IOUtils.newBuffer(totalLen);
 		total.put((byte) 'P'); total.put((byte) 'R'); total.put((byte) 'A'); total.put((byte) 'Y');
-		for (PRAYBlock pb : blocks) {
-			total.put(pb.type);
-			total.put(pb.name);
-			total.putInt(pb.data.length);
-			total.putInt(pb.data.length);
-			total.putInt(0);
-			total.put(pb.data);
-		}
+		for (PRAYBlock pb : blocks)
+			putBlock(total, pb);
+		return total.array();
+	}
+	public static byte[] writeFileWithOneBlock(PRAYBlock pb) {
+		int totalLen = 4 + pb.calcSize();
+		ByteBuffer total = IOUtils.newBuffer(totalLen);
+		total.put((byte) 'P'); total.put((byte) 'R'); total.put((byte) 'A'); total.put((byte) 'Y');
+		putBlock(total, pb);
 		return total.array();
 	}
 }

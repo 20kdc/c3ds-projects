@@ -14,6 +14,7 @@ import natsue.data.babel.PacketWriter;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSClientCommand;
+import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 
 /**
@@ -27,6 +28,11 @@ public class PingManager implements ILogSource {
 
 	public PingManager(ISessionClient c) {
 		client = c;
+	}
+
+	@Override
+	public ILogProvider getLogParent() {
+		return client;
 	}
 
 	/**
@@ -52,7 +58,7 @@ public class PingManager implements ILogSource {
 				return null;
 			activePings.put(vsn, response);
 			if (client.logPings())
-				logTo(client, "Sending: " + vsn);
+				log("Sending: " + vsn);
 			return PacketWriter.writeVirtualConnect(UINUtils.SERVER_UIN, vsn);
 		}
 	}
@@ -76,13 +82,13 @@ public class PingManager implements ILogSource {
 					}
 					if (activePing != null) {
 						if (client.logPings())
-							logTo(client, "Confirmed: " + serverVSN);
+							log("Confirmed: " + serverVSN);
 						activePing.accept(1);
 					}
 					try {
 						client.sendPacket(PacketWriter.writeVirtualCircuitClose(UINUtils.SERVER_UIN));
 					} catch (Exception ex) {
-						logTo(client, ex);
+						log(ex);
 					}
 					return true;
 				}
@@ -96,7 +102,7 @@ public class PingManager implements ILogSource {
 			loggedOut = true;
 			if (client.logPings())
 				if (activePings.size() > 0)
-					logTo(client, "Logout: " + activePings.size() + " outstanding pings");
+					log("Logout: " + activePings.size() + " outstanding pings");
 			for (IntConsumer ping : activePings.values())
 				ping.accept(0);
 			activePings.clear();

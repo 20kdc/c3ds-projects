@@ -86,6 +86,18 @@ public class PacketReader {
 	}
 
 	/**
+	 * Gets a string with "stream-like" ByteBuffer access
+	 */
+	public static String getString(ByteBuffer bb) {
+		int len = bb.getInt();
+		byte[] baseArray = bb.array();
+		int pos = bb.position();
+		String str = new String(baseArray, bb.arrayOffset() + pos, len, PacketReader.CHARSET);
+		bb.position(pos + len);
+		return str;
+	}
+
+	/**
 	 * Reads the next packet from an input stream.
 	 * Returns null if the connection ended gracefully.
 	 */

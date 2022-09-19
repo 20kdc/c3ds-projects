@@ -5,27 +5,22 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.log;
+package natsue.server.hubapi;
+
+import natsue.data.babel.PackedMessage;
 
 /**
- * Convenience class for logging.
+ * Represents the server.
  */
-public interface ILogSource extends ILogProvider {
-	ILogProvider getLogParent();
+public interface IHubClientAPI extends IHubCommonAPI {
+	/**
+	 * Removes a client from the system.
+	 */
+	void clientLogout(IHubClient cc);
 
-	default void log(String text) {
-		getLogParent().log(toString(), text);
-	}
-	default void log(Throwable ex) {
-		getLogParent().log(toString(), ex);
-	}
-
-	@Override
-	default void log(String source, String text) {
-		log(source + ": " + text);
-	}
-	@Override
-	default void log(String source, Throwable ex) {
-		log(source + ": ", ex);
-	}
+	/**
+	 * A client sent a message, what do we do with it?
+	 * (Verification happens here.)
+	 */
+	void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message);
 }

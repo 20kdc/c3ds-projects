@@ -21,23 +21,29 @@ import natsue.data.babel.ctos.CTOSGetClientInfo;
 import natsue.data.babel.ctos.CTOSGetConnectionDetail;
 import natsue.data.babel.ctos.CTOSMessage;
 import natsue.data.babel.ctos.CTOSWWRModify;
+import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
-import natsue.server.hub.IHub;
-import natsue.server.hub.IHubClient;
+import natsue.server.hubapi.IHubClient;
+import natsue.server.hubapi.IHubClientAPI;
 
 /**
  * This session state is used while connected to the hub.
  */
 public class MainSessionState extends BaseSessionState implements IHubClient, ILogSource {
 	public final BabelShortUserData userData;
-	public final IHub hub;
+	public final IHubClientAPI hub;
 	public final PingManager pingManager;
 
-	public MainSessionState(ISessionClient c, IHub h, BabelShortUserData uin) {
+	public MainSessionState(ISessionClient c, IHubClientAPI h, BabelShortUserData uin) {
 		super(c);
 		pingManager = new PingManager(c);
 		userData = uin;
 		hub = h;
+	}
+
+	@Override
+	public ILogProvider getLogParent() {
+		return client;
 	}
 
 	@Override
@@ -108,7 +114,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 		try {
 			client.sendPacket(PacketWriter.writeUserLine(online, userData.packed));
 		} catch (IOException e) {
-			logTo(client, e);
+			log(e);
 		}
 	}
 
@@ -118,7 +124,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 		try {
 			client.sendPacket(PacketWriter.writeMessage(message.toByteArray()));
 		} catch (Exception ex) {
-			logTo(client, ex);
+			log(ex);
 			if (reject != null)
 				reject.run();
 			return;
@@ -141,7 +147,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 		try {
 			client.sendPacket(pingPacket);
 		} catch (Exception ex) {
-			logTo(client, ex);
+			log(ex);
 			if (!hasRejected.getAndSet(true))
 				reject.run();
 		}

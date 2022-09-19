@@ -5,7 +5,7 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.server.hub;
+package natsue.server.hubapi;
 
 import java.io.IOException;
 
@@ -15,41 +15,41 @@ import natsue.data.babel.PackedMessage;
 /**
  * Represents the server.
  */
-public interface IHub {
+public interface IHubCommonAPI {
 	/**
-	 * Gets the name of a user by their UIN.
-	 * *This name need not be the user's username.*
+	 * Gets a UIN by nickname.
+	 * The nickname will be automatically folded.
 	 * Can and will return null.
 	 */
-	public BabelShortUserData getShortUserDataByUIN(long uin);
+	BabelShortUserData getShortUserDataByNickname(String name);
+
+	/**
+	 * Gets the name of a user by their UIN.
+	 * Can and will return null.
+	 */
+	BabelShortUserData getShortUserDataByUIN(long uin);
 
 	/**
 	 * Returns true if the given UIN is online.
 	 */
-	public boolean isUINOnline(long uin);
+	boolean isUINOnline(long uin);
 
 	/**
 	 * Given a user's username and password, provides a BabelShortUserData (successful login), or null.
+	 * The username will be automatically folded.
 	 */
-	public BabelShortUserData usernameAndPasswordToShortUserData(String username, String password, boolean allowedToRegister);
+	BabelShortUserData usernameAndPasswordToShortUserData(String username, String password, boolean allowedToRegister);
 
 	/**
 	 * Gets a UIN reserved for this server.
 	 */
-	public long getServerUIN();
+	long getServerUIN();
 
 	/**
 	 * Returns a random online UIN that isn't the system.
 	 * Returns 0 if none could be found.
 	 */
-	public long getRandomOnlineNonSystemUIN();
-
-	/**
-	 * Route a message that is expected to *eventually* get to the target.
-	 * The message is assumed to be authenticated.
-	 * If temp is true, the message won't be archived on failure.
-	 */
-	void sendMessage(long destinationUIN, PackedMessage message, boolean temp);
+	long getRandomOnlineNonSystemUIN();
 
 	/**
 	 * Adds a client to the system, or returns false if that couldn't happen due to a conflict.
@@ -59,15 +59,4 @@ public interface IHub {
 	 * + The client will definitely be logging in at this point
 	 */
 	boolean clientLogin(IHubClient cc, Runnable confirmOk);
-
-	/**
-	 * Removes a client from the system.
-	 */
-	void clientLogout(IHubClient cc);
-
-	/**
-	 * A client sent a message, what do we do with it?
-	 * (Verification happens here.)
-	 */
-	void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message);
 }

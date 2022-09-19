@@ -22,7 +22,9 @@ import natsue.data.babel.PacketReader;
 import natsue.log.ILogProvider;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.JDBCNatsueDatabase;
+import natsue.server.firewall.TrivialFirewall;
 import natsue.server.hub.ServerHub;
+import natsue.server.hub.SystemUserHubClient;
 import natsue.server.packet.SocketThread;
 import natsue.server.session.LoginSessionState;
 
@@ -63,6 +65,9 @@ public class Main {
 		ilp.log(mySource, "Opened DB connections.");
 
 		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
+		serverHub.setFirewall(new TrivialFirewall(serverHub));
+		// login the system user
+		serverHub.clientLogin(new SystemUserHubClient(config, ilp, serverHub), () -> {});
 
 		int port = config.port.getValue();
 		try (ServerSocket sv = new ServerSocket(port)) {

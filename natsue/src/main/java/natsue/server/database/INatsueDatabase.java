@@ -25,9 +25,17 @@ public interface INatsueDatabase extends IConfigProvider {
 
 	/**
 	 * Gets a user by username.
+	 * The username is expected to be folded.
 	 * Returns null on failure.
 	 */
-	UserInfo getUserByUsername(String username);
+	UserInfo getUserByFoldedUsername(String username);
+
+	/**
+	 * Gets a user by nickname.
+	 * The nickname is expected to be folded.
+	 * Returns null on failure.
+	 */
+	UserInfo getUserByFoldedNickname(String username);
 
 	/**
 	 * Spools a PackedMessage.
@@ -53,7 +61,7 @@ public interface INatsueDatabase extends IConfigProvider {
 	/**
 	 * Tries to create a user with the given details.
 	 */
-	boolean tryCreateUser(int uid, String username, String passwordHash);
+	boolean tryCreateUser(int uid, String username, String nickname, String nicknameFolded, String passwordHash);
 
 	public static class UserInfo {
 		public final String username;

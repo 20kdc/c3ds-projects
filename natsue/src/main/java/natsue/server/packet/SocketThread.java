@@ -29,7 +29,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 	private InputStream socketInput;
 	private OutputStream socketOutput;
 	private final Object sendPacketLock = new Object();
-	public final ILogProvider log;
+	private final ILogProvider logParent;
 	public final Config config;
 	public BaseSessionState sessionState;
 	public final Function<SocketThread, BaseSessionState> initialSessionStateBuilder;
@@ -37,9 +37,14 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 
 	public SocketThread(Socket skt, Function<SocketThread, BaseSessionState> iSessionStateBuilder, ILogProvider ilp, Config stc) {
 		socket = skt;
-		log = ilp;
+		logParent = ilp;
 		initialSessionStateBuilder = iSessionStateBuilder;
 		config = stc;
+	}
+
+	@Override
+	public ILogProvider getLogParent() {
+		return logParent;
 	}
 
 	@Override
@@ -67,16 +72,6 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 	}
 
 	@Override
-	public void log(String source, String text) {
-		log.log(this + ": " + source, text);
-	}
-
-	@Override
-	public void log(String source, Throwable ex) {
-		log.log(this + ": " + source, ex);
-	}
-
-	@Override
 	public void run() {
 		try {
 			// Set initial settings
@@ -85,7 +80,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 			socket.setKeepAlive(true);
 			setName("Natsue-" + socket.getRemoteSocketAddress());
 			if (config.logAllConnections.getValue())
-				logTo(log, "Accepted");
+				log("Accepted");
 			sessionState = initialSessionStateBuilder.apply(this);
 			// This is the main loop!
 			while (sessionState != null) {
@@ -93,12 +88,12 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 				if (packet == null)
 					break;
 				if (config.logAllIncomingPackets.getValue())
-					logTo(log, packet.toString());
+					log(packet.toString());
 				sessionState.handlePacket(packet);
 			}
 			// nevermind then
 		} catch (Exception ex) {
-			logTo(log, ex);
+			log(ex);
 		} finally {
 			try {
 				synchronized (sendPacketLock) {
@@ -111,7 +106,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 				// Deliberately ignored - we're closing the socket.
 			}
 			if (config.logAllConnections.getValue())
-				logTo(log, "Closed");
+				log("Closed");
 		}
 	}
 }

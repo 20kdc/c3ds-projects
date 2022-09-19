@@ -7,35 +7,14 @@
 
 package natsue.server.hub;
 
-import java.io.IOException;
-
 import natsue.data.babel.BabelShortUserData;
-import natsue.data.babel.PackedMessage;
 
 /**
- * Interface for a client connected to the hub (this means AUTHENTICATED!!!)
+ * WWR listener, i.e. knows when people join/leave
  */
-public interface IHubClient {
-	/**
-	 * Returns user data, which includes the UIN.
-	 */
-	BabelShortUserData getUserData();
-
-	/**
-	 * Is this a system user (and thus ineligible for random user selection)?
-	 * NOTE: This is checked on login and at no other points.
-	 */
-	boolean isSystem();
-
+public interface IWWRListener {
 	/**
 	 * For online/offline notifications.
 	 */
 	void wwrNotify(boolean online, BabelShortUserData userData);
-
-	/**
-	 * Incoming message!
-	 * reject is run if an error occurs.
-	 * If reject is null, the message success is not tracked.
-	 */
-	void incomingMessage(PackedMessage message, Runnable reject);
 }

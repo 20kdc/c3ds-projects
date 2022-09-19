@@ -11,10 +11,10 @@ package natsue.server.database;
  * Verifies usernames are sane.
  */
 public class UsernameVerifier {
-	public static String fold(String username) {
+	public static String foldUsername(String username) {
 		return username.toLowerCase();
 	}
-	public static boolean verify(String username) {
+	public static boolean verifyUsername(String username) {
 		if (username.length() > 16)
 			return false;
 		for (char c : username.toCharArray()) {
@@ -28,5 +28,11 @@ public class UsernameVerifier {
 				return false;
 		}
 		return true;
+	}
+	public static String foldNickname(String username) {
+		return foldUsername(username);
+	}
+	public static boolean verifyNickname(String username) {
+		return verifyUsername(username);
 	}
 }

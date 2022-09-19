@@ -13,18 +13,24 @@ import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSHandshake;
+import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
-import natsue.server.hub.IHub;
+import natsue.server.hubapi.IHubClientAPI;
 
 /**
  * This session state is to grab the initial handshake packet.
  */
 public class LoginSessionState extends BaseSessionState implements ILogSource {
-	public final IHub hub;
+	public final IHubClientAPI hub;
 
-	public LoginSessionState(ISessionClient c, IHub h) {
+	public LoginSessionState(ISessionClient c, IHubClientAPI h) {
 		super(c);
 		hub = h;
+	}
+
+	@Override
+	public ILogProvider getLogParent() {
+		return client;
 	}
 
 	@Override
@@ -48,7 +54,7 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 		BabelShortUserData data = hub.usernameAndPasswordToShortUserData(handshake.username, handshake.password, true);
 		if (data == null) {
 			if (client.logFailedAuth())
-				logTo(client, "Failed authentication for username: " + handshake.username);
+				log("Failed authentication for username: " + handshake.username);
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_INVALID_USER, 0L, 0L));
 			client.setSessionState(null);
 			return;
@@ -61,7 +67,7 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 				client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, hub.getServerUIN(), data.uin));
 			} catch (Exception ex) {
 				if (client.logFailedAuth())
-					logTo(client, ex);
+					log(ex);
 			}
 		})) {
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_ALREADY_LOGGED_IN, 0L, 0L));

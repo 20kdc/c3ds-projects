@@ -21,10 +21,11 @@ import natsue.log.ILogSource;
  * REMEMBER: STUFF HERE CAN BE ACCESSED FROM MULTIPLE THREADS.
  */
 public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
-	public final ILogProvider log;
+	private final ILogProvider logParent;
 	private final Connection database;
 	private final PreparedStatement stmUserByUID;
-	private final PreparedStatement stmUserByName;
+	private final PreparedStatement stmUserByUsername;
+	private final PreparedStatement stmUserByNickname;
 	private final PreparedStatement stmStoreOnSpool;
 	private final PreparedStatement stmDeleteFromSpool;
 	private final PreparedStatement stmGetFromSpool;
@@ -34,16 +35,22 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 
 	public JDBCNatsueDatabase(ILogProvider ilp, Connection conn) throws SQLException {
 		database = conn;
-		log = ilp;
-		JDBCMigrate.migrate(database, this, ilp);
+		logParent = ilp;
+		JDBCMigrate.migrate(database, this);
 		stmUserByUID = conn.prepareStatement("SELECT uid, username, psha256 FROM natsue_users WHERE uid=?");
-		stmUserByName = conn.prepareStatement("SELECT uid, username, psha256 FROM natsue_users WHERE username=?");
+		stmUserByUsername = conn.prepareStatement("SELECT uid, nickname, psha256 FROM natsue_users WHERE username=?");
+		stmUserByNickname = conn.prepareStatement("SELECT uid, nickname, psha256 FROM natsue_users WHERE nickname_folded=?");
 		stmStoreOnSpool = conn.prepareStatement("INSERT INTO natsue_spool(uid, data) VALUES (?, ?)");
 		stmDeleteFromSpool = conn.prepareStatement("DELETE FROM natsue_spool WHERE id=? and uid=?");
 		stmGetFromSpool = conn.prepareStatement("SELECT id, uid, data FROM natsue_spool WHERE uid=?");
 		stmEnsureCreature = conn.prepareStatement("INSERT INTO natsue_history_creatures(moniker, first_uid, ch0, ch1, ch2, ch3, ch4) VALUES (?, ?, ?, ?, ?, ?, ?)");
 		stmEnsureCreatureEvent = conn.prepareStatement("INSERT INTO natsue_history_events(event_id, sender_uid, moniker, event_index, event_type, world_time, age_ticks, unix_time, unknown, param1, param2, world_name, world_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		stmCreateUser = conn.prepareStatement("INSERT INTO natsue_users(uid, username, psha256) VALUES (?, ?, ?)");
+		stmCreateUser = conn.prepareStatement("INSERT INTO natsue_users(uid, username, nickname, nickname_folded, psha256) VALUES (?, ?, ?, ?, ?)");
+	}
+
+	@Override
+	public ILogProvider getLogParent() {
+		return logParent;
 	}
 
 	@Override
@@ -68,20 +75,33 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 				stmUserByUID.setInt(1, uid);
 				return getUserFromResultSet(stmUserByUID.executeQuery());
 			} catch (Exception ex) {
-				logTo(log, ex);
+				log(ex);
 				return null;
 			}
 		}
 	}
 
 	@Override
-	public UserInfo getUserByUsername(String username) {
+	public UserInfo getUserByFoldedUsername(String username) {
 		synchronized (this) {
 			try {
-				stmUserByName.setString(1, username);
-				return getUserFromResultSet(stmUserByName.executeQuery());
+				stmUserByUsername.setString(1, username);
+				return getUserFromResultSet(stmUserByUsername.executeQuery());
 			} catch (Exception ex) {
-				logTo(log, ex);
+				log(ex);
+				return null;
+			}
+		}
+	}
+
+	@Override
+	public UserInfo getUserByFoldedNickname(String nickname) {
+		synchronized (this) {
+			try {
+				stmUserByNickname.setString(1, nickname);
+				return getUserFromResultSet(stmUserByNickname.executeQuery());
+			} catch (Exception ex) {
+				log(ex);
 				return null;
 			}
 		}
@@ -95,7 +115,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 				stmStoreOnSpool.setBytes(2, pm);
 				stmStoreOnSpool.executeUpdate();
 			} catch (Exception ex) {
-				logTo(log, ex);
+				log(ex);
 			}
 		}
 	}
@@ -117,7 +137,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 				}
 				rs.close();
 			} catch (Exception ex) {
-				logTo(log, ex);
+				log(ex);
 			}
 		}
 		return message;
@@ -167,12 +187,14 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public boolean tryCreateUser(int uid, String username, String passwordHash) {
+	public boolean tryCreateUser(int uid, String username, String nickname, String nicknameFolded, String passwordHash) {
 		synchronized (this) {
 			try {
 				stmCreateUser.setInt(1, uid);
 				stmCreateUser.setString(2, username);
-				stmCreateUser.setString(3, passwordHash);
+				stmCreateUser.setString(3, nickname);
+				stmCreateUser.setString(4, nicknameFolded);
+				stmCreateUser.setString(5, passwordHash);
 				stmCreateUser.executeUpdate();
 			} catch (Exception ex) {
 				// This is expected to happen, so discard

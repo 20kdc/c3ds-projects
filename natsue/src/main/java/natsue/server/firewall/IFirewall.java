@@ -5,27 +5,15 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.log;
+package natsue.server.firewall;
+
+import natsue.data.babel.BabelShortUserData;
+import natsue.data.babel.PackedMessage;
+import natsue.server.hub.IWWRListener;
 
 /**
- * Convenience class for logging.
+ * Responsible for filtering messages to prevent malicious stuff going through the server.
  */
-public interface ILogSource extends ILogProvider {
-	ILogProvider getLogParent();
-
-	default void log(String text) {
-		getLogParent().log(toString(), text);
-	}
-	default void log(Throwable ex) {
-		getLogParent().log(toString(), ex);
-	}
-
-	@Override
-	default void log(String source, String text) {
-		log(source + ": " + text);
-	}
-	@Override
-	default void log(String source, Throwable ex) {
-		log(source + ": ", ex);
-	}
+public interface IFirewall extends IWWRListener {
+	public void handleMessage(BabelShortUserData sourceUser, long destinationUIN, PackedMessage message);
 }

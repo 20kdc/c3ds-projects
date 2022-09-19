@@ -35,12 +35,7 @@ public class WritVal {
 		} else if (i == 1) {
 			return (Float) bb.getFloat();
 		} else if (i == 2) {
-			int len = bb.getInt();
-			byte[] baseArray = bb.array();
-			int pos = bb.position();
-			String str = new String(baseArray, bb.arrayOffset() + pos, len, PacketReader.CHARSET);
-			bb.position(pos + len);
-			return str;
+			return PacketReader.getString(bb);
 		}
 		return null;
 	}
