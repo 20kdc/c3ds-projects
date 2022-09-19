@@ -11,8 +11,8 @@ Note that this acts as a "base" for other packets.
 32 bytes
 
 * +0: Type (//**but see +20**//)
-	* int type
-		* This is really really weird. It's treated as either char[4] or an int depending on the whim of the function.
+	* char type
+		* Note that unlike on client, which is a bit confusing, this is always a single byte.
 	* [[:Structs:CBabelClient|CBabelClient]]::Connectx
 		* 0x0A: Handshake Response - C_TID_HANDSHAKE_RESPONSE
 			* Shows up as part of the connection process and nowhere else (it's not handled in [[:Structs:CBabelDConnection|CBabelDConnection]]::Handle)
@@ -32,6 +32,8 @@ Note that this acts as a "base" for other packets.
 		* 0x21 through 0x24 inclusive: STOC shunts around weirdly, may imply something odd going on in [[:Structs:CBabelDConnection|CBabelDConnection]]
 			* No evidence these are used here, but there's the implication that this is how the CTOS Docking Station-specific "Get Random User" packet is handled, at least conceptually.
 		* 0x2A: Migrate - C_TID_MIGRATE
+* +1: 3 bytes of padding.
+	* char padding[3]
 * +4: Field A
 * +8: Field B
 * +12: Field C

@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import natsue.config.Config;
+import natsue.data.IOUtils;
 import natsue.data.babel.PacketReader;
 
 /**
@@ -52,8 +53,7 @@ public abstract class BaseCTOS {
 	public byte[] makeDummy() {
 		int tdl = transactionDummyLength();
 		if (tdl != 0) {
-			ByteBuffer res = ByteBuffer.allocate(tdl);
-			res.order(ByteOrder.LITTLE_ENDIAN);
+			ByteBuffer res = IOUtils.newBuffer(tdl);
 			res.putInt(BASE_FIELD_TICKET, ticketNumber);
 			return res.array();
 		}

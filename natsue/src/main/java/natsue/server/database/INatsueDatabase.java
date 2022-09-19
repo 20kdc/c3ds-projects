@@ -82,7 +82,7 @@ public interface INatsueDatabase extends IConfigProvider {
 		}
 
 		public BabelShortUserData convertToBabel() {
-			return new BabelShortUserData("none", "none", username, UINUtils.make(uid, UINUtils.HID_USER));
+			return new BabelShortUserData("", "", username, UINUtils.make(uid, UINUtils.HID_USER));
 		}
 	}
 }

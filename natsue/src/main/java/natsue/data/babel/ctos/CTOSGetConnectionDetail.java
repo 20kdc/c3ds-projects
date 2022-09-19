@@ -7,12 +7,9 @@
 
 package natsue.data.babel.ctos;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
-import natsue.data.babel.PacketReader;
+import natsue.data.IOUtils;
 import natsue.data.babel.UINUtils;
 
 public class CTOSGetConnectionDetail extends TargetUIDCTOS {
@@ -25,8 +22,7 @@ public class CTOSGetConnectionDetail extends TargetUIDCTOS {
 	 * Makes an OK response without IP/port. You can use the dummy response otherwise.
 	 */
 	public byte[] makeOkResponse() {
-		ByteBuffer bb = ByteBuffer.allocate(32);
-		bb.order(ByteOrder.LITTLE_ENDIAN);
+		ByteBuffer bb = IOUtils.newBuffer(32);
 		bb.putInt(BASE_FIELD_TICKET, ticketNumber);
 		bb.putInt(BASE_FIELD_E, 1);
 		return bb.array();

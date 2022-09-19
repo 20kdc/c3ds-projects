@@ -29,7 +29,7 @@ import natsue.server.hubapi.IHubPrivilegedClientAPI;
 public class SystemUserHubClient implements IHubClient, ILogSource {
 	public final IHubPrivilegedClientAPI hub;
 	private final ILogProvider logParent;
-	public final BabelShortUserData userData = new BabelShortUserData("none", "none", "!System", UINUtils.SERVER_UIN);
+	public final BabelShortUserData userData = new BabelShortUserData("", "", "!System", UINUtils.SERVER_UIN);
 	public final int maxDecompressedPRAYSize;
 
 	private final Random random = new Random();
@@ -100,11 +100,13 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 						pt.read(chatMaybe.data);
 						String chatID = pt.strMap.get("ChatID");
 						String text = pt.strMap.get("Chat Message");
-						// strip initial tint
-						if (text.contains(">"))
-							text = text.substring(text.indexOf('>') + 1);
-						text = text.trim();
-						handleChatMessage(message.senderUIN, chatID, text);
+						if ((chatID != null) && (text != null)) {
+							// strip initial tint
+							if (text.contains(">"))
+								text = text.substring(text.indexOf('>') + 1);
+							text = text.trim();
+							handleChatMessage(message.senderUIN, chatID, text);
+						}
 					}
 				}
 			} catch (Exception ex) {

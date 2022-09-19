@@ -18,6 +18,7 @@ import natsue.data.babel.PacketReader;
  * This is used for any packet we don't particularly care about (or don't care about *yet*).
  */
 public class CTOSUnknown extends BaseCTOS {
+	public int type;
 	public final int additionalLength, fixedTransactionDummyLength;
 	public final boolean furtherDataFlag;
 
@@ -28,8 +29,14 @@ public class CTOSUnknown extends BaseCTOS {
 	}
 
 	@Override
+	public String toString() {
+		return "Unknown, type 0x" + Integer.toHexString(type);
+	}
+
+	@Override
 	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
+		type = initial.getInt(BASE_FIELD_TYPE);
 		PacketReader.getBytes(inputStream, additionalLength, false);
 		if (furtherDataFlag) {
 			int wantedFurtherData = initial.getInt(BASE_FIELD_FDLEN);
