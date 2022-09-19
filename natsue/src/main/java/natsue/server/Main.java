@@ -16,6 +16,7 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Date;
 
+import natsue.config.Config;
 import natsue.config.IConfigProvider;
 import natsue.data.babel.PacketReader;
 import natsue.log.ILogProvider;
@@ -23,7 +24,6 @@ import natsue.server.database.INatsueDatabase;
 import natsue.server.database.JDBCNatsueDatabase;
 import natsue.server.hub.ServerHub;
 import natsue.server.packet.SocketThread;
-import natsue.server.packet.SocketThreadConfig;
 import natsue.server.session.LoginSessionState;
 
 /**
@@ -52,10 +52,11 @@ public class Main {
 
 		INatsueDatabase firstDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(args[0]));
 
-		IConfigProvider config = firstDB;
+		Config config = new Config();
+		config.readInFrom(firstDB);
 
 		INatsueDatabase actualDB = firstDB;
-		String otherDB = config.getConfigString("Main.actualDB", "");
+		String otherDB = config.actualDB.getValue();
 		if (!otherDB.equals(""))
 			actualDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(otherDB));
 
@@ -63,18 +64,16 @@ public class Main {
 
 		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
 
-		int port = serverHub.config.getConfigInt("Main.port", 49152);
-		ServerSocket sv = new ServerSocket(port);
-		ilp.log(mySource, "Bound ServerSocket to port " + port + " - ready to accept connections.");
+		int port = config.port.getValue();
+		try (ServerSocket sv = new ServerSocket(port)) {
+			ilp.log(mySource, "Bound ServerSocket to port " + port + " - ready to accept connections.");
 
-		PacketReader pr = new PacketReader(config);
-		SocketThreadConfig stc = new SocketThreadConfig(config);
-
-		while (true) {
-			Socket skt = sv.accept();
-			new SocketThread(skt, (st) -> {
-				return new LoginSessionState(st, serverHub);
-			}, ilp, pr, stc).start();
+			while (true) {
+				Socket skt = sv.accept();
+				new SocketThread(skt, (st) -> {
+					return new LoginSessionState(st, serverHub);
+				}, ilp, config).start();
+			}
 		}
 	}
 }

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import natsue.config.Config;
 import natsue.data.babel.PacketReader;
 
 /**
@@ -20,10 +21,10 @@ public class CTOSFeedHistory extends BaseCTOS {
 	public byte[] data;
 
 	@Override
-	public void initializeAndReadRemainder(PacketReader pcfg, InputStream inputStream, ByteBuffer initial)
+	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial)
 			throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
-		data = pcfg.getBytes(inputStream, initial.getInt(BASE_FIELD_FDLEN), false);
+		data = PacketReader.getBytes(inputStream, initial.getInt(BASE_FIELD_FDLEN), false);
 	}
 
 	@Override

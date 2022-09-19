@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import natsue.config.Config;
 import natsue.data.babel.PacketReader;
 
 /**
@@ -27,12 +28,12 @@ public class CTOSUnknown extends BaseCTOS {
 	}
 
 	@Override
-	public void initializeAndReadRemainder(PacketReader pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
+	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
-		pcfg.getBytes(inputStream, additionalLength, false);
+		PacketReader.getBytes(inputStream, additionalLength, false);
 		if (furtherDataFlag) {
 			int wantedFurtherData = initial.getInt(BASE_FIELD_FDLEN);
-			if (wantedFurtherData < 0 || wantedFurtherData > pcfg.maximumRandomFurtherDataSize)
+			if (wantedFurtherData < 0 || wantedFurtherData > pcfg.maxUnknownCTOSFurtherDataSize.getValue())
 				throw new IOException("Invalid further data!");
 		}
 	}

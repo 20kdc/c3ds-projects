@@ -11,14 +11,5 @@ package natsue.config;
  * Just to simplify things.
  */
 public interface IConfigProvider {
-	default int getConfigInt(String name, int defaultVal) {
-		String res = getConfigString(name, Integer.toString(defaultVal));
-		try {
-			return Integer.parseInt(res);
-		} catch (Exception ex) {
-			// nope
-			return defaultVal;
-		}
-	}
 	String getConfigString(String name, String defaultVal);
 }

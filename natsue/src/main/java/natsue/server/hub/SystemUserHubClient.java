@@ -27,7 +27,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 
 	public SystemUserHubClient(ServerHub h) {
 		hub = h;
-		maxDecompressedPRAYSize = hub.config.getConfigInt("SystemUserHubClient.maxDecompressedPRAYSize", PacketReader.DEFAULT_MAXIMUM_BABEL_BINARY_MESSAGE_SIZE);
+		maxDecompressedPRAYSize = hub.config.maxDecompressedPRAYSize.getValue();
 	}
 
 	@Override

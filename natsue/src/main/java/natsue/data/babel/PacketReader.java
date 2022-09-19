@@ -15,7 +15,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import natsue.config.IConfigProvider;
+import natsue.config.Config;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSClientCommand;
 import natsue.data.babel.ctos.CTOSFeedHistory;
@@ -29,7 +29,6 @@ import natsue.data.babel.ctos.CTOSWWRModify;
 
 /**
  * General reference on reading packets.
- * Contains the configuration.
  */
 public class PacketReader {
 	public static final int DEFAULT_MAXIMUM_BABEL_BINARY_MESSAGE_SIZE = 0x1000000;
@@ -39,24 +38,10 @@ public class PacketReader {
 	 */
 	public static final Charset CHARSET = StandardCharsets.ISO_8859_1;
 
-	// Maximum size of the username/password section of a handshake.
-	public int maximumLoginInfoSize;
-	// Maximum message size. Need to be careful with this as it's an upper bound on creature sizes.
-	// Can always have other limits.
-	public int maximumBabelBinaryMessageSize;
-	public int maximumRandomFurtherDataSize;
-
-	public PacketReader(IConfigProvider icp) {
-		maximumLoginInfoSize = icp.getConfigInt("PacketReader.maximumLoginInfoSize", 0x1000);
-		maximumBabelBinaryMessageSize = icp.getConfigInt("PacketReader.maximumBabelBinaryMessageSize", DEFAULT_MAXIMUM_BABEL_BINARY_MESSAGE_SIZE);
-		// this is for unknown packets
-		maximumRandomFurtherDataSize = icp.getConfigInt("PacketReader.maximumRandomFurtherDataSize", DEFAULT_MAXIMUM_BABEL_BINARY_MESSAGE_SIZE);
-	}
-
 	/**
 	 * Returns null for graceful start-of-read EOF, if allowed.
 	 */
-	public byte[] getBytes(InputStream socketInput, int len, boolean canEOF) throws IOException {
+	public static byte[] getBytes(InputStream socketInput, int len, boolean canEOF) throws IOException {
 		byte[] data = new byte[len];
 		int ofs = 0;
 		if (canEOF) {
@@ -78,7 +63,7 @@ public class PacketReader {
 	/**
 	 * Returns null for graceful start-of-read EOF, if allowed.
 	 */
-	public ByteBuffer getWrappedBytes(InputStream socketInput, int len, boolean canEOF) throws IOException {
+	public static ByteBuffer getWrappedBytes(InputStream socketInput, int len, boolean canEOF) throws IOException {
 		byte[] data = getBytes(socketInput, len, canEOF);
 		if (data == null)
 			return null;
@@ -95,7 +80,7 @@ public class PacketReader {
 		return bb;
 	}
 
-	public long getUIN(ByteBuffer initial, int ofs) {
+	public static long getUIN(ByteBuffer initial, int ofs) {
 		// HID gets masked in this, which is good and important
 		return UINUtils.make(initial.getInt(ofs), initial.getInt(ofs + 4));
 	}
@@ -104,18 +89,18 @@ public class PacketReader {
 	 * Reads the next packet from an input stream.
 	 * Returns null if the connection ended gracefully.
 	 */
-	public BaseCTOS readPacket(InputStream packetSource) throws IOException {
+	public static BaseCTOS readPacket(Config cfg, InputStream packetSource) throws IOException {
 		ByteBuffer initial = getWrappedBytes(packetSource, 0x20, true);
 		if (initial == null)
 			return null;
 		// alright, what type is this?
 		int type = initial.getInt(BaseCTOS.BASE_FIELD_TYPE);
 		BaseCTOS packetBase = packetInstanceByType(type);
-		packetBase.initializeAndReadRemainder(this, packetSource, initial);
+		packetBase.initializeAndReadRemainder(cfg, packetSource, initial);
 		return packetBase;
 	}
 
-	private BaseCTOS packetInstanceByType(int type) {
+	private static BaseCTOS packetInstanceByType(int type) {
 		switch (type) {
 		case 0x09:
 			return new CTOSMessage();

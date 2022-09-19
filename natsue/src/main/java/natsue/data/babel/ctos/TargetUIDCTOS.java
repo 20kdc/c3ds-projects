@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import natsue.config.Config;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 
@@ -18,9 +19,9 @@ public abstract class TargetUIDCTOS extends BaseCTOS {
 	public long targetUIN;
 
 	@Override
-	public void initializeAndReadRemainder(PacketReader pcfg, InputStream inputStream, ByteBuffer initial)
+	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial)
 			throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
-		targetUIN = pcfg.getUIN(initial, BASE_FIELD_C);
+		targetUIN = PacketReader.getUIN(initial, BASE_FIELD_C);
 	}
 }

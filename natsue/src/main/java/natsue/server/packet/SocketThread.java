@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.function.Function;
 
+import natsue.config.Config;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.log.ILogProvider;
@@ -29,16 +30,14 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 	private OutputStream socketOutput;
 	private final Object sendPacketLock = new Object();
 	public final ILogProvider log;
-	public final PacketReader packetReader;
-	public final SocketThreadConfig config;
+	public final Config config;
 	public BaseSessionState sessionState;
 	public final Function<SocketThread, BaseSessionState> initialSessionStateBuilder;
 	public long myUIN;
 
-	public SocketThread(Socket skt, Function<SocketThread, BaseSessionState> iSessionStateBuilder, ILogProvider ilp, PacketReader pr, SocketThreadConfig stc) {
+	public SocketThread(Socket skt, Function<SocketThread, BaseSessionState> iSessionStateBuilder, ILogProvider ilp, Config stc) {
 		socket = skt;
 		log = ilp;
-		packetReader = pr;
 		initialSessionStateBuilder = iSessionStateBuilder;
 		config = stc;
 	}
@@ -59,12 +58,12 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 
 	@Override
 	public boolean logFailedAuth() {
-		return config.logFailedAuthentication;
+		return config.logFailedAuthentication.getValue();
 	}
 
 	@Override
 	public boolean logPings() {
-		return config.logPings;
+		return config.logPings.getValue();
 	}
 
 	@Override
@@ -85,15 +84,15 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 			socketOutput = socket.getOutputStream();
 			socket.setKeepAlive(true);
 			setName("Natsue-" + socket.getRemoteSocketAddress());
-			if (config.logAllConnections)
+			if (config.logAllConnections.getValue())
 				logTo(log, "Accepted");
 			sessionState = initialSessionStateBuilder.apply(this);
 			// This is the main loop!
 			while (sessionState != null) {
-				BaseCTOS packet = packetReader.readPacket(socketInput);
+				BaseCTOS packet = PacketReader.readPacket(config, socketInput);
 				if (packet == null)
 					break;
-				if (config.logAllIncomingPackets)
+				if (config.logAllIncomingPackets.getValue())
 					logTo(log, packet.toString());
 				sessionState.handlePacket(packet);
 			}
@@ -111,7 +110,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 			} catch (Exception ex2) {
 				// Deliberately ignored - we're closing the socket.
 			}
-			if (config.logAllConnections)
+			if (config.logAllConnections.getValue())
 				logTo(log, "Closed");
 		}
 	}

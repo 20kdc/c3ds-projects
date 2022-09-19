@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 
+import natsue.config.Config;
 import natsue.config.IConfigProvider;
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PackedMessage;
@@ -27,7 +28,7 @@ import natsue.server.database.INatsueDatabase.UserInfo;
  * Class that contains everything important to everything ever.
  */
 public class ServerHub implements IHub, ILogSource {
-	public final IConfigProvider config;
+	public final Config config;
 	public final ILogProvider log;
 	public final INatsueDatabase database;
 
@@ -35,7 +36,7 @@ public class ServerHub implements IHub, ILogSource {
 	public final ArrayList<Long> randomPool = new ArrayList<>();
 	public final Random randomGen = new Random();
 
-	public ServerHub(IConfigProvider cfg, ILogProvider logProvider, INatsueDatabase db) {
+	public ServerHub(Config cfg, ILogProvider logProvider, INatsueDatabase db) {
 		config = cfg;
 		log = logProvider;
 		database = db;
