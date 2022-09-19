@@ -16,14 +16,16 @@ import natsue.data.babel.ctos.CTOSHandshake;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubClientAPI;
+import natsue.server.hubapi.IHubLoginAPI;
+import natsue.server.hubapi.IHubLoginAPI.ILoginReceiver;
 
 /**
  * This session state is to grab the initial handshake packet.
  */
 public class LoginSessionState extends BaseSessionState implements ILogSource {
-	public final IHubClientAPI hub;
+	public final IHubLoginAPI hub;
 
-	public LoginSessionState(ISessionClient c, IHubClientAPI h) {
+	public LoginSessionState(ISessionClient c, IHubLoginAPI h) {
 		super(c);
 		hub = h;
 	}
@@ -51,26 +53,30 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 			return;
 		}
 		// -- attempt normal login --
-		BabelShortUserData data = hub.usernameAndPasswordToShortUserData(handshake.username, handshake.password, true);
-		if (data == null) {
-			if (client.logFailedAuth())
-				log("Failed authentication for username: " + handshake.username);
+		IHubLoginAPI.LoginResult res = hub.loginUser(handshake.username, handshake.password, new ILoginReceiver<MainSessionState>() {
+			@Override
+			public MainSessionState receive(BabelShortUserData userData, IHubClientAPI clientAPI) {
+				return new MainSessionState(client, clientAPI, userData);
+			}
+			@Override
+			public void confirm(MainSessionState result) {
+				client.setSessionState(result);
+				try {
+					client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, result.hub.getServerUIN(), result.userData.uin));
+				} catch (Exception ex) {
+					if (client.logFailedAuth())
+						log(ex);
+				}
+			}
+		});
+		if (res == IHubLoginAPI.LoginResult.FailedAuth) {
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_INVALID_USER, 0L, 0L));
 			client.setSessionState(null);
-			return;
-		}
-		// -- login ensured --
-		final MainSessionState mainHub = new MainSessionState(client, hub, data);
-		if (!hub.clientLogin(mainHub, () -> {
-			client.setSessionState(mainHub);
-			try {
-				client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, hub.getServerUIN(), data.uin));
-			} catch (Exception ex) {
-				if (client.logFailedAuth())
-					log(ex);
-			}
-		})) {
+		} else if (res == IHubLoginAPI.LoginResult.FailedConflict) {
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_ALREADY_LOGGED_IN, 0L, 0L));
+			client.setSessionState(null);
+		} else if (res != IHubLoginAPI.LoginResult.Success) {
+			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_UNKNOWN, 0L, 0L));
 			client.setSessionState(null);
 		}
 	}

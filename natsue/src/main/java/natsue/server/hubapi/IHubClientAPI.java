@@ -10,7 +10,7 @@ package natsue.server.hubapi;
 import natsue.data.babel.PackedMessage;
 
 /**
- * Represents the server.
+ * This is the parts of the hub API used by clients.
  */
 public interface IHubClientAPI extends IHubCommonAPI {
 	/**

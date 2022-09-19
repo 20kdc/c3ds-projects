@@ -35,12 +35,6 @@ public interface IHubCommonAPI {
 	boolean isUINOnline(long uin);
 
 	/**
-	 * Given a user's username and password, provides a BabelShortUserData (successful login), or null.
-	 * The username will be automatically folded.
-	 */
-	BabelShortUserData usernameAndPasswordToShortUserData(String username, String password, boolean allowedToRegister);
-
-	/**
 	 * Gets a UIN reserved for this server.
 	 */
 	long getServerUIN();
@@ -50,13 +44,4 @@ public interface IHubCommonAPI {
 	 * Returns 0 if none could be found.
 	 */
 	long getRandomOnlineNonSystemUIN();
-
-	/**
-	 * Adds a client to the system, or returns false if that couldn't happen due to a conflict.
-	 * Note that you can't turn back if this returns true, you have to logout again.
-	 * The runnable provided here runs at a very specific time such that:
-	 * + No functions will quite have been called yet on the client
-	 * + The client will definitely be logging in at this point
-	 */
-	boolean clientLogin(IHubClient cc, Runnable confirmOk);
 }

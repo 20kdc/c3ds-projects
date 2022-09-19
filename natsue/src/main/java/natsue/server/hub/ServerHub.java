@@ -25,6 +25,7 @@ import natsue.server.database.UsernameVerifier;
 import natsue.server.database.INatsueDatabase.UserInfo;
 import natsue.server.firewall.IFirewall;
 import natsue.server.hubapi.IHubClient;
+import natsue.server.hubapi.IHubClientAPI;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
 
 /**
@@ -181,28 +182,30 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		}
 	}
 
-	@Override
-	public boolean clientLogin(IHubClient cc, Runnable onConfirm) {
+	/**
+	 * Must run in synchronized block, or else events will come too early.
+	 */
+	private boolean earlyClientLoginInSync(IHubClient cc) {
 		BabelShortUserData userData = cc.getUserData();
 		Long uin = userData.uin;
-		LinkedList<IWWRListener> wwrNotify;
-		synchronized (this) {
-			if (connectedClients.containsKey(uin)) {
-				return false;
-			} else {
-				wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
-				connectedClients.put(uin, cc);
-				String foldedNick = UsernameVerifier.foldNickname(userData.nickName);
-				connectedClientsByNickname.put(foldedNick, cc);
-				onConfirm.run();
-				if (!cc.isSystem())
-					randomPool.add(uin);
-			}
+		if (connectedClients.containsKey(uin)) {
+			return false;
+		} else {
+			connectedClients.put(uin, cc);
+			String foldedNick = UsernameVerifier.foldNickname(userData.nickName);
+			connectedClientsByNickname.put(foldedNick, cc);
+			if (!cc.isSystem())
+				randomPool.add(uin);
 		}
+		return true;
+	}
+
+	private void lateClientLogin(IHubClient cc, LinkedList<IWWRListener> wwrNotify) {
+		BabelShortUserData userData = cc.getUserData();
 		for (IWWRListener ihc : wwrNotify)
-			ihc.wwrNotify(true, userData);
-		if (UINUtils.hid(uin) == UINUtils.HID_USER) {
-			int uid = UINUtils.uid(uin);
+			ihc.wwrNotify(true, cc.getUserData());
+		if (UINUtils.hid(userData.uin) == UINUtils.HID_USER) {
+			int uid = UINUtils.uid(userData.uin);
 			// This is presumably a user in the database, dump all spool contents
 			while (true) {
 				byte[] pm = database.popFirstSpooledMessage(uid);
@@ -215,7 +218,34 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				}
 			}
 		}
+	}
+
+	@Override
+	public boolean clientLogin(IHubClient cc, Runnable onConfirm) {
+		LinkedList<IWWRListener> wwrNotify;
+		synchronized (this) {
+			if (!earlyClientLoginInSync(cc))
+				return false;
+			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
+			onConfirm.run();
+		}
+		lateClientLogin(cc, wwrNotify);
 		return true;
+	}
+
+	@Override
+	public <X extends IHubClient> LoginResult loginUser(String username, String password, ILoginReceiver<X> makeClient) {
+		BabelShortUserData userData = usernameAndPasswordToShortUserData(username, password, true);
+		X client = makeClient.receive(userData, this);
+		LinkedList<IWWRListener> wwrNotify;
+		synchronized (this) {
+			if (!earlyClientLoginInSync(client))
+				return LoginResult.FailedConflict;
+			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
+			makeClient.confirm(client);
+		}
+		lateClientLogin(client, wwrNotify);
+		return LoginResult.Success;
 	}
 
 	@Override
