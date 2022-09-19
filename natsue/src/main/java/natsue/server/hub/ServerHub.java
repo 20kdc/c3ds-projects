@@ -175,20 +175,27 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	@Override
 	public void sendMessage(long destinationUIN, PackedMessage message, boolean temp) {
-		// Start with the obvious
 		IHubClient ihc;
-		synchronized (this) {
-			ihc = connectedClients.get(destinationUIN);
-		}
 		if (temp) {
-			ihc.incomingMessage(message, null);
+			synchronized (this) {
+				ihc = connectedClients.get(destinationUIN);
+			}
+			if (ihc != null)
+				ihc.incomingMessage(message, null);
 		} else {
+			synchronized (this) {
+				ihc = connectedClients.get(destinationUIN);
+				if (ihc == null) {
+					// They're not online, so do this here - otherwise they *could* go online while we're spooling the message (BAD!)
+					// If they go offline while we're SENDING the message, that's caught by the reject machinery
+					spoolMessage(destinationUIN, message);
+					return;
+				}
+			}
 			if (ihc != null) {
 				ihc.incomingMessage(message, () -> {
 					spoolMessage(destinationUIN, message);
 				});
-			} else {
-				spoolMessage(destinationUIN, message);
 			}
 		}
 	}

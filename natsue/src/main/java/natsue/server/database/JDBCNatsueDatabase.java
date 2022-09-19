@@ -37,9 +37,9 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 		database = conn;
 		logParent = ilp;
 		JDBCMigrate.migrate(database, this);
-		stmUserByUID = conn.prepareStatement("SELECT uid, username, psha256 FROM natsue_users WHERE uid=?");
-		stmUserByUsername = conn.prepareStatement("SELECT uid, nickname, psha256 FROM natsue_users WHERE username=?");
-		stmUserByNickname = conn.prepareStatement("SELECT uid, nickname, psha256 FROM natsue_users WHERE nickname_folded=?");
+		stmUserByUID = conn.prepareStatement("SELECT uid, username, nickname, psha256 FROM natsue_users WHERE uid=?");
+		stmUserByUsername = conn.prepareStatement("SELECT uid, username, nickname, psha256 FROM natsue_users WHERE username=?");
+		stmUserByNickname = conn.prepareStatement("SELECT uid, username, nickname, psha256 FROM natsue_users WHERE nickname_folded=?");
 		stmStoreOnSpool = conn.prepareStatement("INSERT INTO natsue_spool(uid, data) VALUES (?, ?)");
 		stmDeleteFromSpool = conn.prepareStatement("DELETE FROM natsue_spool WHERE id=? and uid=?");
 		stmGetFromSpool = conn.prepareStatement("SELECT id, uid, data FROM natsue_spool WHERE uid=?");
@@ -58,12 +58,15 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 		return defaultVal;
 	}
 
+	/**
+	 * Before changing this, see stmUserByUID / stmUserByUsername / stmUserByNickname
+	 */
 	private UserInfo getUserFromResultSet(ResultSet rs) throws SQLException {
 		if (!rs.next()) {
 			rs.close();
 			return null;
 		}
-		UserInfo ui = new UserInfo(rs.getString(2), rs.getString(3), rs.getInt(1));
+		UserInfo ui = new UserInfo(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
 		rs.close();
 		return ui;
 	}

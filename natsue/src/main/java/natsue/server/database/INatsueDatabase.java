@@ -64,17 +64,18 @@ public interface INatsueDatabase extends IConfigProvider {
 	boolean tryCreateUser(int uid, String username, String nickname, String nicknameFolded, String passwordHash);
 
 	public static class UserInfo {
-		public final String username;
+		public final String username, nickname;
 		/**
 		 * Hex-encoded lowercase sha256 hash of the password.
 		 */
 		public final String passwordHash;
 		public final int uid;
 
-		public UserInfo(String u, String p, int ui) {
-			username = u;
-			passwordHash = p;
+		public UserInfo(int ui, String u, String n, String p) {
 			uid = ui;
+			username = u;
+			nickname = n;
+			passwordHash = p;
 		}
 
 		public long getUIN() {
