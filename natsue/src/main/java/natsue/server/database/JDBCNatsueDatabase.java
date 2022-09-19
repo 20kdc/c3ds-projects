@@ -21,16 +21,6 @@ import natsue.log.ILogSource;
  * REMEMBER: STUFF HERE CAN BE ACCESSED FROM MULTIPLE THREADS.
  */
 public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
-	private static final String[] migrations = {
-			// 0: create version table
-			"CREATE TABLE natsue_version(version INT)",
-			// 1: prepare version table
-			"INSERT INTO natsue_version VALUES (0)",
-			// 2: create users table
-			"CREATE TABLE natsue_users(uid INT NOT NULL UNIQUE, username TEXT NOT NULL UNIQUE, psha256 TEXT, PRIMARY KEY(uid))",
-			// 3: create spooled messages table
-			"CREATE TABLE natsue_spool(id BIGINT NOT NULL UNIQUE, uid INT NOT NULL, data BLOB NOT NULL, PRIMARY KEY(id))"
-	};
 	public final ILogProvider log;
 	private final Connection database;
 	private final PreparedStatement stmUserByUID;
@@ -38,31 +28,22 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	private final PreparedStatement stmStoreOnSpool;
 	private final PreparedStatement stmDeleteFromSpool;
 	private final PreparedStatement stmGetFromSpool;
+	private final PreparedStatement stmEnsureCreature;
+	private final PreparedStatement stmEnsureCreatureEvent;
+	private final PreparedStatement stmCreateUser;
 
 	public JDBCNatsueDatabase(ILogProvider ilp, Connection conn) throws SQLException {
 		database = conn;
 		log = ilp;
-		// -1 implies even the DB version itself doesn't exist
-		int dbVersion = -1;
-		Statement workspace = conn.createStatement();
-		try {
-			ResultSet rs = workspace.executeQuery("SELECT * FROM natsue_version");
-			rs.next();
-			dbVersion = rs.getInt(1);
-		} catch (Exception ex) {
-			logTo(ilp, "natsue_version table error " + ex + " - DB version assumed to be -1");
-		}
-		for (int i = dbVersion + 1; i < migrations.length; i++) {
-			logTo(ilp, "Performing DB migration " + i);
-			workspace.execute(migrations[i]);
-			workspace.execute("UPDATE natsue_version SET version=" + i);
-		}
-		workspace.close();
-		stmUserByUID = conn.prepareStatement("SELECT * FROM natsue_users WHERE uid=?");
-		stmUserByName = conn.prepareStatement("SELECT * FROM natsue_users WHERE username=?");
+		JDBCMigrate.migrate(database, this, ilp);
+		stmUserByUID = conn.prepareStatement("SELECT uid, username, psha256 FROM natsue_users WHERE uid=?");
+		stmUserByName = conn.prepareStatement("SELECT uid, username, psha256 FROM natsue_users WHERE username=?");
 		stmStoreOnSpool = conn.prepareStatement("INSERT INTO natsue_spool(uid, data) VALUES (?, ?)");
 		stmDeleteFromSpool = conn.prepareStatement("DELETE FROM natsue_spool WHERE id=? and uid=?");
-		stmGetFromSpool = conn.prepareStatement("SELECT * FROM natsue_spool WHERE uid=?");
+		stmGetFromSpool = conn.prepareStatement("SELECT id, uid, data FROM natsue_spool WHERE uid=?");
+		stmEnsureCreature = conn.prepareStatement("INSERT INTO natsue_history_creatures(moniker, first_uid, ch0, ch1, ch2, ch3, ch4) VALUES (?, ?, ?, ?, ?, ?, ?)");
+		stmEnsureCreatureEvent = conn.prepareStatement("INSERT INTO natsue_history_events(event_id, sender_uid, moniker, event_index, event_type, world_time, age_ticks, unix_time, unknown, param1, param2, world_name, world_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		stmCreateUser = conn.prepareStatement("INSERT INTO natsue_users(uid, username, psha256) VALUES (?, ?, ?)");
 	}
 
 	@Override
@@ -140,5 +121,64 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 			}
 		}
 		return message;
+	}
+
+	@Override
+	public void ensureCreature(String moniker, int firstUID, int ch0, int ch1, int ch2, int ch3, int ch4) {
+		synchronized (this) {
+			try {
+				stmEnsureCreature.setString(1, moniker);
+				stmEnsureCreature.setInt(2, firstUID);
+				stmEnsureCreature.setInt(3, ch0);
+				stmEnsureCreature.setInt(4, ch1);
+				stmEnsureCreature.setInt(5, ch2);
+				stmEnsureCreature.setInt(6, ch3);
+				stmEnsureCreature.setInt(7, ch4);
+				stmEnsureCreature.executeUpdate();
+			} catch (Exception ex) {
+				// This is expected to happen, so discard
+			}
+		}
+	}
+
+	@Override
+	public void ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int unknown, String param1, String param2, String worldName, String worldID, String userID) {
+		synchronized (this) {
+			try {
+				stmEnsureCreatureEvent.setString(1, moniker + "." + index);
+				stmEnsureCreatureEvent.setInt(2, senderUID);
+				stmEnsureCreatureEvent.setString(3, moniker);
+				stmEnsureCreatureEvent.setInt(4, index);
+				stmEnsureCreatureEvent.setInt(5, type);
+				stmEnsureCreatureEvent.setInt(6, worldTime);
+				stmEnsureCreatureEvent.setInt(7, ageTicks);
+				stmEnsureCreatureEvent.setInt(8, unixTime);
+				stmEnsureCreatureEvent.setInt(9, unknown);
+				stmEnsureCreatureEvent.setString(10, param1);
+				stmEnsureCreatureEvent.setString(11, param2);
+				stmEnsureCreatureEvent.setString(12, worldName);
+				stmEnsureCreatureEvent.setString(13, worldID);
+				stmEnsureCreatureEvent.setString(14, userID);
+				stmEnsureCreatureEvent.executeUpdate();
+			} catch (Exception ex) {
+				// This is expected to happen, so discard
+			}
+		}
+	}
+
+	@Override
+	public boolean tryCreateUser(int uid, String username, String passwordHash) {
+		synchronized (this) {
+			try {
+				stmCreateUser.setInt(1, uid);
+				stmCreateUser.setString(2, username);
+				stmCreateUser.setString(3, passwordHash);
+				stmCreateUser.executeUpdate();
+			} catch (Exception ex) {
+				// This is expected to happen, so discard
+				return false;
+			}
+		}
+		return true;
 	}
 }

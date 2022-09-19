@@ -22,6 +22,8 @@ import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.database.INatsueDatabase;
+import natsue.server.database.PWHash;
+import natsue.server.database.UsernameVerifier;
 import natsue.server.database.INatsueDatabase.UserInfo;
 
 /**
@@ -70,13 +72,32 @@ public class ServerHub implements IHub, ILogSource {
 	}
 
 	@Override
-	public BabelShortUserData usernameAndPasswordToShortUserData(String username, String password) {
+	public BabelShortUserData usernameAndPasswordToShortUserData(String username, String password, boolean allowedToRegister) {
+		username = UsernameVerifier.fold(username);
+		if (!UsernameVerifier.verify(username))
+			return null;
 		UserInfo ui = database.getUserByUsername(username);
+		while (allowedToRegister && ui == null) {
+			int uid;
+			synchronized (this) {
+				uid = randomGen.nextInt();
+			}
+			// don't register with 0 or negative numbers
+			// negative numbers will probably fry the Warp inbox system!!!
+			if (uid <= 0)
+				continue;
+			boolean success = database.tryCreateUser(uid, username, PWHash.hash(uid, password));
+			if (success)
+				logTo(log, "Registered user: " + username + " as UID " + uid);
+			// It's possible that a username collision occurred during the registration process.
+			// In that event, we obviously should be seeing a username here.
+			ui = database.getUserByUsername(username);
+		}
 		if (ui == null)
 			return null;
 		// this isn't how this is supposed to work but let's ignore that right now
 		if (ui.passwordHash != null)
-			if (ui.passwordHash.equals(password))
+			if (PWHash.verify(ui.uid, ui.passwordHash, password))
 				return ui.convertToBabel();
 		return null;
 	}

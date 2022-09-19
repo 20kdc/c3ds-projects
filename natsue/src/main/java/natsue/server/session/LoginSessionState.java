@@ -45,7 +45,7 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 			return;
 		}
 		// -- attempt normal login --
-		BabelShortUserData data = hub.usernameAndPasswordToShortUserData(handshake.username, handshake.password);
+		BabelShortUserData data = hub.usernameAndPasswordToShortUserData(handshake.username, handshake.password, true);
 		if (data == null) {
 			if (client.logFailedAuth())
 				logTo(client, "Failed authentication for username: " + handshake.username);

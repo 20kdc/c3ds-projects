@@ -31,7 +31,7 @@ public interface IHub {
 	/**
 	 * Given a user's username and password, provides a BabelShortUserData (successful login), or null.
 	 */
-	public BabelShortUserData usernameAndPasswordToShortUserData(String username, String password);
+	public BabelShortUserData usernameAndPasswordToShortUserData(String username, String password, boolean allowedToRegister);
 
 	/**
 	 * Gets a UIN reserved for this server.

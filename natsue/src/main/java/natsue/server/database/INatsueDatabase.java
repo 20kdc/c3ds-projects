@@ -40,6 +40,21 @@ public interface INatsueDatabase extends IConfigProvider {
 	 */
 	byte[] popFirstSpooledMessage(int uid);
 
+	/**
+	 * Registers a creature in the database (or at least tries to...)
+	 */
+	void ensureCreature(String moniker, int firstUID, int ch0, int ch1, int ch2, int ch3, int ch4);
+
+	/**
+	 * Registers a creature life event in the database if it does not already exist
+	 */
+	void ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int unknown, String param1, String param2, String worldName, String worldID, String userID);
+
+	/**
+	 * Tries to create a user with the given details.
+	 */
+	boolean tryCreateUser(int uid, String username, String passwordHash);
+
 	public static class UserInfo {
 		public final String username;
 		/**
