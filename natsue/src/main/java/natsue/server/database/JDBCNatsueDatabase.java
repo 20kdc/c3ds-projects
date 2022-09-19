@@ -27,9 +27,9 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 			// 1: prepare version table
 			"INSERT INTO natsue_version VALUES (0)",
 			// 2: create users table
-			"CREATE TABLE natsue_users(username TEXT NOT NULL UNIQUE, psha256 TEXT, uid INTEGER NOT NULL CHECK(uid != 0) UNIQUE, PRIMARY KEY(uid AUTOINCREMENT))",
+			"CREATE TABLE natsue_users(uid INT NOT NULL UNIQUE, username TEXT NOT NULL UNIQUE, psha256 TEXT, PRIMARY KEY(uid))",
 			// 3: create spooled messages table
-			"CREATE TABLE natsue_spool(id INTEGER NOT NULL UNIQUE, uid INTEGER NOT NULL, data BLOB NOT NULL, PRIMARY KEY(id AUTOINCREMENT))"
+			"CREATE TABLE natsue_spool(id BIGINT NOT NULL UNIQUE, uid INT NOT NULL, data BLOB NOT NULL, PRIMARY KEY(id))"
 	};
 	public final ILogProvider log;
 	private final Connection database;
@@ -75,7 +75,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 			rs.close();
 			return null;
 		}
-		UserInfo ui = new UserInfo(rs.getString(1), rs.getString(2), rs.getInt(3));
+		UserInfo ui = new UserInfo(rs.getString(2), rs.getString(3), rs.getInt(1));
 		rs.close();
 		return ui;
 	}
@@ -127,10 +127,10 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 				stmGetFromSpool.setInt(1, uid);
 				ResultSet rs = stmGetFromSpool.executeQuery();
 				if (rs.next()) {
-					int id = rs.getInt(1);
+					long id = rs.getLong(1);
 					message = rs.getBytes(3);
 					// and now remove from the spool
-					stmDeleteFromSpool.setInt(1, id);
+					stmDeleteFromSpool.setLong(1, id);
 					stmDeleteFromSpool.setInt(2, uid);
 					stmDeleteFromSpool.execute();
 				}
