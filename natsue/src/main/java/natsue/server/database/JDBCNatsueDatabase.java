@@ -7,6 +7,7 @@
 
 package natsue.server.database;
 
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,6 +33,8 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	private final PreparedStatement stmEnsureCreature;
 	private final PreparedStatement stmEnsureCreatureEvent;
 	private final PreparedStatement stmCreateUser;
+	// Yes, really, I decided this was the best way.
+	private final SecureRandom secureRandom = new SecureRandom();
 
 	public JDBCNatsueDatabase(ILogProvider ilp, Connection conn) throws SQLException {
 		database = conn;
@@ -40,7 +43,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 		stmUserByUID = conn.prepareStatement("SELECT uid, username, nickname, psha256 FROM natsue_users WHERE uid=?");
 		stmUserByUsername = conn.prepareStatement("SELECT uid, username, nickname, psha256 FROM natsue_users WHERE username=?");
 		stmUserByNickname = conn.prepareStatement("SELECT uid, username, nickname, psha256 FROM natsue_users WHERE nickname_folded=?");
-		stmStoreOnSpool = conn.prepareStatement("INSERT INTO natsue_spool(uid, data) VALUES (?, ?)");
+		stmStoreOnSpool = conn.prepareStatement("INSERT INTO natsue_spool(id, uid, data) VALUES (?, ?, ?)");
 		stmDeleteFromSpool = conn.prepareStatement("DELETE FROM natsue_spool WHERE id=? and uid=?");
 		stmGetFromSpool = conn.prepareStatement("SELECT id, uid, data FROM natsue_spool WHERE uid=?");
 		stmEnsureCreature = conn.prepareStatement("INSERT INTO natsue_history_creatures(moniker, first_uid, ch0, ch1, ch2, ch3, ch4) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -114,8 +117,11 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	public void spoolMessage(int uid, byte[] pm) {
 		synchronized (this) {
 			try {
-				stmStoreOnSpool.setInt(1, uid);
-				stmStoreOnSpool.setBytes(2, pm);
+				// So my justification for this is that there is no such thing as a portable row ID.
+				// With the changes to the constraints I've made, if this is actually causing issues you have other problems.
+				stmStoreOnSpool.setLong(1, System.currentTimeMillis() ^ secureRandom.nextLong());
+				stmStoreOnSpool.setInt(2, uid);
+				stmStoreOnSpool.setBytes(3, pm);
 				stmStoreOnSpool.executeUpdate();
 			} catch (Exception ex) {
 				log(ex);

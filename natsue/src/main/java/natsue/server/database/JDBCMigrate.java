@@ -25,7 +25,7 @@ public class JDBCMigrate {
 			// 2: create users table
 			"CREATE TABLE natsue_users(uid INT NOT NULL UNIQUE, username TEXT NOT NULL UNIQUE, nickname TEXT NOT NULL UNIQUE, nickname_folded TEXT NOT NULL UNIQUE, psha256 TEXT, PRIMARY KEY(uid))",
 			// 3: create spooled messages table
-			"CREATE TABLE natsue_spool(id BIGINT NOT NULL UNIQUE, uid INT NOT NULL, data BLOB NOT NULL, PRIMARY KEY(id))",
+			"CREATE TABLE natsue_spool(id BIGINT NOT NULL, uid INT NOT NULL, data BLOB NOT NULL, PRIMARY KEY(id, uid))",
 			// 4: create natsue_history_creatures table
 			"CREATE TABLE natsue_history_creatures(moniker TEXT NOT NULL UNIQUE, first_uid INT NOT NULL, ch0 INT NOT NULL, ch1 INT NOT NULL, ch2 INT NOT NULL, ch3 INT NOT NULL, ch4 INT NOT NULL, PRIMARY KEY(moniker))",
 			// 5: create natsue_history_events table
