@@ -185,19 +185,22 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	/**
 	 * Must run in synchronized block, or else events will come too early.
 	 */
-	private boolean earlyClientLoginInSync(IHubClient cc) {
+	private LinkedList<IWWRListener> earlyClientLoginInSync(IHubClient cc) {
 		BabelShortUserData userData = cc.getUserData();
 		Long uin = userData.uin;
+		LinkedList<IWWRListener> wwrNotify;
 		if (connectedClients.containsKey(uin)) {
-			return false;
+			return null;
 		} else {
 			connectedClients.put(uin, cc);
 			String foldedNick = UsernameVerifier.foldNickname(userData.nickName);
 			connectedClientsByNickname.put(foldedNick, cc);
 			if (!cc.isSystem())
 				randomPool.add(uin);
+			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
+			wwrListeners.add(cc);
 		}
-		return true;
+		return wwrNotify;
 	}
 
 	private void lateClientLogin(IHubClient cc, LinkedList<IWWRListener> wwrNotify) {
@@ -221,15 +224,15 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public boolean clientLogin(IHubClient cc, Runnable onConfirm) {
+	public boolean clientLogin(IHubClient client, Runnable onConfirm) {
 		LinkedList<IWWRListener> wwrNotify;
 		synchronized (this) {
-			if (!earlyClientLoginInSync(cc))
+			wwrNotify = earlyClientLoginInSync(client);
+			if (wwrNotify == null)
 				return false;
-			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
 			onConfirm.run();
 		}
-		lateClientLogin(cc, wwrNotify);
+		lateClientLogin(client, wwrNotify);
 		return true;
 	}
 
@@ -239,7 +242,8 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		X client = makeClient.receive(userData, this);
 		LinkedList<IWWRListener> wwrNotify;
 		synchronized (this) {
-			if (!earlyClientLoginInSync(client))
+			wwrNotify = earlyClientLoginInSync(client);
+			if (wwrNotify == null)
 				return LoginResult.FailedConflict;
 			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
 			makeClient.confirm(client);

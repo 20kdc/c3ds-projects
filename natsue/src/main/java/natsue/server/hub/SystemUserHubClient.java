@@ -16,6 +16,7 @@ import natsue.data.babel.PackedMessage;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.WritVal;
+import natsue.data.hli.StandardMessages;
 import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 import natsue.log.ILogProvider;
@@ -61,7 +62,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 
 	@Override
 	public void wwrNotify(boolean online, BabelShortUserData theirData) {
-		sendAddToContactList(theirData.uin, userData.uin);
+		hub.sendMessage(theirData.uin, StandardMessages.addToContactList(theirData.uin, userData.uin), true);
 		/*
 		writ = WritVal.encodeWrit("system_message", 2469, "You didn't say the magic word!", null);
 		try {
@@ -162,7 +163,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			if (userData != null) {
 				response.append(COL_CHAT);
 				response.append("Adding to your contact list...\n");
-				sendAddToContactList(targetUIN, userData.uin);
+				hub.sendMessage(targetUIN, StandardMessages.addToContactList(targetUIN, userData.uin), true);
 			} else {
 				appendNoSuchUser(response, user);
 			}
@@ -180,11 +181,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		response.append(user);
 		response.append(COL_CHAT);
 		response.append("' doesn't exist. Specify a nickname or UIN.\n");
-	}
-
-	private void sendAddToContactList(long targetUIN, long contactUIN) {
-		byte[] writ = WritVal.encodeWrit("add_to_contact_book", 2468, UINUtils.toString(contactUIN), null);
-		hub.sendMessage(targetUIN, new PackedMessage(targetUIN, PackedMessage.TYPE_WRIT, writ), true);
 	}
 
 	private void sendChatMessage(long targetUIN, String chatID, String text) {

@@ -27,7 +27,7 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI {
 	 * + No functions will quite have been called yet on the client
 	 * + The client will definitely be logging in at this point
 	 */
-	boolean clientLogin(IHubClient cc, Runnable confirmOk);
+	boolean clientLogin(IHubClient client, Runnable confirmOk);
 
 	/**
 	 * Route a message that is expected to *eventually* get to the target.
