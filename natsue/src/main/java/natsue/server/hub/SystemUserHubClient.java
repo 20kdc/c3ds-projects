@@ -167,9 +167,26 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			} else {
 				appendNoSuchUser(response, user);
 			}
+		} else if (text.equals("who")) {
+			boolean first = true;
+			for (BabelShortUserData data : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
+				if (!first) {
+					response.append(COL_CHAT);
+					response.append(", ");
+					response.append(COL_NICKNAME);
+				}
+				response.append(data.nickName);
+				first = false;
+			}
+			response.append("\n");
+		} else if (text.equals("whoami")) {
+			response.append(COL_CHAT);
+			response.append("A philosophical question.\n");
+			response.append("To me? You are " + UINUtils.toString(targetUIN) + ".\n");
+			response.append("Others may say differently.\n");
 		} else {
 			response.append(COL_CHAT);
-			response.append("Unknown command. Try:\nwhois !System\ncontact !System\n");
+			response.append("Unknown command. Try:\nwhois !System\ncontact !System\nwho (show who's online)\n");
 		}
 		sendChatMessage(targetUIN, chatID, response.toString());
 	}

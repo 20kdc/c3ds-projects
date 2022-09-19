@@ -63,6 +63,17 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
+	public LinkedList<BabelShortUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem() {
+		LinkedList<BabelShortUserData> ll = new LinkedList<>();
+		synchronized (this) {
+			for (IHubClient client : connectedClients.values())
+				if (!client.isSystem())
+					ll.add(client.getUserData());
+		}
+		return ll;
+	}
+
+	@Override
 	public BabelShortUserData getShortUserDataByUIN(long uin) {
 		// Try a direct database lookup so that the system user doesn't asplode
 		IHubClient ihc;

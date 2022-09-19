@@ -7,6 +7,8 @@
 
 package natsue.server.hubapi;
 
+import java.util.LinkedList;
+
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PackedMessage;
 
@@ -14,6 +16,11 @@ import natsue.data.babel.PackedMessage;
  * Represents the server.
  */
 public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI {
+	/**
+	 * Returns all user info that does not belong to system users.
+	 */
+	LinkedList<BabelShortUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem();
+
 	/**
 	 * Given a user's username and password, provides a BabelShortUserData (successful login), or null.
 	 * The username will be automatically folded.
