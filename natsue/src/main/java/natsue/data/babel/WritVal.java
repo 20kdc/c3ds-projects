@@ -9,6 +9,8 @@ package natsue.data.babel;
 
 import java.nio.ByteBuffer;
 
+import natsue.data.IOUtils;
+
 /**
  * Because it happens. 
  */
@@ -17,7 +19,7 @@ public class WritVal {
 		byte[] channelData = channel.getBytes(PacketReader.CHARSET);
 		byte[] p1 = toByteArray(param1);
 		byte[] p2 = toByteArray(param2);
-		ByteBuffer bb = PacketWriter.newBuffer(channelData.length + 8 + p1.length + p2.length);
+		ByteBuffer bb = IOUtils.newBuffer(channelData.length + 8 + p1.length + p2.length);
 		bb.putInt(channelData.length);
 		bb.put(channelData);
 		bb.putInt(messageId);
@@ -49,17 +51,17 @@ public class WritVal {
 			data[0] = (byte) 3;
 			return data;
 		} else if (val instanceof Integer) {
-			ByteBuffer bb = PacketWriter.newBuffer(8);
+			ByteBuffer bb = IOUtils.newBuffer(8);
 			bb.putInt(4, (Integer) val);
 			return bb.array();
 		} else if (val instanceof Float) {
-			ByteBuffer bb = PacketWriter.newBuffer(8);
+			ByteBuffer bb = IOUtils.newBuffer(8);
 			bb.putInt(1);
 			bb.putFloat((Float) val);
 			return bb.array();
 		} else if (val instanceof String) {
 			byte[] strDat = ((String) val).getBytes(PacketReader.CHARSET);
-			ByteBuffer bb = PacketWriter.newBuffer(strDat.length + 8);
+			ByteBuffer bb = IOUtils.newBuffer(strDat.length + 8);
 			bb.putInt(2);
 			bb.putInt(strDat.length);
 			bb.put(strDat);

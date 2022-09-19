@@ -32,6 +32,8 @@ import natsue.data.babel.ctos.CTOSWWRModify;
  * Contains the configuration.
  */
 public class PacketReader {
+	public static final int DEFAULT_MAXIMUM_BABEL_BINARY_MESSAGE_SIZE = 0x1000000;
+
 	/**
 	 * The standard character set used by the game.
 	 */
@@ -46,8 +48,9 @@ public class PacketReader {
 
 	public PacketReader(IConfigProvider icp) {
 		maximumLoginInfoSize = icp.getConfigInt("PacketReader.maximumLoginInfoSize", 0x1000);
-		maximumBabelBinaryMessageSize = icp.getConfigInt("PacketReader.maximumBabelBinaryMessageSize", 0x1000000);
-		maximumRandomFurtherDataSize = icp.getConfigInt("PacketReader.maximumRandomFurtherDataSize", 0x1000000);
+		maximumBabelBinaryMessageSize = icp.getConfigInt("PacketReader.maximumBabelBinaryMessageSize", DEFAULT_MAXIMUM_BABEL_BINARY_MESSAGE_SIZE);
+		// this is for unknown packets
+		maximumRandomFurtherDataSize = icp.getConfigInt("PacketReader.maximumRandomFurtherDataSize", DEFAULT_MAXIMUM_BABEL_BINARY_MESSAGE_SIZE);
 	}
 
 	/**

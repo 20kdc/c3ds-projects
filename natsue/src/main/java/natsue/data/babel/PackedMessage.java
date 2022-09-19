@@ -9,6 +9,8 @@ package natsue.data.babel;
 
 import java.nio.ByteBuffer;
 
+import natsue.data.IOUtils;
+
 /**
  * Yes, these have to be decoded. If only to verify the sender.
  * This class covers two layers of framing to save some pain.
@@ -45,7 +47,7 @@ public class PackedMessage {
 
 	public byte[] toByteArray() {
 		int len = messageData.length + HEADER_LEN;
-		ByteBuffer bb = PacketWriter.newBuffer(len);
+		ByteBuffer bb = IOUtils.newBuffer(len);
 		bb.putInt(len);
 		// INTENTIONALLY REVERSED, see spec.
 		bb.putInt(UINUtils.hid(senderUIN));

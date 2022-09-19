@@ -7,10 +7,14 @@
 
 package natsue.server.hub;
 
+import java.util.LinkedList;
+
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PackedMessage;
+import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.WritVal;
+import natsue.data.pray.PRAYBlock;
 import natsue.log.ILogSource;
 
 /**
@@ -19,8 +23,11 @@ import natsue.log.ILogSource;
 public class SystemUserHubClient implements IHubClient, ILogSource {
 	public final ServerHub hub;
 	public final BabelShortUserData userData = new BabelShortUserData("none", "none", "!System", UINUtils.SERVER_UIN);
+	public final int maxDecompressedPRAYSize;
+
 	public SystemUserHubClient(ServerHub h) {
 		hub = h;
+		maxDecompressedPRAYSize = hub.config.getConfigInt("SystemUserHubClient.maxDecompressedPRAYSize", PacketReader.DEFAULT_MAXIMUM_BABEL_BINARY_MESSAGE_SIZE);
 	}
 
 	@Override
@@ -52,5 +59,13 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 
 	@Override
 	public void incomingMessage(PackedMessage message, Runnable reject) {
+		if (message.messageType == PackedMessage.TYPE_PRAY) {
+			try {
+				LinkedList<PRAYBlock> info = PRAYBlock.read(PacketReader.wrapLE(message.messageData), maxDecompressedPRAYSize);
+				logTo(hub.log, "SYSTEM GOT " + info.size() + " blocks");
+			} catch (Exception ex) {
+				logTo(hub.log, ex);
+			}
+		}
 	}
 }
