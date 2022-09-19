@@ -63,6 +63,11 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 	}
 
 	@Override
+	public boolean logPings() {
+		return config.logPings;
+	}
+
+	@Override
 	public void log(String source, String text) {
 		log.log(this + ": " + source, text);
 	}
@@ -96,10 +101,13 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 		} catch (Exception ex) {
 			logTo(log, ex);
 		} finally {
-			if (sessionState != null)
-				sessionState.logout();
 			try {
-				socket.close();
+				synchronized (sendPacketLock) {
+					// Note that we hold sendPacketLock through the logout process. 
+					if (sessionState != null)
+						sessionState.logout();
+					socket.close();
+				}
 			} catch (Exception ex2) {
 				// Deliberately ignored - we're closing the socket.
 			}

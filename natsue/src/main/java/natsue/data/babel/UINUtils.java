@@ -26,6 +26,7 @@ public class UINUtils {
 		return (short) (uin & 0xFFFF);
 	}
 	public static long make(int uid, int hid) {
+		// the masking here is very important, it prevents issues with "uninitialized padding" HIDs
 		long uidl = uid & 0xFFFFFFFFL;
 		long hidl = hid & 0x0000FFFFL;
 		return (uidl << 32) | hidl;

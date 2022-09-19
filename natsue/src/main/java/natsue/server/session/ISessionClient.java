@@ -32,4 +32,5 @@ public interface ISessionClient extends ILogProvider {
 	 * Config propagator
 	 */
 	public boolean logFailedAuth();
+	public boolean logPings();
 }

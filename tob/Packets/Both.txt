@@ -16,7 +16,7 @@ It does moonlight as a "connection accepted" mechanism for the Virtual Circuits 
 
 * Type: 0x14
 * A/B: Server UID/HID (STOC ignores)
-* C/D: presumably receiver UID/HID (copied from STOC C_TID_VIRTUAL_CONNECT)
+* C/D: Target UID/HID (STOC ignores, CTOS copies from STOC C_TID_VIRTUAL_CONNECT - i.e. sends to initiator)
 	* STOC-wise, for "normal" subCommand values, this information is put into a newly made struct which is promptly memory-leaked on the [[:Structs:NetManager|NetManager]] side.
 * Ticket number: 0/Ignored
 * Further data: 0/Ignored

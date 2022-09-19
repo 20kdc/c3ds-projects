@@ -8,6 +8,9 @@
 package natsue.server.session;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PackedMessage;
@@ -28,9 +31,11 @@ import natsue.server.hub.IHubClient;
 public class MainSessionState extends BaseSessionState implements IHubClient, ILogSource {
 	public final BabelShortUserData userData;
 	public final IHub hub;
+	public final PingManager pingManager;
 
 	public MainSessionState(ISessionClient c, IHub h, BabelShortUserData uin) {
 		super(c);
+		pingManager = new PingManager(c);
 		userData = uin;
 		hub = h;
 	}
@@ -47,6 +52,10 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 
 	@Override
 	public void handlePacket(BaseCTOS packet) throws IOException {
+		// check for ping-related stuff
+		if (pingManager.handleResponse(packet))
+			return;
+
 		if (packet instanceof CTOSGetConnectionDetail) {
 			CTOSGetConnectionDetail pkt = (CTOSGetConnectionDetail) packet; 
 			// well, are they connected?
@@ -90,6 +99,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	@Override
 	public void logout() {
 		hub.clientLogout(this);
+		pingManager.logout();
 	}
 
 	@Override
@@ -103,7 +113,37 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	}
 
 	@Override
-	public void incomingMessage(PackedMessage message) throws IOException {
-		client.sendPacket(PacketWriter.writeMessage(message.toByteArray()));
+	public void incomingMessage(PackedMessage message, Runnable reject) {
+		// First of all, send the message
+		try {
+			client.sendPacket(PacketWriter.writeMessage(message.toByteArray()));
+		} catch (Exception ex) {
+			logTo(client, ex);
+			if (reject != null)
+				reject.run();
+			return;
+		}
+		// Now setup tracking for if that fails
+		if (reject == null)
+			return;
+		final AtomicBoolean hasRejected = new AtomicBoolean();
+		byte[] pingPacket = pingManager.addPing((status) -> {
+			if (hasRejected.getAndSet(true))
+				return;
+			if (status == 0)
+				reject.run();
+		});
+		if (pingPacket == null) {
+			if (!hasRejected.getAndSet(true))
+				reject.run();
+			return;
+		}
+		try {
+			client.sendPacket(pingPacket);
+		} catch (Exception ex) {
+			logTo(client, ex);
+			if (!hasRejected.getAndSet(true))
+				reject.run();
+		}
 	}
 }

@@ -37,7 +37,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	public void wwrNotify(boolean online, BabelShortUserData theirData) {
 		byte[] writ = WritVal.encodeWrit("add_to_contact_book", 2468, UINUtils.toString(userData.uin), null);
 		try {
-			hub.forceRouteMessage(theirData.uin, new PackedMessage(theirData.uin, PackedMessage.TYPE_WRIT, writ));
+			hub.sendMessage(theirData.uin, new PackedMessage(theirData.uin, PackedMessage.TYPE_WRIT, writ), true);
 		} catch (Exception ex) {
 			logTo(hub.log, ex);
 		}
@@ -51,6 +51,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
-	public void incomingMessage(PackedMessage message) {
+	public void incomingMessage(PackedMessage message, Runnable reject) {
 	}
 }

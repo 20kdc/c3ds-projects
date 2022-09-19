@@ -7,15 +7,12 @@
 
 package natsue.server.database;
 
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import natsue.data.babel.PackedMessage;
-import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 

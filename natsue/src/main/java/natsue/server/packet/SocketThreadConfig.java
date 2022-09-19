@@ -15,10 +15,12 @@ public class SocketThreadConfig {
 	public boolean logFailedAuthentication;
 	public boolean logAllConnections;
 	public boolean logAllIncomingPackets;
+	public boolean logPings;
 
 	public SocketThreadConfig(IConfigProvider icp) {
 		logFailedAuthentication = icp.getConfigInt("SocketThreadConfig.logFailedAuthentication", 1) != 0;
 		logAllConnections = icp.getConfigInt("SocketThreadConfig.logAllConnections", 1) != 0;
 		logAllIncomingPackets = icp.getConfigInt("SocketThreadConfig.logAllIncomingPackets", 1) != 0;
+		logPings = icp.getConfigInt("SocketThreadConfig.logPings", 1) != 0;
 	}
 }

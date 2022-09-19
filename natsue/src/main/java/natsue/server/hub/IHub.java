@@ -45,17 +45,11 @@ public interface IHub {
 	public long getRandomOnlineNonSystemUIN();
 
 	/**
-	 * Forcibly route a message without any sanity checks.
-	 * Returns false if the user was not available.
-	 * Note that this is *IMMEDIATE*, as opposed to delayed.
-	 */
-	boolean forceRouteMessage(long destinationUIN, PackedMessage message) throws IOException;
-
-	/**
 	 * Route a message that is expected to *eventually* get to the target.
 	 * The message is assumed to be authenticated.
+	 * If temp is true, the message won't be archived on failure.
 	 */
-	void spoolMessage(long destinationUIN, PackedMessage message);
+	void sendMessage(long destinationUIN, PackedMessage message, boolean temp);
 
 	/**
 	 * Adds a client to the system, or returns false if that couldn't happen due to a conflict.

@@ -60,4 +60,21 @@ public class PacketWriter {
 		packet.put(userData);
 		return packet.array();
 	}
+
+	public static byte[] writeVirtualConnect(long initiatorUIN, short vsn) {
+		ByteBuffer packet = newBuffer(44);
+		packet.putInt(BaseCTOS.BASE_FIELD_TYPE, 0x1E);
+		packet.putInt(BaseCTOS.BASE_FIELD_C, UINUtils.uid(initiatorUIN));
+		packet.putInt(BaseCTOS.BASE_FIELD_D, UINUtils.hid(initiatorUIN));
+		packet.putInt(BaseCTOS.BASE_FIELD_E, vsn & 0xFFFF);
+		return packet.array();
+	}
+
+	public static byte[] writeVirtualCircuitClose(long targetUIN) {
+		ByteBuffer packet = newBuffer(32);
+		packet.putInt(BaseCTOS.BASE_FIELD_TYPE, 0x20);
+		packet.putInt(BaseCTOS.BASE_FIELD_C, UINUtils.uid(targetUIN));
+		packet.putInt(BaseCTOS.BASE_FIELD_D, UINUtils.hid(targetUIN));
+		return packet.array();
+	}
 }

@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 
 import natsue.config.IConfigProvider;
 import natsue.data.babel.ctos.BaseCTOS;
+import natsue.data.babel.ctos.CTOSClientCommand;
 import natsue.data.babel.ctos.CTOSFeedHistory;
 import natsue.data.babel.ctos.CTOSFetchRandomUser;
 import natsue.data.babel.ctos.CTOSGetClientInfo;
@@ -92,6 +93,7 @@ public class PacketReader {
 	}
 
 	public long getUIN(ByteBuffer initial, int ofs) {
+		// HID gets masked in this, which is good and important
 		return UINUtils.make(initial.getInt(ofs), initial.getInt(ofs + 4));
 	}
 
@@ -125,6 +127,8 @@ public class PacketReader {
 			return new CTOSUnknown(0, 0, false);
 		case 0x13:
 			return new CTOSGetConnectionDetail();
+		case 0x14:
+			return new CTOSClientCommand();
 		case 0x18:
 			// C_TID_GET_STATUS
 			return new CTOSUnknown(0, 48, false);

@@ -33,7 +33,9 @@ public interface IHubClient {
 	void wwrNotify(boolean online, BabelShortUserData userData);
 
 	/**
-	 * Incoming message! Can throw IOException, which counts as failure.
+	 * Incoming message!
+	 * reject is run if an error occurs.
+	 * If reject is null, the message success is not tracked.
 	 */
-	void incomingMessage(PackedMessage message) throws IOException;
+	void incomingMessage(PackedMessage message, Runnable reject);
 }

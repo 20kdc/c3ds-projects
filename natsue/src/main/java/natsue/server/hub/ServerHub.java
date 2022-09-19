@@ -96,32 +96,30 @@ public class ServerHub implements IHub, ILogSource {
 		}
 	}
 
+	private void spoolMessage(long destinationUIN, PackedMessage message) {
+		if (UINUtils.hid(destinationUIN) == UINUtils.HID_USER) {
+			int uid = UINUtils.uid(destinationUIN);
+			if (database.getUserByUID(uid) != null)
+				database.spoolMessage(uid, message.toByteArray());
+		}
+	}
+
 	@Override
-	public boolean forceRouteMessage(long destinationUIN, PackedMessage message) throws IOException {
+	public void sendMessage(long destinationUIN, PackedMessage message, boolean temp) {
+		// Start with the obvious
 		IHubClient ihc;
 		synchronized (this) {
 			ihc = connectedClients.get(destinationUIN);
 		}
-		if (ihc == null)
-			return false;
-		ihc.incomingMessage(message);
-		return true;
-	}
-
-	@Override
-	public void spoolMessage(long destinationUIN, PackedMessage message) {
-		boolean success = false;
-		try {
-			success = forceRouteMessage(destinationUIN, message);
-		} catch (Exception ex) {
-			// expected, so don't bother logging
-		}
-		if (!success) {
-			// Message stops with us. But only spool to users in the database.
-			if (UINUtils.hid(destinationUIN) == UINUtils.HID_USER) {
-				int uid = UINUtils.uid(destinationUIN);
-				if (database.getUserByUID(uid) != null)
-					database.spoolMessage(uid, message.toByteArray());
+		if (temp) {
+			ihc.incomingMessage(message, null);
+		} else {
+			if (ihc != null) {
+				ihc.incomingMessage(message, () -> {
+					spoolMessage(destinationUIN, message);
+				});
+			} else {
+				spoolMessage(destinationUIN, message);
 			}
 		}
 	}
@@ -150,13 +148,9 @@ public class ServerHub implements IHub, ILogSource {
 			while (true) {
 				byte[] pm = database.popFirstSpooledMessage(uid);
 				if (pm != null) {
-					try {
-						cc.incomingMessage(new PackedMessage(pm));
-					} catch (Exception ex) {
-						// Something went wrong, re-spool the message
+					cc.incomingMessage(new PackedMessage(pm), () -> {
 						database.spoolMessage(uid, pm);
-						break;
-					}
+					});
 				} else {
 					break;
 				}
@@ -184,6 +178,6 @@ public class ServerHub implements IHub, ILogSource {
 	public void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message) {
 		if (message.senderUIN != cc.getUserData().uin)
 			return;
-		spoolMessage(destinationUIN, message);
+		sendMessage(destinationUIN, message, false);
 	}
 }
