@@ -23,7 +23,7 @@ import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.names.CreatureDataVerifier;
 import natsue.names.PWHash;
-import natsue.names.UsernameVerifier;
+import natsue.names.NicknameVerifier;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.INatsueDatabase.UserInfo;
 import natsue.server.firewall.IFirewall;
@@ -96,7 +96,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	@Override
 	public BabelShortUserData getShortUserDataByNickname(String name) {
-		name = UsernameVerifier.foldNickname(name);
+		name = NicknameVerifier.foldNickname(name);
 		IHubClient ihc;
 		synchronized (this) {
 			ihc = connectedClientsByNickname.get(name);
@@ -104,7 +104,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (ihc != null)
 			return ihc.getUserData();
 		// Ok, now check with database
-		if (!UsernameVerifier.verifyNickname(name))
+		if (!NicknameVerifier.verifyNickname(name))
 			return null;
 		UserInfo ui = database.getUserByFoldedNickname(name);
 		if (ui != null)
@@ -121,10 +121,10 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	@Override
 	public BabelShortUserData usernameAndPasswordToShortUserData(String username, String password, boolean allowedToRegister) {
-		String usernameFolded = UsernameVerifier.foldUsername(username);
-		if (!UsernameVerifier.verifyUsername(usernameFolded))
+		String usernameFolded = NicknameVerifier.foldNickname(username);
+		if (!NicknameVerifier.verifyNickname(usernameFolded))
 			return null;
-		UserInfo ui = database.getUserByFoldedUsername(usernameFolded);
+		UserInfo ui = database.getUserByFoldedNickname(usernameFolded);
 		if (allowedToRegister && ui == null && config.allowRegistration.getValue()) {
 			while (ui == null) {
 				int uid;
@@ -135,12 +135,13 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				// negative numbers will probably fry the Warp inbox system!!!
 				if (uid <= 0)
 					continue;
-				boolean success = database.tryCreateUser(uid, usernameFolded, username, UsernameVerifier.foldNickname(username), PWHash.hash(uid, password));
+				UserInfo newUI = new UserInfo(uid, username, usernameFolded, PWHash.hash(uid, password));
+				boolean success = database.tryCreateUser(newUI);
 				if (success)
 					log("Registered user: " + username + " as UID " + uid);
 				// It's possible that a username collision occurred during the registration process.
 				// In that event, we obviously should be seeing a username here.
-				ui = database.getUserByFoldedUsername(usernameFolded);
+				ui = database.getUserByFoldedNickname(usernameFolded);
 			}
 		}
 		if (ui == null)
@@ -214,7 +215,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			return null;
 		} else {
 			connectedClients.put(uin, cc);
-			String foldedNick = UsernameVerifier.foldNickname(userData.nickName);
+			String foldedNick = NicknameVerifier.foldNickname(userData.nickName);
 			connectedClientsByNickname.put(foldedNick, cc);
 			if (!cc.isSystem())
 				randomPool.add(uin);
@@ -282,7 +283,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			randomPool.remove(uin);
 			if (connectedClients.get(uin) == cc) {
 				connectedClients.remove(uin);
-				String foldedNick = UsernameVerifier.foldNickname(userData.nickName);
+				String foldedNick = NicknameVerifier.foldNickname(userData.nickName);
 				connectedClientsByNickname.remove(foldedNick);
 			}
 			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);

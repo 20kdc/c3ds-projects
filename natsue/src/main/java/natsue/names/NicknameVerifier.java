@@ -10,11 +10,11 @@ package natsue.names;
 /**
  * Verifies usernames are sane.
  */
-public class UsernameVerifier {
-	public static String foldUsername(String username) {
+public class NicknameVerifier {
+	public static String foldNickname(String username) {
 		return username.toLowerCase();
 	}
-	public static boolean verifyUsername(String username) {
+	public static boolean verifyNickname(String username) {
 		if (username.length() > 16)
 			return false;
 		for (char c : username.toCharArray()) {
@@ -28,11 +28,5 @@ public class UsernameVerifier {
 				return false;
 		}
 		return true;
-	}
-	public static String foldNickname(String username) {
-		return foldUsername(username);
-	}
-	public static boolean verifyNickname(String username) {
-		return verifyUsername(username);
 	}
 }
