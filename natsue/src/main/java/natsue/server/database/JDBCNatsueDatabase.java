@@ -50,7 +50,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 		stmGetFromSpool = conn.prepareStatement("SELECT id, uid, data FROM natsue_spool WHERE uid=?");
 		stmEnsureCreature = conn.prepareStatement("INSERT INTO natsue_history_creatures(moniker, first_uid, ch0, ch1, ch2, ch3, ch4, name, user_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		stmUpdateCreature = conn.prepareStatement("UPDATE natsue_history_creatures SET name=?, user_text=? WHERE moniker=?");
-		stmEnsureCreatureEvent = conn.prepareStatement("INSERT INTO natsue_history_events(sender_uid, moniker, event_index, event_type, world_time, age_ticks, unix_time, unknown, param1, param2, world_name, world_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		stmEnsureCreatureEvent = conn.prepareStatement("INSERT INTO natsue_history_events(sender_uid, moniker, event_index, event_type, world_time, age_ticks, unix_time, life_stage, param1, param2, world_name, world_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		stmCreateUser = conn.prepareStatement("INSERT INTO natsue_users(uid, nickname, nickname_folded, psha256) VALUES (?, ?, ?, ?)");
 	}
 
@@ -179,7 +179,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public void ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int unknown, String param1, String param2, String worldName, String worldID, String userID) {
+	public void ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int lifeStage, String param1, String param2, String worldName, String worldID, String userID) {
 		synchronized (this) {
 			try {
 				stmEnsureCreatureEvent.setInt(1, senderUID);
@@ -189,7 +189,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 				stmEnsureCreatureEvent.setInt(5, worldTime);
 				stmEnsureCreatureEvent.setInt(6, ageTicks);
 				stmEnsureCreatureEvent.setInt(7, unixTime);
-				stmEnsureCreatureEvent.setInt(8, unknown);
+				stmEnsureCreatureEvent.setInt(8, lifeStage);
 				stmEnsureCreatureEvent.setString(9, param1);
 				stmEnsureCreatureEvent.setString(10, param2);
 				stmEnsureCreatureEvent.setString(11, worldName);

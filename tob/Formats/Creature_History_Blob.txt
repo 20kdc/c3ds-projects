@@ -39,7 +39,6 @@ It's worth noting that the game will resend only ranges of events at times.
 	* As in HIST RTIM.
 * int lifeStage
 	* As in HIST CAGE.
-	* //This isn't absolutely certain.//
 * string moniker1
 	* As in HIST MON1.
 * string moniker2

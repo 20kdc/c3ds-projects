@@ -313,7 +313,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			for (LifeEvent le : history.events) {
 				String a = CreatureDataVerifier.stripMonikerLike(le.mon1);
 				String b = CreatureDataVerifier.stripMonikerLike(le.mon2);
-				database.ensureCreatureEvent(senderUID, history.moniker, le.index, le.eventType, le.worldTime, le.ageTicks, le.unixTime, le.unknown, a, b, le.worldName, le.worldID, le.userID);
+				database.ensureCreatureEvent(senderUID, history.moniker, le.index, le.eventType, le.worldTime, le.ageTicks, le.unixTime, le.lifeStage, a, b, le.worldName, le.worldID, le.userID);
 			}
 		} else if (config.logHistorySanityFailures.getValue()) {
 			log("History sanity failure from " + cc.getUserData().nickName + ": " + sanityError);

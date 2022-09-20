@@ -49,7 +49,7 @@ public interface INatsueDatabase extends IConfigProvider {
 	/**
 	 * Registers a creature life event in the database if it does not already exist
 	 */
-	void ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int unknown, String param1, String param2, String worldName, String worldID, String userID);
+	void ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int lifeStage, String param1, String param2, String worldName, String worldID, String userID);
 
 	/**
 	 * Tries to create a user with the given details.

@@ -67,7 +67,7 @@ public class CreatureHistoryBlob {
 	}
 
 	public static class LifeEvent {
-		public final int eventType, worldTime, ageTicks, unixTime, unknown;
+		public final int eventType, worldTime, ageTicks, unixTime, lifeStage;
 		public final String mon1, mon2, worldName, worldID, userID;
 		public final int index;
 		public LifeEvent(int a, int b, int c, int d, int e, String f, String g, String h, String i, String j, int k) {
@@ -75,7 +75,7 @@ public class CreatureHistoryBlob {
 			worldTime = b;
 			ageTicks = c;
 			unixTime = d;
-			unknown = e;
+			lifeStage = e;
 			mon1 = f;
 			mon2 = g;
 			worldName = h;
