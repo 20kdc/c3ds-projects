@@ -50,11 +50,6 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 	}
 
 	public void handleHandshakePacket(CTOSHandshake handshake) throws IOException {
-		if (handshake.username.equals("coral")) {
-			client.sendPacket(PacketWriter.writeHandshakeResponse(Integer.valueOf(handshake.password), 0L, 0L));
-			client.setSessionState(null);
-			return;
-		}
 		// -- attempt normal login --
 		IHubLoginAPI.LoginResult res = hub.loginUser(handshake.username, handshake.password, new ILoginReceiver<MainSessionState>() {
 			@Override

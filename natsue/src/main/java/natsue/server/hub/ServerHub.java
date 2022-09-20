@@ -21,6 +21,7 @@ import natsue.data.babel.UINUtils;
 import natsue.data.babel.CreatureHistoryBlob.LifeEvent;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
+import natsue.names.CreatureDataVerifier;
 import natsue.names.PWHash;
 import natsue.names.UsernameVerifier;
 import natsue.server.database.INatsueDatabase;
@@ -300,12 +301,21 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	public void clientSendHistory(IHubClient cc, CreatureHistoryBlob history) {
 		if (!config.allowCreatureHistory.getValue())
 			return;
-		if (history.verifySanity()) {
+		String sanityError = history.verifySanity();
+		if (sanityError == null) {
 			int senderUID = UINUtils.uid(cc.getUserData().uin);
-			if (history.state != null)
-				database.ensureCreature(history.moniker, senderUID, history.state[0], history.state[1], history.state[2], history.state[3], history.state[4], history.name, history.userText);
-			for (LifeEvent le : history.events)
-				database.ensureCreatureEvent(senderUID, history.moniker, le.index, le.eventType, le.worldTime, le.ageTicks, le.unixTime, le.unknown, le.mon1, le.mon2, le.worldName, le.worldID, le.userID);
+			if (history.state != null) {
+				String cName = CreatureDataVerifier.stripName(config, history.name);
+				String cUserText = CreatureDataVerifier.stripUserText(config, history.userText);
+				database.ensureCreature(history.moniker, senderUID, history.state[0], history.state[1], history.state[2], history.state[3], history.state[4], cName, cUserText);
+			}
+			for (LifeEvent le : history.events) {
+				String a = CreatureDataVerifier.stripMonikerLike(le.mon1);
+				String b = CreatureDataVerifier.stripMonikerLike(le.mon2);
+				database.ensureCreatureEvent(senderUID, history.moniker, le.index, le.eventType, le.worldTime, le.ageTicks, le.unixTime, le.unknown, a, b, le.worldName, le.worldID, le.userID);
+			}
+		} else if (config.logHistorySanityFailures.getValue()) {
+			log("History sanity failure from " + cc.getUserData().nickName + ": " + sanityError);
 		}
 	}
 }

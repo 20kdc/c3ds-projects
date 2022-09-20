@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import natsue.config.Config;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 
@@ -31,12 +32,15 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	private final PreparedStatement stmDeleteFromSpool;
 	private final PreparedStatement stmGetFromSpool;
 	private final PreparedStatement stmEnsureCreature;
+	private final PreparedStatement stmUpdateCreature;
 	private final PreparedStatement stmEnsureCreatureEvent;
 	private final PreparedStatement stmCreateUser;
 	// Yes, really, I decided this was the best way.
 	private final SecureRandom secureRandom = new SecureRandom();
+	private final Config config;
 
-	public JDBCNatsueDatabase(ILogProvider ilp, Connection conn) throws SQLException {
+	public JDBCNatsueDatabase(ILogProvider ilp, Connection conn, Config cfg) throws SQLException {
+		config = cfg;
 		database = conn;
 		logParent = ilp;
 		JDBCMigrate.migrate(database, this);
@@ -47,7 +51,8 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 		stmDeleteFromSpool = conn.prepareStatement("DELETE FROM natsue_spool WHERE id=? and uid=?");
 		stmGetFromSpool = conn.prepareStatement("SELECT id, uid, data FROM natsue_spool WHERE uid=?");
 		stmEnsureCreature = conn.prepareStatement("INSERT INTO natsue_history_creatures(moniker, first_uid, ch0, ch1, ch2, ch3, ch4, name, user_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		stmEnsureCreatureEvent = conn.prepareStatement("INSERT INTO natsue_history_events(event_id, sender_uid, moniker, event_index, event_type, world_time, age_ticks, unix_time, unknown, param1, param2, world_name, world_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		stmUpdateCreature = conn.prepareStatement("UPDATE natsue_history_creatures SET name=?, user_text=? WHERE moniker=?");
+		stmEnsureCreatureEvent = conn.prepareStatement("INSERT INTO natsue_history_events(sender_uid, moniker, event_index, event_type, world_time, age_ticks, unix_time, unknown, param1, param2, world_name, world_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		stmCreateUser = conn.prepareStatement("INSERT INTO natsue_users(uid, username, nickname, nickname_folded, psha256) VALUES (?, ?, ?, ?, ?)");
 	}
 
@@ -167,32 +172,46 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 				stmEnsureCreature.setString(9, userText);
 				stmEnsureCreature.executeUpdate();
 			} catch (Exception ex) {
+				expectedDBError(ex);
 				// This is expected to happen, so discard
+				try {
+					stmUpdateCreature.setString(1, name);
+					stmUpdateCreature.setString(2, userText);
+					stmUpdateCreature.setString(3, moniker);
+					stmUpdateCreature.executeUpdate();
+				} catch (Exception ex2) {
+					// Not expected to happen.
+					log(ex2);
+				}
 			}
 		}
+	}
+
+	private void expectedDBError(Exception ex) {
+		if (config.logExpectedDBErrors.getValue())
+			log(ex);
 	}
 
 	@Override
 	public void ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int unknown, String param1, String param2, String worldName, String worldID, String userID) {
 		synchronized (this) {
 			try {
-				stmEnsureCreatureEvent.setString(1, moniker + "." + index);
-				stmEnsureCreatureEvent.setInt(2, senderUID);
-				stmEnsureCreatureEvent.setString(3, moniker);
-				stmEnsureCreatureEvent.setInt(4, index);
-				stmEnsureCreatureEvent.setInt(5, type);
-				stmEnsureCreatureEvent.setInt(6, worldTime);
-				stmEnsureCreatureEvent.setInt(7, ageTicks);
-				stmEnsureCreatureEvent.setInt(8, unixTime);
-				stmEnsureCreatureEvent.setInt(9, unknown);
-				stmEnsureCreatureEvent.setString(10, param1);
-				stmEnsureCreatureEvent.setString(11, param2);
-				stmEnsureCreatureEvent.setString(12, worldName);
-				stmEnsureCreatureEvent.setString(13, worldID);
-				stmEnsureCreatureEvent.setString(14, userID);
+				stmEnsureCreatureEvent.setInt(1, senderUID);
+				stmEnsureCreatureEvent.setString(2, moniker);
+				stmEnsureCreatureEvent.setInt(3, index);
+				stmEnsureCreatureEvent.setInt(4, type);
+				stmEnsureCreatureEvent.setInt(5, worldTime);
+				stmEnsureCreatureEvent.setInt(6, ageTicks);
+				stmEnsureCreatureEvent.setInt(7, unixTime);
+				stmEnsureCreatureEvent.setInt(8, unknown);
+				stmEnsureCreatureEvent.setString(9, param1);
+				stmEnsureCreatureEvent.setString(10, param2);
+				stmEnsureCreatureEvent.setString(11, worldName);
+				stmEnsureCreatureEvent.setString(12, worldID);
+				stmEnsureCreatureEvent.setString(13, userID);
 				stmEnsureCreatureEvent.executeUpdate();
 			} catch (Exception ex) {
-				// This is expected to happen, so discard
+				expectedDBError(ex);
 			}
 		}
 	}
@@ -208,7 +227,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 				stmCreateUser.setString(5, passwordHash);
 				stmCreateUser.executeUpdate();
 			} catch (Exception ex) {
-				// This is expected to happen, so discard
+				expectedDBError(ex);
 				return false;
 			}
 		}

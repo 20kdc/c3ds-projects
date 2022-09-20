@@ -22,6 +22,18 @@ public class Config extends BaseConfig {
 	public final Int port = new Int("port", 49152);
 
 	/**
+	 * Maximum length of a creature name.
+	 * Default chosen by the amount of the letter 'i' you can put in a name, with some rounding up.
+	 */
+	public final Int maxCreatureNameLen = new Int("maxCreatureNameLen", 32);
+
+	/**
+	 * Maximum length of a creature's user text.
+	 * Default chosen by the amount of the letter 'i' you can put in a name, with some rounding up.
+	 */
+	public final Int maxCreatureUserTextLen = new Int("maxCreatureUserTextLen", 896);
+
+	/**
 	 * Maximum size of the username/password section of a handshake.
 	 */
 	public final Int maxLoginInfoSize = new Int("maxLoginInfoSize", 0x1000);
@@ -76,6 +88,16 @@ public class Config extends BaseConfig {
 	 * Log all CTOS packets.
 	 */
 	public final Bool logAllIncomingPackets = new Bool("logAllIncomingPackets", true);
+
+	/**
+	 * Log history parsing or sanity failures
+	 */
+	public final Bool logHistorySanityFailures = new Bool("logHistorySanityFailures", true);
+
+	/**
+	 * Log expected database errors
+	 */
+	public final Bool logExpectedDBErrors = new Bool("logExpectedDBErrors", true);
 
 	/**
 	 * Log pings.

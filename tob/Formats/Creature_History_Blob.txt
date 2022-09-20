@@ -21,10 +21,11 @@ Creation-Date: 2022-09-16T19:01:20+01:00
 * int eventCount
 * Event[eventCount] events
 * string name
+	* Client enforces a limit on names by the amount of pixels in them - in practice this means a soft limit of about 32 characters should do.
 * string userText
+	* 7 lines, each up to about ~124 characters, so 896 is a good limit.
 
-It's worth noting that despite events having their own indexes, the game always seems to send all events for a creature.
-This fact can be used.
+It's worth noting that the game will resend only ranges of events at times.
 
 ===== Events =====
 

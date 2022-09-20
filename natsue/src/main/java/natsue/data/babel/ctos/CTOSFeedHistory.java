@@ -21,6 +21,11 @@ public class CTOSFeedHistory extends BaseCTOS {
 	public byte[] data;
 
 	@Override
+	public String toString() {
+		return "CTOSFeedHistory[" + data.length + "]";
+	}
+
+	@Override
 	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial)
 			throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);

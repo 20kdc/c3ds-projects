@@ -62,15 +62,15 @@ public class Main {
 		ILogSource mySource = ilp.logExtend(Main.class.toString());
 		mySource.log("Started logger.");
 
-		INatsueDatabase firstDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(args[0]));
-
 		Config config = new Config();
+		INatsueDatabase firstDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(args[0]), config);
+
 		config.readInFrom(firstDB);
 
 		INatsueDatabase actualDB = firstDB;
 		String otherDB = config.actualDB.getValue();
 		if (!otherDB.equals(""))
-			actualDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(otherDB));
+			actualDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(otherDB), config);
 
 		mySource.log("Opened DB connections.");
 

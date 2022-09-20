@@ -108,6 +108,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			} catch (Exception ex) {
 				log(ex);
 			}
+			dummyResponse(packet);
 		} else {
 			dummyResponse(packet);
 		}

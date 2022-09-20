@@ -9,7 +9,7 @@ package natsue.data.babel;
 
 import java.nio.ByteBuffer;
 
-import natsue.names.MonikerVerifier;
+import natsue.names.CreatureDataVerifier;
 
 /**
  * Data on a creature's history!
@@ -58,16 +58,12 @@ public class CreatureHistoryBlob {
 
 	/**
 	 * Just some sanity checks.
+	 * Returns non-null on error
 	 */
-	public boolean verifySanity() {
-		if (!MonikerVerifier.verifyMoniker(moniker))
-			return false; 
-		// The game always sends all life events.
-		// This can be used as an implicit maximum event count.
-		for (int i = 0; i < events.length; i++)
-			if (events[i].index != i)
-				return false;
-		return false;
+	public String verifySanity() {
+		if (!CreatureDataVerifier.verifyMoniker(moniker))
+			return "Moniker"; 
+		return null;
 	}
 
 	public static class LifeEvent {

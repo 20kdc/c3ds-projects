@@ -77,6 +77,15 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		if (message.messageType == PackedMessage.TYPE_PRAY) {
 			try {
 				LinkedList<PRAYBlock> info = PRAYBlock.read(PacketReader.wrapLE(message.messageData), maxDecompressedPRAYSize);
+				// Detect creatures we're about to lose
+				for (PRAYBlock pb : info) {
+					if (pb.getType().equals("GLST")) {
+						// Trapped creature - RETURN TO SENDER IMMEDIATELY
+						hub.sendMessage(message.senderUIN, message, false);
+						return;
+					}
+				}
+				// No? Ok, is it chat?
 				if (info.size() == 1) {
 					PRAYBlock chatMaybe = info.getFirst();
 					String chatType = chatMaybe.getType();
