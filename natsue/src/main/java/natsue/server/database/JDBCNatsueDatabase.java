@@ -46,7 +46,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 		stmStoreOnSpool = conn.prepareStatement("INSERT INTO natsue_spool(id, uid, data) VALUES (?, ?, ?)");
 		stmDeleteFromSpool = conn.prepareStatement("DELETE FROM natsue_spool WHERE id=? and uid=?");
 		stmGetFromSpool = conn.prepareStatement("SELECT id, uid, data FROM natsue_spool WHERE uid=?");
-		stmEnsureCreature = conn.prepareStatement("INSERT INTO natsue_history_creatures(moniker, first_uid, ch0, ch1, ch2, ch3, ch4) VALUES (?, ?, ?, ?, ?, ?, ?)");
+		stmEnsureCreature = conn.prepareStatement("INSERT INTO natsue_history_creatures(moniker, first_uid, ch0, ch1, ch2, ch3, ch4, name, user_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		stmEnsureCreatureEvent = conn.prepareStatement("INSERT INTO natsue_history_events(event_id, sender_uid, moniker, event_index, event_type, world_time, age_ticks, unix_time, unknown, param1, param2, world_name, world_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		stmCreateUser = conn.prepareStatement("INSERT INTO natsue_users(uid, username, nickname, nickname_folded, psha256) VALUES (?, ?, ?, ?, ?)");
 	}
@@ -153,7 +153,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public void ensureCreature(String moniker, int firstUID, int ch0, int ch1, int ch2, int ch3, int ch4) {
+	public void ensureCreature(String moniker, int firstUID, int ch0, int ch1, int ch2, int ch3, int ch4, String name, String userText) {
 		synchronized (this) {
 			try {
 				stmEnsureCreature.setString(1, moniker);
@@ -163,6 +163,8 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 				stmEnsureCreature.setInt(5, ch2);
 				stmEnsureCreature.setInt(6, ch3);
 				stmEnsureCreature.setInt(7, ch4);
+				stmEnsureCreature.setString(8, name);
+				stmEnsureCreature.setString(9, userText);
 				stmEnsureCreature.executeUpdate();
 			} catch (Exception ex) {
 				// This is expected to happen, so discard

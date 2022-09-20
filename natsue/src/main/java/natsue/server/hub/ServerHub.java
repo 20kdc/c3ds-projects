@@ -15,13 +15,15 @@ import java.util.Random;
 
 import natsue.config.Config;
 import natsue.data.babel.BabelShortUserData;
+import natsue.data.babel.CreatureHistoryBlob;
 import natsue.data.babel.PackedMessage;
 import natsue.data.babel.UINUtils;
+import natsue.data.babel.CreatureHistoryBlob.LifeEvent;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
+import natsue.names.PWHash;
+import natsue.names.UsernameVerifier;
 import natsue.server.database.INatsueDatabase;
-import natsue.server.database.PWHash;
-import natsue.server.database.UsernameVerifier;
 import natsue.server.database.INatsueDatabase.UserInfo;
 import natsue.server.firewall.IFirewall;
 import natsue.server.hubapi.IHubClient;
@@ -292,5 +294,18 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message) {
 		firewall.handleMessage(cc.getUserData(), destinationUIN, message);
+	}
+
+	@Override
+	public void clientSendHistory(IHubClient cc, CreatureHistoryBlob history) {
+		if (!config.allowCreatureHistory.getValue())
+			return;
+		if (history.verifySanity()) {
+			int senderUID = UINUtils.uid(cc.getUserData().uin);
+			if (history.state != null)
+				database.ensureCreature(history.moniker, senderUID, history.state[0], history.state[1], history.state[2], history.state[3], history.state[4], history.name, history.userText);
+			for (LifeEvent le : history.events)
+				database.ensureCreatureEvent(senderUID, history.moniker, le.index, le.eventType, le.worldTime, le.ageTicks, le.unixTime, le.unknown, le.mon1, le.mon2, le.worldName, le.worldID, le.userID);
+		}
 	}
 }

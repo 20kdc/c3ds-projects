@@ -9,24 +9,23 @@ package natsue.log;
 
 /**
  * Convenience class for logging.
- * TODO: REWRITE THIS BIT, THE STACK OVERFLOW BUG DURING TEST1 WAS HILARIOUS AND BLOODY STUPID
  */
 public interface ILogSource extends ILogProvider {
 	ILogProvider getLogParent();
 
-	default void log(String text) {
-		getLogParent().log(toString(), text);
+	@Override
+	default void log(ILogSource source, String text) {
+		getLogParent().log(source, text);
 	}
-	default void log(Throwable ex) {
-		getLogParent().log(toString(), ex);
+	@Override
+	default void log(ILogSource source, Throwable ex) {
+		getLogParent().log(source, ex);
 	}
 
-	@Override
-	default void log(String source, String text) {
-		getLogParent().log(toString() + ": " + source, text);
+	default void log(String text) {
+		log(this, text);
 	}
-	@Override
-	default void log(String source, Throwable ex) {
-		getLogParent().log(toString() + ": " + source, ex);
+	default void log(Throwable ex) {
+		log(this, ex);
 	}
 }

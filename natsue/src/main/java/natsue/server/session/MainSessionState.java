@@ -8,14 +8,20 @@
 package natsue.server.session;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import natsue.config.Config;
+import natsue.data.IOUtils;
 import natsue.data.babel.BabelShortUserData;
+import natsue.data.babel.CreatureHistoryBlob;
 import natsue.data.babel.PackedMessage;
+import natsue.data.babel.PacketReader;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
+import natsue.data.babel.ctos.CTOSFeedHistory;
 import natsue.data.babel.ctos.CTOSFetchRandomUser;
 import natsue.data.babel.ctos.CTOSGetClientInfo;
 import natsue.data.babel.ctos.CTOSGetConnectionDetail;
@@ -33,9 +39,11 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	public final BabelShortUserData userData;
 	public final IHubClientAPI hub;
 	public final PingManager pingManager;
+	public final Config config;
 
-	public MainSessionState(ISessionClient c, IHubClientAPI h, BabelShortUserData uin) {
+	public MainSessionState(Config cfg, ISessionClient c, IHubClientAPI h, BabelShortUserData uin) {
 		super(c);
+		config = cfg;
 		pingManager = new PingManager(c);
 		userData = uin;
 		hub = h;
@@ -92,6 +100,14 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			CTOSMessage pkt = (CTOSMessage) packet;
 			PackedMessage pm = new PackedMessage(pkt.messageData);
 			hub.clientGiveMessage(this, pkt.targetUIN, pm);
+		} else if (packet instanceof CTOSFeedHistory) {
+			try {
+				ByteBuffer bb = PacketReader.wrapLE(((CTOSFeedHistory) packet).data);
+				CreatureHistoryBlob chb = new CreatureHistoryBlob(bb, config.maxCreatureHistoryEvents.getValue());
+				hub.clientSendHistory(this, chb);
+			} catch (Exception ex) {
+				log(ex);
+			}
 		} else {
 			dummyResponse(packet);
 		}

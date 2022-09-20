@@ -9,6 +9,7 @@ package natsue.server.session;
 
 import java.io.IOException;
 
+import natsue.config.Config;
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
@@ -24,10 +25,12 @@ import natsue.server.hubapi.IHubLoginAPI.ILoginReceiver;
  */
 public class LoginSessionState extends BaseSessionState implements ILogSource {
 	public final IHubLoginAPI hub;
+	public final Config config;
 
-	public LoginSessionState(ISessionClient c, IHubLoginAPI h) {
+	public LoginSessionState(Config cfg, ISessionClient c, IHubLoginAPI h) {
 		super(c);
 		hub = h;
+		config = cfg;
 	}
 
 	@Override
@@ -56,7 +59,7 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 		IHubLoginAPI.LoginResult res = hub.loginUser(handshake.username, handshake.password, new ILoginReceiver<MainSessionState>() {
 			@Override
 			public MainSessionState receive(BabelShortUserData userData, IHubClientAPI clientAPI) {
-				return new MainSessionState(client, clientAPI, userData);
+				return new MainSessionState(config, client, clientAPI, userData);
 			}
 			@Override
 			public void confirm(MainSessionState result) {

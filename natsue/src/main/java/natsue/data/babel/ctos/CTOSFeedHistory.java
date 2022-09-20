@@ -24,7 +24,10 @@ public class CTOSFeedHistory extends BaseCTOS {
 	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial)
 			throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
-		data = PacketReader.getBytes(inputStream, initial.getInt(BASE_FIELD_FDLEN), false);
+		int bytes = initial.getInt(BASE_FIELD_FDLEN);
+		if (bytes < 0 || bytes > pcfg.maxFeedHistorySize.getValue())
+			throw new IOException("Invalid history size!");
+		data = PacketReader.getBytes(inputStream, bytes, false);
 	}
 
 	@Override

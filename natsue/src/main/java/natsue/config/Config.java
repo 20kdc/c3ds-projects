@@ -33,9 +33,19 @@ public class Config extends BaseConfig {
 	public final Int maxBabelBinaryMessageSize = new Int("maxBabelBinaryMessageSize", 0x1000000);
 
 	/**
-	 * Maximum size for the further data of "unknown-ish" packets (right now this means creature history)
+	 * Maximum size for the further data of "unknown-ish" packets.
 	 */
 	public final Int maxUnknownCTOSFurtherDataSize = new Int("maxUnknownCTOSFurtherDataSize", 0x10000);
+
+	/**
+	 * Maximum size for creature history packets.
+	 */
+	public final Int maxFeedHistorySize = new Int("maxFeedHistorySize", 0x10000);
+
+	/**
+	 * Maximum creature history event count.
+	 */
+	public final Int maxCreatureHistoryEvents = new Int("maxCreatureHistoryEvents", 1024);
 
 	/**
 	 * Maximum size of an untrusted decompressed PRAY file
@@ -46,6 +56,11 @@ public class Config extends BaseConfig {
 	 * Allow registration.
 	 */
 	public final Bool allowRegistration = new Bool("allowRegistration", true);
+
+	/**
+	 * Allow creature history.
+	 */
+	public final Bool allowCreatureHistory = new Bool("allowCreatureHistory", true);
 
 	/**
 	 * Log failed authentication attempts.

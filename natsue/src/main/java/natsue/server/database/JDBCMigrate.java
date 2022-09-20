@@ -17,6 +17,7 @@ import natsue.log.ILogSource;
 
 public class JDBCMigrate {
 	public static void migrate(Connection conn, ILogProvider ils) throws SQLException {
+		ILogSource migrateSource = ils.logExtend("JDBCMigrate");
 		String[] migrations = {
 			// 0: create version table
 			"CREATE TABLE natsue_version(version INT)",
@@ -27,7 +28,7 @@ public class JDBCMigrate {
 			// 3: create spooled messages table
 			"CREATE TABLE natsue_spool(id BIGINT NOT NULL, uid INT NOT NULL, data BLOB NOT NULL, PRIMARY KEY(id, uid))",
 			// 4: create natsue_history_creatures table
-			"CREATE TABLE natsue_history_creatures(moniker TEXT NOT NULL UNIQUE, first_uid INT NOT NULL, ch0 INT NOT NULL, ch1 INT NOT NULL, ch2 INT NOT NULL, ch3 INT NOT NULL, ch4 INT NOT NULL, PRIMARY KEY(moniker))",
+			"CREATE TABLE natsue_history_creatures(moniker TEXT NOT NULL UNIQUE, first_uid INT NOT NULL, ch0 INT NOT NULL, ch1 INT NOT NULL, ch2 INT NOT NULL, ch3 INT NOT NULL, ch4 INT NOT NULL, name TEXT NOT NULL, user_text TEXT NOT NULL, PRIMARY KEY(moniker))",
 			// 5: create natsue_history_events table
 			"CREATE TABLE natsue_history_events(event_id TEXT NOT NULL UNIQUE, sender_uid INT NOT NULL, moniker TEXT NOT NULL, event_index INT NOT NULL, event_type INT NOT NULL, world_time INT NOT NULL, age_ticks INT NOT NULL, unix_time INT NOT NULL, unknown INT NOT NULL, param1 TEXT NOT NULL, param2 TEXT NOT NULL, world_name TEXT NOT NULL, world_id TEXT NOT NULL, user_id TEXT NOT NULL, PRIMARY KEY(event_id))",
 			// 6: create events index - this is to deal with the event_id kludge
@@ -41,10 +42,10 @@ public class JDBCMigrate {
 			rs.next();
 			dbVersion = rs.getInt(1);
 		} catch (Exception ex) {
-			ils.log("JDBCMigrate", "natsue_version table error " + ex + " - DB version assumed to be -1");
+			migrateSource.log("natsue_version table error " + ex + " - DB version assumed to be -1");
 		}
 		for (int i = dbVersion + 1; i < migrations.length; i++) {
-			ils.log("JDBCMigrate", "Performing DB migration " + i);
+			migrateSource.log("Performing DB migration " + i);
 			workspace.execute(migrations[i]);
 			workspace.execute("UPDATE natsue_version SET version=" + i);
 		}

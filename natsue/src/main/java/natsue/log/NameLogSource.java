@@ -7,16 +7,25 @@
 
 package natsue.log;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 /**
- * Always gotta be one.
+ * Simple name component log source.
  */
-public interface ILogProvider {
-	void log(ILogSource source, String text);
-	void log(ILogSource source, Throwable ex);
-	default ILogSource logExtend(String name) {
-		return new NameLogSource(this, name);
+public class NameLogSource implements ILogSource {
+	public final String name;
+	public final ILogProvider parent;
+
+	public NameLogSource(ILogProvider p, String n) {
+		parent = p;
+		name = n;
+	}
+
+	@Override
+	public ILogProvider getLogParent() {
+		return parent;
+	}
+
+	@Override
+	public String toString() {
+		return name;
 	}
 }

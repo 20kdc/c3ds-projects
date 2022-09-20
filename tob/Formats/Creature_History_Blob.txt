@@ -23,6 +23,9 @@ Creation-Date: 2022-09-16T19:01:20+01:00
 * string name
 * string userText
 
+It's worth noting that despite events having their own indexes, the game always seems to send all events for a creature.
+This fact can be used.
+
 ===== Events =====
 
 * int eventType

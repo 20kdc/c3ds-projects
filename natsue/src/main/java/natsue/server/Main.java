@@ -20,6 +20,7 @@ import natsue.config.Config;
 import natsue.config.IConfigProvider;
 import natsue.data.babel.PacketReader;
 import natsue.log.ILogProvider;
+import natsue.log.ILogSource;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.JDBCNatsueDatabase;
 import natsue.server.firewall.TrivialFirewall;
@@ -39,18 +40,27 @@ public class Main {
 
 		ILogProvider ilp = new ILogProvider() {
 			@Override
-			public void log(String source, String text) {
-				System.out.println(new Date() + ": " + source + ": " + text);
+			public void log(ILogSource source, String text) {
+				while (source != null) {
+					text = source + ": " + text;
+					ILogProvider parent = source.getLogParent();
+					if (parent instanceof ILogSource) {
+						source = (ILogSource) parent;
+					} else {
+						source = null;
+					}
+				}
+				System.out.println(new Date() + ": " + text);
 			}
 			@Override
-			public void log(String source, Throwable ex) {
+			public void log(ILogSource source, Throwable ex) {
 				StringWriter sw = new StringWriter();
 				ex.printStackTrace(new PrintWriter(sw));
 				log(source, sw.toString());
 			}
 		};
-		String mySource = Main.class.toString();
-		ilp.log(mySource, "Started logger.");
+		ILogSource mySource = ilp.logExtend(Main.class.toString());
+		mySource.log("Started logger.");
 
 		INatsueDatabase firstDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(args[0]));
 
@@ -62,7 +72,7 @@ public class Main {
 		if (!otherDB.equals(""))
 			actualDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(otherDB));
 
-		ilp.log(mySource, "Opened DB connections.");
+		mySource.log("Opened DB connections.");
 
 		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
 		serverHub.setFirewall(new TrivialFirewall(serverHub));
@@ -71,12 +81,12 @@ public class Main {
 
 		int port = config.port.getValue();
 		try (ServerSocket sv = new ServerSocket(port)) {
-			ilp.log(mySource, "Bound ServerSocket to port " + port + " - ready to accept connections.");
+			mySource.log("Bound ServerSocket to port " + port + " - ready to accept connections.");
 
 			while (true) {
 				Socket skt = sv.accept();
 				new SocketThread(skt, (st) -> {
-					return new LoginSessionState(st, serverHub);
+					return new LoginSessionState(config, st, serverHub);
 				}, ilp, config).start();
 			}
 		}

@@ -7,6 +7,7 @@
 
 package natsue.server.hubapi;
 
+import natsue.data.babel.CreatureHistoryBlob;
 import natsue.data.babel.PackedMessage;
 
 /**
@@ -23,4 +24,9 @@ public interface IHubClientAPI extends IHubCommonAPI {
 	 * (Verification happens here.)
 	 */
 	void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message);
+
+	/**
+	 * Client sent creature history
+	 */
+	void clientSendHistory(IHubClient cc, CreatureHistoryBlob history);
 }
