@@ -97,7 +97,7 @@ public class Config extends BaseConfig {
 	/**
 	 * Log expected database errors
 	 */
-	public final Bool logExpectedDBErrors = new Bool("logExpectedDBErrors", true);
+	public final Bool logExpectedDBErrors = new Bool("logExpectedDBErrors", false);
 
 	/**
 	 * Log pings.
