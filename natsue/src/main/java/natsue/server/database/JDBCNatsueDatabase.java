@@ -136,25 +136,26 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 
 	@Override
 	public byte[] popFirstSpooledMessage(int uid) {
-		byte[] message = null;
 		synchronized (this) {
 			try {
 				stmGetFromSpool.setInt(1, uid);
-				ResultSet rs = stmGetFromSpool.executeQuery();
-				if (rs.next()) {
-					long id = rs.getLong(1);
-					message = rs.getBytes(3);
-					// and now remove from the spool
-					stmDeleteFromSpool.setLong(1, id);
-					stmDeleteFromSpool.setInt(2, uid);
-					stmDeleteFromSpool.execute();
+				try (ResultSet rs = stmGetFromSpool.executeQuery()) {
+					if (rs.next()) {
+						long id = rs.getLong(1);
+						byte[] message = rs.getBytes(3);
+						// and now remove from the spool
+						// NOTE: Do not give a message we haven't successfully removed from spool!
+						stmDeleteFromSpool.setLong(1, id);
+						stmDeleteFromSpool.setInt(2, uid);
+						stmDeleteFromSpool.execute();
+						return message;
+					}
 				}
-				rs.close();
 			} catch (Exception ex) {
 				log(ex);
 			}
 		}
-		return message;
+		return null;
 	}
 
 	@Override
