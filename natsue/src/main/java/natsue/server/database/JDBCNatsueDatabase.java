@@ -59,11 +59,6 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 		return logParent;
 	}
 
-	@Override
-	public String getConfigString(String name, String defaultVal) {
-		return defaultVal;
-	}
-
 	/**
 	 * Before changing this, see stmUserByUID / stmUserByUsername / stmUserByNickname
 	 */

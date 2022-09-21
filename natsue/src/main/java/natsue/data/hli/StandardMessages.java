@@ -7,9 +7,10 @@
 
 package natsue.data.hli;
 
-import natsue.data.babel.PackedMessage;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.WritVal;
+import natsue.data.babel.pm.PackedMessage;
+import natsue.data.babel.pm.PackedMessageWrit;
 import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 
@@ -22,15 +23,13 @@ public class StandardMessages {
 	 * Must be sent "as if it came from the target themselves", so pass in their UIN.
 	 */
 	public static PackedMessage addToContactList(long targetUIN, long contactUIN) {
-		byte[] writ = WritVal.encodeWrit("add_to_contact_book", 2468, UINUtils.toString(contactUIN), null);
-		return new PackedMessage(targetUIN, PackedMessage.TYPE_WRIT, writ);
+		return new PackedMessageWrit(targetUIN, "add_to_contact_book", 2468, UINUtils.toString(contactUIN), null);
 	}
 	/**
 	 * Opens a text dialog announcement.
 	 * Must be sent "as if it came from the target themselves", so pass in their UIN.
 	 */
 	public static PackedMessage systemMessage(long targetUIN, String text) {
-		byte[] writ = WritVal.encodeWrit("system_message", 2469, text, null);
-		return new PackedMessage(targetUIN, PackedMessage.TYPE_WRIT, writ);
+		return new PackedMessageWrit(targetUIN, "system_message", 2469, text, null);
 	}
 }

@@ -8,7 +8,7 @@
 package natsue.server.hubapi;
 
 import natsue.data.babel.CreatureHistoryBlob;
-import natsue.data.babel.PackedMessage;
+import natsue.data.babel.pm.PackedMessage;
 
 /**
  * This is the parts of the hub API used by clients.

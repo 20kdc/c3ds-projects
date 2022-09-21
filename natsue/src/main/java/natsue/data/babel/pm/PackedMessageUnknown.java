@@ -5,14 +5,29 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.config;
-
-import java.io.IOException;
+package natsue.data.babel.pm;
 
 /**
- * Just to simplify things.
+ * PackedMessage of an unknown type!
  */
-public interface IConfigProvider {
-	String configVisit(String name, String defaultVal, String description);
-	void configFinished() throws IOException;
+public class PackedMessageUnknown extends PackedMessage {
+	public byte[] messageData;
+
+	public PackedMessageUnknown(int type) {
+		super(type);
+	}
+
+	public PackedMessageUnknown(long uin, int t) {
+		super(uin, t);
+	}
+
+	public PackedMessageUnknown(long uin, int t, byte[] data) {
+		super(uin, t);
+		messageData = data;
+	}
+
+	@Override
+	public byte[] getOrPackContents() {
+		return messageData;
+	}
 }

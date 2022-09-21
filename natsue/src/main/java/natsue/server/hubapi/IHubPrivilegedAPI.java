@@ -10,7 +10,7 @@ package natsue.server.hubapi;
 import java.util.LinkedList;
 
 import natsue.data.babel.BabelShortUserData;
-import natsue.data.babel.PackedMessage;
+import natsue.data.babel.pm.PackedMessage;
 
 /**
  * Represents the server.

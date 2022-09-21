@@ -17,7 +17,7 @@ public class BaseConfig {
 
 	public void readInFrom(IConfigProvider icp) {
 		for (Opt o : allOptions) {
-			String str = icp.getConfigString(o.key, null);
+			String str = icp.configVisit(o.key, o.valueToString(), o.description);
 			if (str != null) {
 				try {
 					o.setValueFromString(str);
@@ -31,6 +31,7 @@ public class BaseConfig {
 
 	public abstract class Opt {
 		public final String key;
+		public String description;
 		public final Object defValue;
 		private LinkedList<Runnable> observers = new LinkedList<Runnable>();
 
@@ -39,8 +40,15 @@ public class BaseConfig {
 			defValue = d;
 			allOptions.add(this);
 		}
+
+		public Opt describe(String info) {
+			description = info;
+			return this;
+		}
+
 		public abstract Object getValue();
 		public abstract void setValueFromString(String str);
+		public abstract String valueToString();
 		protected final void pokeObservers() {
 			synchronized (observers) {
 				for (Runnable c : observers)
@@ -66,6 +74,11 @@ public class BaseConfig {
 			value = d;
 		}
 
+		public OptGeneric<V> describe(String info) {
+			super.describe(info);
+			return this;
+		}
+
 		public final V getValue() {
 			return value;
 		}
@@ -83,9 +96,20 @@ public class BaseConfig {
 		public Int(String k, int defValue) {
 			super(k, defValue);
 		}
+
+		public Int describe(String info) {
+			super.describe(info);
+			return this;
+		}
+
 		@Override
 		protected Integer valueFromString(String str) {
 			return Integer.valueOf(str);
+		}
+
+		@Override
+		public String valueToString() {
+			return getValue().toString();
 		}
 	}
 
@@ -93,9 +117,20 @@ public class BaseConfig {
 		public Bool(String k, boolean defValue) {
 			super(k, defValue);
 		}
+
+		public Bool describe(String info) {
+			super.describe(info);
+			return this;
+		}
+
 		@Override
 		protected Boolean valueFromString(String str) {
 			return Boolean.valueOf(str);
+		}
+
+		@Override
+		public String valueToString() {
+			return getValue().toString();
 		}
 	}
 
@@ -103,9 +138,20 @@ public class BaseConfig {
 		public Str(String k, String defValue) {
 			super(k, defValue);
 		}
+
+		public Str describe(String info) {
+			super.describe(info);
+			return this;
+		}
+
 		@Override
 		protected String valueFromString(String str) {
 			return str;
+		}
+
+		@Override
+		public String valueToString() {
+			return getValue();
 		}
 	}
 }

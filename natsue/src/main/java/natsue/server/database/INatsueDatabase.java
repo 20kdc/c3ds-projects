@@ -9,14 +9,14 @@ package natsue.server.database;
 
 import natsue.config.IConfigProvider;
 import natsue.data.babel.BabelShortUserData;
-import natsue.data.babel.PackedMessage;
 import natsue.data.babel.UINUtils;
+import natsue.data.babel.pm.PackedMessage;
 
 /**
  * Abstract interface to enforce clean separation of SQL-handling code from everything else.
  * REMEMBER: STUFF HERE CAN BE ACCESSED FROM MULTIPLE THREADS.
  */
-public interface INatsueDatabase extends IConfigProvider {
+public interface INatsueDatabase {
 	/**
 	 * Gets a user by UID.
 	 * Returns null on failure.

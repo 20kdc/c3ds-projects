@@ -50,15 +50,15 @@ public class PRAYBlock {
 		return 16 + 128 + data.length;
 	}
 
-	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, int maxDecompressedSize) throws IOException {
+	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, int maxDecompressedSize) {
 		if (dataSlice.get() != (byte) 'P')
-			throw new IOException("Not a PRAY file!");
+			throw new RuntimeException("Not a PRAY file!");
 		if (dataSlice.get() != (byte) 'R')
-			throw new IOException("Not a PRAY file!");
+			throw new RuntimeException("Not a PRAY file!");
 		if (dataSlice.get() != (byte) 'A')
-			throw new IOException("Not a PRAY file!");
+			throw new RuntimeException("Not a PRAY file!");
 		if (dataSlice.get() != (byte) 'Y')
-			throw new IOException("Not a PRAY file!");
+			throw new RuntimeException("Not a PRAY file!");
 		LinkedList<PRAYBlock> blocks = new LinkedList<>();
 		while (dataSlice.position() != dataSlice.limit()) {
 			PRAYBlock pb = readOne(dataSlice, maxDecompressedSize);
@@ -67,7 +67,7 @@ public class PRAYBlock {
 		}
 		return blocks;
 	}
-	public static PRAYBlock readOne(ByteBuffer dataSlice, int maxBlockSize) throws IOException {
+	public static PRAYBlock readOne(ByteBuffer dataSlice, int maxBlockSize) {
 		PRAYBlock block = new PRAYBlock();
 		dataSlice.get(block.type);
 		dataSlice.get(block.name);
@@ -76,19 +76,23 @@ public class PRAYBlock {
 		int flags = dataSlice.getInt();
 
 		if (decompressedDataSize > maxBlockSize)
-			throw new IOException("Too much data in PRAY block!");
+			throw new RuntimeException("Too much data in PRAY block!");
 
 		block.data = new byte[decompressedDataSize];
 
 		if ((flags & 1) != 0) {
 			ByteArrayInputStream bais = new ByteArrayInputStream(dataSlice.array(), dataSlice.arrayOffset() + dataSlice.position(), compressedDataSize);
 			InflaterInputStream iis = new InflaterInputStream(bais);
-			int pos = 0;
-			while (pos < decompressedDataSize) {
-				int am = iis.read(block.data, pos, decompressedDataSize - pos);
-				if (am <= 0)
-					throw new IOException("Ran out of data early");
-				pos += am;
+			try {
+				int pos = 0;
+				while (pos < decompressedDataSize) {
+					int am = iis.read(block.data, pos, decompressedDataSize - pos);
+					if (am <= 0)
+						throw new RuntimeException("Ran out of data early");
+					pos += am;
+				}
+			} catch (IOException ioe) {
+				throw new RuntimeException(ioe);
 			}
 			// definitely read it normally honest
 			dataSlice.position(dataSlice.position() + compressedDataSize);

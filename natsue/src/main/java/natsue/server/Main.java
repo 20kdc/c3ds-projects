@@ -15,14 +15,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.Properties;
 
 import natsue.config.Config;
 import natsue.config.IConfigProvider;
+import natsue.config.NCFConfigProvider;
 import natsue.data.babel.PacketReader;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.JDBCNatsueDatabase;
+import natsue.server.firewall.ComplexFirewall;
 import natsue.server.firewall.TrivialFirewall;
 import natsue.server.hub.ServerHub;
 import natsue.server.hub.SystemUserHubClient;
@@ -34,9 +37,8 @@ import natsue.server.session.LoginSessionState;
  */
 public class Main {
 	public static void main(String[] args) throws Exception {
-		if (args.length != 1) {
-			throw new RuntimeException("Natsue Server expects a single parameter: the JDBC connection path to the database. This can be, for instance, \"jdbc:sqlite:sample.db\".");
-		}
+		if (args.length != 0)
+			throw new RuntimeException("Natsue Server expects no parameters.");
 
 		ILogProvider ilp = new ILogProvider() {
 			@Override
@@ -63,19 +65,16 @@ public class Main {
 		mySource.log("Started logger.");
 
 		Config config = new Config();
-		INatsueDatabase firstDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(args[0]), config);
+		IConfigProvider configProvider = new NCFConfigProvider("ntsuconf.txt");
+		config.readInFrom(configProvider);
+		configProvider.configFinished();
 
-		config.readInFrom(firstDB);
-
-		INatsueDatabase actualDB = firstDB;
-		String otherDB = config.actualDB.getValue();
-		if (!otherDB.equals(""))
-			actualDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(otherDB), config);
+		INatsueDatabase actualDB = new JDBCNatsueDatabase(ilp, DriverManager.getConnection(config.dbConnection.getValue()), config);
 
 		mySource.log("Opened DB connections.");
 
 		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
-		serverHub.setFirewall(new TrivialFirewall(serverHub));
+		serverHub.setFirewall(config.complexFirewall.getValue() ? new ComplexFirewall(serverHub) : new TrivialFirewall(serverHub));
 		// login the system user
 		serverHub.clientLogin(new SystemUserHubClient(config, ilp, serverHub), () -> {});
 

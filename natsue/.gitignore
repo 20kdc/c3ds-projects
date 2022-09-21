@@ -3,4 +3,5 @@
 .settings
 /target/
 *.db
+ntsuconf.txt
 

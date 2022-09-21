@@ -17,7 +17,6 @@ import natsue.config.Config;
 import natsue.data.IOUtils;
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.CreatureHistoryBlob;
-import natsue.data.babel.PackedMessage;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
@@ -27,6 +26,7 @@ import natsue.data.babel.ctos.CTOSGetClientInfo;
 import natsue.data.babel.ctos.CTOSGetConnectionDetail;
 import natsue.data.babel.ctos.CTOSMessage;
 import natsue.data.babel.ctos.CTOSWWRModify;
+import natsue.data.babel.pm.PackedMessage;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubClient;
@@ -98,8 +98,12 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			client.sendPacket(pkt.makeResponse(hub.getRandomOnlineNonSystemUIN()));
 		} else if (packet instanceof CTOSMessage) {
 			CTOSMessage pkt = (CTOSMessage) packet;
-			PackedMessage pm = new PackedMessage(pkt.messageData);
-			hub.clientGiveMessage(this, pkt.targetUIN, pm);
+			try {
+				PackedMessage pm = PackedMessage.read(pkt.messageData, config.maxDecompressedPRAYSize.getValue());
+				hub.clientGiveMessage(this, pkt.targetUIN, pm);
+			} catch (Exception ex) {
+				log(ex);
+			}
 		} else if (packet instanceof CTOSFeedHistory) {
 			try {
 				ByteBuffer bb = PacketReader.wrapLE(((CTOSFeedHistory) packet).data);

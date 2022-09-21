@@ -12,10 +12,11 @@ import java.util.Random;
 
 import natsue.config.Config;
 import natsue.data.babel.BabelShortUserData;
-import natsue.data.babel.PackedMessage;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.WritVal;
+import natsue.data.babel.pm.PackedMessage;
+import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.data.hli.StandardMessages;
 import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
@@ -74,9 +75,9 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 
 	@Override
 	public void incomingMessage(PackedMessage message, Runnable reject) {
-		if (message.messageType == PackedMessage.TYPE_PRAY) {
+		if (message instanceof PackedMessagePRAY) {
 			try {
-				LinkedList<PRAYBlock> info = PRAYBlock.read(PacketReader.wrapLE(message.messageData), maxDecompressedPRAYSize);
+				LinkedList<PRAYBlock> info = ((PackedMessagePRAY) message).messageBlocks;
 				// Detect creatures we're about to lose
 				for (PRAYBlock pb : info) {
 					if (pb.getType().equals("GLST")) {
@@ -225,7 +226,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		synchronized (randomLock) {
 			randomRes = random.nextLong();
 		}
-		byte[] resFile = PRAYBlock.writeFileWithOneBlock(new PRAYBlock(type, "STM_" + randomRes + "_sysrsp", res));
-		hub.sendMessage(senderUIN, new PackedMessage(userData.uin, PackedMessage.TYPE_PRAY, resFile), true);
+		PRAYBlock pb = new PRAYBlock(type, "STM_" + randomRes + "_sysrsp", res);
+		hub.sendMessage(senderUIN, new PackedMessagePRAY(userData.uin, pb), true);
 	}
 }

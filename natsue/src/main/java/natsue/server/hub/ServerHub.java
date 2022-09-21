@@ -16,9 +16,9 @@ import java.util.Random;
 import natsue.config.Config;
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.CreatureHistoryBlob;
-import natsue.data.babel.PackedMessage;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.CreatureHistoryBlob.LifeEvent;
+import natsue.data.babel.pm.PackedMessage;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.names.CreatureDataVerifier;
@@ -235,7 +235,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			while (true) {
 				byte[] pm = database.popFirstSpooledMessage(uid);
 				if (pm != null) {
-					cc.incomingMessage(new PackedMessage(pm), () -> {
+					cc.incomingMessage(PackedMessage.read(pm, config.maxDecompressedPRAYSize.getValue()), () -> {
 						database.spoolMessage(uid, pm);
 					});
 				} else {

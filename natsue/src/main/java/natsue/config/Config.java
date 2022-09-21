@@ -12,95 +12,120 @@ package natsue.config;
  */
 public class Config extends BaseConfig {
 	/**
-	 * Used to store the DB and config separately.
+	 * JDBC connection path.
 	 */
-	public final Str actualDB = new Str("actualDB", "");
+	public final Str dbConnection = new Str("dbConnection", "jdbc:sqlite:natsue.db")
+			.describe("JDBC connection path. See your JDBC driver documentation for details, in particular in regards to DriverManager.newConnection.");
 
 	/**
 	 * Used to store the DB and config separately.
 	 */
-	public final Int port = new Int("port", 49152);
+	public final Int port = new Int("port", 49152)
+			.describe("TCP port on which the server should listen.");
 
 	/**
 	 * Maximum length of a creature name.
 	 * Default chosen by the amount of the letter 'i' you can put in a name, with some rounding up.
 	 */
-	public final Int maxCreatureNameLen = new Int("maxCreatureNameLen", 32);
+	public final Int maxCreatureNameLen = new Int("maxCreatureNameLen", 32)
+			.describe("Maximum length of a creature name.");
 
 	/**
 	 * Maximum length of a creature's user text.
 	 * Default chosen by the amount of the letter 'i' you can put in a name, with some rounding up.
 	 */
-	public final Int maxCreatureUserTextLen = new Int("maxCreatureUserTextLen", 896);
+	public final Int maxCreatureUserTextLen = new Int("maxCreatureUserTextLen", 896)
+			.describe("Maximum length of a creature's user text.");
 
 	/**
 	 * Maximum size of the username/password section of a handshake.
 	 */
-	public final Int maxLoginInfoSize = new Int("maxLoginInfoSize", 0x1000);
+	public final Int maxLoginInfoSize = new Int("maxLoginInfoSize", 0x1000)
+			.describe("Maximum size of the username/password section of a login packet.");
 
 	/**
 	 * Maximum message size. Need to be careful with this as it's an upper bound on creature sizes.
 	 * Can always have other limits.
 	 */
-	public final Int maxBabelBinaryMessageSize = new Int("maxBabelBinaryMessageSize", 0x1000000);
+	public final Int maxBabelBinaryMessageSize = new Int("maxBabelBinaryMessageSize", 0x1000000)
+			.describe("Maximum Babel binary message size. Be careful: This is also a maximum size for creatures!");
 
 	/**
 	 * Maximum size for the further data of "unknown-ish" packets.
+	 * Practically, used when discarding Virtual Circuit packets.
 	 */
-	public final Int maxUnknownCTOSFurtherDataSize = new Int("maxUnknownCTOSFurtherDataSize", 0x10000);
+	public final Int maxUnknownCTOSFurtherDataSize = new Int("maxUnknownCTOSFurtherDataSize", 0x10000)
+			.describe("Maximum unknown CTOS further data size. Practically, used when discarding Virtual Circuit packets.");
 
 	/**
 	 * Maximum size for creature history packets.
 	 */
-	public final Int maxFeedHistorySize = new Int("maxFeedHistorySize", 0x10000);
+	public final Int maxFeedHistorySize = new Int("maxFeedHistorySize", 0x10000)
+			.describe("Maximum size of a creature history blob.");
 
 	/**
 	 * Maximum creature history event count.
 	 */
-	public final Int maxCreatureHistoryEvents = new Int("maxCreatureHistoryEvents", 1024);
+	public final Int maxCreatureHistoryEvents = new Int("maxCreatureHistoryEvents", 1024)
+			.describe("Maximum amount of creature history events that may be uploaded at once.");
 
 	/**
 	 * Maximum size of an untrusted decompressed PRAY file
 	 */
-	public final Int maxDecompressedPRAYSize = new Int("maxDecompressedPRAYSize", 0x1000000);
+	public final Int maxDecompressedPRAYSize = new Int("maxDecompressedPRAYSize", 0x1000000)
+			.describe("Maximum size of the total decompressed blocks in a PRAY file. Be careful: This is also a maximum size for creatures!");
 
 	/**
 	 * Allow registration.
 	 */
-	public final Bool allowRegistration = new Bool("allowRegistration", true);
+	public final Bool allowRegistration = new Bool("allowRegistration", true)
+			.describe("Enable (true) or disable (false) automatic registration.");
 
 	/**
 	 * Allow creature history.
 	 */
-	public final Bool allowCreatureHistory = new Bool("allowCreatureHistory", true);
+	public final Bool allowCreatureHistory = new Bool("allowCreatureHistory", true)
+			.describe("Enable (true) or disable (false) creature history storage.");
+
+	/**
+	 * Enables the Complex Firewall.
+	 */
+	public final Bool complexFirewall = new Bool("complexFirewall", true)
+			.describe("Enable (true) or disable (false) the complex firewall, used to block potentially dangerous PRAY files.");
 
 	/**
 	 * Log failed authentication attempts.
 	 */
-	public final Bool logFailedAuthentication = new Bool("logFailedAuthentication", true);
+	public final Bool logFailedAuthentication = new Bool("logFailedAuthentication", true)
+			.describe("Log failed authentication attempts.");
 
 	/**
 	 * Log all connections.
 	 */
-	public final Bool logAllConnections = new Bool("logAllConnections", true);
+	public final Bool logAllConnections = new Bool("logAllConnections", true)
+			.describe("Log all connections.");
 
 	/**
 	 * Log all CTOS packets.
 	 */
-	public final Bool logAllIncomingPackets = new Bool("logAllIncomingPackets", true);
+	public final Bool logAllIncomingPackets = new Bool("logAllIncomingPackets", true)
+			.describe("Log all incoming packets.");
 
 	/**
 	 * Log history parsing or sanity failures
 	 */
-	public final Bool logHistorySanityFailures = new Bool("logHistorySanityFailures", true);
+	public final Bool logHistorySanityFailures = new Bool("logHistorySanityFailures", true)
+			.describe("Log history sanity failures.");
 
 	/**
 	 * Log expected database errors
 	 */
-	public final Bool logExpectedDBErrors = new Bool("logExpectedDBErrors", false);
+	public final Bool logExpectedDBErrors = new Bool("logExpectedDBErrors", false)
+			.describe("Log expected database errors - these are expected to occur in normal operation due to, i.e. repeated creature history uploads.");
 
 	/**
 	 * Log pings.
 	 */
-	public final Bool logPings = new Bool("logPings", true);
+	public final Bool logPings = new Bool("logPings", true)
+			.describe("Log pings.");
 }
