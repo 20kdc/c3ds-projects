@@ -63,13 +63,10 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	 * Before changing this, see stmUserByUID / stmUserByUsername / stmUserByNickname
 	 */
 	private UserInfo getUserFromResultSet(ResultSet rs) throws SQLException {
-		if (!rs.next()) {
-			rs.close();
+		if (!rs.next())
 			return null;
-		}
-		UserInfo ui = new UserInfo(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
-		rs.close();
-		return ui;
+		// CLOSING RESULT SETS IS APPARENTLY AGAINST CONNECTOR/J LAW
+		return new UserInfo(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
 	}
 
 	@Override
