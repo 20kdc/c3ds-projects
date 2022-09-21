@@ -121,9 +121,13 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 						byte[] message = rs.getBytes(3);
 						// and now remove from the spool
 						// NOTE: Do not give a message we haven't successfully removed from spool!
-						stmt.setLong(1, id);
-						stmt.setInt(2, uid);
-						stmt.execute();
+						try (PreparedStatement stmt2 = database.prepareStatement(stmDeleteFromSpool)) {
+							stmt2.setLong(1, id);
+							stmt2.setInt(2, uid);
+							stmt2.execute();
+						} catch (Exception ex2) {
+							// :(
+						}
 						return message;
 					}
 				}
