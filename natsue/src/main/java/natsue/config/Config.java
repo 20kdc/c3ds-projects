@@ -79,19 +79,19 @@ public class Config extends BaseConfig {
 	 * Allow registration.
 	 */
 	public final Bool allowRegistration = new Bool("allowRegistration", true)
-			.describe("Enable (true) or disable (false) automatic registration.");
+			.describe("Allows automatic registration just by connecting to the server.");
 
 	/**
 	 * Allow creature history.
 	 */
 	public final Bool allowCreatureHistory = new Bool("allowCreatureHistory", true)
-			.describe("Enable (true) or disable (false) creature history storage.");
+			.describe("Stores creature history in the database.");
 
 	/**
 	 * Enables the Complex Firewall.
 	 */
 	public final Bool complexFirewall = new Bool("complexFirewall", true)
-			.describe("Enable (true) or disable (false) the complex firewall, used to block potentially dangerous PRAY files.");
+			.describe("Enables the complex firewall, used to block potentially dangerous PRAY files.");
 
 	/**
 	 * Log failed authentication attempts.

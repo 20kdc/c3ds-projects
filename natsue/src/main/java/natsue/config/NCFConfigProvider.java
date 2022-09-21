@@ -134,6 +134,7 @@ public class NCFConfigProvider implements IConfigProvider {
 			osw.write("# A string is terminated by an unescaped '\"'.\n");
 			osw.write("# Strings and IDs are effectively equivalent.\n");
 			osw.write("# The file is made up of pairs of keys and values. Either can be strings or IDs.\n");
+			osw.write("# Booleans can be true or false, integers are written in decimal.\n");
 			osw.write("\n");
 			for (String s : entryList) {
 				String des = descriptions.get(s);
