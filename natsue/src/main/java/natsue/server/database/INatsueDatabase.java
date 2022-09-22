@@ -34,7 +34,7 @@ public interface INatsueDatabase {
 	 * Spools a PackedMessage.
 	 * Note that a spooled message can only be sent to someone in the database for sanity reasons.
 	 */
-	void spoolMessage(int uid, byte[] pm);
+	boolean spoolMessage(int uid, byte[] pm);
 
 	/**
 	 * Removes an arbitrary PackedMessage from a user's spool, or returns null if it's not there.
@@ -44,12 +44,17 @@ public interface INatsueDatabase {
 	/**
 	 * Registers a creature in the database (or at least tries to...)
 	 */
-	void ensureCreature(String moniker, int firstUID, int ch0, int ch1, int ch2, int ch3, int ch4, String name, String userText);
+	boolean ensureCreature(String moniker, int firstUID, int ch0, int ch1, int ch2, int ch3, int ch4, String name, String userText);
+
+	/**
+	 * Updates a creature's name and user text.
+	 */
+	boolean updateCreatureText(String moniker, String name, String userText);
 
 	/**
 	 * Registers a creature life event in the database if it does not already exist
 	 */
-	void ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int lifeStage, String param1, String param2, String worldName, String worldID, String userID);
+	boolean ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int lifeStage, String param1, String param2, String worldName, String worldID, String userID);
 
 	/**
 	 * Tries to create a user with the given details.

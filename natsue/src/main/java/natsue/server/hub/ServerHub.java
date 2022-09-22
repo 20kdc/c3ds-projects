@@ -126,7 +126,8 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			return null;
 		UserInfo ui = database.getUserByFoldedNickname(usernameFolded);
 		if (allowedToRegister && ui == null && config.allowRegistration.getValue()) {
-			while (ui == null) {
+			// If we fail this too many times, the DB's dead
+			for (int i = 0; i < config.registrationAttempts.getValue(); i++) {
 				int uid;
 				synchronized (this) {
 					uid = randomGen.nextInt();

@@ -19,7 +19,7 @@ import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.log.StdoutLogProvider;
 import natsue.server.database.INatsueDatabase;
-import natsue.server.database.JDBCNatsueDatabase;
+import natsue.server.database.jdbc.JDBCNatsueDatabase;
 import natsue.server.firewall.ComplexFirewall;
 import natsue.server.firewall.TrivialFirewall;
 import natsue.server.hub.ServerHub;
@@ -50,7 +50,7 @@ public class Main {
 		try (Connection conn = DriverManager.getConnection(config.dbConnection.getValue())) {
 			mySource.log("Opened DB connection.");
 	
-			INatsueDatabase actualDB = new JDBCNatsueDatabase(ilp, conn, config);
+			INatsueDatabase actualDB = new JDBCNatsueDatabase(ilp, config);
 	
 			mySource.log("DB abstraction initialized.");
 	

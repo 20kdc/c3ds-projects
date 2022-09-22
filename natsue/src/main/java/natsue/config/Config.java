@@ -82,6 +82,12 @@ public class Config extends BaseConfig {
 			.describe("Allows automatic registration just by connecting to the server.");
 
 	/**
+	 * Amount of registration attempts to make before giving up
+	 */
+	public final Int registrationAttempts = new Int("registrationAttempts", 2048)
+			.describe("Amount of times to attempt registration before giving up.");
+
+	/**
 	 * Allow creature history.
 	 */
 	public final Bool allowCreatureHistory = new Bool("allowCreatureHistory", true)
