@@ -262,6 +262,8 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public <X extends IHubClient> LoginResult loginUser(String username, String password, ILoginReceiver<X> makeClient) {
 		BabelShortUserData userData = usernameAndPasswordToShortUserData(username, password, true);
+		if (userData == null)
+			return LoginResult.FailedAuth;
 		X client = makeClient.receive(userData, this);
 		LinkedList<IWWRListener> wwrNotify;
 		synchronized (this) {

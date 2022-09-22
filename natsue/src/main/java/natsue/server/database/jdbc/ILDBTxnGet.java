@@ -30,6 +30,8 @@ public abstract class ILDBTxnGet<V> extends ILDBTxn<V> {
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
 			parameterize(ps);
 			try (ResultSet rs = ps.executeQuery()) {
+				if (!rs.next())
+					return failureResult;
 				return resultSetConverter.fromResultSet(rs);
 			}
 		}
