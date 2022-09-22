@@ -62,7 +62,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
-	public boolean forceDisconnect() {
+	public boolean forceDisconnect(boolean sync) {
 		// You can't disconnect !System, that'd be absurd
 		return false;
 	}
@@ -196,7 +196,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			}
 			response.append("\n");
 		} else if (text.equals("kickme")) {
-			hub.forceDisconnectUIN(targetUIN);
+			hub.forceDisconnectUIN(targetUIN, false);
 		} else if (text.equals("whoami")) {
 			response.append(COL_CHAT);
 			response.append("A philosophical question.\n");

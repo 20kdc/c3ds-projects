@@ -130,8 +130,8 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	}
 
 	@Override
-	public boolean forceDisconnect() {
-		client.forceDisconnect();
+	public boolean forceDisconnect(boolean sync) {
+		client.forceDisconnect(sync);
 		return true;
 	}
 

@@ -222,7 +222,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public void forceDisconnectUIN(long uin) {
+	public void forceDisconnectUIN(long uin, boolean sync) {
 		IHubClient ihc;
 		synchronized (this) {
 			ihc = connectedClients.get(uin);
@@ -230,7 +230,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		// We don't want the actual disconnect in the sync block.
 		// This is because forceDisconnect is supposed to make absolutely sure the client is gone.
 		// That implies a clientLogout needs to happen before it returns, and this may happen off-thread.
-		ihc.forceDisconnect(); // X.X
+		ihc.forceDisconnect(sync); // X.X
 	}
 
 	/**
@@ -311,7 +311,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			if (!config.allowConnectionShootdown.getValue())
 				break;
 			// Ok, we are then. Take the shot.
-			forceDisconnectUIN(userData.uin);
+			forceDisconnectUIN(userData.uin, true);
 		}
 		return LoginResult.FailedConflict;
 	}

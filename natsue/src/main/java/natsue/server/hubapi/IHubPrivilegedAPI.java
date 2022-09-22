@@ -47,5 +47,5 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI {
 	 * Attempts to forcibly disconnect a user by UIN.
 	 * Note that this may not work (system users can shrug it off) but regular users are gone.
 	 */
-	void forceDisconnectUIN(long uin);
+	void forceDisconnectUIN(long uin, boolean sync);
 }

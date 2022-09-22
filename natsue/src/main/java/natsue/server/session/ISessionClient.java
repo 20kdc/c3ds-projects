@@ -36,7 +36,8 @@ public interface ISessionClient extends ILogProvider {
 
 	/**
 	 * This is for connection shootdown, so it can disconnect the client from any thread.
-	 * clientLogout WILL be performed if necessary before this returns.
+	 * If sync is true, clientLogout WILL be performed if necessary before this returns.
+	 * Do not enable sync if there is any chance of this being the same thread as the client being booted.
 	 */
-	public void forceDisconnect();
+	public void forceDisconnect(boolean sync);
 }

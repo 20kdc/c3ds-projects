@@ -37,8 +37,10 @@ public interface IHubClient extends IWWRListener {
 
 	/**
 	 * This connection is stale or we don't like the client or something.
-	 * If this returns true, a hub logout call will have completed.
+	 * If sync is true and this returns true, a hub logout call will have completed.
 	 * Note that it is possible that this may not return true, specifically for system users.
+	 * Note that sync must NOT be true if this is the thread that the client is going to shoot down.
+	 * Otherwise, we would join on ourselves - this case is detected but you shouldn't do it.
 	 */
-	boolean forceDisconnect();
+	boolean forceDisconnect(boolean sync);
 }

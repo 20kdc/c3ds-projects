@@ -72,7 +72,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 	}
 
 	@Override
-	public void forceDisconnect() {
+	public void forceDisconnect(boolean sync) {
 		try {
 			// It's worth noting Java defines this as a thread-safe thing to do.
 			// It'll also do exactly what's wanted of it - causing exceptions that will terminate the reader.
@@ -80,11 +80,18 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 		} catch (Exception ex) {
 			// Do not care
 		}
-		try {
-			// Join implies sessionState.logout(); will happen.
-			join();
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+		if (sync) {
+			if (Thread.currentThread() == this) {
+				// oops
+				log(new Throwable("NOT AN EXCEPTION, BUT DEFINITELY AN ERROR: SYNCHRONOUS CONNECTION SHOOTDOWN TARGETTING CURRENT THREAD").fillInStackTrace());
+			} else {
+				try {
+					// Join implies sessionState.logout(); will happen.
+					join();
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+			}
 		}
 	}
 
