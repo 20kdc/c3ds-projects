@@ -34,13 +34,13 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	private final ILDBTxnHost txnHost;
 
 	public JDBCNatsueDatabase(ILogProvider ilp, Config cfg) throws SQLException {
+		config = cfg;
+		logParent = ilp;
 		// this needs to be read from config if/when stuff hits that needs it
 		ILDBVariant variant = ILDBVariant.SQLite;
-		config = cfg;
 		try (Connection conn = DriverManager.getConnection(config.dbConnection.getValue())) {
 			ILMigrations.migrate(conn, variant, this);
 		}
-		logParent = ilp;
 		txnHost = new ILDBTxnHostOneRequestOneConnection(cfg, this);
 	}
 

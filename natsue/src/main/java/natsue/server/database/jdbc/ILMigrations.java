@@ -54,6 +54,9 @@ public class ILMigrations {
 							workspace.execute(s);
 						workspace.execute("UPDATE natsue_version SET version=" + m.toVer);
 						conn.commit();
+					} catch (Exception ex) {
+						conn.rollback();
+						throw ex;
 					} finally {
 						conn.setAutoCommit(true);
 					}
