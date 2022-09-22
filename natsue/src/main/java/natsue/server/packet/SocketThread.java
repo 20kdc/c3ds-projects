@@ -72,6 +72,23 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 	}
 
 	@Override
+	public void forceDisconnect() {
+		try {
+			// It's worth noting Java defines this as a thread-safe thing to do.
+			// It'll also do exactly what's wanted of it - causing exceptions that will terminate the reader.
+			socket.close();
+		} catch (Exception ex) {
+			// Do not care
+		}
+		try {
+			// Join implies sessionState.logout(); will happen.
+			join();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
 	public void run() {
 		try {
 			// Set initial settings

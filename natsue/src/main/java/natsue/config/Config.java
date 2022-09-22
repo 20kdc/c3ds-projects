@@ -75,7 +75,13 @@ public class Config extends BaseConfig.Group {
 			.describe("Maximum size of the total decompressed blocks in a PRAY file. Be careful: This is also a maximum size for creatures!");
 
 	/**
-	 * Allow registration.
+	 * Exclude yourself from NET: RUSO
+	 */
+	public final Bool excludeSelfRUSO = new Bool("excludeSelfRUSO", true)
+			.describe("Excludes yourself from NET: RUSO random user requests, despite this being a documented behaviour of the command.");
+
+	/**
+	 * Allow registration
 	 */
 	public final Bool allowRegistration = new Bool("allowRegistration", true)
 			.describe("Allows automatic registration just by connecting to the server.");
@@ -85,6 +91,12 @@ public class Config extends BaseConfig.Group {
 	 */
 	public final Int registrationAttempts = new Int("registrationAttempts", 2048)
 			.describe("Amount of times to attempt registration before giving up.");
+
+	/**
+	 * Allow a connecting user to disconnect their existing connection forcibly
+	 */
+	public final Bool allowConnectionShootdown = new Bool("allowConnectionShootdown", true)
+			.describe("Allows a connecting user to disconnect their existing connection forcibly (i.e. timeouts, etc.)");
 
 	/**
 	 * Allow creature history.

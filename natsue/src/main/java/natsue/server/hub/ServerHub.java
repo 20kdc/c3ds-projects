@@ -160,14 +160,23 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public long getRandomOnlineNonSystemUIN() {
+	public long getRandomOnlineNonSystemUIN(long whoIsnt) {
+		long result = 0;
+		Long wiObj = whoIsnt == 0 ? null : whoIsnt;
 		synchronized (this) {
+			// It's easier to remove and re-add the object than to rebuild the pool, even if it is dumb.
+			boolean needsReadd = false;
+			if (wiObj != null)
+				needsReadd = randomPool.remove(wiObj);
 			int size = randomPool.size();
-			if (size == 0)
-				return 0;
-			int idx = randomGen.nextInt(size);
-			return randomPool.get(idx);
+			if (size != 0) {
+				int idx = randomGen.nextInt(size);
+				result = randomPool.get(idx);
+			}
+			if (needsReadd)
+				randomPool.add(wiObj);
 		}
+		return result;
 	}
 
 	/**
@@ -210,6 +219,18 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				});
 			}
 		}
+	}
+
+	@Override
+	public void forceDisconnectUIN(long uin) {
+		IHubClient ihc;
+		synchronized (this) {
+			ihc = connectedClients.get(uin);
+		}
+		// We don't want the actual disconnect in the sync block.
+		// This is because forceDisconnect is supposed to make absolutely sure the client is gone.
+		// That implies a clientLogout needs to happen before it returns, and this may happen off-thread.
+		ihc.forceDisconnect(); // X.X
 	}
 
 	/**
@@ -272,16 +293,27 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (userData == null)
 			return LoginResult.FailedAuth;
 		X client = makeClient.receive(userData, this);
-		LinkedList<IWWRListener> wwrNotify;
-		synchronized (this) {
-			wwrNotify = earlyClientLoginInSync(client);
-			if (wwrNotify == null)
-				return LoginResult.FailedConflict;
-			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
-			makeClient.confirm(client);
+		// Ok, so here's where the whole connection shootdown thing happens.
+		// The for loop is for connection shootdown.
+		for (int pass = 0; pass < 2; pass++) {
+			LinkedList<IWWRListener> wwrNotify;
+			synchronized (this) {
+				wwrNotify = earlyClientLoginInSync(client);
+				// wwrNotify being null here means a conflict happened.
+				if (wwrNotify != null)
+					makeClient.confirm(client);
+			}
+			if (wwrNotify != null) {
+				lateClientLogin(client, wwrNotify);
+				return LoginResult.Success;
+			}
+			// If we get here, conflict happened. Are we allowed to perform connection shootdown?
+			if (!config.allowConnectionShootdown.getValue())
+				break;
+			// Ok, we are then. Take the shot.
+			forceDisconnectUIN(userData.uin);
 		}
-		lateClientLogin(client, wwrNotify);
-		return LoginResult.Success;
+		return LoginResult.FailedConflict;
 	}
 
 	@Override

@@ -34,4 +34,11 @@ public interface IHubClient extends IWWRListener {
 	 * If reject is null, the message success is not tracked.
 	 */
 	void incomingMessage(PackedMessage message, Runnable reject);
+
+	/**
+	 * This connection is stale or we don't like the client or something.
+	 * If this returns true, a hub logout call will have completed.
+	 * Note that it is possible that this may not return true, specifically for system users.
+	 */
+	boolean forceDisconnect();
 }

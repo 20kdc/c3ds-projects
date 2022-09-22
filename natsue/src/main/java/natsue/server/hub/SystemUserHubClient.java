@@ -62,6 +62,12 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
+	public boolean forceDisconnect() {
+		// You can't disconnect !System, that'd be absurd
+		return false;
+	}
+
+	@Override
 	public void wwrNotify(boolean online, BabelShortUserData theirData) {
 		hub.sendMessage(theirData.uin, StandardMessages.addToContactList(theirData.uin, userData.uin), true);
 		/*
@@ -189,6 +195,8 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				first = false;
 			}
 			response.append("\n");
+		} else if (text.equals("kickme")) {
+			hub.forceDisconnectUIN(targetUIN);
 		} else if (text.equals("whoami")) {
 			response.append(COL_CHAT);
 			response.append("A philosophical question.\n");

@@ -42,4 +42,10 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI {
 	 * If temp is true, the message won't be archived on failure.
 	 */
 	void sendMessage(long destinationUIN, PackedMessage message, boolean temp);
+
+	/**
+	 * Attempts to forcibly disconnect a user by UIN.
+	 * Note that this may not work (system users can shrug it off) but regular users are gone.
+	 */
+	void forceDisconnectUIN(long uin);
 }

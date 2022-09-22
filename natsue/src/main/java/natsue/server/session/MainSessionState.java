@@ -95,7 +95,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			}
 		} else if (packet instanceof CTOSFetchRandomUser) {
 			CTOSFetchRandomUser pkt = (CTOSFetchRandomUser) packet;
-			client.sendPacket(pkt.makeResponse(hub.getRandomOnlineNonSystemUIN()));
+			client.sendPacket(pkt.makeResponse(hub.getRandomOnlineNonSystemUIN(config.excludeSelfRUSO.getValue() ? userData.uin : 0)));
 		} else if (packet instanceof CTOSMessage) {
 			CTOSMessage pkt = (CTOSMessage) packet;
 			try {
@@ -127,6 +127,12 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	public void logout() {
 		hub.clientLogout(this);
 		pingManager.logout();
+	}
+
+	@Override
+	public boolean forceDisconnect() {
+		client.forceDisconnect();
+		return true;
 	}
 
 	@Override

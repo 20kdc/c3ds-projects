@@ -40,8 +40,8 @@ public interface IHubCommonAPI {
 	long getServerUIN();
 
 	/**
-	 * Returns a random online UIN that isn't the system.
+	 * Returns a random online UIN that isn't the system and isn't whoIsnt.
 	 * Returns 0 if none could be found.
 	 */
-	long getRandomOnlineNonSystemUIN();
+	long getRandomOnlineNonSystemUIN(long whoIsnt);
 }

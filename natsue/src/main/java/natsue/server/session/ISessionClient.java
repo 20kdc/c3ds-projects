@@ -33,4 +33,10 @@ public interface ISessionClient extends ILogProvider {
 	 */
 	public boolean logFailedAuth();
 	public boolean logPings();
+
+	/**
+	 * This is for connection shootdown, so it can disconnect the client from any thread.
+	 * clientLogout WILL be performed if necessary before this returns.
+	 */
+	public void forceDisconnect();
 }
