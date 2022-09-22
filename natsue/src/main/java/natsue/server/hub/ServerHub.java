@@ -170,11 +170,18 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		}
 	}
 
+	/**
+	 * WARNING: Only call if you're absolutely sure the person isn't presently online!
+	 */
 	private void spoolMessage(long destinationUIN, PackedMessage message) {
 		if (UINUtils.hid(destinationUIN) == UINUtils.HID_USER) {
 			int uid = UINUtils.uid(destinationUIN);
-			if (database.getUserByUID(uid) != null)
-				database.spoolMessage(uid, message.toByteArray());
+			if (database.getUserByUID(uid) != null) {
+				if (!database.spoolMessage(uid, message.toByteArray())) {
+					// Spooling failed. There is almost nothing we can do, but there is one last thing we can try.
+					sendMessage(message.senderUIN, message, true);
+				}
+			}
 		}
 	}
 

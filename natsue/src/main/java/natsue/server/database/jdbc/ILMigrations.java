@@ -18,18 +18,23 @@ import natsue.log.ILogSource;
 public class ILMigrations {
 	public static final Migration[] migrations = {
 			// 1: create/init version table
-			new Migration(null, -1, 1, new String[] {
+			new Migration(-1, 1,
 					"CREATE TABLE natsue_version(version INT)",
 					"INSERT INTO natsue_version VALUES (0)"
-			}),
-			// 6: upgrade to Test3 version
-			new Migration(null, 1, 6, new String[] {
-					"CREATE TABLE natsue_users(uid INT NOT NULL UNIQUE, nickname TEXT NOT NULL UNIQUE, nickname_folded TEXT NOT NULL UNIQUE, psha256 TEXT, PRIMARY KEY(uid))",
-					"CREATE TABLE natsue_spool(id BIGINT NOT NULL, uid INT NOT NULL, data BLOB NOT NULL, PRIMARY KEY(id, uid))",
+			),
+			// 2: create users table
+			new Migration(1, 2,
+					"CREATE TABLE natsue_users(uid INT NOT NULL UNIQUE, nickname TEXT NOT NULL UNIQUE, nickname_folded TEXT NOT NULL UNIQUE, psha256 TEXT, PRIMARY KEY(uid))"
+			),
+			// 3: create spool table
+			// NOTE: This contains some MySQL-specific stuff that SQLite is generous enough to accept.
+			new Migration(2, 3, "CREATE TABLE natsue_spool(id BIGINT NOT NULL, uid INT NOT NULL, data LONGBLOB NOT NULL, PRIMARY KEY(id, uid))"),
+			// 6: creature history, etc.
+			new Migration(3, 6,
 					"CREATE TABLE natsue_history_creatures(moniker VARCHAR(64) NOT NULL UNIQUE, first_uid INT NOT NULL, ch0 INT NOT NULL, ch1 INT NOT NULL, ch2 INT NOT NULL, ch3 INT NOT NULL, ch4 INT NOT NULL, name TEXT NOT NULL, user_text TEXT NOT NULL, PRIMARY KEY(moniker))",
 					"CREATE TABLE natsue_history_events(sender_uid INT NOT NULL, moniker VARCHAR(64) NOT NULL, event_index INT NOT NULL, event_type INT NOT NULL, world_time INT NOT NULL, age_ticks INT NOT NULL, unix_time INT NOT NULL, life_stage INT NOT NULL, param1 TEXT NOT NULL, param2 TEXT NOT NULL, world_name TEXT NOT NULL, world_id TEXT NOT NULL, user_id TEXT NOT NULL, PRIMARY KEY(moniker, event_index))",
 					"CREATE UNIQUE INDEX natsue_history_events_index on natsue_history_events(moniker, event_index ASC)"
-			}),
+			),
 	};
 
 	public static void migrate(Connection conn, ILDBVariant variant, ILogProvider ils) throws SQLException {
@@ -46,23 +51,32 @@ public class ILMigrations {
 		while (true) {
 			boolean didAnything = false;
 			for (Migration m : migrations) {
-				if ((m.fromVer == dbVersion) && ((m.target == null) || (m.target == variant))) {
+				if (m.fromVer == dbVersion) {
 					migrateSource.log("Performing DB migration " + m.fromVer + " -> " + m.toVer);
-					try {
-						conn.setAutoCommit(false);
-						for (String s : m.statements)
-							workspace.execute(s);
-						workspace.execute("UPDATE natsue_version SET version=" + m.toVer);
-						conn.commit();
-					} catch (Exception ex) {
-						conn.rollback();
-						throw ex;
-					} finally {
-						conn.setAutoCommit(true);
+					for (Fork f : m.forks) {
+						if (f.target != null && f.target != variant)
+							continue;
+						try {
+							conn.setAutoCommit(false);
+							for (String s : f.statements)
+								workspace.execute(s);
+							workspace.execute("UPDATE natsue_version SET version=" + m.toVer);
+							conn.commit();
+						} catch (Exception ex) {
+							conn.rollback();
+							throw ex;
+						} finally {
+							conn.setAutoCommit(true);
+						}
+						dbVersion = m.toVer;
+						didAnything = true;
+						break;
 					}
-					dbVersion = m.toVer;
-					didAnything = true;
-					break;
+					if (didAnything) {
+						break;
+					} else {
+						throw new RuntimeException("Migration failure due to no version for this database variant");
+					}
 				}
 			}
 			if (!didAnything)
@@ -72,16 +86,36 @@ public class ILMigrations {
 	}
 
 	public static class Migration {
-		/**
-		 * Target variant, or null for none
-		 */
-		public final ILDBVariant target;
 		public final int fromVer, toVer;
-		public final String[] statements;
-		public Migration(ILDBVariant targ, int f, int to, String[] stms) {
-			target = targ;
+		public final Fork[] forks;
+
+		public Migration(int f, int to, Fork... fx) {
 			fromVer = f;
 			toVer = to;
+			forks = fx;
+		}
+
+		public Migration(int f, int to, String... fx) {
+			fromVer = f;
+			toVer = to;
+			forks = new Fork[] {new Fork(fx)};
+		}
+	}
+
+	public static class Fork {
+		/**
+		 * Target variant, or null for any
+		 */
+		public final ILDBVariant target;
+		public final String[] statements;
+
+		public Fork(String... stms) {
+			target = null;
+			statements = stms;
+		}
+
+		public Fork(ILDBVariant targ, String... stms) {
+			target = targ;
 			statements = stms;
 		}
 	}

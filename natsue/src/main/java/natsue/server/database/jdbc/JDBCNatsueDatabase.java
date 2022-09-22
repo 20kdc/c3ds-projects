@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import natsue.config.Config;
+import natsue.config.ConfigDB;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.database.INatsueDatabase;
@@ -27,17 +28,16 @@ import natsue.server.database.INatsueDatabase.UserInfo;
  */
 public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	private final ILogProvider logParent;
-	// Yes, really, I decided this was the best way.
-	private final SecureRandom secureRandom = new SecureRandom();
 	private final JDBCNatsueTxns txns = new JDBCNatsueTxns();
-	private final Config config;
+	private final ConfigDB config;
 	private final ILDBTxnHost txnHost;
 
-	public JDBCNatsueDatabase(ILogProvider ilp, Config cfg) throws SQLException {
+	public JDBCNatsueDatabase(ILogProvider ilp, ConfigDB cfg) throws SQLException {
 		config = cfg;
 		logParent = ilp;
+		log("JDBCNatsueDatabase, configured for " + cfg.dbType.valueToString());
 		// this needs to be read from config if/when stuff hits that needs it
-		ILDBVariant variant = ILDBVariant.SQLite;
+		ILDBVariant variant = cfg.dbType.getValue();
 		try (Connection conn = DriverManager.getConnection(config.dbConnection.getValue())) {
 			ILMigrations.migrate(conn, variant, this);
 		}

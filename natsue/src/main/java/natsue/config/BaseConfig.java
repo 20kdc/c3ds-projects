@@ -7,29 +7,31 @@
 
 package natsue.config;
 
+import java.lang.reflect.Field;
 import java.util.LinkedList;
 
 /**
  * All the config for everything everywhere.
  */
-public class BaseConfig {
-	public final LinkedList<Opt> allOptions = new LinkedList<>();
+public abstract class BaseConfig {
+	public abstract void visit(IConfigProvider icp);
 
-	public void readInFrom(IConfigProvider icp) {
-		for (Opt o : allOptions) {
-			String str = icp.configVisit(o.key, o.valueToString(), o.description);
-			if (str != null) {
-				try {
-					o.setValueFromString(str);
-				} catch (Exception ex) {
-					// whoopsie, and no log either probably
-					ex.printStackTrace();
+	public static class Group extends BaseConfig {
+		@Override
+		public void visit(IConfigProvider icp) {
+			try {
+				for (Field f : getClass().getFields()) {
+					Object obj = f.get(this);
+					if (obj instanceof BaseConfig)
+						((BaseConfig) obj).visit(icp);
 				}
+			} catch (Exception ex) {
+				throw new RuntimeException(ex);
 			}
 		}
 	}
 
-	public abstract class Opt {
+	public static abstract class Opt extends BaseConfig {
 		public final String key;
 		public String description;
 		public final Object defValue;
@@ -38,7 +40,19 @@ public class BaseConfig {
 		public Opt(String k, Object d) {
 			key = k;
 			defValue = d;
-			allOptions.add(this);
+		}
+
+		@Override
+		public void visit(IConfigProvider icp) {
+			String str = icp.configVisit(key, valueToString(), description);
+			if (str != null) {
+				try {
+					setValueFromString(str);
+				} catch (Exception ex) {
+					// whoopsie, and no log either probably
+					ex.printStackTrace();
+				}
+			}
 		}
 
 		public Opt describe(String info) {
@@ -67,7 +81,8 @@ public class BaseConfig {
 		}
 		protected abstract Object valueFromString(String str);
 	}
-	public abstract class OptGeneric<V> extends Opt {
+
+	public static abstract class OptGeneric<V> extends Opt {
 		private V value;
 		public OptGeneric(String k, V d) {
 			super(k, d);
@@ -92,7 +107,7 @@ public class BaseConfig {
 		protected abstract V valueFromString(String str);
 	}
 
-	public class Int extends OptGeneric<Integer> {
+	public static class Int extends OptGeneric<Integer> {
 		public Int(String k, int defValue) {
 			super(k, defValue);
 		}
@@ -113,7 +128,7 @@ public class BaseConfig {
 		}
 	}
 
-	public class Bool extends OptGeneric<Boolean> {
+	public static class Bool extends OptGeneric<Boolean> {
 		public Bool(String k, boolean defValue) {
 			super(k, defValue);
 		}
@@ -134,7 +149,7 @@ public class BaseConfig {
 		}
 	}
 
-	public class Str extends OptGeneric<String> {
+	public static class Str extends OptGeneric<String> {
 		public Str(String k, String defValue) {
 			super(k, defValue);
 		}
@@ -152,6 +167,28 @@ public class BaseConfig {
 		@Override
 		public String valueToString() {
 			return getValue();
+		}
+	}
+
+	public static class Emu<T extends Enum<T>> extends OptGeneric<T> {
+		public Emu(String k, T defValue) {
+			super(k, defValue);
+		}
+
+		public Emu<T> describe(String info) {
+			super.describe(info);
+			return this;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		protected T valueFromString(String str) {
+			return (T) Enum.valueOf((Class<T>) defValue.getClass(), str);
+		}
+
+		@Override
+		public String valueToString() {
+			return getValue().name();
 		}
 	}
 }

@@ -12,16 +12,17 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import natsue.config.Config;
+import natsue.config.ConfigDB;
 import natsue.log.ILogSource;
 
 /**
  * As opposed to strategies like pooling.
  */
 public class ILDBTxnHostOneRequestOneConnection implements ILDBTxnHost {
-	public final Config config;
+	public final ConfigDB config;
 	public final ILogSource logSource;
 
-	public ILDBTxnHostOneRequestOneConnection(Config cfg, ILogSource ls) {
+	public ILDBTxnHostOneRequestOneConnection(ConfigDB cfg, ILogSource ls) {
 		config = cfg;
 		logSource = ls;
 	}

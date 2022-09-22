@@ -42,35 +42,31 @@ public class Main {
 
 		Config config = new Config();
 		IConfigProvider configProvider = new NCFConfigProvider("ntsuconf.txt");
-		config.readInFrom(configProvider);
+		config.visit(configProvider);
 		configProvider.configFinished();
 
 		mySource.log("Read configuration.");
 
-		try (Connection conn = DriverManager.getConnection(config.dbConnection.getValue())) {
-			mySource.log("Opened DB connection.");
-	
-			INatsueDatabase actualDB = new JDBCNatsueDatabase(ilp, config);
-	
-			mySource.log("DB abstraction initialized.");
-	
-			final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
-			serverHub.setFirewall(config.complexFirewall.getValue() ? new ComplexFirewall(serverHub) : new TrivialFirewall(serverHub));
-			// login the system user
-			serverHub.clientLogin(new SystemUserHubClient(config, ilp, serverHub), () -> {});
-	
-			mySource.log("ServerHub initialized.");
-	
-			int port = config.port.getValue();
-			try (ServerSocket sv = new ServerSocket(port)) {
-				mySource.log("Bound ServerSocket to port " + port + " - ready to accept connections.");
-	
-				while (true) {
-					Socket skt = sv.accept();
-					new SocketThread(skt, (st) -> {
-						return new LoginSessionState(config, st, serverHub);
-					}, ilp, config).start();
-				}
+		INatsueDatabase actualDB = new JDBCNatsueDatabase(ilp, config.db);
+
+		mySource.log("DB abstraction initialized.");
+
+		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
+		serverHub.setFirewall(config.complexFirewall.getValue() ? new ComplexFirewall(serverHub) : new TrivialFirewall(serverHub));
+		// login the system user
+		serverHub.clientLogin(new SystemUserHubClient(config, ilp, serverHub), () -> {});
+
+		mySource.log("ServerHub initialized.");
+
+		int port = config.port.getValue();
+		try (ServerSocket sv = new ServerSocket(port)) {
+			mySource.log("Bound ServerSocket to port " + port + " - ready to accept connections.");
+
+			while (true) {
+				Socket skt = sv.accept();
+				new SocketThread(skt, (st) -> {
+					return new LoginSessionState(config, st, serverHub);
+				}, ilp, config).start();
 			}
 		}
 	}

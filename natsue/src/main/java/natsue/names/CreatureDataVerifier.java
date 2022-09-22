@@ -17,6 +17,10 @@ import natsue.config.Config;
  *          1         2         3
  */
 public class CreatureDataVerifier {
+	/**
+	 * Maximum length of a moniker.
+	 * Note that the database limit for this is 64 characters, to add some room for updates.
+	 */
 	private static final int MAX_MONIKER_LEN = 39;
 	public static boolean verifyMoniker(String moniker) {
 		if (moniker.length() < 32)

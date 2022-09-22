@@ -11,6 +11,6 @@ package natsue.server.database.jdbc;
  * Used to select different SQL sequences.
  */
 public enum ILDBVariant {
-	SQLite,
-	MySQL;
+	sqlite,
+	mysql;
 }

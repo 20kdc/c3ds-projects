@@ -10,12 +10,11 @@ package natsue.config;
 /**
  * All the config for everything everywhere.
  */
-public class Config extends BaseConfig {
+public class Config extends BaseConfig.Group {
 	/**
-	 * JDBC connection path.
+	 * Database configuration
 	 */
-	public final Str dbConnection = new Str("dbConnection", "jdbc:sqlite:natsue.db")
-			.describe("JDBC connection path. See your JDBC driver documentation for details, in particular in regards to DriverManager.newConnection.");
+	public final ConfigDB db = new ConfigDB();
 
 	/**
 	 * Used to store the DB and config separately.
@@ -122,12 +121,6 @@ public class Config extends BaseConfig {
 	 */
 	public final Bool logHistorySanityFailures = new Bool("logHistorySanityFailures", true)
 			.describe("Log history sanity failures.");
-
-	/**
-	 * Log expected database errors
-	 */
-	public final Bool logExpectedDBErrors = new Bool("logExpectedDBErrors", false)
-			.describe("Log expected database errors - these are expected to occur in normal operation due to, i.e. repeated creature history uploads.");
 
 	/**
 	 * Log pings.
