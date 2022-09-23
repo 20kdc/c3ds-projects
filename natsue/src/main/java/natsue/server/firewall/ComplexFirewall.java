@@ -20,20 +20,33 @@ import natsue.server.hubapi.IHubPrivilegedAPI;
  */
 public class ComplexFirewall implements IFirewall {
 	public final IHubPrivilegedAPI hub;
+	public final HashSet<String> knownBlocks = new HashSet<>();
 	public final HashSet<String> obviouslyDangerousBlocks = new HashSet<>();
 	public final HashSet<String> spoolableBlocks = new HashSet<>();
+	public final boolean restrictCustomBlocks;
 
-	public ComplexFirewall(IHubPrivilegedAPI h) {
+	public ComplexFirewall(IHubPrivilegedAPI h, boolean noCustomBlocks) {
 		hub = h;
+		restrictCustomBlocks = noCustomBlocks;
 		// Blocks that imply danger
 		obviouslyDangerousBlocks.add("DSAG"); // Agent injector
 		obviouslyDangerousBlocks.add("AGNT"); // Agent injector
 		obviouslyDangerousBlocks.add("EGGS"); // Muco
-		obviouslyDangerousBlocks.add("EXPC"); // Import
-		obviouslyDangerousBlocks.add("DSEX"); // Import
+		obviouslyDangerousBlocks.add("EXPC"); // C3 Import
+		obviouslyDangerousBlocks.add("DSEX"); // DS Import
+		obviouslyDangerousBlocks.add("SFAM"); // C3 Starter Family
 		obviouslyDangerousBlocks.add("DFAM"); // DS Starter Family
 		obviouslyDangerousBlocks.add("CHUM"); // Contact list
 		obviouslyDangerousBlocks.add("FILE"); // Installable file
+		// Known blocks that vanilla will send
+		knownBlocks.add("REQU"); // chat requests
+		knownBlocks.add("CHAT"); // chat
+		knownBlocks.add("MESG"); // Message centre
+		knownBlocks.add("warp"); // Warped creature
+		knownBlocks.add("GLST"); // ...
+		knownBlocks.add("CREA"); // ...
+		knownBlocks.add("GENE"); // ...
+		knownBlocks.add("PHOT"); // ...
 		// Blocks that imply spooling (this is so chat requests don't get spooled, which would be extremely dumb)
 		spoolableBlocks.add("MESG"); // Message centre
 		spoolableBlocks.add("warp"); // Warped creature
@@ -54,6 +67,8 @@ public class ComplexFirewall implements IFirewall {
 			for (PRAYBlock block : pray.messageBlocks) {
 				String type = block.getType();
 				if (obviouslyDangerousBlocks.contains(type))
+					return;
+				if (restrictCustomBlocks && !knownBlocks.contains(type))
 					return;
 				if (spoolableBlocks.contains(type))
 					temp = false;

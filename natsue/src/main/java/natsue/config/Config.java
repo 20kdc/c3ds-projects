@@ -7,6 +7,8 @@
 
 package natsue.config;
 
+import natsue.server.firewall.FirewallLevel;
+
 /**
  * All the config for everything everywhere.
  */
@@ -111,10 +113,10 @@ public class Config extends BaseConfig.Group {
 			.describe("Stores creature history in the database.");
 
 	/**
-	 * Enables the Complex Firewall.
+	 * Firewall level
 	 */
-	public final Bool complexFirewall = new Bool("complexFirewall", true)
-			.describe("Enables the complex firewall, used to block potentially dangerous PRAY files.");
+	public final Emu<FirewallLevel> firewallLevel = new Emu<>("firewallLevel", FirewallLevel.vanillaSafe)
+			.describe("Enables the complex firewall, used to block potentially dangerous PRAY files. Options are minimal (almost nothing), vanillaSafe (blocks known dangerous PRAY blocks), and full (block any blocks vanilla wouldn't send).");
 
 	/**
 	 * Log failed authentication attempts.
