@@ -99,6 +99,12 @@ public class Config extends BaseConfig.Group {
 			.describe("Allows a connecting user to disconnect their existing connection forcibly (i.e. timeouts, etc.)");
 
 	/**
+	 * Manual keepalive because SO_KEEPALIVE just isn't up to snuff
+	 */
+	public final Int manualKeepAliveTime = new Int("manualKeepAliveTime", 30)
+			.describe("Amount of seconds to go without receiving a packet from the client before we decide to just send a little one to it. <= 0 means not to send these.");
+
+	/**
 	 * Allow creature history.
 	 */
 	public final Bool allowCreatureHistory = new Bool("allowCreatureHistory", true)

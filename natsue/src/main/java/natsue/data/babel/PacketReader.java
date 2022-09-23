@@ -10,6 +10,7 @@ package natsue.data.babel;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -31,7 +32,7 @@ import natsue.data.babel.ctos.CTOSWWRModify;
  * General reference on reading packets.
  */
 public class PacketReader {
-	public static final int DEFAULT_MAXIMUM_BABEL_BINARY_MESSAGE_SIZE = 0x1000000;
+	public static final int PACKET_HEADER_SIZE = 0x20;
 
 	/**
 	 * The standard character set used by the game.
@@ -39,41 +40,45 @@ public class PacketReader {
 	public static final Charset CHARSET = StandardCharsets.ISO_8859_1;
 
 	/**
-	 * Returns null for graceful start-of-read EOF, if allowed.
+	 * Makes sure to read the given amount of bytes from the input stream (no more or less).
 	 */
-	public static byte[] getBytes(InputStream socketInput, int len, boolean canEOF) throws IOException {
-		byte[] data = new byte[len];
-		int ofs = 0;
-		if (canEOF) {
-			// If we're allowed to gracefully EOF here, then check for that with a special first read.
-			ofs = socketInput.read(data, 0, len);
-			// Check for graceful EOF.
-			if (ofs <= 0)
-				return null;
-		}
-		while (ofs < len) {
-			int amount = socketInput.read(data, ofs, len - ofs);
+	public static void readFully(InputStream socketInput, byte[] data, int ofs, int len) throws IOException {
+		int end = ofs + len;
+		while (ofs < end) {
+			int amount = socketInput.read(data, ofs, end - ofs);
 			if (amount <= 0)
 				throw new EOFException("Out of data");
 			ofs += amount;
 		}
+	}
+
+	/**
+	 * Makes sure to read the given amount of bytes from the input stream (no more or less).
+	 */
+	public static byte[] getBytes(InputStream socketInput, int len) throws IOException {
+		byte[] data = new byte[len];
+		readFully(socketInput, data, 0, len);
 		return data;
 	}
 
 	/**
-	 * Returns null for graceful start-of-read EOF, if allowed.
+	 * Makes sure to read the given amount of bytes from the input stream (no more or less).
+	 * Returns a little-endian ByteBuffer.
 	 */
-	public static ByteBuffer getWrappedBytes(InputStream socketInput, int len, boolean canEOF) throws IOException {
-		byte[] data = getBytes(socketInput, len, canEOF);
-		if (data == null)
-			return null;
-		return wrapLE(data);
+	public static ByteBuffer getWrappedBytes(InputStream socketInput, int len) throws IOException {
+		return wrapLE(getBytes(socketInput, len));
 	}
 
+	/**
+	 * Converts a byte[] to a little-endian ByteBuffer.
+	 */
 	public static ByteBuffer wrapLE(byte[] total) {
 		return wrapLE(total, 0, total.length);
 	}
 
+	/**
+	 * Converts a byte[] to a little-endian ByteBuffer.
+	 */
 	public static ByteBuffer wrapLE(byte[] total, int ofs, int len) {
 		ByteBuffer bb = ByteBuffer.wrap(total, ofs, len);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -98,13 +103,24 @@ public class PacketReader {
 	}
 
 	/**
-	 * Reads the next packet from an input stream.
-	 * Returns null if the connection ended gracefully.
+	 * Reads a packet header from a socket. Returns null on EOF and won't throw SocketTimeoutException on a partial read.
 	 */
-	public static BaseCTOS readPacket(Config cfg, InputStream packetSource) throws IOException {
-		ByteBuffer initial = getWrappedBytes(packetSource, 0x20, true);
-		if (initial == null)
+	public static byte[] readPacketHeader(Socket skt, int timeoutMs) throws IOException {
+		skt.setSoTimeout(timeoutMs);
+		byte[] data = new byte[PACKET_HEADER_SIZE];
+		int res = skt.getInputStream().read(data);
+		if (res <= 0)
 			return null;
+		skt.setSoTimeout(0);
+		readFully(skt.getInputStream(), data, res, PACKET_HEADER_SIZE - res);
+		return data;
+	}
+
+	/**
+	 * Given a packet header, reads the remainder of a packet from an input stream.
+	 */
+	public static BaseCTOS readPacket(Config cfg, byte[] initialData, InputStream packetSource) throws IOException {
+		ByteBuffer initial = wrapLE(initialData);
 		// alright, what type is this?
 		int type = initial.getInt(BaseCTOS.BASE_FIELD_TYPE);
 		BaseCTOS packetBase = packetInstanceByType(type);

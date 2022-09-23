@@ -22,7 +22,7 @@ public class CTOSClientCommand extends TargetUIDCTOS {
 	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial)
 			throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
-		ByteBuffer extra = PacketReader.getWrappedBytes(inputStream, 4, false);
+		ByteBuffer extra = PacketReader.getWrappedBytes(inputStream, 4);
 		param = initial.getInt(BASE_FIELD_E);
 		subCommand = extra.getInt(0);
 	}

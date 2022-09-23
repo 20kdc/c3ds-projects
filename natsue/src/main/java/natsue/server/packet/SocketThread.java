@@ -11,10 +11,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.function.Function;
 
 import natsue.config.Config;
 import natsue.data.babel.PacketReader;
+import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
@@ -108,9 +110,24 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 			sessionState = initialSessionStateBuilder.apply(this);
 			// This is the main loop!
 			while (sessionState != null) {
-				BaseCTOS packet = PacketReader.readPacket(config, socketInput);
-				if (packet == null)
-					break;
+				int keepAlive = config.manualKeepAliveTime.getValue();
+				if (keepAlive <= 0) {
+					keepAlive = 0;
+				} else {
+					keepAlive *= 1000;
+				}
+				byte[] header = null;
+				try {
+					header = PacketReader.readPacketHeader(socket, keepAlive);
+					if (header == null)
+						break;
+				} catch (SocketTimeoutException ste) {
+					// keepAlive logic triggers, retry
+					// log("sending KA Packet");
+					sendPacket(PacketWriter.writeDummy());
+					continue;
+				}
+				BaseCTOS packet = PacketReader.readPacket(config, header, socketInput);
 				if (config.logAllIncomingPackets.getValue())
 					log(packet.toString());
 				sessionState.handlePacket(packet);

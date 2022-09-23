@@ -44,9 +44,9 @@ public class CTOSMessage extends BaseCTOS {
 		int msgDataSize = initial.getInt(BASE_FIELD_FDLEN);
 		if (msgDataSize < 0 || msgDataSize > pcfg.maxBabelBinaryMessageSize.getValue())
 			throw new IOException("Invalid message size!");
-		ByteBuffer data = PacketReader.getWrappedBytes(inputStream, 8, false);
+		ByteBuffer data = PacketReader.getWrappedBytes(inputStream, 8);
 		targetUIN = UINUtils.make(data.getInt(0), data.getInt(4));
-		messageData = PacketReader.getBytes(inputStream, msgDataSize, false);
+		messageData = PacketReader.getBytes(inputStream, msgDataSize);
 	}
 
 	@Override

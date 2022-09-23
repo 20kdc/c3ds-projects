@@ -73,4 +73,11 @@ public class PacketWriter {
 		packet.putInt(BaseCTOS.BASE_FIELD_D, UINUtils.hid(targetUIN));
 		return packet.array();
 	}
+
+	/**
+	 * This packet is just for stupid broken network hardware's sake.
+	 */
+	public static byte[] writeDummy() {
+		return writeVirtualCircuitClose(0);
+	}
 }

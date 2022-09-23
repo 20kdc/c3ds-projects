@@ -37,7 +37,7 @@ public class CTOSUnknown extends BaseCTOS {
 	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
 		type = initial.getInt(BASE_FIELD_TYPE);
-		PacketReader.getBytes(inputStream, additionalLength, false);
+		PacketReader.getBytes(inputStream, additionalLength);
 		if (furtherDataFlag) {
 			int wantedFurtherData = initial.getInt(BASE_FIELD_FDLEN);
 			if (wantedFurtherData < 0 || wantedFurtherData > pcfg.maxUnknownCTOSFurtherDataSize.getValue())
