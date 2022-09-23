@@ -7,7 +7,7 @@ c3: $(R)c3u2lin.tar
 
 INTERMEDIATES += $(R)c3u2w32.tar
 
-$(R)c3u2w32.tar: $(R)Creatures3_Update2.exe $(R)CREATURES_3.iso
+$(R)c3u2w32.tar: $(R)Creatures3_Update2.exe $(R)CREATURES_3.iso gadgets/c3u2-patch.catalogue
 	mkdir -p $(R)tmp_c3u2w32
 	# start with unpacking C3 data as-is
 	cd $(R)tmp_c3u2w32 ; 7z x -r ../CREATURES_3.iso Install/Install
@@ -30,6 +30,8 @@ $(R)c3u2w32.tar: $(R)Creatures3_Update2.exe $(R)CREATURES_3.iso
 	cd $(R)tmp_c3u2w32 ; mv "Genetics Directory"/* Genetics/ ; rmdir "Genetics Directory"
 	cd $(R)tmp_c3u2w32 ; mv "Catalogue Directory"/* Catalogue/ ; rmdir "Catalogue Directory"
 	cd $(R)tmp_c3u2w32 ; cp -r "Bootstrap Directory"/* ./Bootstrap/ ; rm -rf "Bootstrap Directory"
+	# And one final thing
+	cp gadgets/c3u2-patch.catalogue $(R)tmp_c3u2w32/Catalogue/Patch.catalogue
 	# done, save
 	cd $(R)tmp_c3u2w32 ; tar -cf ../c3u2w32.tar_ .
 	rm -rf $(R)tmp_c3u2w32
