@@ -4,7 +4,7 @@
 
 all: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
 
-rel: ciesetup/Makefile ciesetup/README.md
+rel: ciesetup/Makefile ciesetup/ds.mk ciesetup/c3.mk ciesetup/README.md
 rel: ciesetup/gadgets/debz2.py ciesetup/gadgets/workarounds.py ciesetup/gadgets/workarounds.deps
 rel: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
 rel: ciesetup/repo/.gitignore
