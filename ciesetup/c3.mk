@@ -1,5 +1,5 @@
 
-c3: $(R)c3u2lin.tar
+c3: $(R)pkg_creatures3.tar
 
 # -- Gadget set 1: C3U2W32 --
 
@@ -39,9 +39,9 @@ $(R)c3u2w32.tar: $(R)Creatures3_Update2.exe $(R)CREATURES_3.iso gadgets/c3u2-pat
 
 # -- Gadget set 2: C3U2LIN --
 
-INTERMEDIATES += $(R)c3u2lin.tar
+INTERMEDIATES += $(R)pkg_creatures3.tar
 
-$(R)c3u2lin.tar: gadgets/w32lin.py $(R)c3u2w32.tar
-	python3 gadgets/w32lin.py $(R)c3u2w32.tar $(R)c3u2lin.tar_
-	mv $(R)c3u2lin.tar_ $(R)c3u2lin.tar
+$(R)pkg_creatures3.tar: gadgets/prep_creatures3.py $(R)c3u2w32.tar
+	python3 gadgets/prep_creatures3.py $(R)c3u2w32.tar $(R)pkg_creatures3.tar_
+	mv $(R)pkg_creatures3.tar_ $(R)pkg_creatures3.tar
 

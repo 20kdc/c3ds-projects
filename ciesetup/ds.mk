@@ -1,5 +1,5 @@
 
-ds: $(R)unified.tar
+ds: $(R)pkg_dockingstation.tar $(R)pkg_engine.tar
 
 # -- Gadget set 1: Conversion of inputs to common ds_195_64.tar form --
 
@@ -36,21 +36,42 @@ $(R)ds_195_64_dec.tar: gadgets/debz2.py $(R)ds_195_64.tar
 	python3 gadgets/debz2.py $(R)ds_195_64.tar $(R)ds_195_64_dec.tar_
 	mv $(R)ds_195_64_dec.tar_ $(R)ds_195_64_dec.tar
 
-# -- Gadget set 3: Workarounds --
+# -- Gadget set 3: Engine package --
 
-INTERMEDIATES += $(R)unified.tar
+INTERMEDIATES += $(R)pkg_engine.tar
 
-$(R)unified.tar: $(R)ds_195_64_dec.tar gadgets/workarounds.py gadgets/workarounds.deps $(file < gadgets/workarounds.deps)
+$(R)pkg_engine.tar: $(R)ds_195_64_dec.tar gadgets/prep_engine.py gadgets/prep_engine.deps $(file < gadgets/prep_engine.deps)
 	# alright, so, this is where things get hairy, because BASICALLY,
 	#  their script assumes you want separate global/user directories
 	# we don't want this because it makes agent install act funny IIRC?
 	# but if we nuke their script we have to take over for it, and that's where the workarounds come in
-	mkdir -p $(R)tmp_unified
-	cd $(R)tmp_unified ; tar -xf ../ds_195_64_dec.tar
+	mkdir -p $(R)tmp_engine
+	cd $(R)tmp_engine ; tar -xf ../ds_195_64_dec.tar
 	# time to do modifications HERE
-	cd $(R)tmp_unified ; python3 ../$(UNR)gadgets/workarounds.py ../$(UNR)gadgets/
+	cd $(R)tmp_engine ; python3 ../$(UNR)gadgets/prep_engine.py ../$(UNR)gadgets/
 	# done with modifications, save
-	cd $(R)tmp_unified ; tar -cf ../unified.tar_ .
-	rm -rf $(R)tmp_unified
-	mv $(R)unified.tar_ $(R)unified.tar
+	cd $(R)tmp_engine ; tar -cf ../pkg_engine.tar_ .
+	rm -rf $(R)tmp_engine
+	mv $(R)pkg_engine.tar_ $(R)pkg_engine.tar
+
+# -- Gadget set 4: DS package --
+
+INTERMEDIATES += $(R)pkg_dockingstation.tar
+
+$(R)pkg_dockingstation.tar: $(R)ds_195_64_dec.tar gadgets/prep_dockingstation.py gadgets/prep_dockingstation.deps $(file < gadgets/prep_dockingstation.deps)
+	# alright, so, this is where things get hairy, because BASICALLY,
+	#  their script assumes you want separate global/user directories
+	# we don't want this because it makes agent install act funny IIRC?
+	# but if we nuke their script we have to take over for it, and that's where the workarounds come in
+	mkdir -p $(R)tmp_dockingstation
+	cd $(R)tmp_dockingstation ; tar -xf ../ds_195_64_dec.tar
+	# time to do modifications HERE
+	cd $(R)tmp_dockingstation ; python3 ../$(UNR)gadgets/prep_dockingstation.py ../$(UNR)gadgets/
+	# rearrange
+	mkdir -p $(R)tmp_pkg_dockingstation
+	mv $(R)tmp_dockingstation "$(R)tmp_pkg_dockingstation/Docking Station"
+	# done with modifications, save
+	cd $(R)tmp_pkg_dockingstation ; tar -cf ../pkg_dockingstation.tar_ .
+	rm -rf $(R)tmp_pkg_dockingstation
+	mv $(R)pkg_dockingstation.tar_ $(R)pkg_dockingstation.tar
 

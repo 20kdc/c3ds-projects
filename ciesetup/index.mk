@@ -7,9 +7,10 @@ rel: ciesetup/Makefile ciesetup/ds.mk ciesetup/c3.mk
 # Manual
 rel: ciesetup/README.md
 # Python scripts
-rel: ciesetup/gadgets/debz2.py ciesetup/gadgets/workarounds.py ciesetup/gadgets/workarounds.py
-# Gadgets - workarounds.py
-rel: ciesetup/gadgets/workarounds.deps
+rel: ciesetup/gadgets/debz2.py
+rel: ciesetup/gadgets/prep_dockingstation.py ciesetup/gadgets/prep_dockingstation.deps
+rel: ciesetup/gadgets/prep_engine.py ciesetup/gadgets/prep_engine.deps
+# Gadgets - workarounds.py & prep_engine.py
 rel: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
 rel: ciesetup/gadgets/c3-inituser.cfg ciesetup/gadgets/c3-machine.cfg
 # C3u2 patch marker
