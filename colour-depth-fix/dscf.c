@@ -10,7 +10,9 @@
 // but actually acts like ragnarok 2 because it's more stable
 
 #include <windows.h>
+#define DirectDrawCreate THROWAWAYSYMBOL
 #include <ddraw.h>
+#undef DirectDrawCreate
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -51,9 +53,14 @@ static void hookPatch(const hook_t * hook) {
 static HMODULE ddrawModule;
 
 // I keep thinking this is marked WINAPI (stdcall). Be aware: this is NOT stdcall.
-__declspec(dllexport) HRESULT DirectDrawHooked(GUID * lpGUID, LPDIRECTDRAW * ddraw, IUnknown * unkOuter) {
+__declspec(dllexport) HRESULT DirectDrawCreate(GUID * lpGUID, LPDIRECTDRAW * ddraw, IUnknown * unkOuter) {
 	HRESULT (*ddc)(GUID *, LPDIRECTDRAW *, IUnknown *) = (void *) GetProcAddress(ddrawModule, "DirectDrawCreate");
 	return ddc(lpGUID, ddraw, unkOuter);
+}
+
+// Compatibility with the older hook installer
+__declspec(dllexport) HRESULT DirectDrawHooked(GUID * lpGUID, LPDIRECTDRAW * ddraw, IUnknown * unkOuter) {
+	return DirectDrawCreate(lpGUID, ddraw, unkOuter);
 }
 
 static void attemptHooks() {

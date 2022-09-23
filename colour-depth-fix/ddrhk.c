@@ -14,8 +14,11 @@
 #define DDRHK_SEARCHBUF_SIZE 28
 int coreProcessInner(FILE * file) {
 	const char * searchBuffer1 = "DirectDrawCreate\0\0DDRAW.dll\0";
-	// using a separate name allows DDRHK.dll to easily import DDRAW.dll
-	const char * writeBuffer = "DirectDrawHooked\0\0DDRHK.dll\0";
+	// Previous justification for changing the function name was dumb, don't do it
+	// Keeping the name the same lets the hook installer be used for cnc-ddraw
+	// Which is important thanks to Mac users being stuck on broken Wine forks
+	// This is what happens when you let Apple abuse you
+	const char * writeBuffer = "DirectDrawCreate\0\0DDRHK.dll\0";
 	char searchBuffer2[DDRHK_SEARCHBUF_SIZE];
 	for (int i = 0; i < DDRHK_SEARCHBUF_SIZE; i++)
 		searchBuffer2[i] = fgetc(file);
