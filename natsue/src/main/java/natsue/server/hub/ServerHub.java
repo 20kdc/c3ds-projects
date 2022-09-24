@@ -25,10 +25,9 @@ import natsue.names.CreatureDataVerifier;
 import natsue.names.PWHash;
 import natsue.names.NicknameVerifier;
 import natsue.server.database.INatsueDatabase;
-import natsue.server.database.INatsueDatabase.UserInfo;
+import natsue.server.database.NatsueUserInfo;
 import natsue.server.firewall.IFirewall;
 import natsue.server.hubapi.IHubClient;
-import natsue.server.hubapi.IHubClientAPI;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
 
 /**
@@ -87,7 +86,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			return ihc.getUserData();
 		// No? Oh well, then
 		if (UINUtils.hid(uin) == UINUtils.HID_USER) {
-			UserInfo ui = database.getUserByUID(UINUtils.uid(uin));
+			NatsueUserInfo ui = database.getUserByUID(UINUtils.uid(uin));
 			if (ui != null)
 				return ui.convertToBabel();
 		}
@@ -106,7 +105,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		// Ok, now check with database
 		if (!NicknameVerifier.verifyNickname(name))
 			return null;
-		UserInfo ui = database.getUserByFoldedNickname(name);
+		NatsueUserInfo ui = database.getUserByFoldedNickname(name);
 		if (ui != null)
 			return ui.convertToBabel();
 		return null;
@@ -124,7 +123,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		String usernameFolded = NicknameVerifier.foldNickname(username);
 		if (!NicknameVerifier.verifyNickname(usernameFolded))
 			return null;
-		UserInfo ui = database.getUserByFoldedNickname(usernameFolded);
+		NatsueUserInfo ui = database.getUserByFoldedNickname(usernameFolded);
 		if (allowedToRegister && ui == null && config.allowRegistration.getValue()) {
 			// If we fail this too many times, the DB's dead
 			for (int i = 0; i < config.registrationAttempts.getValue(); i++) {
@@ -136,7 +135,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				// negative numbers will probably fry the Warp inbox system!!!
 				if (uid <= 0)
 					continue;
-				UserInfo newUI = new UserInfo(uid, username, usernameFolded, PWHash.hash(uid, password));
+				NatsueUserInfo newUI = new NatsueUserInfo(uid, username, usernameFolded, PWHash.hash(uid, password), 0);
 				boolean success = database.tryCreateUser(newUI);
 				if (success)
 					log("Registered user: " + username + " as UID " + uid);

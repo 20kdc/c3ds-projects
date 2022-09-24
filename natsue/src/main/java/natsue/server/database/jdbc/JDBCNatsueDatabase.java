@@ -20,7 +20,7 @@ import natsue.config.ConfigDB;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.database.INatsueDatabase;
-import natsue.server.database.INatsueDatabase.UserInfo;
+import natsue.server.database.NatsueUserInfo;
 
 /**
  * JDBC-based Natsue database implementation.
@@ -50,7 +50,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public UserInfo getUserByUID(int uid) {
+	public NatsueUserInfo getUserByUID(int uid) {
 		synchronized (this) {
 			txns.userByUID.uid = uid;
 			return txns.userByUID.executeOuter(txnHost);
@@ -58,7 +58,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public UserInfo getUserByFoldedNickname(String nickname) {
+	public NatsueUserInfo getUserByFoldedNickname(String nickname) {
 		synchronized (this) {
 			txns.userByFoldedNickname.nicknameFolded = nickname;
 			return txns.userByFoldedNickname.executeOuter(txnHost);
@@ -129,12 +129,13 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public boolean tryCreateUser(UserInfo userInfo) {
+	public boolean tryCreateUser(NatsueUserInfo userInfo) {
 		synchronized (this) {
 			txns.createUser.uid = userInfo.uid;
 			txns.createUser.nickname = userInfo.nickname;
 			txns.createUser.nicknameFolded = userInfo.nicknameFolded;
 			txns.createUser.passwordHash = userInfo.passwordHash;
+			txns.createUser.flags = userInfo.flags;
 			return txns.createUser.executeOuter(txnHost);
 		}
 	}

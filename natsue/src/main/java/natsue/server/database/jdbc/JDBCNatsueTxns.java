@@ -13,7 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import natsue.data.Snowflake;
-import natsue.server.database.INatsueDatabase.UserInfo;
+import natsue.server.database.NatsueUserInfo;
 
 public class JDBCNatsueTxns {
 	public final UserByUID userByUID = new UserByUID();
@@ -25,7 +25,7 @@ public class JDBCNatsueTxns {
 	public final AddCreatureEvent addCreatureEvent = new AddCreatureEvent();
 	public final CreateUser createUser = new CreateUser();
 
-	public static class UserByUID extends ILDBTxnGet<UserInfo> {
+	public static class UserByUID extends ILDBTxnGet<NatsueUserInfo> {
 		public int uid;
 
 		public UserByUID() {
@@ -37,7 +37,7 @@ public class JDBCNatsueTxns {
 			ps.setInt(1, uid);
 		}
 	}
-	public static class UserByFoldedNickname extends ILDBTxnGet<UserInfo> {
+	public static class UserByFoldedNickname extends ILDBTxnGet<NatsueUserInfo> {
 		public String nicknameFolded;
 
 		public UserByFoldedNickname() {
@@ -191,6 +191,7 @@ public class JDBCNatsueTxns {
 	public static class CreateUser extends ILDBTxn<Boolean> {
 		public int uid;
 		public String nickname, nicknameFolded, passwordHash;
+		public int flags;
 
 		public CreateUser() {
 			super(true, Boolean.FALSE);
@@ -198,11 +199,12 @@ public class JDBCNatsueTxns {
 
 		@Override
 		protected Boolean executeInner(Connection conn) throws SQLException {
-			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_users(uid, nickname, nickname_folded, psha256) VALUES (?, ?, ?, ?)")) {
+			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_users(uid, nickname, nickname_folded, psha256, flags) VALUES (?, ?, ?, ?, ?)")) {
 				stmt.setInt(1, uid);
 				stmt.setString(2, nickname);
 				stmt.setString(3, nicknameFolded);
 				stmt.setString(4, passwordHash);
+				stmt.setInt(5, flags);
 				stmt.executeUpdate();
 				return Boolean.TRUE;
 			}

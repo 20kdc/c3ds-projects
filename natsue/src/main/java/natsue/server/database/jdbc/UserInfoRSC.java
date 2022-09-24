@@ -10,14 +10,14 @@ package natsue.server.database.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import natsue.server.database.INatsueDatabase.UserInfo;
+import natsue.server.database.NatsueUserInfo;
 
-public class UserInfoRSC implements ILResultSetConverter<UserInfo> {
+public class UserInfoRSC implements ILResultSetConverter<NatsueUserInfo> {
 	public static final UserInfoRSC INSTANCE = new UserInfoRSC();
-	public static final String SELECTION = "uid, nickname, nickname_folded, psha256";
+	public static final String SELECTION = "uid, nickname, nickname_folded, psha256, flags";
 
 	@Override
-	public UserInfo fromResultSet(ResultSet rs) throws SQLException {
-		return new UserInfo(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
+	public NatsueUserInfo fromResultSet(ResultSet rs) throws SQLException {
+		return new NatsueUserInfo(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5));
 	}
 }

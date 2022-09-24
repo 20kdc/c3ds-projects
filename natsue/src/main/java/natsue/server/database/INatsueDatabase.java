@@ -21,14 +21,14 @@ public interface INatsueDatabase {
 	 * Gets a user by UID.
 	 * Returns null on failure.
 	 */
-	UserInfo getUserByUID(int uid);
+	NatsueUserInfo getUserByUID(int uid);
 
 	/**
 	 * Gets a user by nickname.
 	 * The nickname is expected to be folded.
 	 * Returns null on failure.
 	 */
-	UserInfo getUserByFoldedNickname(String username);
+	NatsueUserInfo getUserByFoldedNickname(String username);
 
 	/**
 	 * Spools a PackedMessage.
@@ -59,29 +59,5 @@ public interface INatsueDatabase {
 	/**
 	 * Tries to create a user with the given details.
 	 */
-	boolean tryCreateUser(UserInfo info);
-
-	public static class UserInfo {
-		public final String nickname, nicknameFolded;
-		/**
-		 * Hex-encoded lowercase sha256 hash of the password.
-		 */
-		public final String passwordHash;
-		public final int uid;
-
-		public UserInfo(int ui, String n, String nf, String p) {
-			uid = ui;
-			nickname = n;
-			nicknameFolded = nf;
-			passwordHash = p;
-		}
-
-		public long getUIN() {
-			return UINUtils.make(uid, UINUtils.HID_USER);
-		}
-
-		public BabelShortUserData convertToBabel() {
-			return new BabelShortUserData("", "", nickname, UINUtils.make(uid, UINUtils.HID_USER));
-		}
-	}
+	boolean tryCreateUser(NatsueUserInfo info);
 }

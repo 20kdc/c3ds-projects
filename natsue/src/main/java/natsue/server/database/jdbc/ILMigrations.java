@@ -35,6 +35,10 @@ public class ILMigrations {
 					"CREATE TABLE natsue_history_events(sender_uid INT NOT NULL, moniker VARCHAR(64) NOT NULL, event_index INT NOT NULL, event_type INT NOT NULL, world_time INT NOT NULL, age_ticks INT NOT NULL, unix_time INT NOT NULL, life_stage INT NOT NULL, param1 TEXT NOT NULL, param2 TEXT NOT NULL, world_name TEXT NOT NULL, world_id TEXT NOT NULL, user_id TEXT NOT NULL, PRIMARY KEY(moniker, event_index))",
 					"CREATE UNIQUE INDEX natsue_history_events_index on natsue_history_events(moniker, event_index ASC)"
 			),
+			// 7: User admin flags
+			new Migration(6, 7,
+					"ALTER TABLE natsue_users ADD COLUMN flags INT NOT NULL DEFAULT 0"
+			),
 	};
 
 	public static void migrate(Connection conn, ILDBVariant variant, ILogProvider ils) throws SQLException {
