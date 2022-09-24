@@ -334,8 +334,8 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				String foldedNick = NicknameVerifier.foldNickname(userData.nickName);
 				connectedClientsByNickname.remove(foldedNick);
 			}
-			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
 			wwrListeners.remove(cc);
+			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
 		}
 		for (IWWRListener ihc : wwrNotify)
 			ihc.wwrNotify(false, userData);
