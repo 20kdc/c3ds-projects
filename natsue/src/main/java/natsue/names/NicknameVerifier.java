@@ -7,6 +7,8 @@
 
 package natsue.names;
 
+import natsue.config.ConfigNicknameFormat;
+
 /**
  * Verifies usernames are sane.
  */
@@ -14,19 +16,14 @@ public class NicknameVerifier {
 	public static String foldNickname(String username) {
 		return username.toLowerCase();
 	}
-	public static boolean verifyNickname(String username) {
-		if (username.length() > 16)
+	public static boolean verifyNickname(ConfigNicknameFormat nicknames, String username) {
+		int len = username.length();
+		if (len < nicknames.nicknameMinLength.getValue() || len > nicknames.nicknameMaxLength.getValue())
 			return false;
-		for (char c : username.toCharArray()) {
-			boolean charOk = false;
-			if ((c >= 'a') && (c <= 'z')) {
-				charOk = true;
-			} else if ((c >= '0') && (c <= '9')) {
-				charOk = true;
-			}
-			if (!charOk)
+		String allowedChars = nicknames.nicknameAllowedCharacters.getValue();
+		for (char c : username.toCharArray())
+			if (allowedChars.indexOf(c) == -1)
 				return false;
-		}
 		return true;
 	}
 }

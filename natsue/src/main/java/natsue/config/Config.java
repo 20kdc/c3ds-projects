@@ -25,6 +25,11 @@ public class Config extends BaseConfig.Group {
 			.describe("TCP port on which the server should listen.");
 
 	/**
+	 * Nickname details
+	 */
+	public final ConfigNicknameFormat nicknames = new ConfigNicknameFormat();
+
+	/**
 	 * Maximum length of a creature name.
 	 * Default chosen by the amount of the letter 'i' you can put in a name, with some rounding up.
 	 */

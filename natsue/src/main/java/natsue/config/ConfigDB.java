@@ -9,6 +9,9 @@ package natsue.config;
 
 import natsue.server.database.jdbc.ILDBVariant;
 
+/**
+ * Configuration of DB connection & such
+ */
 public class ConfigDB extends BaseConfig.Group {
 	/**
 	 * JDBC connection path.

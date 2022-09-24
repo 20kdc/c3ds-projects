@@ -101,7 +101,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (ihc != null)
 			return ihc.getUserData();
 		// Ok, now check with database
-		if (!NicknameVerifier.verifyNickname(name))
+		if (!NicknameVerifier.verifyNickname(config.nicknames, name))
 			return null;
 		NatsueUserInfo ui = database.getUserByFoldedNickname(name);
 		if (ui != null)
@@ -127,7 +127,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public NatsueUserInfo usernameAndPasswordLookup(String username, String password, boolean allowedToRegister) {
 		String usernameFolded = NicknameVerifier.foldNickname(username);
-		if (!NicknameVerifier.verifyNickname(usernameFolded))
+		if (!NicknameVerifier.verifyNickname(config.nicknames, usernameFolded))
 			return null;
 		NatsueUserInfo ui = database.getUserByFoldedNickname(usernameFolded);
 		if (allowedToRegister && ui == null && config.allowRegistration.getValue()) {
