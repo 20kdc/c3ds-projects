@@ -40,7 +40,7 @@ $(R)ds_195_64_dec.tar: gadgets/debz2.py $(R)ds_195_64.tar
 
 INTERMEDIATES += $(R)pkg_engine.tar
 
-$(R)pkg_engine.tar: $(R)ds_195_64_dec.tar gadgets/prep_engine.py gadgets/prep_engine.deps $(file < gadgets/prep_engine.deps)
+$(R)pkg_engine.tar: $(R)ds_195_64_dec.tar gadgets/prep_engine.py gadgets/dummy.so gadgets/runtime.so
 	# alright, so, this is where things get hairy, because BASICALLY,
 	#  their script assumes you want separate global/user directories
 	# we don't want this because it makes agent install act funny IIRC?
@@ -58,7 +58,7 @@ $(R)pkg_engine.tar: $(R)ds_195_64_dec.tar gadgets/prep_engine.py gadgets/prep_en
 
 INTERMEDIATES += $(R)pkg_dockingstation.tar
 
-$(R)pkg_dockingstation.tar: $(R)ds_195_64_dec.tar gadgets/prep_dockingstation.py gadgets/prep_dockingstation.deps $(file < gadgets/prep_dockingstation.deps)
+$(R)pkg_dockingstation.tar: $(R)ds_195_64_dec.tar gadgets/prep_dockingstation.py
 	# alright, so, this is where things get hairy, because BASICALLY,
 	#  their script assumes you want separate global/user directories
 	# we don't want this because it makes agent install act funny IIRC?

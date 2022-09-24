@@ -18,6 +18,7 @@ geocentric = get_script_path + "cd \"$SCRIPT_DIR\"\n"
 gadgets_base = sys.argv[1]
 
 os.mkdir("engine")
+os.mkdir("engine/Catalogue")
 
 # - library stuff -
 
@@ -54,8 +55,14 @@ os.unlink("user.cfg")
 os.unlink("Porting-Credits.txt")
 os.unlink("BuildNumber.txt")
 
-# pull DS data required for C3 compatibility
-os.system("mv \"Catalogue/vocab constructs.catalogue\" engine/")
+# pull the DS version of the engine catalogues
+os.system("mv \"Catalogue/voices.catalogue\" engine/Catalogue/")
+os.system("mv \"Catalogue/vocab constructs.catalogue\" engine/Catalogue/")
+os.system("mv Catalogue/System*.catalogue engine/Catalogue/")
+os.system("mv Catalogue/Norn*.catalogue engine/Catalogue/")
+os.system("mv Catalogue/CAOS.catalogue engine/Catalogue/")
+os.system("mv Catalogue/Brain*.catalogue engine/Catalogue/")
+os.system("mv Catalogue/NetBabel*.catalogue engine/Catalogue/")
 
 # - directories to remove -
 
@@ -157,27 +164,9 @@ launcher_file = open("creatures3", "w")
 launcher_file.write("#!/bin/sh\n")
 launcher_file.write(geocentric)
 launcher_file.write("cd \"Creatures 3\" || engine/error \"The Creatures 3 directory does not exist or is inaccessible.\" || exit 1\n")
-# -- begin magic compatibility patch --
-launcher_file.write("# we're running this on the DS engine because we have cool sunglasses\n")
-launcher_file.write("# but that means we need to setup some stuff first\n")
-launcher_file.write("if [ ! -e \"Catalogue/vocab constructs.catalogue\" ]; then\n")
-launcher_file.write("\tmkdir -p \"Catalogue\"\n")
-launcher_file.write("\tcp \"../engine/vocab constructs.catalogue\" \"Catalogue/vocab constructs.catalogue\"\n")
-launcher_file.write("fi\n")
-launcher_file.write("if [ ! -e \"machine.cfg\" ]; then\n")
-launcher_file.write("\tcp ../engine/c3-machine.cfg machine.cfg\n")
-launcher_file.write("fi\n")
-launcher_file.write("if [ ! -e \"user.cfg\" ]; then\n")
-launcher_file.write("\tcp ../engine/c3-inituser.cfg user.cfg\n")
-launcher_file.write("fi\n")
-launcher_file.write("mkdir -p \"Users\"\n")
-# -- end --
 launcher_file.write("exec ../engine/run-game")
 launcher_file.close()
 os.chmod("creatures3", 0o755)
-
-os.system("cp " + gadgets_base + "c3-machine.cfg engine/")
-os.system("cp " + gadgets_base + "c3-inituser.cfg engine/")
 
 # Placeholders
 

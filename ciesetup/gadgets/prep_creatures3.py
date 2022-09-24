@@ -17,13 +17,29 @@ dst = tarfile.TarFile(sys.argv[2], "w")
 lowercase_prefixes = ["./Sounds/", "./Backgrounds/", "./Overlay Data", "./Body Data/", "./Images/"]
 
 for member in src.getmembers():
-	if member.name.lower().endswith(".dll"):
+	member_name_lower = member.name.lower()
+	if member_name_lower.endswith(".dll"):
 		continue
-	if member.name.lower().endswith(".exe"):
+	if member_name_lower.endswith(".exe"):
 		continue
-	if member.name.lower().endswith(".map"):
+	if member_name_lower.endswith(".map"):
 		continue
-	if member.name.lower().endswith(".url"):
+	if member_name_lower.endswith(".url"):
+		continue
+	# we don't want engine catalogues, since we're using the engine package for that
+	if member_name_lower.startswith("./catalogue/voices"):
+		continue
+	if member_name_lower.startswith("./catalogue/vocab constructs"):
+		continue
+	if member_name_lower.startswith("./catalogue/system"):
+		continue
+	if member_name_lower.startswith("./catalogue/norn"):
+		continue
+	if member_name_lower.startswith("./catalogue/caos"):
+		continue
+	if member_name_lower.startswith("./catalogue/brain"):
+		continue
+	if member_name_lower.startswith("./catalogue/netbabel"):
 		continue
 	# determine if and what to lowercase
 	translated_name = member.name
@@ -50,6 +66,45 @@ for member in src.getmembers():
 		tarinfo.mode = member.mode
 		tarinfo.type = member.type
 		dst.addfile(tarinfo)
+
+def add_text_file(name, mode, text):
+	data = text.encode("utf8")
+	tarinfo = tarfile.TarInfo(name)
+	tarinfo.mode = mode
+	tarinfo.size = len(data)
+	dst.addfile(tarinfo, io.BytesIO(data))
+
+def add_dir(name):
+	tarinfo = tarfile.TarInfo(name)
+	tarinfo.mode = 0o755
+	tarinfo.type = tarfile.DIRTYPE
+	dst.addfile(tarinfo)
+
+add_dir("./Creatures 3/Users")
+add_text_file("./Creatures 3/machine.cfg", 0o644, """
+"Game Name" "Creatures 3"
+"Backgrounds Directory" "Backgrounds"
+"Body Data Directory" "Body Data"
+"Bootstrap Directory" "Bootstrap"
+"Catalogue Directory" "Catalogue"
+"Creature Database Directory" "Creature Galleries"
+"Exported Creatures Directory" "My Creatures"
+"Genetics Directory" "Genetics"
+"Images Directory" "Images"
+"Journal Directory" "Journal"
+"Main Directory" "."
+"Overlay Data Directory" "Overlay Data"
+"Resource Files Directory" "My Agents"
+"Sounds Directory" "Sounds"
+"Users Directory" "Users"
+"Worlds Directory" "My Worlds"
+
+"Auxiliary 1 Catalogue Directory" "../engine/Catalogue"
+""")
+add_text_file("./Creatures 3/user.cfg", 0o644, """
+"Default Background" "c3_splash"
+FullScreen 0
+""")
 
 src.close()
 dst.close()

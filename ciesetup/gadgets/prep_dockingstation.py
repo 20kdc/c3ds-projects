@@ -31,6 +31,15 @@ os.unlink("libSDLStretch.so")
 os.unlink("libstdc++-libc6.1-2.so.3")
 os.unlink("SDLStretch.zip")
 
+# delete DS version of engine catalogues because engine grabs them
+os.system("rm Catalogue/voices.catalogue")
+os.system("rm \"Catalogue/vocab constructs.catalogue\"")
+os.system("rm Catalogue/System*.catalogue")
+os.system("rm Catalogue/Norn*.catalogue")
+os.system("rm Catalogue/CAOS.catalogue")
+os.system("rm Catalogue/Brain*.catalogue")
+os.system("rm Catalogue/NetBabel*.catalogue")
+
 # - machine.cfg -
 
 # now then, machine.cfg C3 config, how do we deal with this?
@@ -42,8 +51,11 @@ aux_names_b = ["Backgrounds/", "Body Data/", "Bootstrap/", "Catalogue/", "Creatu
 launcher_file = open("machine.cfg", "a")
 
 launcher_file.write("\n")
+# add C3 aux.
 for i in range(len(aux_names_a)):
 	launcher_file.write("\"Auxiliary 1 " + aux_names_a[i] + " Directory\" \"../Creatures 3/" + aux_names_b[i] + "\"\n")
+# add engine catalogue aux.
+launcher_file.write("\"Auxiliary 2 Catalogue Directory\" \"../engine/Catalogue/\"\n")
 launcher_file.close()
 
 # - missing empty directories -
