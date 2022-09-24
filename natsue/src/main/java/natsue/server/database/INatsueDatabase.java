@@ -24,6 +24,16 @@ public interface INatsueDatabase {
 	NatsueUserInfo getUserByUID(int uid);
 
 	/**
+	 * Gets a user by UIN.
+	 * Returns null on failure.
+	 */
+	default NatsueUserInfo getUserByUIN(long uin) {
+		if (UINUtils.hid(uin) == UINUtils.HID_USER)
+			return getUserByUID(UINUtils.uid(uin));
+		return null;
+	}
+
+	/**
 	 * Gets a user by nickname.
 	 * The nickname is expected to be folded.
 	 * Returns null on failure.

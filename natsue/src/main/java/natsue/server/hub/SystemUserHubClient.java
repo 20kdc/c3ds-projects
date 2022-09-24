@@ -22,6 +22,7 @@ import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
+import natsue.server.database.NatsueUserInfo;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
 
@@ -124,6 +125,22 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 							text = text.trim();
 							handleChatMessage(message.senderUIN, chatID, text);
 						}
+					} else if (chatType.equals("MESG")) {
+						PRAYTags pt = new PRAYTags();
+						pt.read(chatMaybe.data);
+						String subject = pt.strMap.get("Subject");
+						String msg = pt.strMap.get("Message");
+						if ((subject != null) && (msg != null)) {
+							if (subject.equalsIgnoreCase("SYSTEM MSG")) {
+								if (hub.isUINAdmin(message.senderUIN)) {
+									for (BabelShortUserData sud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
+										hub.sendMessage(sud.uin, StandardMessages.systemMessage(sud.uin, msg), true);
+									}
+								} else {
+									// >:(
+								}
+							}
+						}
 					}
 				}
 			} catch (Exception ex) {
@@ -183,6 +200,21 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			} else {
 				appendNoSuchUser(response, user);
 			}
+		} else if (text.startsWith("kick ")) {
+			if (!hub.isUINAdmin(targetUIN)) {
+				response.append(COL_CHAT);
+				response.append("You're not allowed to do that!\n");
+			} else {
+				String user = text.substring(5);
+				BabelShortUserData userData = commandLookupUser(user);
+				if (userData != null) {
+					response.append(COL_CHAT);
+					response.append("Kicking (if online).\n");
+					hub.forceDisconnectUIN(userData.uin, false);
+				} else {
+					appendNoSuchUser(response, user);
+				}
+			}
 		} else if (text.equals("who")) {
 			boolean first = true;
 			for (BabelShortUserData data : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
@@ -202,9 +234,20 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			response.append("A philosophical question.\n");
 			response.append("To me? You are " + UINUtils.toString(targetUIN) + ".\n");
 			response.append("Others may say differently.\n");
+		} else if (text.equals("ahelp")) {
+			response.append(COL_CHAT);
+			if (hub.isUINAdmin(targetUIN)) {
+				response.append("admin commands:\n");
+				response.append("kick Someone\n");
+				response.append("You can send a global system message by mail, subject \"SYSTEM MSG\".\n");
+			} else {
+				response.append("What are you doing here?\n");
+			}
 		} else {
 			response.append(COL_CHAT);
 			response.append("Unknown command. Try:\nwhois !System\ncontact !System\nwho (show who's online)\n");
+			if (hub.isUINAdmin(targetUIN))
+				response.append("For admin tasks try: ahelp\n");
 		}
 		sendChatMessage(targetUIN, chatID, response.toString());
 	}

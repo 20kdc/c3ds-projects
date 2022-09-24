@@ -10,9 +10,11 @@ package natsue.server.firewall;
 import java.util.HashSet;
 
 import natsue.data.babel.BabelShortUserData;
+import natsue.data.babel.UINUtils;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.data.pray.PRAYBlock;
+import natsue.data.pray.PRAYTags;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 
 /**
@@ -72,8 +74,23 @@ public class ComplexFirewall implements IFirewall {
 					return;
 				if (spoolableBlocks.contains(type))
 					temp = false;
+				// Anti-falsification procedures
+				if (block.getType().equals("MESG")) {
+					sanitizeMESG(sourceUser, block);
+				}
 			}
 		}
 		hub.sendMessage(destinationUIN, message, temp);
+	}
+
+	/**
+	 * Sanitizes a MESG block to make sure the sender isn't faked.
+	 */
+	public void sanitizeMESG(BabelShortUserData sourceUser, PRAYBlock mesgBlock) {
+		PRAYTags pt = new PRAYTags();
+		pt.read(mesgBlock.data);
+		pt.strMap.put("Sender UserID", UINUtils.toString(sourceUser.uin));
+		pt.strMap.put("Sender Nickname", sourceUser.nickName);
+		mesgBlock.data = pt.toByteArray();
 	}
 }

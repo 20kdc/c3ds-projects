@@ -11,6 +11,7 @@ import java.util.LinkedList;
 
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
+import natsue.server.database.NatsueUserInfo;
 
 /**
  * Represents the server.
@@ -22,10 +23,11 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI {
 	LinkedList<BabelShortUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem();
 
 	/**
-	 * Given a user's username and password, provides a BabelShortUserData (successful login), or null.
+	 * Given a user's username and password, provides a NatsueUserInfo (successful login), or null.
 	 * The username will be automatically folded.
+	 * Note this will still return the value for frozen accounts.
 	 */
-	BabelShortUserData usernameAndPasswordToShortUserData(String username, String password, boolean allowedToRegister);
+	NatsueUserInfo usernameAndPasswordLookup(String username, String password, boolean allowedToRegister);
 
 	/**
 	 * Adds a client to the system, or returns false if that couldn't happen due to a conflict.

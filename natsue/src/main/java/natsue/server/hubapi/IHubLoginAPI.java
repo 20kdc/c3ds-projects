@@ -10,6 +10,7 @@ package natsue.server.hubapi;
 import java.util.function.Function;
 
 import natsue.data.babel.BabelShortUserData;
+import natsue.server.database.NatsueUserInfo;
 
 /**
  * This is just the login APIs - in practice this is part of IHubLoginClientAPI or IHubPrivilegedAPI.
@@ -35,9 +36,22 @@ public interface IHubLoginAPI {
 		void confirm(X result);
 	}
 
-	public enum LoginResult {
-		Success,
-		FailedAuth,
-		FailedConflict
+	public static class LoginResult {
+		public static final LoginResult SUCCESS = new LoginResult();
+		public static final LoginResult FAILED_AUTH = new LoginResult();
+		public static class FailedConflict extends LoginResult {
+			public final NatsueUserInfo who;
+			public FailedConflict(NatsueUserInfo ui) {
+				who = ui;
+			}
+		}
+		public static class AccountFrozen extends LoginResult {
+			public final long serverUIN;
+			public final NatsueUserInfo who;
+			public AccountFrozen(long suin, NatsueUserInfo ui) {
+				serverUIN = suin;
+				who = ui;
+			}
+		}
 	}
 }

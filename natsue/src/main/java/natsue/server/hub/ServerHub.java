@@ -85,11 +85,9 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (ihc != null)
 			return ihc.getUserData();
 		// No? Oh well, then
-		if (UINUtils.hid(uin) == UINUtils.HID_USER) {
-			NatsueUserInfo ui = database.getUserByUID(UINUtils.uid(uin));
-			if (ui != null)
-				return ui.convertToBabel();
-		}
+		NatsueUserInfo ui = database.getUserByUIN(uin);
+		if (ui != null)
+			return ui.convertToBabel();
 		return null;
 	}
 
@@ -119,7 +117,15 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public BabelShortUserData usernameAndPasswordToShortUserData(String username, String password, boolean allowedToRegister) {
+	public int getUINFlags(long uin) {
+		NatsueUserInfo ui = database.getUserByUIN(uin);
+		if (ui != null)
+			return ui.flags;
+		return 0;
+	}
+
+	@Override
+	public NatsueUserInfo usernameAndPasswordLookup(String username, String password, boolean allowedToRegister) {
 		String usernameFolded = NicknameVerifier.foldNickname(username);
 		if (!NicknameVerifier.verifyNickname(usernameFolded))
 			return null;
@@ -149,7 +155,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		// this isn't how this is supposed to work but let's ignore that right now
 		if (ui.passwordHash != null)
 			if (PWHash.verify(ui.uid, ui.passwordHash, password))
-				return ui.convertToBabel();
+				return ui;
 		return null;
 	}
 
@@ -182,13 +188,11 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	 * WARNING: Only call if you're absolutely sure the person isn't presently online!
 	 */
 	private void spoolMessage(long destinationUIN, PackedMessage message) {
-		if (UINUtils.hid(destinationUIN) == UINUtils.HID_USER) {
-			int uid = UINUtils.uid(destinationUIN);
-			if (database.getUserByUID(uid) != null) {
-				if (!database.spoolMessage(uid, message.toByteArray())) {
-					// Spooling failed. There is almost nothing we can do, but there is one last thing we can try.
-					sendMessage(message.senderUIN, message, true);
-				}
+		NatsueUserInfo ui = database.getUserByUIN(destinationUIN);
+		if (ui != null) {
+			if (!database.spoolMessage(UINUtils.uid(ui.uid), message.toByteArray())) {
+				// Spooling failed. There is almost nothing we can do, but there is one last thing we can try.
+				sendMessage(message.senderUIN, message, true);
 			}
 		}
 	}
@@ -288,10 +292,13 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	@Override
 	public <X extends IHubClient> LoginResult loginUser(String username, String password, ILoginReceiver<X> makeClient) {
-		BabelShortUserData userData = usernameAndPasswordToShortUserData(username, password, true);
+		NatsueUserInfo userData = usernameAndPasswordLookup(username, password, true);
 		if (userData == null)
-			return LoginResult.FailedAuth;
-		X client = makeClient.receive(userData, this);
+			return LoginResult.FAILED_AUTH;
+		if ((userData.flags & NatsueUserInfo.FLAG_FROZEN) != 0)
+			return new LoginResult.AccountFrozen(getServerUIN(), userData);
+		BabelShortUserData shortUserData = userData.convertToBabel();
+		X client = makeClient.receive(shortUserData, this);
 		// Ok, so here's where the whole connection shootdown thing happens.
 		// The for loop is for connection shootdown.
 		for (int pass = 0; pass < 2; pass++) {
@@ -304,15 +311,15 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			}
 			if (wwrNotify != null) {
 				lateClientLogin(client, wwrNotify);
-				return LoginResult.Success;
+				return LoginResult.SUCCESS;
 			}
 			// If we get here, conflict happened. Are we allowed to perform connection shootdown?
 			if (!config.allowConnectionShootdown.getValue())
 				break;
 			// Ok, we are then. Take the shot.
-			forceDisconnectUIN(userData.uin, true);
+			forceDisconnectUIN(shortUserData.uin, true);
 		}
-		return LoginResult.FailedConflict;
+		return new LoginResult.FailedConflict(userData);
 	}
 
 	@Override

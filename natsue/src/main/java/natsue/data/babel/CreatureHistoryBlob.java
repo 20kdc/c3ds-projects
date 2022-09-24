@@ -63,6 +63,9 @@ public class CreatureHistoryBlob {
 	public String verifySanity() {
 		if (!CreatureDataVerifier.verifyMoniker(moniker))
 			return "Moniker"; 
+		for (LifeEvent le : events)
+			if (le.index < 0)
+				return "Event index under 0";
 		return null;
 	}
 

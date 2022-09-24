@@ -14,6 +14,15 @@ import natsue.data.babel.UINUtils;
  * Information on a user. 
  */
 public class NatsueUserInfo {
+	/**
+	 * Administrator.
+	 */
+	public static final int FLAG_ADMINISTRATOR = 1;
+	/**
+	 * Account has been frozen.
+	 */
+	public static final int FLAG_FROZEN = 2;
+
 	public final String nickname, nicknameFolded;
 	/**
 	 * Hex-encoded lowercase sha256 hash of the password.

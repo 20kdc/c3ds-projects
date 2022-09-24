@@ -15,5 +15,8 @@ import natsue.server.hub.IWWRListener;
  * Responsible for filtering messages to prevent malicious stuff going through the server.
  */
 public interface IFirewall extends IWWRListener {
+	/**
+	 * Handles a message. NOTE: The message may be modified by this function!
+	 */
 	public void handleMessage(BabelShortUserData sourceUser, long destinationUIN, PackedMessage message);
 }

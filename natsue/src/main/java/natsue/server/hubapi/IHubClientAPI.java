@@ -21,7 +21,7 @@ public interface IHubClientAPI extends IHubCommonAPI {
 
 	/**
 	 * A client sent a message, what do we do with it?
-	 * (Verification happens here.)
+	 * Verification happens here. The message may be modified by this function.
 	 */
 	void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message);
 

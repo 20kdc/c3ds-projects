@@ -11,6 +11,7 @@ import java.io.IOException;
 
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
+import natsue.server.database.NatsueUserInfo;
 
 /**
  * Represents the server.
@@ -33,6 +34,16 @@ public interface IHubCommonAPI {
 	 * Returns true if the given UIN is online.
 	 */
 	boolean isUINOnline(long uin);
+
+	/**
+	 * Returns the flags for the given UIN. See NatsueUserInfo for these flags.
+	 * Returns 0 on failure.
+	 */
+	int getUINFlags(long uin);
+
+	default boolean isUINAdmin(long uin) {
+		return (getUINFlags(uin) & NatsueUserInfo.FLAG_ADMINISTRATOR) != 0;
+	}
 
 	/**
 	 * Gets a UIN reserved for this server.

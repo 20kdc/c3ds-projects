@@ -95,6 +95,12 @@ public class Config extends BaseConfig.Group {
 			.describe("Amount of times to attempt registration before giving up.");
 
 	/**
+	 * Text to send someone whose account was frozen
+	 */
+	public final Str accountFrozenText = new Str("accountFrozenText", "Your account has been frozen.\nPlease contact administration out of game for further details.")
+			.describe("Text to send to people whose accounts have been frozen.");
+
+	/**
 	 * Allow a connecting user to disconnect their existing connection forcibly
 	 */
 	public final Bool allowConnectionShootdown = new Bool("allowConnectionShootdown", true)
