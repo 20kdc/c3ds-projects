@@ -11,7 +11,7 @@ import sys
 import os
 
 # "change current directory to here" script
-get_script_path = "SCRIPT_PATH=\"`readlink -e $0`\"\nSCRIPT_DIR=\"`dirname \"$SCRIPT_PATH\"`\"\n"
+get_script_path = "SCRIPT_PATH=\"`readlink -e \"$0\"`\"\nSCRIPT_DIR=\"`dirname \"$SCRIPT_PATH\"`\"\n"
 # get_script_path += "echo SP $SCRIPT_PATH SD $SCRIPT_DIR\n"
 geocentric = get_script_path + "cd \"$SCRIPT_DIR\"\n"
 

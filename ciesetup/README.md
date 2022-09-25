@@ -29,6 +29,7 @@ You're expected to install them yourself if that's what you want.
 3. Place one of the above described files into the `repo` directory.
 4. Run `make` in the `ciesetup` directory. The result should be `repo/unified.tar`.
 5. Extract `pkg_engine.tar` and `pkg_dockingstation.tar` to wherever you want to install the game.
+6. In case of sound issues, check 32-bit applications can play sound, make sure you have `libasound2-plugins:i386`/`alsa-plugins-pulse`, etc.
 
 ## What Went Wrong (i.e. why does this exist?)
 
