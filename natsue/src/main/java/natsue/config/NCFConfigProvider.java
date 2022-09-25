@@ -138,7 +138,7 @@ public class NCFConfigProvider implements IConfigProvider {
 			osw.write("\n");
 			for (String s : entryList) {
 				String des = descriptions.get(s);
-				osw.write("# " + des + "\n");
+				osw.write("# " + des.replaceAll("\n", "\n# ") + "\n");
 				writeVal(osw, s);
 				osw.write(" ");
 				writeVal(osw, entries.get(s));

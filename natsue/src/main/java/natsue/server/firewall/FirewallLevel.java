@@ -18,5 +18,7 @@ public enum FirewallLevel {
 	// vanillaSafe: Settings that are safe for vanilla Creatures 3/Docking Station. 
 	vanillaSafe,
 	// full: Block anything that isn't known to be handled by vanilla
-	full
+	full,
+	// rejectAll: FOR TESTING ONLY
+	rejectAll
 }

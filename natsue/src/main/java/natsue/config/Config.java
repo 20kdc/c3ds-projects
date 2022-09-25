@@ -127,7 +127,12 @@ public class Config extends BaseConfig.Group {
 	 * Firewall level
 	 */
 	public final Emu<FirewallLevel> firewallLevel = new Emu<>("firewallLevel", FirewallLevel.vanillaSafe)
-			.describe("Enables the complex firewall, used to block potentially dangerous PRAY files. Options are minimal (almost nothing), vanillaSafe (blocks known dangerous PRAY blocks), and full (block any blocks vanilla wouldn't send).");
+			.describe("Enables the complex firewall, used to block potentially dangerous PRAY files.\n" +
+					"Options are:\n" +
+					"minimal (almost nothing),\n" +
+					"vanillaSafe (blocks known dangerous PRAY blocks, + NB norn check),\n" +
+					"full (block any blocks vanilla wouldn't send, + NB norn check),\n" +
+					"rejectAll (TESTING ONLY, REJECTS EVERYTHING)");
 
 	/**
 	 * Log failed authentication attempts.

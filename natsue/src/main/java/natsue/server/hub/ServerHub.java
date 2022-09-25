@@ -195,6 +195,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	@Override
 	public void rejectMessage(long destinationUIN, PackedMessage message, String reason) {
+		log("Rejected message from " + UINUtils.toString(message.senderUIN) + " b/c: " + reason);
 		try {
 			rejector.rejectMessage(destinationUIN, message, reason);
 		} catch (Exception ex) {

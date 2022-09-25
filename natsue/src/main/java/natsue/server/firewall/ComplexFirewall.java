@@ -96,10 +96,9 @@ public class ComplexFirewall implements IFirewall, ILogSource {
 						// NB norn detector
 						PRAYTags pt = new PRAYTags();
 						pt.read(block.data);
-						int reA = pt.intMap.get("Family");
 						// not checking Genus right now - patch it when someone breaks it, things are on fire rn
 						int reC = pt.intMap.get("Gender");
-						boolean isNB = (reA != 4) || (reC != 1 && reC != 2);
+						boolean isNB = reC != 1 && reC != 2;
 						if (isNB && !hub.isUINReceivingNBNorns(destinationUIN)) {
 							// NB norns crash people who aren't prepared to receive them.
 							rejection = "NB norn that target couldn't receive";

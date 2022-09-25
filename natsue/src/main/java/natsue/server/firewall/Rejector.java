@@ -35,15 +35,15 @@ public class Rejector implements IRejector {
 		if (message instanceof PackedMessagePRAY) {
 			// Try to classify the message
 			LinkedList<PRAYBlock> blocks = ((PackedMessagePRAY) message).messageBlocks;
-			if (blocks.size() == 0)
-				return;
-			// last block is the meaningful one in sane cases
-			PRAYBlock last = blocks.getLast();
-			String lastType = last.getType();
-			if (lastType.equals("warp")) {
-				rejectWarpedCreature(destinationUIN, message, reason, last);
-			} else if (lastType.equals("MESG")) {
-				rejectMail(destinationUIN, message, reason, last);
+			for (PRAYBlock blk : blocks) {
+				String lastType = blk.getType();
+				if (lastType.equals("warp")) {
+					rejectWarpedCreature(destinationUIN, message, reason, blk);
+					return;
+				} else if (lastType.equals("MESG")) {
+					rejectMail(destinationUIN, message, reason, blk);
+					return;
+				}
 			}
 		}
 	}

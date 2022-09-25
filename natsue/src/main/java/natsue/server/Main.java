@@ -23,6 +23,7 @@ import natsue.server.database.jdbc.JDBCNatsueDatabase;
 import natsue.server.firewall.ComplexFirewall;
 import natsue.server.firewall.FirewallLevel;
 import natsue.server.firewall.IFirewall;
+import natsue.server.firewall.RejectAllFirewall;
 import natsue.server.firewall.Rejector;
 import natsue.server.firewall.TrivialFirewall;
 import natsue.server.hub.ServerHub;
@@ -70,6 +71,10 @@ public class Main {
 		default:
 			mySource.log("Firewall level: full: No fun allowed.");
 			firewall = new ComplexFirewall(ilp, serverHub, true);
+			break;
+		case rejectAll:
+			mySource.log("Firewall level: rejectAll: FOR TESTING ONLY");
+			firewall = new RejectAllFirewall(serverHub);
 			break;
 		}
 		serverHub.setFirewall(firewall, new Rejector(serverHub, SystemUserHubClient.IDENTITY));
