@@ -139,4 +139,14 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 			return txns.createUser.executeOuter(txnHost);
 		}
 	}
+
+	@Override
+	public boolean updateUserAuth(int uid, String hash, int flags) {
+		synchronized (this) {
+			txns.createUser.uid = uid;
+			txns.createUser.passwordHash = hash;
+			txns.createUser.flags = flags;
+			return txns.createUser.executeOuter(txnHost);
+		}
+	}
 }

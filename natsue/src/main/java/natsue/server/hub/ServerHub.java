@@ -27,6 +27,7 @@ import natsue.names.NicknameVerifier;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.NatsueUserInfo;
 import natsue.server.firewall.IFirewall;
+import natsue.server.firewall.IRejector;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
 
@@ -37,10 +38,17 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	public final Config config;
 	private final ILogProvider logParent;
 	public final INatsueDatabase database;
+
 	/**
 	 * The firewall. This should be set before the server receives any clients, on pain of malfunction.
 	 */
 	private IFirewall firewall;
+
+	/**
+	 * The rejector, similar to firewall.
+	 * Only use this via rejectMessage because we may want to log these.
+	 */
+	private IRejector rejector;
 
 	public final HashSet<IWWRListener> wwrListeners = new HashSet<>();
 	public final HashMap<Long, IHubClient> connectedClients = new HashMap<>();
@@ -59,8 +67,9 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		return logParent;
 	}
 
-	public void setFirewall(IFirewall fw) {
+	public void setFirewall(IFirewall fw, IRejector ir) {
 		firewall = fw;
+		rejector = ir;
 		wwrListeners.add(fw);
 	}
 
@@ -184,41 +193,55 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		return result;
 	}
 
+	@Override
+	public void rejectMessage(long destinationUIN, PackedMessage message, String reason) {
+		try {
+			rejector.rejectMessage(destinationUIN, message, reason);
+		} catch (Exception ex) {
+			log(ex);
+		}
+	}
+
 	/**
 	 * WARNING: Only call if you're absolutely sure the person isn't presently online!
 	 */
-	private void spoolMessage(long destinationUIN, PackedMessage message) {
+	private void spoolMessage(long destinationUIN, PackedMessage message, boolean fromRejector) {
 		NatsueUserInfo ui = database.getUserByUIN(destinationUIN);
 		if (ui != null) {
 			if (!database.spoolMessage(UINUtils.uid(ui.uid), message.toByteArray())) {
-				// Spooling failed. There is almost nothing we can do, but there is one last thing we can try.
-				sendMessage(message.senderUIN, message, true);
+				if (!fromRejector) {
+					// Spooling failed. There is almost nothing we can do, but there is one last thing we can try.
+					rejectMessage(destinationUIN, message, "User " + UINUtils.toString(destinationUIN) + " spool failure");
+				}
 			}
+		} else if (!fromRejector) {
+			rejectMessage(destinationUIN, message, "User " + UINUtils.toString(destinationUIN) + " does not exist");
 		}
 	}
 
 	@Override
-	public void sendMessage(long destinationUIN, PackedMessage message, boolean temp) {
+	public void sendMessage(long destinationUIN, PackedMessage message, MsgSendType type) {
 		IHubClient ihc;
-		if (temp) {
+		if (!type.shouldSpool) {
 			synchronized (this) {
 				ihc = connectedClients.get(destinationUIN);
 			}
 			if (ihc != null)
 				ihc.incomingMessage(message, null);
 		} else {
+			// not temp, this message matters
 			synchronized (this) {
 				ihc = connectedClients.get(destinationUIN);
 				if (ihc == null) {
 					// They're not online, so do this here - otherwise they *could* go online while we're spooling the message (BAD!)
 					// If they go offline while we're SENDING the message, that's caught by the reject machinery
-					spoolMessage(destinationUIN, message);
+					spoolMessage(destinationUIN, message, type.isReject);
 					return;
 				}
 			}
 			if (ihc != null) {
 				ihc.incomingMessage(message, () -> {
-					spoolMessage(destinationUIN, message);
+					spoolMessage(destinationUIN, message, type.isReject);
 				});
 			}
 		}
@@ -261,7 +284,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		BabelShortUserData userData = cc.getUserData();
 		for (IWWRListener ihc : wwrNotify)
 			ihc.wwrNotify(true, cc.getUserData());
-		if (UINUtils.hid(userData.uin) == UINUtils.HID_USER) {
+		if (UINUtils.isRegularUser(userData.uin)) {
 			int uid = UINUtils.uid(userData.uin);
 			// This is presumably a user in the database, dump all spool contents
 			while (true) {
@@ -366,5 +389,23 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		} else if (config.logHistorySanityFailures.getValue()) {
 			log("History sanity failure from " + cc.getUserData().nickName + ": " + sanityError);
 		}
+	}
+
+	@Override
+	public boolean modUserFlags(long uin, int and, int xor) {
+		if (!UINUtils.isRegularUser(uin))
+			return false;
+		int uid = UINUtils.uid(uin);
+		NatsueUserInfo nui = database.getUserByUID(uid);
+		return database.updateUserAuth(uid, nui.passwordHash, (nui.flags & and) ^ xor);
+	}
+
+	@Override
+	public boolean changePassword(long uin, String newPW) {
+		if (!UINUtils.isRegularUser(uin))
+			return false;
+		int uid = UINUtils.uid(uin);
+		NatsueUserInfo nui = database.getUserByUID(uid);
+		return database.updateUserAuth(uid, PWHash.hash(uid, newPW), nui.flags);
 	}
 }

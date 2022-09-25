@@ -9,26 +9,17 @@ package natsue.server.firewall;
 
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
-import natsue.server.hubapi.IHubPrivilegedAPI;
-import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 
 /**
- * Just does the absolute bare minimum: Confirming messages aren't totally faked.
+ * Contains the logic to rebound a message that's been rejected.
+ * Note that the PackedMessage is assumed to have a checked senderUIN.
  */
-public class TrivialFirewall implements IFirewall {
-	public final IHubPrivilegedAPI hub;
-
-	public TrivialFirewall(IHubPrivilegedAPI h) {
-		hub = h;
-	}
-
-	@Override
-	public void wwrNotify(boolean online, BabelShortUserData userData) {
-	}
-
-	@Override
-	public void handleMessage(BabelShortUserData sourceUser, long destinationUIN, PackedMessage message) {
-		message.senderUIN = sourceUser.uin;
-		hub.sendMessage(destinationUIN, message, MsgSendType.Perm);
-	}
+public interface IRejector {
+	/**
+	 * API to reject messages.
+	 * This is used by Firewall, SystemUserHubClient, and by the Hub itself.
+	 * The destination UIN and sender UIN are unswapped.
+	 * The message sender UIN is assumed to be perfectly accurate - they will receive the rejection.
+	 */
+	public void rejectMessage(long destinationUIN, PackedMessage message, String reason);
 }

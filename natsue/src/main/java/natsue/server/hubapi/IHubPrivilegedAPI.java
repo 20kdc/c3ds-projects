@@ -12,11 +12,12 @@ import java.util.LinkedList;
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.database.NatsueUserInfo;
+import natsue.server.firewall.IRejector;
 
 /**
  * Represents the server.
  */
-public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI {
+public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI, IRejector {
 	/**
 	 * Returns all user info that does not belong to system users.
 	 */
@@ -28,6 +29,16 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI {
 	 * Note this will still return the value for frozen accounts.
 	 */
 	NatsueUserInfo usernameAndPasswordLookup(String username, String password, boolean allowedToRegister);
+
+	/**
+	 * Modifies the flags of a user.
+	 */
+	boolean modUserFlags(long targetUIN, int and, int xor);
+
+	/**
+	 * Changes the password of a user.
+	 */
+	boolean changePassword(long uin, String newPW);
 
 	/**
 	 * Adds a client to the system, or returns false if that couldn't happen due to a conflict.
@@ -42,12 +53,33 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI {
 	 * Route a message that is expected to *eventually* get to the target.
 	 * The message is assumed to be authenticated.
 	 * If temp is true, the message won't be archived on failure.
+	 * If fromRejector is true, then the message won't go through rejection *again*.
 	 */
-	void sendMessage(long destinationUIN, PackedMessage message, boolean temp);
+	void sendMessage(long destinationUIN, PackedMessage message, MsgSendType type);
 
 	/**
 	 * Attempts to forcibly disconnect a user by UIN.
 	 * Note that this may not work (system users can shrug it off) but regular users are gone.
 	 */
 	void forceDisconnectUIN(long uin, boolean sync);
+
+	/**
+	 * Controls message behaviour.
+	 */
+	public static enum MsgSendType {
+		// Chat/etc.
+		Temp(false, false),
+		// Norns, mail
+		Perm(false, true),
+		// Rejects
+		TempReject(true, false),
+		PermReject(true, true);
+
+		public final boolean isReject, shouldSpool;
+
+		MsgSendType(boolean ir, boolean ss) {
+			isReject = ir;
+			shouldSpool = ss;
+		}
+	}
 }

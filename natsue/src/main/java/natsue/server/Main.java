@@ -22,6 +22,8 @@ import natsue.server.database.INatsueDatabase;
 import natsue.server.database.jdbc.JDBCNatsueDatabase;
 import natsue.server.firewall.ComplexFirewall;
 import natsue.server.firewall.FirewallLevel;
+import natsue.server.firewall.IFirewall;
+import natsue.server.firewall.Rejector;
 import natsue.server.firewall.TrivialFirewall;
 import natsue.server.hub.ServerHub;
 import natsue.server.hub.SystemUserHubClient;
@@ -54,21 +56,23 @@ public class Main {
 
 		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
 		// determine the firewall
+		IFirewall firewall = null;
 		switch (config.firewallLevel.getValue()) {
 		case minimal:
 			mySource.log("Firewall level: minimal: MINIMAL, HAZARDOUS TO VANILLA CLIENTS");
-			serverHub.setFirewall(new TrivialFirewall(serverHub));
+			firewall = new TrivialFirewall(serverHub);
 			break;
 		case vanillaSafe:
 			mySource.log("Firewall level: vanillaSafe: Should be safe enough.");
-			serverHub.setFirewall(new ComplexFirewall(serverHub, false));
+			firewall = new ComplexFirewall(ilp, serverHub, false);
 			break;
 		case full:
 		default:
 			mySource.log("Firewall level: full: No fun allowed.");
-			serverHub.setFirewall(new ComplexFirewall(serverHub, true));
+			firewall = new ComplexFirewall(ilp, serverHub, true);
 			break;
 		}
+		serverHub.setFirewall(firewall, new Rejector(serverHub, SystemUserHubClient.IDENTITY));
 		// login the system user
 		serverHub.clientLogin(new SystemUserHubClient(config, ilp, serverHub), () -> {});
 

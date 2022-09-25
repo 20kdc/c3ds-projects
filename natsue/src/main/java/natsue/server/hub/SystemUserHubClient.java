@@ -7,6 +7,8 @@
 
 package natsue.server.hub;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -22,9 +24,11 @@ import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
+import natsue.names.PWHash;
 import natsue.server.database.NatsueUserInfo;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
+import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 
 /**
  * This client represents a user called System meant to handle fancy tasks.
@@ -32,7 +36,7 @@ import natsue.server.hubapi.IHubPrivilegedClientAPI;
 public class SystemUserHubClient implements IHubClient, ILogSource {
 	public final IHubPrivilegedClientAPI hub;
 	private final ILogProvider logParent;
-	public final BabelShortUserData userData = new BabelShortUserData("", "", "!System", UINUtils.SERVER_UIN);
+	public static final BabelShortUserData IDENTITY = new BabelShortUserData("", "", "!System", UINUtils.SERVER_UIN);
 	public final int maxDecompressedPRAYSize;
 
 	private final Random random = new Random();
@@ -54,7 +58,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 
 	@Override
 	public BabelShortUserData getUserData() {
-		return userData;
+		return IDENTITY;
 	}
 
 	@Override
@@ -70,7 +74,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 
 	@Override
 	public void wwrNotify(boolean online, BabelShortUserData theirData) {
-		hub.sendMessage(theirData.uin, StandardMessages.addToContactList(theirData.uin, userData.uin), true);
+		hub.sendMessage(theirData.uin, StandardMessages.addToContactList(theirData.uin, IDENTITY.uin), MsgSendType.Temp);
 		/*
 		writ = WritVal.encodeWrit("system_message", 2469, "You didn't say the magic word!", null);
 		try {
@@ -89,7 +93,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				for (PRAYBlock pb : info) {
 					if (pb.getType().equals("GLST")) {
 						// Trapped creature - RETURN TO SENDER IMMEDIATELY
-						hub.sendMessage(message.senderUIN, message, false);
+						hub.rejectMessage(IDENTITY.uin, message, "!System isn't accepting creatures");
 						return;
 					}
 				}
@@ -105,12 +109,12 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 						if (str.equals("Request")) {
 							// Yes - we need to accept.
 							PRAYTags res = new PRAYTags();
-							String myUINStr = UINUtils.toString(userData.uin);
+							String myUINStr = UINUtils.toString(IDENTITY.uin);
 							res.strMap.put("Sender UserID", myUINStr);
 							res.strMap.put("Date Sent", pt.strMap.get("Date Sent"));
 							res.strMap.put("ChatID", pt.strMap.get("ChatID"));
 							res.strMap.put("Request Type", "Accept");
-							res.strMap.put("Sender Nickname", userData.nickName);
+							res.strMap.put("Sender Nickname", IDENTITY.nickName);
 							sendTagsMessage(message.senderUIN, "REQU", res.toByteArray());
 						}
 					} else if (chatType.equals("CHAT")) {
@@ -134,7 +138,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 							if (subject.equalsIgnoreCase("SYSTEM MSG")) {
 								if (hub.isUINAdmin(message.senderUIN)) {
 									for (BabelShortUserData sud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
-										hub.sendMessage(sud.uin, StandardMessages.systemMessage(sud.uin, msg), true);
+										hub.sendMessage(sud.uin, StandardMessages.systemMessage(sud.uin, msg), MsgSendType.Temp);
 									}
 								} else {
 									// >:(
@@ -180,13 +184,24 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				response.append(COL_CHAT);
 				response.append("UIN: ");
 				response.append(UINUtils.toString(userData.uin));
-				if (UINUtils.hid(userData.uin) == UINUtils.HID_SYSTEM) {
+				int hid = UINUtils.hid(userData.uin); 
+				if (hid == UINUtils.HID_SYSTEM) {
 					response.append(" <tint 64 64 255>(SYSTEM)\n");
-				} else if (UINUtils.hid(userData.uin) == UINUtils.HID_USER) {
+				} else if (hid == UINUtils.HID_USER) {
 					response.append(" <tint 64 255 64>(USER)\n");
 				} else {
-					response.append(" <tint 255 64 64>(ERROR)\n");
+					response.append(" <tint 255 64 64>(" + hid + ")\n");
 				}
+				int flags = hub.getUINFlags(userData.uin);
+				response.append(COL_CHAT);
+				response.append("Flags:");
+				if ((flags & NatsueUserInfo.FLAG_ADMINISTRATOR) != 0)
+					response.append(" ADMIN");
+				if ((flags & NatsueUserInfo.FLAG_FROZEN) != 0)
+					response.append(" FROZEN");
+				if ((flags & NatsueUserInfo.FLAG_RECEIVE_NB_NORNS) != 0)
+					response.append(" RECVNB");
+				response.append("\n");
 			} else {
 				appendNoSuchUser(response, user);
 			}
@@ -196,7 +211,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			if (userData != null) {
 				response.append(COL_CHAT);
 				response.append("Adding to your contact list...\n");
-				hub.sendMessage(targetUIN, StandardMessages.addToContactList(targetUIN, userData.uin), true);
+				hub.sendMessage(targetUIN, StandardMessages.addToContactList(targetUIN, userData.uin), MsgSendType.Temp);
 			} else {
 				appendNoSuchUser(response, user);
 			}
@@ -215,6 +230,31 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 					appendNoSuchUser(response, user);
 				}
 			}
+		} else if (text.startsWith("resetpw ")) {
+			if (!hub.isUINAdmin(targetUIN)) {
+				response.append(COL_CHAT);
+				response.append("You're not allowed to do that!\n");
+			} else {
+				String user = text.substring(5);
+				BabelShortUserData userData = commandLookupUser(user);
+				if (userData != null) {
+					String newPW;
+					try {
+						newPW = Long.toHexString(SecureRandom.getInstanceStrong().nextLong() | 0x8000000000000000L);
+						if (hub.changePassword(userData.uin, newPW)) {
+							response.append(COL_CHAT);
+							response.append("Reset password to: " + newPW + "\n");
+						} else {
+							response.append(COL_CHAT);
+							response.append("Failed (not a normal user?)\n");
+						}
+					} catch (NoSuchAlgorithmException e) {
+						throw new RuntimeException(e);
+					}
+				} else {
+					appendNoSuchUser(response, user);
+				}
+			}
 		} else if (text.equals("who")) {
 			boolean first = true;
 			for (BabelShortUserData data : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
@@ -227,6 +267,14 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				first = false;
 			}
 			response.append("\n");
+		} else if (text.equals("allownbnorns")) {
+			hub.modUserFlags(targetUIN, ~NatsueUserInfo.FLAG_RECEIVE_NB_NORNS, NatsueUserInfo.FLAG_RECEIVE_NB_NORNS);
+			response.append(COL_CHAT);
+			response.append("NB norn receipt enabled\n");
+		} else if (text.equals("denynbnorns")) {
+			hub.modUserFlags(targetUIN, ~NatsueUserInfo.FLAG_RECEIVE_NB_NORNS, NatsueUserInfo.FLAG_RECEIVE_NB_NORNS);
+			response.append(COL_CHAT);
+			response.append("NB norn receipt disabled\n");
 		} else if (text.equals("kickme")) {
 			hub.forceDisconnectUIN(targetUIN, false);
 		} else if (text.equals("whoami")) {
@@ -239,13 +287,18 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			if (hub.isUINAdmin(targetUIN)) {
 				response.append("admin commands:\n");
 				response.append("kick Someone\n");
+				response.append("resetpw Someone\n");
 				response.append("You can send a global system message by mail, subject \"SYSTEM MSG\".\n");
 			} else {
 				response.append("What are you doing here?\n");
 			}
 		} else {
 			response.append(COL_CHAT);
-			response.append("Unknown command. Try:\nwhois !System\ncontact !System\nwho (show who's online)\n");
+			response.append("Unknown command. Try:\n");
+			response.append("whois !System\n");
+			response.append("contact !System\nwho (show who's online)\n");
+			response.append("who (show who's online)\n");
+			response.append("(allow/deny)nbnorns (WARNING: Crashes you if unmodded!)\n");
 			if (hub.isUINAdmin(targetUIN))
 				response.append("For admin tasks try: ahelp\n");
 		}
@@ -265,9 +318,9 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		// uuuh
 		PRAYTags res = new PRAYTags();
 		res.strMap.put("Chat Message Type", "Message");
-		res.strMap.put("Sender UserID", UINUtils.toString(userData.uin));
+		res.strMap.put("Sender UserID", UINUtils.toString(IDENTITY.uin));
 		res.strMap.put("ChatID", chatID);
-		res.strMap.put("Sender Nickname", userData.nickName);
+		res.strMap.put("Sender Nickname", IDENTITY.nickName);
 		res.strMap.put("Chat Message", text);
 		sendTagsMessage(targetUIN, "CHAT", res.toByteArray());
 	}
@@ -278,6 +331,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			randomRes = random.nextLong();
 		}
 		PRAYBlock pb = new PRAYBlock(type, "STM_" + randomRes + "_sysrsp", res);
-		hub.sendMessage(senderUIN, new PackedMessagePRAY(userData.uin, pb), true);
+		hub.sendMessage(senderUIN, new PackedMessagePRAY(IDENTITY.uin, pb), MsgSendType.Temp);
 	}
 }

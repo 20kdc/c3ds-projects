@@ -28,7 +28,7 @@ public interface INatsueDatabase {
 	 * Returns null on failure.
 	 */
 	default NatsueUserInfo getUserByUIN(long uin) {
-		if (UINUtils.hid(uin) == UINUtils.HID_USER)
+		if (UINUtils.isRegularUser(uin))
 			return getUserByUID(UINUtils.uid(uin));
 		return null;
 	}
@@ -70,4 +70,9 @@ public interface INatsueDatabase {
 	 * Tries to create a user with the given details.
 	 */
 	boolean tryCreateUser(NatsueUserInfo info);
+
+	/**
+	 * Tries to update a user's authentication details.
+	 */
+	boolean updateUserAuth(int uid, String hash, int flags);
 }

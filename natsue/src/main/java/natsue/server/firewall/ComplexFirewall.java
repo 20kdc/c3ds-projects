@@ -15,20 +15,25 @@ import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
+import natsue.log.ILogProvider;
+import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubPrivilegedAPI;
+import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 
 /**
  * A more complex firewall that analyzes messages to ensure they won't do anything "unusual" to clients.
  */
-public class ComplexFirewall implements IFirewall {
+public class ComplexFirewall implements IFirewall, ILogSource {
 	public final IHubPrivilegedAPI hub;
 	public final HashSet<String> knownBlocks = new HashSet<>();
 	public final HashSet<String> obviouslyDangerousBlocks = new HashSet<>();
 	public final HashSet<String> spoolableBlocks = new HashSet<>();
 	public final boolean restrictCustomBlocks;
+	private final ILogProvider parentLog;
 
-	public ComplexFirewall(IHubPrivilegedAPI h, boolean noCustomBlocks) {
+	public ComplexFirewall(ILogProvider pl, IHubPrivilegedAPI h, boolean noCustomBlocks) {
 		hub = h;
+		parentLog = pl;
 		restrictCustomBlocks = noCustomBlocks;
 		// Blocks that imply danger
 		obviouslyDangerousBlocks.add("DSAG"); // Agent injector
@@ -55,32 +60,65 @@ public class ComplexFirewall implements IFirewall {
 	}
 
 	@Override
+	public ILogProvider getLogParent() {
+		return parentLog;
+	}
+
+	@Override
 	public void wwrNotify(boolean online, BabelShortUserData userData) {
 	}
 
 	@Override
 	public void handleMessage(BabelShortUserData sourceUser, long destinationUIN, PackedMessage message) {
-		if (message.senderUIN != sourceUser.uin)
-			return;
+		message.senderUIN = sourceUser.uin;
 		boolean temp = false;
-		if (message instanceof PackedMessagePRAY) {
-			temp = true;
-			PackedMessagePRAY pray = (PackedMessagePRAY) message;
-			for (PRAYBlock block : pray.messageBlocks) {
-				String type = block.getType();
-				if (obviouslyDangerousBlocks.contains(type))
-					return;
-				if (restrictCustomBlocks && !knownBlocks.contains(type))
-					return;
-				if (spoolableBlocks.contains(type))
-					temp = false;
-				// Anti-falsification procedures
-				if (block.getType().equals("MESG")) {
-					sanitizeMESG(sourceUser, block);
+		String rejection = null;
+		try {
+			if (message instanceof PackedMessagePRAY) {
+				temp = true;
+				PackedMessagePRAY pray = (PackedMessagePRAY) message;
+				for (PRAYBlock block : pray.messageBlocks) {
+					String type = block.getType();
+					if (obviouslyDangerousBlocks.contains(type)) {
+						rejection = "Blatantly dangerous PRAY block type: " + type;
+						break;
+					}
+					if (restrictCustomBlocks && !knownBlocks.contains(type)) {
+						rejection = "Custom PRAY block type: " + type;
+						break;
+					}
+					if (spoolableBlocks.contains(type))
+						temp = false;
+					// Block-specific procedures
+					if (type.equals("MESG")) {
+						sanitizeMESG(sourceUser, block);
+					} else if (type.equals("warp")) {
+						// NB norn detector
+						PRAYTags pt = new PRAYTags();
+						pt.read(block.data);
+						int reA = pt.intMap.get("Family");
+						// not checking Genus right now - patch it when someone breaks it, things are on fire rn
+						int reC = pt.intMap.get("Gender");
+						boolean isNB = (reA != 4) || (reC != 1 && reC != 2);
+						if (isNB && !hub.isUINReceivingNBNorns(destinationUIN)) {
+							// NB norns crash people who aren't prepared to receive them.
+							rejection = "NB norn that target couldn't receive";
+							break;
+						}
+					}
 				}
 			}
+		} catch (Exception ex2) {
+			// oh no you DON'T
+			log(ex2);
+			hub.rejectMessage(destinationUIN, message, "Firewall threw exception");
+			return;
 		}
-		hub.sendMessage(destinationUIN, message, temp);
+		if (rejection != null) {
+			hub.rejectMessage(destinationUIN, message, rejection);
+		} else {
+			hub.sendMessage(destinationUIN, message, temp ? MsgSendType.Temp : MsgSendType.Perm);
+		}
 	}
 
 	/**

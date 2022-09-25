@@ -25,6 +25,11 @@ public class UINUtils {
 	public static int hid(long uin) {
 		return (short) (uin & 0xFFFF);
 	}
+
+	public static boolean isRegularUser(long uin) {
+		return hid(uin) == HID_USER;
+	}
+
 	public static long make(int uid, int hid) {
 		// the masking here is very important, it prevents issues with "uninitialized padding" HIDs
 		long uidl = uid & 0xFFFFFFFFL;

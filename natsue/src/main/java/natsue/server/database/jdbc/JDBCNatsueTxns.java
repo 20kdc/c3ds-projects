@@ -24,6 +24,7 @@ public class JDBCNatsueTxns {
 	public final UpdateCreatureText updateCreatureText = new UpdateCreatureText();
 	public final AddCreatureEvent addCreatureEvent = new AddCreatureEvent();
 	public final CreateUser createUser = new CreateUser();
+	public final UpdateUserAuth updateUserAuth = new UpdateUserAuth();
 
 	public static class UserByUID extends ILDBTxnGet<NatsueUserInfo> {
 		public int uid;
@@ -205,6 +206,26 @@ public class JDBCNatsueTxns {
 				stmt.setString(3, nicknameFolded);
 				stmt.setString(4, passwordHash);
 				stmt.setInt(5, flags);
+				stmt.executeUpdate();
+				return Boolean.TRUE;
+			}
+		}
+	}
+	public static class UpdateUserAuth extends ILDBTxn<Boolean> {
+		public int uid;
+		public String passwordHash;
+		public int flags;
+
+		public UpdateUserAuth() {
+			super(true, Boolean.FALSE);
+		}
+
+		@Override
+		protected Boolean executeInner(Connection conn) throws SQLException {
+			try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_users SET psha256=?, flags=? WHERE uid=?")) {
+				stmt.setString(1, passwordHash);
+				stmt.setInt(2, flags);
+				stmt.setInt(3, uid);
 				stmt.executeUpdate();
 				return Boolean.TRUE;
 			}

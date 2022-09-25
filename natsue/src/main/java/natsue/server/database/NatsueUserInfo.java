@@ -22,6 +22,10 @@ public class NatsueUserInfo {
 	 * Account has been frozen.
 	 */
 	public static final int FLAG_FROZEN = 2;
+	/**
+	 * Account can receive NB norns.
+	 */
+	public static final int FLAG_RECEIVE_NB_NORNS = 4;
 
 	public final String nickname, nicknameFolded;
 	/**

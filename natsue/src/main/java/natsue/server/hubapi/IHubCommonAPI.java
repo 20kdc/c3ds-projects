@@ -45,6 +45,10 @@ public interface IHubCommonAPI {
 		return (getUINFlags(uin) & NatsueUserInfo.FLAG_ADMINISTRATOR) != 0;
 	}
 
+	default boolean isUINReceivingNBNorns(long uin) {
+		return (getUINFlags(uin) & NatsueUserInfo.FLAG_RECEIVE_NB_NORNS) != 0;
+	}
+
 	/**
 	 * Gets a UIN reserved for this server.
 	 */
