@@ -2,6 +2,9 @@
 # And we need to be careful about it because we want this to work on any distribution.
 # We also need to ship ciesetup itself (which is shipped as a Makefile, sort of a DIY "fix the game" mechanism)
 
+.PHONY: ciesetup
+ciesetup: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
+
 # Core Makefiles
 rel: ciesetup/Makefile ciesetup/ds.mk ciesetup/c3.mk
 # Manual

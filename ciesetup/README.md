@@ -1,6 +1,6 @@
 # ciesetup
 
-*STATUS: Incomplete But Theoretically Useful*
+*STATUS: Hopefully of use*
 
 ciesetup is a process designed to take one of three files:
 
@@ -24,11 +24,11 @@ You're expected to install them yourself if that's what you want.
 
 ## Usage
 
-1. **If you're cloning directly with Git and you have not already run `make` at the repository root, go do that now.**
-2. Place one of the above described files into the `repo` directory.
-3. Confirm you have: `libportaudio2:i386` (or your distribution's equivalent), `zenity`, `python3`, and GNU `make`.
+1. Confirm you have: `libportaudio2:i386` (or your distribution's equivalent), `portaudio19-dev` (if cloning with Git), `zenity`, `python3`, and GNU `make`.
+2. **If you're cloning directly with Git and you have not already run `make ciesetup` at the repository root, go do that now.**
+3. Place one of the above described files into the `repo` directory.
 4. Run `make` in the `ciesetup` directory. The result should be `repo/unified.tar`.
-5. Extract `unified.tar` to wherever you want to install the game.
+5. Extract `pkg_engine.tar` and `pkg_dockingstation.tar` to wherever you want to install the game.
 
 ## What Went Wrong (i.e. why does this exist?)
 
