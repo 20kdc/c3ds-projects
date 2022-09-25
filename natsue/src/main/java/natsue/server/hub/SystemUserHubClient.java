@@ -25,9 +25,10 @@ import natsue.data.pray.PRAYTags;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.names.PWHash;
-import natsue.server.database.NatsueUserInfo;
+import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
+import natsue.server.hubapi.INatsueUserData;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 
 /**
@@ -36,7 +37,8 @@ import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 public class SystemUserHubClient implements IHubClient, ILogSource {
 	public final IHubPrivilegedClientAPI hub;
 	private final ILogProvider logParent;
-	public static final BabelShortUserData IDENTITY = new BabelShortUserData("", "", "!System", UINUtils.SERVER_UIN);
+	public static final long UIN = UINUtils.SERVER_UIN;
+	public static final INatsueUserData.Root IDENTITY = new INatsueUserData.Fixed(new BabelShortUserData("", "", "!System", UIN), FLAG_RECEIVE_NB_NORNS);
 	public final int maxDecompressedPRAYSize;
 
 	private final Random random = new Random();
@@ -57,7 +59,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
-	public BabelShortUserData getUserData() {
+	public INatsueUserData.Root getUserData() {
 		return IDENTITY;
 	}
 
@@ -73,8 +75,8 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
-	public void wwrNotify(boolean online, BabelShortUserData theirData) {
-		hub.sendMessage(theirData.uin, StandardMessages.addToContactList(theirData.uin, IDENTITY.uin), MsgSendType.Temp);
+	public void wwrNotify(boolean online, INatsueUserData theirData) {
+		hub.sendMessage(theirData.getUIN(), StandardMessages.addToContactList(theirData.getUIN(), UIN), MsgSendType.Temp);
 		/*
 		writ = WritVal.encodeWrit("system_message", 2469, "You didn't say the magic word!", null);
 		try {
@@ -93,7 +95,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				for (PRAYBlock pb : info) {
 					if (pb.getType().equals("GLST")) {
 						// Trapped creature - RETURN TO SENDER IMMEDIATELY
-						hub.rejectMessage(IDENTITY.uin, message, "!System isn't accepting creatures");
+						hub.rejectMessage(UIN, message, "!System isn't accepting creatures");
 						return;
 					}
 				}
@@ -109,12 +111,12 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 						if (str.equals("Request")) {
 							// Yes - we need to accept.
 							PRAYTags res = new PRAYTags();
-							String myUINStr = UINUtils.toString(IDENTITY.uin);
+							String myUINStr = UINUtils.toString(UIN);
 							res.strMap.put("Sender UserID", myUINStr);
 							res.strMap.put("Date Sent", pt.strMap.get("Date Sent"));
 							res.strMap.put("ChatID", pt.strMap.get("ChatID"));
 							res.strMap.put("Request Type", "Accept");
-							res.strMap.put("Sender Nickname", IDENTITY.nickName);
+							res.strMap.put("Sender Nickname", getNickName());
 							sendTagsMessage(message.senderUIN, "REQU", res.toByteArray());
 						}
 					} else if (chatType.equals("CHAT")) {
@@ -137,11 +139,11 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 						if ((subject != null) && (msg != null)) {
 							if (subject.equalsIgnoreCase("SYSTEM MSG")) {
 								if (hub.isUINAdmin(message.senderUIN)) {
-									for (BabelShortUserData sud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
-										hub.sendMessage(sud.uin, StandardMessages.systemMessage(sud.uin, msg), MsgSendType.Temp);
+									for (INatsueUserData sud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
+										hub.sendMessage(sud.getUIN(), StandardMessages.systemMessage(sud.getUIN(), msg), MsgSendType.Temp);
 									}
 								} else {
-									// >:(
+									hub.rejectMessage(UIN, message, "Have to be admin");
 								}
 							}
 						}
@@ -153,38 +155,38 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		}
 	}
 
-	private BabelShortUserData commandLookupUser(String ref) {
+	private INatsueUserData commandLookupUser(String ref) {
 		int plusIdx = ref.indexOf('+');
 		if (plusIdx >= 0) {
 			try {
 				String a = ref.substring(0, plusIdx);
 				String b = ref.substring(plusIdx + 1);
-				return hub.getShortUserDataByUIN(UINUtils.make(Integer.valueOf(a), Integer.valueOf(b)));
+				return hub.getUserDataByUIN(UINUtils.make(Integer.valueOf(a), Integer.valueOf(b)));
 			} catch (Exception ex) {
 				return null;
 			}
 		}
-		return hub.getShortUserDataByNickname(ref);
+		return hub.getUserDataByNickname(ref);
 	}
 
 	private void handleChatMessage(long targetUIN, String chatID, String text) {
 		StringBuilder response = new StringBuilder();
 		if (text.startsWith("whois ")) {
 			String user = text.substring(6);
-			BabelShortUserData userData = commandLookupUser(user);
+			INatsueUserData userData = commandLookupUser(user);
 			if (userData != null) {
-				response.append(userData.nickName);
+				response.append(userData.getNickName());
 				response.append(COL_CHAT);
 				response.append(" - ");
-				if (hub.isUINOnline(userData.uin)) {
+				if (hub.isUINOnline(userData.getUIN())) {
 					response.append("<tint 64 255 64>Online\n");
 				} else {
 					response.append("<tint 255 64 64>Offline\n");
 				}
 				response.append(COL_CHAT);
 				response.append("UIN: ");
-				response.append(UINUtils.toString(userData.uin));
-				int hid = UINUtils.hid(userData.uin); 
+				response.append(userData.getUINString());
+				int hid = UINUtils.hid(userData.getUIN()); 
 				if (hid == UINUtils.HID_SYSTEM) {
 					response.append(" <tint 64 64 255>(SYSTEM)\n");
 				} else if (hid == UINUtils.HID_USER) {
@@ -192,14 +194,13 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				} else {
 					response.append(" <tint 255 64 64>(" + hid + ")\n");
 				}
-				int flags = hub.getUINFlags(userData.uin);
 				response.append(COL_CHAT);
 				response.append("Flags:");
-				if ((flags & NatsueUserInfo.FLAG_ADMINISTRATOR) != 0)
+				if (userData.isAdmin())
 					response.append(" ADMIN");
-				if ((flags & NatsueUserInfo.FLAG_FROZEN) != 0)
+				if (userData.isFrozen())
 					response.append(" FROZEN");
-				if ((flags & NatsueUserInfo.FLAG_RECEIVE_NB_NORNS) != 0)
+				if (userData.isReceivingNBNorns())
 					response.append(" RECVNB");
 				response.append("\n");
 			} else {
@@ -207,11 +208,11 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			}
 		} else if (text.startsWith("contact ")) {
 			String user = text.substring(8);
-			BabelShortUserData userData = commandLookupUser(user);
+			INatsueUserData userData = commandLookupUser(user);
 			if (userData != null) {
 				response.append(COL_CHAT);
 				response.append("Adding to your contact list...\n");
-				hub.sendMessage(targetUIN, StandardMessages.addToContactList(targetUIN, userData.uin), MsgSendType.Temp);
+				hub.sendMessage(targetUIN, StandardMessages.addToContactList(targetUIN, userData.getUIN()), MsgSendType.Temp);
 			} else {
 				appendNoSuchUser(response, user);
 			}
@@ -221,11 +222,11 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				response.append("You're not allowed to do that!\n");
 			} else {
 				String user = text.substring(5);
-				BabelShortUserData userData = commandLookupUser(user);
+				INatsueUserData userData = commandLookupUser(user);
 				if (userData != null) {
 					response.append(COL_CHAT);
 					response.append("Kicking (if online).\n");
-					hub.forceDisconnectUIN(userData.uin, false);
+					hub.forceDisconnectUIN(userData.getUIN(), false);
 				} else {
 					appendNoSuchUser(response, user);
 				}
@@ -236,12 +237,12 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				response.append("You're not allowed to do that!\n");
 			} else {
 				String user = text.substring(8);
-				BabelShortUserData userData = commandLookupUser(user);
+				INatsueUserData userData = commandLookupUser(user);
 				if (userData != null) {
 					String newPW;
 					try {
 						newPW = Long.toHexString(SecureRandom.getInstanceStrong().nextLong() | 0x8000000000000000L);
-						if (hub.changePassword(userData.uin, newPW)) {
+						if (hub.changePassword(userData.getUIN(), newPW)) {
 							response.append(COL_CHAT);
 							response.append("Reset password to: " + newPW + "\n");
 						} else {
@@ -266,22 +267,22 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			}
 		} else if (text.equals("who")) {
 			boolean first = true;
-			for (BabelShortUserData data : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
+			for (INatsueUserData data : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
 				if (!first) {
 					response.append(COL_CHAT);
 					response.append(", ");
 					response.append(COL_NICKNAME);
 				}
-				response.append(data.nickName);
+				response.append(data.getNickName());
 				first = false;
 			}
 			response.append("\n");
 		} else if (text.equals("allownbnorns")) {
-			hub.modUserFlags(targetUIN, ~NatsueUserInfo.FLAG_RECEIVE_NB_NORNS, NatsueUserInfo.FLAG_RECEIVE_NB_NORNS);
+			hub.modUserFlags(targetUIN, ~NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS, NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS);
 			response.append(COL_CHAT);
 			response.append("NB norn receipt enabled\n");
 		} else if (text.equals("denynbnorns")) {
-			hub.modUserFlags(targetUIN, ~NatsueUserInfo.FLAG_RECEIVE_NB_NORNS, 0);
+			hub.modUserFlags(targetUIN, ~NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS, 0);
 			response.append(COL_CHAT);
 			response.append("NB norn receipt disabled\n");
 		} else if (text.equals("kickme")) {
@@ -328,9 +329,9 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		// uuuh
 		PRAYTags res = new PRAYTags();
 		res.strMap.put("Chat Message Type", "Message");
-		res.strMap.put("Sender UserID", UINUtils.toString(IDENTITY.uin));
+		res.strMap.put("Sender UserID", UINUtils.toString(UIN));
 		res.strMap.put("ChatID", chatID);
-		res.strMap.put("Sender Nickname", IDENTITY.nickName);
+		res.strMap.put("Sender Nickname", IDENTITY.getNickName());
 		res.strMap.put("Chat Message", text);
 		sendTagsMessage(targetUIN, "CHAT", res.toByteArray());
 	}
@@ -341,6 +342,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			randomRes = random.nextLong();
 		}
 		PRAYBlock pb = new PRAYBlock(type, "STM_" + randomRes + "_sysrsp", res);
-		hub.sendMessage(senderUIN, new PackedMessagePRAY(IDENTITY.uin, pb), MsgSendType.Temp);
+		hub.sendMessage(senderUIN, new PackedMessagePRAY(UIN, pb), MsgSendType.Temp);
 	}
 }

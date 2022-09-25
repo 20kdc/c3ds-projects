@@ -21,6 +21,7 @@ import natsue.server.hubapi.IHubClientAPI;
 import natsue.server.hubapi.IHubLoginAPI;
 import natsue.server.hubapi.IHubLoginAPI.ILoginReceiver;
 import natsue.server.hubapi.IHubLoginAPI.LoginResult.AccountFrozen;
+import natsue.server.hubapi.INatsueUserData;
 
 /**
  * This session state is to grab the initial handshake packet.
@@ -55,14 +56,14 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 		// -- attempt normal login --
 		IHubLoginAPI.LoginResult res = hub.loginUser(handshake.username, handshake.password, new ILoginReceiver<MainSessionState>() {
 			@Override
-			public MainSessionState receive(BabelShortUserData userData, IHubClientAPI clientAPI) {
+			public MainSessionState receive(INatsueUserData.Root userData, IHubClientAPI clientAPI) {
 				return new MainSessionState(config, client, clientAPI, userData);
 			}
 			@Override
 			public void confirm(MainSessionState result) {
 				client.setSessionState(result);
 				try {
-					client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, result.hub.getServerUIN(), result.userData.uin));
+					client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, result.hub.getServerUIN(), result.userData.getUIN()));
 				} catch (Exception ex) {
 					if (client.logFailedAuth())
 						log(ex);

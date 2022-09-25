@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import natsue.config.Config;
 import natsue.data.babel.BabelShortUserData;
@@ -25,11 +27,12 @@ import natsue.names.CreatureDataVerifier;
 import natsue.names.PWHash;
 import natsue.names.NicknameVerifier;
 import natsue.server.database.INatsueDatabase;
-import natsue.server.database.NatsueUserInfo;
+import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.firewall.IFirewall;
 import natsue.server.firewall.IRejector;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
+import natsue.server.hubapi.INatsueUserData;
 
 /**
  * Class that contains everything important to everything ever.
@@ -56,6 +59,13 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	public final ArrayList<Long> randomPool = new ArrayList<>();
 	public final Random randomGen = new Random();
 
+	/**
+	 * The read lock is taken during a client login.
+	 * The write lock is taken during operations that specifically INHIBIT client logins.
+	 * (Password changes and flags changes, as logging in during these upsets the cache.)
+	 */
+	private final ReentrantReadWriteLock clientLoginLock = new ReentrantReadWriteLock();
+
 	public ServerHub(Config cfg, ILogProvider logProvider, INatsueDatabase db) {
 		config = cfg;
 		logParent = logProvider;
@@ -74,8 +84,8 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public LinkedList<BabelShortUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem() {
-		LinkedList<BabelShortUserData> ll = new LinkedList<>();
+	public LinkedList<INatsueUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem() {
+		LinkedList<INatsueUserData> ll = new LinkedList<>();
 		synchronized (this) {
 			for (IHubClient client : connectedClients.values())
 				if (!client.isSystem())
@@ -85,7 +95,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public BabelShortUserData getShortUserDataByUIN(long uin) {
+	public INatsueUserData getUserDataByUIN(long uin) {
 		// Try a direct database lookup so that the system user doesn't asplode
 		IHubClient ihc;
 		synchronized (this) {
@@ -94,14 +104,14 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (ihc != null)
 			return ihc.getUserData();
 		// No? Oh well, then
-		NatsueUserInfo ui = database.getUserByUIN(uin);
+		NatsueDBUserInfo ui = database.getUserByUIN(uin);
 		if (ui != null)
-			return ui.convertToBabel();
+			return new INatsueUserData.Fixed(ui);
 		return null;
 	}
 
 	@Override
-	public BabelShortUserData getShortUserDataByNickname(String name) {
+	public INatsueUserData getUserDataByNickname(String name) {
 		name = NicknameVerifier.foldNickname(name);
 		IHubClient ihc;
 		synchronized (this) {
@@ -112,9 +122,9 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		// Ok, now check with database
 		if (!NicknameVerifier.verifyNickname(config.nicknames, name))
 			return null;
-		NatsueUserInfo ui = database.getUserByFoldedNickname(name);
+		NatsueDBUserInfo ui = database.getUserByFoldedNickname(name);
 		if (ui != null)
-			return ui.convertToBabel();
+			return new INatsueUserData.Fixed(ui);
 		return null;
 	}
 
@@ -126,19 +136,11 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public int getUINFlags(long uin) {
-		NatsueUserInfo ui = database.getUserByUIN(uin);
-		if (ui != null)
-			return ui.flags;
-		return 0;
-	}
-
-	@Override
-	public NatsueUserInfo usernameAndPasswordLookup(String username, String password, boolean allowedToRegister) {
+	public NatsueDBUserInfo usernameAndPasswordLookup(String username, String password, boolean allowedToRegister) {
 		String usernameFolded = NicknameVerifier.foldNickname(username);
 		if (!NicknameVerifier.verifyNickname(config.nicknames, usernameFolded))
 			return null;
-		NatsueUserInfo ui = database.getUserByFoldedNickname(usernameFolded);
+		NatsueDBUserInfo ui = database.getUserByFoldedNickname(usernameFolded);
 		if (allowedToRegister && ui == null && config.allowRegistration.getValue()) {
 			// If we fail this too many times, the DB's dead
 			for (int i = 0; i < config.registrationAttempts.getValue(); i++) {
@@ -150,7 +152,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				// negative numbers will probably fry the Warp inbox system!!!
 				if (uid <= 0)
 					continue;
-				NatsueUserInfo newUI = new NatsueUserInfo(uid, username, usernameFolded, PWHash.hash(uid, password), 0);
+				NatsueDBUserInfo newUI = new NatsueDBUserInfo(uid, username, usernameFolded, PWHash.hash(uid, password), 0);
 				boolean success = database.tryCreateUser(newUI);
 				if (success)
 					log("Registered user: " + username + " as UID " + uid);
@@ -171,6 +173,14 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public long getServerUIN() {
 		return UINUtils.SERVER_UIN;
+	}
+
+	@Override
+	public boolean isUINAdmin(long targetUIN) {
+		INatsueUserData userData = getUserDataByUIN(targetUIN);
+		if (userData != null)
+			return userData.isAdmin();
+		return false;
 	}
 
 	@Override
@@ -207,7 +217,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	 * WARNING: Only call if you're absolutely sure the person isn't presently online!
 	 */
 	private void spoolMessage(long destinationUIN, PackedMessage message, boolean fromRejector) {
-		NatsueUserInfo ui = database.getUserByUIN(destinationUIN);
+		NatsueDBUserInfo ui = database.getUserByUIN(destinationUIN);
 		if (ui != null) {
 			if (!database.spoolMessage(UINUtils.uid(ui.uid), message.toByteArray())) {
 				if (!fromRejector) {
@@ -257,21 +267,21 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		// We don't want the actual disconnect in the sync block.
 		// This is because forceDisconnect is supposed to make absolutely sure the client is gone.
 		// That implies a clientLogout needs to happen before it returns, and this may happen off-thread.
-		ihc.forceDisconnect(sync); // X.X
+		if (ihc != null)
+			ihc.forceDisconnect(sync); // X.X
 	}
 
 	/**
 	 * Must run in synchronized block, or else events will come too early.
 	 */
 	private LinkedList<IWWRListener> earlyClientLoginInSync(IHubClient cc) {
-		BabelShortUserData userData = cc.getUserData();
-		Long uin = userData.uin;
+		Long uin = cc.getUIN();
 		LinkedList<IWWRListener> wwrNotify;
 		if (connectedClients.containsKey(uin)) {
 			return null;
 		} else {
 			connectedClients.put(uin, cc);
-			String foldedNick = NicknameVerifier.foldNickname(userData.nickName);
+			String foldedNick = NicknameVerifier.foldNickname(cc.getNickName());
 			connectedClientsByNickname.put(foldedNick, cc);
 			if (!cc.isSystem())
 				randomPool.add(uin);
@@ -282,11 +292,11 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	private void lateClientLogin(IHubClient cc, LinkedList<IWWRListener> wwrNotify) {
-		BabelShortUserData userData = cc.getUserData();
+		long uin = cc.getUIN();
 		for (IWWRListener ihc : wwrNotify)
-			ihc.wwrNotify(true, cc.getUserData());
-		if (UINUtils.isRegularUser(userData.uin)) {
-			int uid = UINUtils.uid(userData.uin);
+			ihc.wwrNotify(true, cc);
+		if (UINUtils.isRegularUser(uin)) {
+			int uid = UINUtils.uid(uin);
 			// This is presumably a user in the database, dump all spool contents
 			while (true) {
 				byte[] pm = database.popFirstSpooledMessage(uid);
@@ -316,53 +326,60 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	@Override
 	public <X extends IHubClient> LoginResult loginUser(String username, String password, ILoginReceiver<X> makeClient) {
-		NatsueUserInfo userData = usernameAndPasswordLookup(username, password, true);
+		NatsueDBUserInfo userData = usernameAndPasswordLookup(username, password, true);
 		if (userData == null)
 			return LoginResult.FAILED_AUTH;
-		if ((userData.flags & NatsueUserInfo.FLAG_FROZEN) != 0)
+		if ((userData.flags & NatsueDBUserInfo.FLAG_FROZEN) != 0)
 			return new LoginResult.AccountFrozen(getServerUIN(), userData);
-		BabelShortUserData shortUserData = userData.convertToBabel();
-		X client = makeClient.receive(shortUserData, this);
-		// Ok, so here's where the whole connection shootdown thing happens.
-		// The for loop is for connection shootdown.
-		for (int pass = 0; pass < 2; pass++) {
-			LinkedList<IWWRListener> wwrNotify;
-			synchronized (this) {
-				wwrNotify = earlyClientLoginInSync(client);
-				// wwrNotify being null here means a conflict happened.
-				if (wwrNotify != null)
-					makeClient.confirm(client);
+		// Basically the entire login process needs to be under this lock. 
+		Lock rl = clientLoginLock.readLock();
+		rl.lock();
+		try {
+			// Create the active user data!
+			INatsueUserData.Root active = new HubActiveNatsueUserData(userData.convertToBabel(), userData.flags, userData.passwordHash);
+			X client = makeClient.receive(active, this);
+			// Ok, so here's where the whole connection shootdown thing happens.
+			// The for loop is for connection shootdown.
+			for (int pass = 0; pass < 2; pass++) {
+				LinkedList<IWWRListener> wwrNotify;
+				synchronized (this) {
+					wwrNotify = earlyClientLoginInSync(client);
+					// wwrNotify being null here means a conflict happened.
+					if (wwrNotify != null)
+						makeClient.confirm(client);
+				}
+				if (wwrNotify != null) {
+					lateClientLogin(client, wwrNotify);
+					return LoginResult.SUCCESS;
+				}
+				// If we get here, conflict happened. Are we allowed to perform connection shootdown?
+				if (!config.allowConnectionShootdown.getValue())
+					break;
+				// Ok, we are then. Take the shot.
+				forceDisconnectUIN(userData.getUIN(), true);
 			}
-			if (wwrNotify != null) {
-				lateClientLogin(client, wwrNotify);
-				return LoginResult.SUCCESS;
-			}
-			// If we get here, conflict happened. Are we allowed to perform connection shootdown?
-			if (!config.allowConnectionShootdown.getValue())
-				break;
-			// Ok, we are then. Take the shot.
-			forceDisconnectUIN(shortUserData.uin, true);
+			return new LoginResult.FailedConflict(userData);
+		} finally {
+			rl.unlock();
 		}
-		return new LoginResult.FailedConflict(userData);
 	}
 
 	@Override
 	public void clientLogout(IHubClient cc) {
-		BabelShortUserData userData = cc.getUserData();
-		Long uin = userData.uin;
+		Long uin = cc.getUIN();
 		LinkedList<IWWRListener> wwrNotify;
 		synchronized (this) {
 			randomPool.remove(uin);
 			if (connectedClients.get(uin) == cc) {
 				connectedClients.remove(uin);
-				String foldedNick = NicknameVerifier.foldNickname(userData.nickName);
+				String foldedNick = NicknameVerifier.foldNickname(cc.getNickName());
 				connectedClientsByNickname.remove(foldedNick);
 			}
 			wwrListeners.remove(cc);
 			wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
 		}
 		for (IWWRListener ihc : wwrNotify)
-			ihc.wwrNotify(false, userData);
+			ihc.wwrNotify(false, cc);
 	}
 
 	@Override
@@ -376,7 +393,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			return;
 		String sanityError = history.verifySanity();
 		if (sanityError == null) {
-			int senderUID = UINUtils.uid(cc.getUserData().uin);
+			int senderUID = UINUtils.uid(cc.getUIN());
 			if (history.state != null) {
 				String cName = CreatureDataVerifier.stripName(config, history.name);
 				String cUserText = CreatureDataVerifier.stripUserText(config, history.userText);
@@ -388,7 +405,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				database.ensureCreatureEvent(senderUID, history.moniker, le.index, le.eventType, le.worldTime, le.ageTicks, le.unixTime, le.lifeStage, a, b, le.worldName, le.worldID, le.userID);
 			}
 		} else if (config.logHistorySanityFailures.getValue()) {
-			log("History sanity failure from " + cc.getUserData().nickName + ": " + sanityError);
+			log("History sanity failure from " + cc.getNickName() + ": " + sanityError);
 		}
 	}
 
@@ -397,8 +414,39 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (!UINUtils.isRegularUser(uin))
 			return false;
 		int uid = UINUtils.uid(uin);
-		NatsueUserInfo nui = database.getUserByUID(uid);
-		return database.updateUserAuth(uid, nui.passwordHash, (nui.flags & and) ^ xor);
+		Lock wLock = clientLoginLock.writeLock();
+		wLock.lock();
+		try {
+			// ServerHub (in loginUser) is responsible for providing a cache of current user data.
+			// Unlike with the UID/nickname lookup functions, we guarantee it's kept roughly up to date.
+			// Subject to some restrictions, anyway.
+			// To maintain this guarantee, we need to find the user.
+			IHubClient client = null;
+			HubActiveNatsueUserData activeToMod = null;
+			synchronized (this) {
+				client = connectedClients.get(uin);
+				// Client can logout after this point, but wLock makes sure they don't login again
+			}
+			if (client != null) {
+				INatsueUserData.Root root = client.getUserData();
+				if (root instanceof HubActiveNatsueUserData)
+					activeToMod = (HubActiveNatsueUserData) root;
+			}
+			if (activeToMod != null) {
+				int newFlags = (activeToMod.flags & and) ^ xor;
+				if (database.updateUserAuth(uid, activeToMod.pwHash, newFlags)) {
+					activeToMod.flags = newFlags;
+					return true;
+				}
+			} else {
+				// No active user, be naive
+				NatsueDBUserInfo nui = database.getUserByUID(uid);
+				return database.updateUserAuth(uid, nui.passwordHash, (nui.flags & and) ^ xor);
+			}
+		} finally {
+			wLock.unlock();
+		}
+		return false;
 	}
 
 	@Override
@@ -406,7 +454,34 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (!UINUtils.isRegularUser(uin))
 			return false;
 		int uid = UINUtils.uid(uin);
-		NatsueUserInfo nui = database.getUserByUID(uid);
-		return database.updateUserAuth(uid, PWHash.hash(uid, newPW), nui.flags);
+		newPW = PWHash.hash(uid, newPW);
+		Lock wLock = clientLoginLock.writeLock();
+		wLock.lock();
+		try {
+			IHubClient client = null;
+			HubActiveNatsueUserData activeToMod = null;
+			synchronized (this) {
+				client = connectedClients.get(uin);
+				// Client can logout after this point, but wLock makes sure they don't login again
+			}
+			if (client != null) {
+				INatsueUserData.Root root = client.getUserData();
+				if (root instanceof HubActiveNatsueUserData)
+					activeToMod = (HubActiveNatsueUserData) root;
+			}
+			if (activeToMod != null) {
+				if (database.updateUserAuth(uid, newPW, activeToMod.flags)) {
+					activeToMod.pwHash = newPW;
+					return true;
+				}
+			} else {
+				// No active user, be naive
+				NatsueDBUserInfo nui = database.getUserByUID(uid);
+				return database.updateUserAuth(uid, newPW, nui.flags);
+			}
+		} finally {
+			wLock.unlock();
+		}
+		return false;
 	}
 }

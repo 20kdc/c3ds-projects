@@ -7,9 +7,9 @@
 
 package natsue.server.firewall;
 
-import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.hub.IWWRListener;
+import natsue.server.hubapi.INatsueUserData;
 
 /**
  * Responsible for filtering messages to prevent malicious stuff going through the server.
@@ -18,5 +18,5 @@ public interface IFirewall extends IWWRListener {
 	/**
 	 * Handles a message. NOTE: The message may be modified by this function!
 	 */
-	public void handleMessage(BabelShortUserData sourceUser, long destinationUIN, PackedMessage message);
+	public void handleMessage(INatsueUserData sourceUser, long destinationUIN, PackedMessage message);
 }

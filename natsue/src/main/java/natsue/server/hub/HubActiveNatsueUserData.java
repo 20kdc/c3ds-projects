@@ -5,31 +5,36 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.server.firewall;
+package natsue.server.hub;
 
 import natsue.data.babel.BabelShortUserData;
-import natsue.data.babel.pm.PackedMessage;
-import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.INatsueUserData;
-import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 
 /**
- * TESTING ONLY
+ * Used by ServerHub to keep data on active users up to date.
  */
-public class RejectAllFirewall implements IFirewall {
-	public final IHubPrivilegedAPI hub;
+class HubActiveNatsueUserData implements INatsueUserData.Root {
+	public final BabelShortUserData babel;
+	public volatile int flags;
 
-	public RejectAllFirewall(IHubPrivilegedAPI h) {
-		hub = h;
+	/**
+	 * This data is carried along because flags & the password hash is updated at once.
+	 */
+	public volatile String pwHash;
+
+	public HubActiveNatsueUserData(BabelShortUserData b, int f, String pws) {
+		babel = b;
+		flags = f;
+		pwHash = pws;
 	}
 
 	@Override
-	public void wwrNotify(boolean online, INatsueUserData userData) {
+	public BabelShortUserData getBabelUserData() {
+		return babel;
 	}
 
 	@Override
-	public void handleMessage(INatsueUserData sourceUser, long destinationUIN, PackedMessage message) {
-		message.senderUIN = sourceUser.getUIN();
-		hub.rejectMessage(destinationUIN, message, "Rejecting everything");
+	public int getFlags() {
+		return flags;
 	}
 }

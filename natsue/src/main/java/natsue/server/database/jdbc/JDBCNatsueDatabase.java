@@ -20,7 +20,7 @@ import natsue.config.ConfigDB;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.database.INatsueDatabase;
-import natsue.server.database.NatsueUserInfo;
+import natsue.server.database.NatsueDBUserInfo;
 
 /**
  * JDBC-based Natsue database implementation.
@@ -50,7 +50,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public NatsueUserInfo getUserByUID(int uid) {
+	public NatsueDBUserInfo getUserByUID(int uid) {
 		synchronized (this) {
 			txns.userByUID.uid = uid;
 			return txns.userByUID.executeOuter(txnHost);
@@ -58,7 +58,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public NatsueUserInfo getUserByFoldedNickname(String nickname) {
+	public NatsueDBUserInfo getUserByFoldedNickname(String nickname) {
 		synchronized (this) {
 			txns.userByFoldedNickname.nicknameFolded = nickname;
 			return txns.userByFoldedNickname.executeOuter(txnHost);
@@ -129,7 +129,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public boolean tryCreateUser(NatsueUserInfo userInfo) {
+	public boolean tryCreateUser(NatsueDBUserInfo userInfo) {
 		synchronized (this) {
 			txns.createUser.uid = userInfo.uid;
 			txns.createUser.nickname = userInfo.nickname;

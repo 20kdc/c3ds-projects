@@ -11,7 +11,7 @@ import java.util.LinkedList;
 
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
-import natsue.server.database.NatsueUserInfo;
+import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.firewall.IRejector;
 
 /**
@@ -21,14 +21,14 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI, IRejecto
 	/**
 	 * Returns all user info that does not belong to system users.
 	 */
-	LinkedList<BabelShortUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem();
+	LinkedList<INatsueUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem();
 
 	/**
 	 * Given a user's username and password, provides a NatsueUserInfo (successful login), or null.
 	 * The username will be automatically folded.
 	 * Note this will still return the value for frozen accounts.
 	 */
-	NatsueUserInfo usernameAndPasswordLookup(String username, String password, boolean allowedToRegister);
+	NatsueDBUserInfo usernameAndPasswordLookup(String username, String password, boolean allowedToRegister);
 
 	/**
 	 * Modifies the flags of a user.

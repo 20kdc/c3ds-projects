@@ -11,6 +11,7 @@ import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
+import natsue.server.hubapi.INatsueUserData;
 
 /**
  * Just does the absolute bare minimum: Confirming messages aren't totally faked.
@@ -23,12 +24,12 @@ public class TrivialFirewall implements IFirewall {
 	}
 
 	@Override
-	public void wwrNotify(boolean online, BabelShortUserData userData) {
+	public void wwrNotify(boolean online, INatsueUserData userData) {
 	}
 
 	@Override
-	public void handleMessage(BabelShortUserData sourceUser, long destinationUIN, PackedMessage message) {
-		message.senderUIN = sourceUser.uin;
+	public void handleMessage(INatsueUserData sourceUser, long destinationUIN, PackedMessage message) {
+		message.senderUIN = sourceUser.getUIN();
 		hub.sendMessage(destinationUIN, message, MsgSendType.Perm);
 	}
 }

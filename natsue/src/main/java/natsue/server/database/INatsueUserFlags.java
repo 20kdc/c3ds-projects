@@ -7,47 +7,51 @@
 
 package natsue.server.database;
 
-import natsue.data.babel.BabelShortUserData;
-import natsue.data.babel.UINUtils;
-
 /**
- * Information on a user. 
+ * Mixin for classes that contain Natsue user flags.
  */
-public class NatsueUserInfo {
+public interface INatsueUserFlags {
 	/**
 	 * Administrator.
 	 */
 	public static final int FLAG_ADMINISTRATOR = 1;
+
 	/**
 	 * Account has been frozen.
 	 */
 	public static final int FLAG_FROZEN = 2;
+
 	/**
 	 * Account can receive NB norns.
 	 */
 	public static final int FLAG_RECEIVE_NB_NORNS = 4;
 
-	public final String nickname, nicknameFolded;
 	/**
-	 * Hex-encoded lowercase sha256 hash of the password.
+	 * Gets the flags of this user.
+	 * These can be mutated by modUserFlags on regular users.
+	 * See INatsueUserFlags for flag values.
 	 */
-	public final String passwordHash;
-	public final int uid;
-	public final int flags;
+	int getFlags();
 
-	public NatsueUserInfo(int ui, String n, String nf, String p, int f) {
-		uid = ui;
-		nickname = n;
-		nicknameFolded = nf;
-		passwordHash = p;
-		flags = f;
+	/**
+	 * Is this user an administrator?
+	 */
+	default boolean isAdmin() {
+		return (getFlags() & NatsueDBUserInfo.FLAG_ADMINISTRATOR) != 0;
 	}
 
-	public long getUIN() {
-		return UINUtils.make(uid, UINUtils.HID_USER);
+	/**
+	 * Is this user frozen (banned)?
+	 */
+	default boolean isFrozen() {
+		return (getFlags() & NatsueDBUserInfo.FLAG_FROZEN) != 0;
 	}
 
-	public BabelShortUserData convertToBabel() {
-		return new BabelShortUserData("", "", nickname, UINUtils.make(uid, UINUtils.HID_USER));
+	/**
+	 * Is this user willing to receive Norns with species values other than 1 and 2?
+	 * NOTE: Said Norns can crash people without necessary client mods
+	 */
+	default boolean isReceivingNBNorns() {
+		return (getFlags() & NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS) != 0;
 	}
 }

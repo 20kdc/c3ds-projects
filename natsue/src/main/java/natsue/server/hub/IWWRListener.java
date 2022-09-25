@@ -7,7 +7,7 @@
 
 package natsue.server.hub;
 
-import natsue.data.babel.BabelShortUserData;
+import natsue.server.hubapi.INatsueUserData;
 
 /**
  * WWR listener, i.e. knows when people join/leave
@@ -16,5 +16,5 @@ public interface IWWRListener {
 	/**
 	 * For online/offline notifications.
 	 */
-	void wwrNotify(boolean online, BabelShortUserData userData);
+	void wwrNotify(boolean online, INatsueUserData userData);
 }

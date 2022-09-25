@@ -19,6 +19,7 @@ import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
+import natsue.server.hubapi.INatsueUserData;
 
 /**
  * A more complex firewall that analyzes messages to ensure they won't do anything "unusual" to clients.
@@ -65,16 +66,21 @@ public class ComplexFirewall implements IFirewall, ILogSource {
 	}
 
 	@Override
-	public void wwrNotify(boolean online, BabelShortUserData userData) {
+	public void wwrNotify(boolean online, INatsueUserData userData) {
 	}
 
 	@Override
-	public void handleMessage(BabelShortUserData sourceUser, long destinationUIN, PackedMessage message) {
-		message.senderUIN = sourceUser.uin;
+	public void handleMessage(INatsueUserData sourceUser, long destinationUIN, PackedMessage message) {
+		message.senderUIN = sourceUser.getUIN();
+		INatsueUserData destUserInfo = hub.getUserDataByUIN(destinationUIN);
 		boolean temp = false;
 		String rejection = null;
 		try {
-			if (message instanceof PackedMessagePRAY) {
+			if (destUserInfo == null) {
+				rejection = "Destination non-existent";
+			} else if (destUserInfo.isFrozen()) {
+				rejection = "Destination frozen";
+			} else if (message instanceof PackedMessagePRAY) {
 				temp = true;
 				PackedMessagePRAY pray = (PackedMessagePRAY) message;
 				for (PRAYBlock block : pray.messageBlocks) {
@@ -99,7 +105,7 @@ public class ComplexFirewall implements IFirewall, ILogSource {
 						// not checking Genus right now - patch it when someone breaks it, things are on fire rn
 						int reC = pt.intMap.get("Gender");
 						boolean isNB = reC != 1 && reC != 2;
-						if (isNB && !hub.isUINReceivingNBNorns(destinationUIN)) {
+						if (isNB && !destUserInfo.isReceivingNBNorns()) {
 							// NB norns crash people who aren't prepared to receive them.
 							rejection = "NB norn that target couldn't receive";
 							break;
@@ -123,11 +129,11 @@ public class ComplexFirewall implements IFirewall, ILogSource {
 	/**
 	 * Sanitizes a MESG block to make sure the sender isn't faked.
 	 */
-	public void sanitizeMESG(BabelShortUserData sourceUser, PRAYBlock mesgBlock) {
+	public void sanitizeMESG(INatsueUserData sourceUser, PRAYBlock mesgBlock) {
 		PRAYTags pt = new PRAYTags();
 		pt.read(mesgBlock.data);
-		pt.strMap.put("Sender UserID", UINUtils.toString(sourceUser.uin));
-		pt.strMap.put("Sender Nickname", sourceUser.nickName);
+		pt.strMap.put("Sender UserID", sourceUser.getUINString());
+		pt.strMap.put("Sender Nickname", sourceUser.getNickName());
 		mesgBlock.data = pt.toByteArray();
 	}
 }

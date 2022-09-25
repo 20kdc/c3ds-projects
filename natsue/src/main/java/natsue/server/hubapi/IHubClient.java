@@ -7,21 +7,13 @@
 
 package natsue.server.hubapi;
 
-import java.io.IOException;
-
-import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.hub.IWWRListener;
 
 /**
  * Interface for a client connected to the hub (this means AUTHENTICATED!!!)
  */
-public interface IHubClient extends IWWRListener {
-	/**
-	 * Returns user data, which includes the UIN.
-	 */
-	BabelShortUserData getUserData();
-
+public interface IHubClient extends IWWRListener, INatsueUserData.Proxy {
 	/**
 	 * Is this a system user (and thus ineligible for random user selection)?
 	 * NOTE: This is checked on login and at no other points.

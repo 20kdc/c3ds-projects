@@ -31,17 +31,18 @@ import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubClientAPI;
+import natsue.server.hubapi.INatsueUserData;
 
 /**
  * This session state is used while connected to the hub.
  */
 public class MainSessionState extends BaseSessionState implements IHubClient, ILogSource {
-	public final BabelShortUserData userData;
+	public final INatsueUserData.Root userData;
 	public final IHubClientAPI hub;
 	public final PingManager pingManager;
 	public final Config config;
 
-	public MainSessionState(Config cfg, ISessionClient c, IHubClientAPI h, BabelShortUserData uin) {
+	public MainSessionState(Config cfg, ISessionClient c, IHubClientAPI h, INatsueUserData.Root uin) {
 		super(c);
 		config = cfg;
 		pingManager = new PingManager(c);
@@ -55,7 +56,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	}
 
 	@Override
-	public BabelShortUserData getUserData() {
+	public INatsueUserData.Root getUserData() {
 		return userData;
 	}
 
@@ -81,21 +82,21 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			}
 		} else if (packet instanceof CTOSGetClientInfo) {
 			CTOSGetClientInfo pkt = (CTOSGetClientInfo) packet;
-			BabelShortUserData bsud = hub.getShortUserDataByUIN(pkt.targetUIN);
-			client.sendPacket(pkt.makeResponse(bsud != null ? bsud.packed : null));
+			INatsueUserData bsud = hub.getUserDataByUIN(pkt.targetUIN);
+			client.sendPacket(pkt.makeResponse(bsud != null ? bsud.getBabelUserData().packed : null));
 		} else if (packet instanceof CTOSWWRModify) {
 			CTOSWWRModify pkt = (CTOSWWRModify) packet;
 			// So to avoid someone flooding the system with a really big WWR, I've decided to simply pretend the WWR exists.
 			// And actually tell clients about EVERYBODY.
 			// But we should also give proper WWR indications when asked.
 			if (pkt.add) {
-				BabelShortUserData bsud = hub.getShortUserDataByUIN(pkt.targetUIN);
+				INatsueUserData bsud = hub.getUserDataByUIN(pkt.targetUIN);
 				if (bsud != null)
 					wwrNotify(hub.isUINOnline(pkt.targetUIN), bsud);
 			}
 		} else if (packet instanceof CTOSFetchRandomUser) {
 			CTOSFetchRandomUser pkt = (CTOSFetchRandomUser) packet;
-			client.sendPacket(pkt.makeResponse(hub.getRandomOnlineNonSystemUIN(config.excludeSelfRUSO.getValue() ? userData.uin : 0)));
+			client.sendPacket(pkt.makeResponse(hub.getRandomOnlineNonSystemUIN(config.excludeSelfRUSO.getValue() ? getUIN() : 0)));
 		} else if (packet instanceof CTOSMessage) {
 			CTOSMessage pkt = (CTOSMessage) packet;
 			try {
@@ -136,10 +137,10 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	}
 
 	@Override
-	public void wwrNotify(boolean online, BabelShortUserData userData) {
+	public void wwrNotify(boolean online, INatsueUserData userData) {
 		// no actual WWR but do give notifications
 		try {
-			client.sendPacket(PacketWriter.writeUserLine(online, userData.packed));
+			client.sendPacket(PacketWriter.writeUserLine(online, userData.getBabelUserData().packed));
 		} catch (IOException e) {
 			log(e);
 		}

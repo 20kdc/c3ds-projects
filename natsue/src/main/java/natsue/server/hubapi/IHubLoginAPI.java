@@ -7,10 +7,7 @@
 
 package natsue.server.hubapi;
 
-import java.util.function.Function;
-
-import natsue.data.babel.BabelShortUserData;
-import natsue.server.database.NatsueUserInfo;
+import natsue.server.database.NatsueDBUserInfo;
 
 /**
  * This is just the login APIs - in practice this is part of IHubLoginClientAPI or IHubPrivilegedAPI.
@@ -28,8 +25,13 @@ public interface IHubLoginAPI {
 		/**
 		 * Called to construct the IHubClient.
 		 * This is not confirmation of success.
+		 * NOTE: Your IHubClient's getUserData MUST return the given INatsueUserData.
+		 * Otherwise an exception will be thrown out of pure spite.
+		 * But seriously, the server can't properly track changing flags or password hashes.
+		 * Your IHubClient acts as the server's cache.
+		 * (This also implies that on logout, it isn't a cache anymore.)
 		 */
-		X receive(BabelShortUserData userData, IHubClientAPI clientAPI);
+		X receive(INatsueUserData.Root userData, IHubClientAPI clientAPI);
 		/**
 		 * Called to confirm success, just before the hub can start calls on the client.
 		 */
@@ -40,15 +42,15 @@ public interface IHubLoginAPI {
 		public static final LoginResult SUCCESS = new LoginResult();
 		public static final LoginResult FAILED_AUTH = new LoginResult();
 		public static class FailedConflict extends LoginResult {
-			public final NatsueUserInfo who;
-			public FailedConflict(NatsueUserInfo ui) {
+			public final NatsueDBUserInfo who;
+			public FailedConflict(NatsueDBUserInfo ui) {
 				who = ui;
 			}
 		}
 		public static class AccountFrozen extends LoginResult {
 			public final long serverUIN;
-			public final NatsueUserInfo who;
-			public AccountFrozen(long suin, NatsueUserInfo ui) {
+			public final NatsueDBUserInfo who;
+			public AccountFrozen(long suin, NatsueDBUserInfo ui) {
 				serverUIN = suin;
 				who = ui;
 			}

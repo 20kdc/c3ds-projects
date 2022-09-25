@@ -7,28 +7,26 @@
 
 package natsue.server.hubapi;
 
-import java.io.IOException;
-
-import natsue.data.babel.BabelShortUserData;
-import natsue.data.babel.pm.PackedMessage;
-import natsue.server.database.NatsueUserInfo;
+import natsue.server.database.NatsueDBUserInfo;
 
 /**
  * Represents the server.
  */
 public interface IHubCommonAPI {
 	/**
-	 * Gets a UIN by nickname.
+	 * Gets user data by nickname.
 	 * The nickname will be automatically folded.
 	 * Can and will return null.
+	 * NOTE: There is no guarantee that dynamic user data will remain accurate, particularly for offline users.
 	 */
-	BabelShortUserData getShortUserDataByNickname(String name);
+	INatsueUserData getUserDataByNickname(String name);
 
 	/**
-	 * Gets the name of a user by their UIN.
+	 * Gets user data by their UIN.
 	 * Can and will return null.
+	 * NOTE: There is no guarantee that dynamic user data will remain accurate, particularly for offline users.
 	 */
-	BabelShortUserData getShortUserDataByUIN(long uin);
+	INatsueUserData getUserDataByUIN(long uin);
 
 	/**
 	 * Returns true if the given UIN is online.
@@ -36,18 +34,9 @@ public interface IHubCommonAPI {
 	boolean isUINOnline(long uin);
 
 	/**
-	 * Returns the flags for the given UIN. See NatsueUserInfo for these flags.
-	 * Returns 0 on failure.
+	 * Returns true if the given UIN is an admin.
 	 */
-	int getUINFlags(long uin);
-
-	default boolean isUINAdmin(long uin) {
-		return (getUINFlags(uin) & NatsueUserInfo.FLAG_ADMINISTRATOR) != 0;
-	}
-
-	default boolean isUINReceivingNBNorns(long uin) {
-		return (getUINFlags(uin) & NatsueUserInfo.FLAG_RECEIVE_NB_NORNS) != 0;
-	}
+	boolean isUINAdmin(long targetUIN);
 
 	/**
 	 * Gets a UIN reserved for this server.

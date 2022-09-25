@@ -13,7 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import natsue.data.Snowflake;
-import natsue.server.database.NatsueUserInfo;
+import natsue.server.database.NatsueDBUserInfo;
 
 public class JDBCNatsueTxns {
 	public final UserByUID userByUID = new UserByUID();
@@ -26,7 +26,7 @@ public class JDBCNatsueTxns {
 	public final CreateUser createUser = new CreateUser();
 	public final UpdateUserAuth updateUserAuth = new UpdateUserAuth();
 
-	public static class UserByUID extends ILDBTxnGet<NatsueUserInfo> {
+	public static class UserByUID extends ILDBTxnGet<NatsueDBUserInfo> {
 		public int uid;
 
 		public UserByUID() {
@@ -38,7 +38,7 @@ public class JDBCNatsueTxns {
 			ps.setInt(1, uid);
 		}
 	}
-	public static class UserByFoldedNickname extends ILDBTxnGet<NatsueUserInfo> {
+	public static class UserByFoldedNickname extends ILDBTxnGet<NatsueDBUserInfo> {
 		public String nicknameFolded;
 
 		public UserByFoldedNickname() {

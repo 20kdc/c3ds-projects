@@ -21,13 +21,13 @@ public interface INatsueDatabase {
 	 * Gets a user by UID.
 	 * Returns null on failure.
 	 */
-	NatsueUserInfo getUserByUID(int uid);
+	NatsueDBUserInfo getUserByUID(int uid);
 
 	/**
 	 * Gets a user by UIN.
 	 * Returns null on failure.
 	 */
-	default NatsueUserInfo getUserByUIN(long uin) {
+	default NatsueDBUserInfo getUserByUIN(long uin) {
 		if (UINUtils.isRegularUser(uin))
 			return getUserByUID(UINUtils.uid(uin));
 		return null;
@@ -38,7 +38,7 @@ public interface INatsueDatabase {
 	 * The nickname is expected to be folded.
 	 * Returns null on failure.
 	 */
-	NatsueUserInfo getUserByFoldedNickname(String username);
+	NatsueDBUserInfo getUserByFoldedNickname(String username);
 
 	/**
 	 * Spools a PackedMessage.
@@ -69,7 +69,7 @@ public interface INatsueDatabase {
 	/**
 	 * Tries to create a user with the given details.
 	 */
-	boolean tryCreateUser(NatsueUserInfo info);
+	boolean tryCreateUser(NatsueDBUserInfo info);
 
 	/**
 	 * Tries to update a user's authentication details.
