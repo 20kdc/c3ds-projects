@@ -235,7 +235,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				response.append(COL_CHAT);
 				response.append("You're not allowed to do that!\n");
 			} else {
-				String user = text.substring(5);
+				String user = text.substring(8);
 				BabelShortUserData userData = commandLookupUser(user);
 				if (userData != null) {
 					String newPW;
@@ -255,6 +255,15 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 					appendNoSuchUser(response, user);
 				}
 			}
+		} else if (text.startsWith("setpw ")) {
+			String newPW = text.substring(6);
+			if (hub.changePassword(targetUIN, newPW)) {
+				response.append(COL_CHAT);
+				response.append("Reset password to: " + newPW + "\n");
+			} else {
+				response.append(COL_CHAT);
+				response.append("Failed (not a normal user?)\n");
+			}
 		} else if (text.equals("who")) {
 			boolean first = true;
 			for (BabelShortUserData data : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
@@ -272,7 +281,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			response.append(COL_CHAT);
 			response.append("NB norn receipt enabled\n");
 		} else if (text.equals("denynbnorns")) {
-			hub.modUserFlags(targetUIN, ~NatsueUserInfo.FLAG_RECEIVE_NB_NORNS, NatsueUserInfo.FLAG_RECEIVE_NB_NORNS);
+			hub.modUserFlags(targetUIN, ~NatsueUserInfo.FLAG_RECEIVE_NB_NORNS, 0);
 			response.append(COL_CHAT);
 			response.append("NB norn receipt disabled\n");
 		} else if (text.equals("kickme")) {
@@ -296,9 +305,10 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			response.append(COL_CHAT);
 			response.append("Unknown command. Try:\n");
 			response.append("whois !System\n");
-			response.append("contact !System\nwho (show who's online)\n");
+			response.append("contact !System\n");
 			response.append("who (show who's online)\n");
 			response.append("(allow/deny)nbnorns (WARNING: Crashes you if unmodded!)\n");
+			response.append("setpw 1234 (sets your password)\n");
 			if (hub.isUINAdmin(targetUIN))
 				response.append("For admin tasks try: ahelp\n");
 		}
