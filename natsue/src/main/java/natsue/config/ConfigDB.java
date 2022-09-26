@@ -10,7 +10,7 @@ package natsue.config;
 import natsue.server.database.jdbc.ILDBVariant;
 
 /**
- * Configuration of DB connection & such
+ * Configuration of DB connection and such
  */
 public class ConfigDB extends BaseConfig.Group {
 	/**

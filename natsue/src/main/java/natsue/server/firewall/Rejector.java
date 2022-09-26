@@ -17,15 +17,17 @@ import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
+import natsue.server.hubapi.INatsueUserData;
 
 /**
  * The Rejector that's actually going to be used.
  */
 public class Rejector implements IRejector {
 	// probably !System
-	public final BabelShortUserData onBehalfOf;
-	public final IHubPrivilegedAPI hub;
-	public Rejector(IHubPrivilegedAPI privapi, BabelShortUserData behalf) {
+	private final INatsueUserData onBehalfOf;
+	private final IHubPrivilegedAPI hub;
+
+	public Rejector(IHubPrivilegedAPI privapi, INatsueUserData behalf) {
 		hub = privapi;
 		onBehalfOf = behalf;
 	}
@@ -62,8 +64,8 @@ public class Rejector implements IRejector {
 		PRAYTags pt = new PRAYTags();
 		pt.read(last.data);
 		pt.strMap.put("Subject", "ERR: " + pt.strMap.get("Subject"));
-		pt.strMap.put("Sender UserID", UINUtils.toString(onBehalfOf.uin));
-		pt.strMap.put("Sender Nickname", onBehalfOf.nickName);
+		pt.strMap.put("Sender UserID", UINUtils.toString(onBehalfOf.getUIN()));
+		pt.strMap.put("Sender Nickname", onBehalfOf.getNickName());
 		pt.strMap.put("Message", "Unsendable to " + UINUtils.toString(destinationUIN) + " (" + reason + "), contents:\n" + pt.strMap.get("Message"));
 		last.data = pt.toByteArray();
 		sendAsSystem(message);
@@ -77,7 +79,7 @@ public class Rejector implements IRejector {
 
 	private void sendAsSystem(PackedMessage message) {
 		long tmp = message.senderUIN;
-		message.senderUIN = onBehalfOf.uin;
+		message.senderUIN = onBehalfOf.getUIN();
 		hub.sendMessage(tmp, message, MsgSendType.PermReject);
 	}
 }
