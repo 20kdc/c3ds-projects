@@ -10,13 +10,10 @@ package natsue.server.hub;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.LinkedList;
-import java.util.Random;
 
 import natsue.config.Config;
 import natsue.data.babel.BabelShortUserData;
-import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
-import natsue.data.babel.WritVal;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.data.hli.StandardMessages;
@@ -24,7 +21,6 @@ import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
-import natsue.names.PWHash;
 import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
@@ -40,9 +36,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	public static final long UIN = UINUtils.SERVER_UIN;
 	public static final INatsueUserData.Root IDENTITY = new INatsueUserData.Fixed(new BabelShortUserData("", "", "!System", UIN), FLAG_RECEIVE_NB_NORNS);
 	public final int maxDecompressedPRAYSize;
-
-	private final Random random = new Random();
-	private final Object randomLock = new Object();
 
 	private final String COL_NICKNAME = "<tint 120 220 250>";
 	private final String COL_CHAT = "<tint 96 160 192>";
@@ -110,14 +103,8 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 						String str = pt.strMap.get("Request Type");
 						if (str.equals("Request")) {
 							// Yes - we need to accept.
-							PRAYTags res = new PRAYTags();
-							String myUINStr = UINUtils.toString(UIN);
-							res.strMap.put("Sender UserID", myUINStr);
-							res.strMap.put("Date Sent", pt.strMap.get("Date Sent"));
-							res.strMap.put("ChatID", pt.strMap.get("ChatID"));
-							res.strMap.put("Request Type", "Accept");
-							res.strMap.put("Sender Nickname", getNickname());
-							sendTagsMessage(message.senderUIN, "REQU", res.toByteArray());
+							PackedMessage npm = StandardMessages.acceptChatRequest(UIN, getNickname(), pt.strMap.get("ChatID"));
+							hub.sendMessage(message.senderUIN, npm, MsgSendType.Temp);
 						}
 					} else if (chatType.equals("CHAT")) {
 						PRAYTags pt = new PRAYTags();
@@ -341,22 +328,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	private void sendChatMessage(long targetUIN, String chatID, String text) {
-		// uuuh
-		PRAYTags res = new PRAYTags();
-		res.strMap.put("Chat Message Type", "Message");
-		res.strMap.put("Sender UserID", UINUtils.toString(UIN));
-		res.strMap.put("ChatID", chatID);
-		res.strMap.put("Sender Nickname", IDENTITY.getNickname());
-		res.strMap.put("Chat Message", text);
-		sendTagsMessage(targetUIN, "CHAT", res.toByteArray());
-	}
-
-	private void sendTagsMessage(long senderUIN, String type, byte[] res) {
-		long randomRes;
-		synchronized (randomLock) {
-			randomRes = random.nextLong();
-		}
-		PRAYBlock pb = new PRAYBlock(type, "STM_" + randomRes + "_sysrsp", res);
-		hub.sendMessage(senderUIN, new PackedMessagePRAY(UIN, pb), MsgSendType.Temp);
+		hub.sendMessage(targetUIN, StandardMessages.chatMessage(UIN, getNickname(), chatID, text), MsgSendType.Temp);
 	}
 }
