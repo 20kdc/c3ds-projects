@@ -9,7 +9,7 @@ package natsue.server.database;
 
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.UINUtils;
-import natsue.server.hubapi.INatsueUserData;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * Information on a user. 

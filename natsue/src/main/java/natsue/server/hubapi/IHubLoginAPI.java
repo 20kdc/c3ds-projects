@@ -7,7 +7,9 @@
 
 package natsue.server.hubapi;
 
+import natsue.data.babel.BabelShortUserData;
 import natsue.server.database.NatsueDBUserInfo;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * This is just the login APIs - in practice this is part of IHubLoginClientAPI or IHubPrivilegedAPI.
@@ -17,6 +19,7 @@ public interface IHubLoginAPI {
 	/**
 	 * Logs in a user.
 	 * confirm is expected to return an IHubClient.
+	 * Don't logout the user until the loginUser call returns, even on success.
 	 * Returns true if the whole process succeeded, false otherwise.
 	 */
 	<X extends IHubClient> LoginResult loginUser(String username, String password, ILoginReceiver<X> makeClient);
@@ -25,11 +28,9 @@ public interface IHubLoginAPI {
 		/**
 		 * Called to construct the IHubClient.
 		 * This is not confirmation of success.
-		 * NOTE: Your IHubClient's getUserData MUST return the given INatsueUserData.
-		 * Otherwise an exception will be thrown out of pure spite.
-		 * But seriously, the server can't properly track changing flags or password hashes.
-		 * Your IHubClient acts as the server's cache.
-		 * (This also implies that on logout, it isn't a cache anymore.)
+		 * NOTE: Your IHubClient's getUserData must return the given INatsueUserData.Root.
+		 * The given INatsueUserData.Root is kept up to date until you logout.
+		 * More importantly, the server needs this to remain the same so it can properly clean up.
 		 */
 		X receive(INatsueUserData.Root userData, IHubClientAPI clientAPI);
 		/**
@@ -42,15 +43,15 @@ public interface IHubLoginAPI {
 		public static final LoginResult SUCCESS = new LoginResult();
 		public static final LoginResult FAILED_AUTH = new LoginResult();
 		public static class FailedConflict extends LoginResult {
-			public final NatsueDBUserInfo who;
-			public FailedConflict(NatsueDBUserInfo ui) {
+			public final BabelShortUserData who;
+			public FailedConflict(BabelShortUserData ui) {
 				who = ui;
 			}
 		}
 		public static class AccountFrozen extends LoginResult {
 			public final long serverUIN;
-			public final NatsueDBUserInfo who;
-			public AccountFrozen(long suin, NatsueDBUserInfo ui) {
+			public final BabelShortUserData who;
+			public AccountFrozen(long suin, BabelShortUserData ui) {
 				serverUIN = suin;
 				who = ui;
 			}

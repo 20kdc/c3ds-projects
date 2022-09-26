@@ -7,7 +7,7 @@
 
 package natsue.names;
 
-import natsue.config.ConfigNicknameFormat;
+import natsue.config.ConfigAccounts;
 
 /**
  * Verifies usernames are sane.
@@ -16,7 +16,7 @@ public class NicknameVerifier {
 	public static String foldNickname(String username) {
 		return username.toLowerCase();
 	}
-	public static boolean verifyNickname(ConfigNicknameFormat nicknames, String username) {
+	public static boolean verifyNickname(ConfigAccounts nicknames, String username) {
 		int len = username.length();
 		if (len < nicknames.nicknameMinLength.getValue() || len > nicknames.nicknameMaxLength.getValue())
 			return false;

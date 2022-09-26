@@ -21,7 +21,7 @@ import natsue.server.hubapi.IHubClientAPI;
 import natsue.server.hubapi.IHubLoginAPI;
 import natsue.server.hubapi.IHubLoginAPI.ILoginReceiver;
 import natsue.server.hubapi.IHubLoginAPI.LoginResult.AccountFrozen;
-import natsue.server.hubapi.INatsueUserData;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * This session state is to grab the initial handshake packet.
@@ -79,7 +79,7 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 		} else if (res instanceof IHubLoginAPI.LoginResult.AccountFrozen) {
 			AccountFrozen af = (AccountFrozen) res;
 			// Alright, this gets complicated
-			long uin = af.who.getUIN();
+			long uin = af.who.uin;
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, af.serverUIN, uin));
 			client.sendPacket(PacketWriter.writeMessage(StandardMessages.systemMessage(uin, config.accountFrozenText.getValue()).toByteArray()));
 			try {

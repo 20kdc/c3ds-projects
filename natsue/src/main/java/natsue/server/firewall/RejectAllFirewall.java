@@ -10,8 +10,8 @@ package natsue.server.firewall;
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.hubapi.IHubPrivilegedAPI;
-import natsue.server.hubapi.INatsueUserData;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * TESTING ONLY

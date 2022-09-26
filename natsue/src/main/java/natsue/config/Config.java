@@ -27,7 +27,7 @@ public class Config extends BaseConfig.Group {
 	/**
 	 * Nickname details
 	 */
-	public final ConfigNicknameFormat nicknames = new ConfigNicknameFormat();
+	public final ConfigAccounts accounts = new ConfigAccounts();
 
 	/**
 	 * Maximum length of a creature name.
@@ -86,18 +86,6 @@ public class Config extends BaseConfig.Group {
 	 */
 	public final Bool excludeSelfRUSO = new Bool("excludeSelfRUSO", true)
 			.describe("Excludes yourself from NET: RUSO random user requests, despite this being a documented behaviour of the command.");
-
-	/**
-	 * Allow registration
-	 */
-	public final Bool allowRegistration = new Bool("allowRegistration", true)
-			.describe("Allows automatic registration just by connecting to the server.");
-
-	/**
-	 * Amount of registration attempts to make before giving up
-	 */
-	public final Int registrationAttempts = new Int("registrationAttempts", 2048)
-			.describe("Amount of times to attempt registration before giving up.");
 
 	/**
 	 * Text to send someone whose account was frozen

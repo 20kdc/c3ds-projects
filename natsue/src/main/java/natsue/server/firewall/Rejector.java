@@ -17,7 +17,7 @@ import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
-import natsue.server.hubapi.INatsueUserData;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * The Rejector that's actually going to be used.
@@ -65,7 +65,7 @@ public class Rejector implements IRejector {
 		pt.read(last.data);
 		pt.strMap.put("Subject", "ERR: " + pt.strMap.get("Subject"));
 		pt.strMap.put("Sender UserID", UINUtils.toString(onBehalfOf.getUIN()));
-		pt.strMap.put("Sender Nickname", onBehalfOf.getNickName());
+		pt.strMap.put("Sender Nickname", onBehalfOf.getNickname());
 		pt.strMap.put("Message", "Unsendable to " + UINUtils.toString(destinationUIN) + " (" + reason + "), contents:\n" + pt.strMap.get("Message"));
 		last.data = pt.toByteArray();
 		sendAsSystem(message);

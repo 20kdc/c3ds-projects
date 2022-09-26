@@ -13,32 +13,18 @@ import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.firewall.IRejector;
+import natsue.server.userdata.IHubUserDataCache;
+import natsue.server.userdata.IHubUserDataCachePrivilegedProxy;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * Represents the server.
  */
-public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubLoginAPI, IRejector {
+public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivilegedProxy, IHubLoginAPI, IRejector {
 	/**
 	 * Returns all user info that does not belong to system users.
 	 */
 	LinkedList<INatsueUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem();
-
-	/**
-	 * Given a user's username and password, provides a NatsueUserInfo (successful login), or null.
-	 * The username will be automatically folded.
-	 * Note this will still return the value for frozen accounts.
-	 */
-	NatsueDBUserInfo usernameAndPasswordLookup(String username, String password, boolean allowedToRegister);
-
-	/**
-	 * Modifies the flags of a user.
-	 */
-	boolean modUserFlags(long targetUIN, int and, int xor);
-
-	/**
-	 * Changes the password of a user.
-	 */
-	boolean changePassword(long uin, String newPW);
 
 	/**
 	 * Adds a client to the system, or returns false if that couldn't happen due to a conflict.

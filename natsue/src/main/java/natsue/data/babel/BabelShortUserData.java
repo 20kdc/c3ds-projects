@@ -13,18 +13,18 @@ import java.nio.ByteOrder;
 public class BabelShortUserData {
 	public final String firstName;
 	public final String lastName;
-	public final String nickName;
+	public final String nickname;
 	public final long uin;
 	public final byte[] packed;
 
 	public BabelShortUserData(String f, String l, String n, long u) {
 		firstName = f;
 		lastName = l;
-		nickName = n;
+		nickname = n;
 		uin = u;
 		byte[] fn = firstName.getBytes(PacketReader.CHARSET);
 		byte[] ln = lastName.getBytes(PacketReader.CHARSET);
-		byte[] nn = nickName.getBytes(PacketReader.CHARSET);
+		byte[] nn = nickname.getBytes(PacketReader.CHARSET);
 		byte[] total = new byte[24 + fn.length + ln.length + nn.length];
 		System.arraycopy(fn, 0, total, 24, fn.length);
 		System.arraycopy(ln, 0, total, 24 + fn.length, ln.length);

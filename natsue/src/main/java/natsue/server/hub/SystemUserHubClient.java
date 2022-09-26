@@ -28,8 +28,8 @@ import natsue.names.PWHash;
 import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
-import natsue.server.hubapi.INatsueUserData;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * This client represents a user called System meant to handle fancy tasks.
@@ -116,7 +116,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 							res.strMap.put("Date Sent", pt.strMap.get("Date Sent"));
 							res.strMap.put("ChatID", pt.strMap.get("ChatID"));
 							res.strMap.put("Request Type", "Accept");
-							res.strMap.put("Sender Nickname", getNickName());
+							res.strMap.put("Sender Nickname", getNickname());
 							sendTagsMessage(message.senderUIN, "REQU", res.toByteArray());
 						}
 					} else if (chatType.equals("CHAT")) {
@@ -155,17 +155,17 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		}
 	}
 
+	private INatsueUserData.LongTermPrivileged commandLookupUserLongTerm(String ref) {
+		long asUIN = UINUtils.valueOf(ref);
+		if (asUIN != -1)
+			return hub.openUserDataByUINLT(asUIN);
+		return hub.openUserDataByNicknameLT(ref);
+	}
+
 	private INatsueUserData commandLookupUser(String ref) {
-		int plusIdx = ref.indexOf('+');
-		if (plusIdx >= 0) {
-			try {
-				String a = ref.substring(0, plusIdx);
-				String b = ref.substring(plusIdx + 1);
-				return hub.getUserDataByUIN(UINUtils.make(Integer.valueOf(a), Integer.valueOf(b)));
-			} catch (Exception ex) {
-				return null;
-			}
-		}
+		long asUIN = UINUtils.valueOf(ref);
+		if (asUIN != -1)
+			return hub.getUserDataByUIN(asUIN);
 		return hub.getUserDataByNickname(ref);
 	}
 
@@ -175,7 +175,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			String user = text.substring(6);
 			INatsueUserData userData = commandLookupUser(user);
 			if (userData != null) {
-				response.append(userData.getNickName());
+				response.append(userData.getNickname());
 				response.append(COL_CHAT);
 				response.append(" - ");
 				if (hub.isUINOnline(userData.getUIN())) {
@@ -237,33 +237,36 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				response.append("You're not allowed to do that!\n");
 			} else {
 				String user = text.substring(8);
-				INatsueUserData userData = commandLookupUser(user);
-				if (userData != null) {
-					String newPW;
-					try {
-						newPW = Long.toHexString(SecureRandom.getInstanceStrong().nextLong() | 0x8000000000000000L);
-						if (hub.changePassword(userData.getUIN(), newPW)) {
-							response.append(COL_CHAT);
-							response.append("Reset password to: " + newPW + "\n");
-						} else {
-							response.append(COL_CHAT);
-							response.append("Failed (not a normal user?)\n");
+				try (INatsueUserData.LongTermPrivileged userData = commandLookupUserLongTerm(user)) {
+					if (userData != null) {
+						String newPW;
+						try {
+							newPW = Long.toHexString(SecureRandom.getInstanceStrong().nextLong() | 0x8000000000000000L);
+							if (userData.setPassword(newPW)) {
+								response.append(COL_CHAT);
+								response.append("Reset password to: " + newPW + "\n");
+							} else {
+								response.append(COL_CHAT);
+								response.append("Failed (not a normal user?)\n");
+							}
+						} catch (NoSuchAlgorithmException e) {
+							throw new RuntimeException(e);
 						}
-					} catch (NoSuchAlgorithmException e) {
-						throw new RuntimeException(e);
+					} else {
+						appendNoSuchUser(response, user);
 					}
-				} else {
-					appendNoSuchUser(response, user);
 				}
 			}
 		} else if (text.startsWith("setpw ")) {
 			String newPW = text.substring(6);
-			if (hub.changePassword(targetUIN, newPW)) {
-				response.append(COL_CHAT);
-				response.append("Reset password to: " + newPW + "\n");
-			} else {
-				response.append(COL_CHAT);
-				response.append("Failed (not a normal user?)\n");
+			try (INatsueUserData.LongTermPrivileged ltp = hub.openUserDataByUINLT(targetUIN)) {
+				if ((ltp != null) && ltp.setPassword(newPW)) {
+					response.append(COL_CHAT);
+					response.append("Reset password to: " + newPW + "\n");
+				} else {
+					response.append(COL_CHAT);
+					response.append("Failed (not a normal user?)\n");
+				}
 			}
 		} else if (text.equals("who")) {
 			boolean first = true;
@@ -273,18 +276,30 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 					response.append(", ");
 					response.append(COL_NICKNAME);
 				}
-				response.append(data.getNickName());
+				response.append(data.getNickname());
 				first = false;
 			}
 			response.append("\n");
 		} else if (text.equals("allownbnorns")) {
-			hub.modUserFlags(targetUIN, ~NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS, NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS);
-			response.append(COL_CHAT);
-			response.append("NB norn receipt enabled\n");
+			try (INatsueUserData.LongTermPrivileged ltp = hub.openUserDataByUINLT(targetUIN)) {
+				if ((ltp != null) && ltp.setFlags(NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS)) {
+					response.append(COL_CHAT);
+					response.append("NB norn receipt enabled\n");
+				} else {
+					response.append(COL_CHAT);
+					response.append("Failed.\n");
+				}
+			}
 		} else if (text.equals("denynbnorns")) {
-			hub.modUserFlags(targetUIN, ~NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS, 0);
-			response.append(COL_CHAT);
-			response.append("NB norn receipt disabled\n");
+			try (INatsueUserData.LongTermPrivileged ltp = hub.openUserDataByUINLT(targetUIN)) {
+				if ((ltp != null) && ltp.unsetFlags(NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS)) {
+					response.append(COL_CHAT);
+					response.append("NB norn receipt disabled\n");
+				} else {
+					response.append(COL_CHAT);
+					response.append("Failed.\n");
+				}
+			}
 		} else if (text.equals("kickme")) {
 			hub.forceDisconnectUIN(targetUIN, false);
 		} else if (text.equals("whoami")) {
@@ -331,7 +346,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		res.strMap.put("Chat Message Type", "Message");
 		res.strMap.put("Sender UserID", UINUtils.toString(UIN));
 		res.strMap.put("ChatID", chatID);
-		res.strMap.put("Sender Nickname", IDENTITY.getNickName());
+		res.strMap.put("Sender Nickname", IDENTITY.getNickname());
 		res.strMap.put("Chat Message", text);
 		sendTagsMessage(targetUIN, "CHAT", res.toByteArray());
 	}

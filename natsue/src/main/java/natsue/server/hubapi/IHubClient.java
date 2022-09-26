@@ -9,6 +9,7 @@ package natsue.server.hubapi;
 
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.hub.IWWRListener;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * Interface for a client connected to the hub (this means AUTHENTICATED!!!)

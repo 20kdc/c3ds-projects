@@ -7,10 +7,13 @@
 
 package natsue.config;
 
+import natsue.config.BaseConfig.Bool;
+import natsue.config.BaseConfig.Int;
+
 /**
- * Configuration of allowed nickname format
+ * Configuration of allowed nickname format & registration
  */
-public class ConfigNicknameFormat extends BaseConfig.Group {
+public class ConfigAccounts extends BaseConfig.Group {
 	/**
 	 * Every allowed character in a nickname after case-folding.
 	 */
@@ -28,4 +31,22 @@ public class ConfigNicknameFormat extends BaseConfig.Group {
 	 */
 	public final Int nicknameMaxLength = new Int("nicknameMaxLength", 16)
 			.describe("Maximum length of a nickname.");
+
+	/**
+	 * Allow registration
+	 */
+	public final Bool allowRegistration = new Bool("allowRegistration", true)
+			.describe("Allows automatic registration just by connecting to the server.");
+
+	/**
+	 * Amount of registration attempts to make before giving up
+	 */
+	public final Int registrationAttempts = new Int("registrationAttempts", 2048)
+			.describe("Amount of times to attempt registration before giving up.");
+
+	/**
+	 * Logs userdata cache management operations.
+	 */
+	public final Bool logUserCacheManagement = new Bool("logUserDataCacheManagement", false)
+			.describe("Logs internal userdata cache management operations.");
 }

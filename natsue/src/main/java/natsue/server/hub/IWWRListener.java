@@ -7,7 +7,7 @@
 
 package natsue.server.hub;
 
-import natsue.server.hubapi.INatsueUserData;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * WWR listener, i.e. knows when people join/leave

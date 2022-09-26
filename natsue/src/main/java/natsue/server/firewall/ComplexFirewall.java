@@ -19,7 +19,7 @@ import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
-import natsue.server.hubapi.INatsueUserData;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * A more complex firewall that analyzes messages to ensure they won't do anything "unusual" to clients.
@@ -133,7 +133,7 @@ public class ComplexFirewall implements IFirewall, ILogSource {
 		PRAYTags pt = new PRAYTags();
 		pt.read(mesgBlock.data);
 		pt.strMap.put("Sender UserID", sourceUser.getUINString());
-		pt.strMap.put("Sender Nickname", sourceUser.getNickName());
+		pt.strMap.put("Sender Nickname", sourceUser.getNickname());
 		mesgBlock.data = pt.toByteArray();
 	}
 }

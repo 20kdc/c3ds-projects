@@ -40,4 +40,21 @@ public class UINUtils {
 	public static String toString(long targetUIN) {
 		return uid(targetUIN) + "+" + hid(targetUIN);
 	}
+
+	/**
+	 * Returns -1 on error (as -1 is an invalid UIN).
+	 */
+	public static long valueOf(String str) {
+		int plusIdx = str.indexOf('+');
+		if (plusIdx >= 0) {
+			try {
+				String a = str.substring(0, plusIdx);
+				String b = str.substring(plusIdx + 1);
+				return UINUtils.make(Integer.valueOf(a), Integer.valueOf(b));
+			} catch (Exception ex) {
+				return -1;
+			}
+		}
+		return -1;
+	}
 }

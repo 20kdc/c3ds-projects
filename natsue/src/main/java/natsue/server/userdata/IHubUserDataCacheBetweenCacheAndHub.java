@@ -5,18 +5,22 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.server.firewall;
-
-import natsue.data.babel.pm.PackedMessage;
-import natsue.server.hub.IWWRListener;
-import natsue.server.userdata.INatsueUserData;
+package natsue.server.userdata;
 
 /**
- * Responsible for filtering messages to prevent malicious stuff going through the server.
+ * Stuff between the user data cache and the hub.
  */
-public interface IFirewall extends IWWRListener {
+public interface IHubUserDataCacheBetweenCacheAndHub extends IHubUserDataCachePrivileged {
+
 	/**
-	 * Handles a message. NOTE: The message may be modified by this function!
+	 * Handles any business that needs to be handled on login.
+	 * In particular, creates a reference held until logout.
+	 * Returns false on failure.
 	 */
-	public void handleMessage(INatsueUserData sourceUser, long destinationUIN, PackedMessage message);
+	boolean hubLogin(INatsueUserData.Root root);
+
+	/**
+	 * Closes off the held reference created during login.
+	 */
+	void hubLogout(INatsueUserData.Root root);
 }

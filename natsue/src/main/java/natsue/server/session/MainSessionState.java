@@ -31,7 +31,7 @@ import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubClientAPI;
-import natsue.server.hubapi.INatsueUserData;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * This session state is used while connected to the hub.

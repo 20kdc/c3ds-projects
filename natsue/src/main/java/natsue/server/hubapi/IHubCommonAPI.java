@@ -7,26 +7,12 @@
 
 package natsue.server.hubapi;
 
-import natsue.server.database.NatsueDBUserInfo;
+import natsue.server.userdata.IHubUserDataCache;
 
 /**
  * Represents the server.
  */
-public interface IHubCommonAPI {
-	/**
-	 * Gets user data by nickname.
-	 * The nickname will be automatically folded.
-	 * Can and will return null.
-	 * NOTE: There is no guarantee that dynamic user data will remain accurate, particularly for offline users.
-	 */
-	INatsueUserData getUserDataByNickname(String name);
-
-	/**
-	 * Gets user data by their UIN.
-	 * Can and will return null.
-	 * NOTE: There is no guarantee that dynamic user data will remain accurate, particularly for offline users.
-	 */
-	INatsueUserData getUserDataByUIN(long uin);
+public interface IHubCommonAPI extends IHubUserDataCache {
 
 	/**
 	 * Returns true if the given UIN is online.

@@ -7,25 +7,56 @@
 
 package natsue.server.hub;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import natsue.data.babel.BabelShortUserData;
-import natsue.server.hubapi.INatsueUserData;
+import natsue.data.babel.UINUtils;
+import natsue.log.ILogProvider;
+import natsue.log.ILogSource;
+import natsue.names.PWHash;
+import natsue.server.database.NatsueDBUserInfo;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * Used by ServerHub to keep data on active users up to date.
  */
-class HubActiveNatsueUserData implements INatsueUserData.Root {
-	public final BabelShortUserData babel;
-	public volatile int flags;
-
+class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILogSource {
 	/**
-	 * This data is carried along because flags & the password hash is updated at once.
+	 * Babel user data.
 	 */
-	public volatile String pwHash;
+	public final BabelShortUserData babel;
+	/**
+	 * Folded nickname.
+	 */
+	public final String nicknameFolded;
 
-	public HubActiveNatsueUserData(BabelShortUserData b, int f, String pws) {
-		babel = b;
-		flags = f;
-		pwHash = pws;
+	private final int uid;
+	private volatile int flags;
+	private final AtomicInteger refCount = new AtomicInteger();
+	private final HubUserDataCache parent;
+	private final boolean logged;
+
+	private volatile String pwHash;
+	private volatile boolean isDead = false;
+
+	public HubActiveNatsueUserData(HubUserDataCache p, NatsueDBUserInfo ui) {
+		babel = ui.convertToBabel();
+		nicknameFolded = ui.nicknameFolded;
+		uid = ui.uid;
+		flags = ui.flags;
+		pwHash = ui.passwordHash;
+		parent = p;
+		logged = parent.config.logUserCacheManagement.getValue();
+	}
+
+	@Override
+	public ILogProvider getLogParent() {
+		return parent.getLogParent();
+	}
+
+	@Override
+	public String toString() {
+		return "UserData[" + nicknameFolded + "]";
 	}
 
 	@Override
@@ -34,7 +65,68 @@ class HubActiveNatsueUserData implements INatsueUserData.Root {
 	}
 
 	@Override
+	public String getNicknameFolded() {
+		return nicknameFolded;
+	}
+
+	@Override
 	public int getFlags() {
 		return flags;
+	}
+
+	@Override
+	public LongTermPrivileged open(String site) {
+		int res = refCount.incrementAndGet();
+		if (logged)
+			log("++ (" + res + ") @ " + site);
+		return this;
+	}
+
+	@Override
+	public void close() {
+		int res = refCount.decrementAndGet();
+		if (logged)
+			log("-- (" + res + ")");
+		if (res < 0) {
+			log("< 0 reference count in HubActiveNatsueUserData");
+		} else if (res == 0) {
+			synchronized (this) {
+				isDead = true;
+				parent.notifyZeroRefCount(this);
+			}
+		}
+	}
+
+	@Override
+	public String getPasswordHash() {
+		return pwHash;
+	}
+
+	@Override
+	public boolean setPassword(String password) {
+		synchronized (this) {
+			if (isDead)
+				return false;
+			String newHash = PWHash.hash(uid, password);
+			if (parent.database.updateUserAuth(uid, newHash, flags)) {
+				pwHash = newHash;
+				return true;
+			}
+			return false;
+		}
+	}
+
+	@Override
+	public boolean updateFlags(int and, int xor) {
+		synchronized (this) {
+			if (isDead)
+				return false;
+			int newFlags = (flags & and) ^ xor;
+			if (parent.database.updateUserAuth(uid, pwHash, newFlags)) {
+				flags = newFlags;
+				return true;
+			}
+			return false;
+		}
 	}
 }
