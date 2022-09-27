@@ -27,9 +27,9 @@ import natsue.server.firewall.RejectAllFirewall;
 import natsue.server.firewall.Rejector;
 import natsue.server.firewall.TrivialFirewall;
 import natsue.server.hub.ServerHub;
-import natsue.server.hub.SystemUserHubClient;
 import natsue.server.packet.SocketThread;
 import natsue.server.session.LoginSessionState;
+import natsue.server.system.SystemUserHubClient;
 
 /**
  * It all starts here.

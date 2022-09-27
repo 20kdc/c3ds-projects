@@ -37,14 +37,14 @@ public interface INatsueUserFlags {
 	 * Is this user an administrator?
 	 */
 	default boolean isAdmin() {
-		return (getFlags() & NatsueDBUserInfo.FLAG_ADMINISTRATOR) != 0;
+		return (getFlags() & FLAG_ADMINISTRATOR) != 0;
 	}
 
 	/**
 	 * Is this user frozen (banned)?
 	 */
 	default boolean isFrozen() {
-		return (getFlags() & NatsueDBUserInfo.FLAG_FROZEN) != 0;
+		return (getFlags() & FLAG_FROZEN) != 0;
 	}
 
 	/**
@@ -52,6 +52,56 @@ public interface INatsueUserFlags {
 	 * NOTE: Said Norns can crash people without necessary client mods
 	 */
 	default boolean isReceivingNBNorns() {
-		return (getFlags() & NatsueDBUserInfo.FLAG_RECEIVE_NB_NORNS) != 0;
+		return (getFlags() & FLAG_RECEIVE_NB_NORNS) != 0;
+	}
+
+	/**
+	 * This enum is used for dynamic flag monkey business 
+	 */
+	public enum Flag {
+		admin(FLAG_ADMINISTRATOR),
+		frozen(FLAG_FROZEN),
+		recvnb(FLAG_RECEIVE_NB_NORNS);
+		public final int value;
+
+		Flag(int v) {
+			value = v;
+		}
+
+		/**
+		 * Returns the flag enum value for the given power of two.
+		 * Returns null if it doesn't exist.
+		 */
+		public static Flag getFlagByPower(int v) {
+			for (Flag fv : values()) {
+				if (fv.value == v)
+					return fv;
+			}
+			return null;
+		}
+
+		/**
+		 * Writes out flags into a convenient list.
+		 */
+		public static String showFlags(int ofValue) {
+			StringBuilder sb = new StringBuilder();
+			int p2 = 1;
+			boolean first = true;
+			for (int iteration = 0; iteration < 32; iteration++) {
+				if ((ofValue & p2) != 0) {
+					if (!first)
+						sb.append(' ');
+					first = false;
+					Flag f = getFlagByPower(p2);
+					if (f == null) {
+						sb.append(Integer.toString(p2));
+					} else {
+						sb.append(f.name().toUpperCase());
+					}
+				}
+				p2 <<= 1;
+			}
+			return sb.toString();
+		}
 	}
 }
