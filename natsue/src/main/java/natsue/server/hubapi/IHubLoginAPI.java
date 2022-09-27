@@ -20,6 +20,7 @@ public interface IHubLoginAPI {
 	 * Logs in a user.
 	 * confirm is expected to return an IHubClient.
 	 * Don't logout the user until the loginUser call returns, even on success.
+	 * (The reasoning for this is part of IWWRListener's anti-race-condition guarantees.)
 	 * Returns true if the whole process succeeded, false otherwise.
 	 */
 	<X extends IHubClient> LoginResult loginUser(String username, String password, ILoginReceiver<X> makeClient);

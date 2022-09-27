@@ -98,6 +98,9 @@ public class SystemCommands {
 		},
 		new FlagControlBotCommand("allownbnorns", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_NB_NORNS, true, "NB norn receipt enabled\n"),
 		new FlagControlBotCommand("denynbnorns", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_NB_NORNS, false, "NB norn receipt disabled\n"),
+		// note the inverse in the test for DB compat.
+		new FlagControlBotCommand("allowrandom", "", Cat.Public, INatsueUserFlags.FLAG_NO_RANDOM, false, "Random selection enabled\n"),
+		new FlagControlBotCommand("denyrandom", "", Cat.Public, INatsueUserFlags.FLAG_NO_RANDOM, true, "Random selection disabled\n"),
 		new BaseBotCommand("kickme", "", Cat.Public) {
 			public void run(Context args) {
 				args.hub.forceDisconnectUIN(args.senderUIN, false);
@@ -124,6 +127,7 @@ public class SystemCommands {
 				args.response.append("contact !System\n");
 				args.response.append("who (show who's online)\n");
 				args.response.append("(allow/deny)nbnorns (WARNING: Crashes you if unmodded!)\n");
+				args.response.append("(allow/deny)random\n");
 				args.response.append("setpw 1234 (sets your password)\n");
 				if (args.hub.isUINAdmin(args.senderUIN))
 					args.response.append("For admin tasks try: ahelp\n");

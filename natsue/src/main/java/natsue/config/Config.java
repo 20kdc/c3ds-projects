@@ -30,6 +30,12 @@ public class Config extends BaseConfig.Group {
 	public final ConfigAccounts accounts = new ConfigAccounts();
 
 	/**
+	 * Maximum amount of spooled messages to send back to a connecting client.
+	 */
+	public final Int maxSpoolToReadOnConnect = new Int("maxSpoolToReadOnConnect", 0x1000)
+			.describe("Maximum amount of spooled messages to send back to a connecting client.\nIf the amount exceeds this, they have to reconnect to get the rest.");
+
+	/**
 	 * Maximum length of a creature name.
 	 * Default chosen by the amount of the letter 'i' you can put in a name, with some rounding up.
 	 */

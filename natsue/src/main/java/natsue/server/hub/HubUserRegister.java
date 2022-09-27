@@ -14,6 +14,7 @@ import java.util.LinkedList;
 
 import natsue.server.hubapi.IHubClient;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * Exists because ServerHub got obscenely complicated.
@@ -41,7 +42,7 @@ public class HubUserRegister {
 			return null;
 		// Past this point, hubLogin has occurred and we really, REALLY better not break this.
 		connectedClients.put(uin, cc);
-		if (!cc.isSystem())
+		if (!cc.isNoRandom())
 			randomPool.add(uin);
 		LinkedList<IWWRListener> wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
 		wwrListeners.add(cc);
@@ -58,5 +59,20 @@ public class HubUserRegister {
 		connectedClients.remove(uin, cc);
 		wwrListeners.remove(cc);
 		userDataCache.hubLogout(cc.getUserData());
+	}
+
+	/**
+	 * Updates the random pool based on user flags.
+	 */
+	public void considerRandomStatusInSync(INatsueUserData.LongTerm user) {
+		Long uin = user.getUIN(); 
+		if (user.isNoRandom()) {
+			System.out.println("no random");
+			randomPool.remove(uin);
+		} else {
+			System.out.println("ya random");
+			if (connectedClients.containsKey(uin))
+				randomPool.add(uin);
+		}
 	}
 }

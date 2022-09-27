@@ -16,8 +16,8 @@ import natsue.server.userdata.INatsueUserData;
  */
 public interface IHubClient extends IWWRListener, INatsueUserData.Proxy {
 	/**
-	 * Is this a system user (and thus ineligible for random user selection)?
-	 * NOTE: This is checked on login and at no other points.
+	 * Is this a system user (hides from who command).
+	 * This may become an account flag at some point (i.e. FLAG_INVISIBLE/INVIS)
 	 */
 	boolean isSystem();
 

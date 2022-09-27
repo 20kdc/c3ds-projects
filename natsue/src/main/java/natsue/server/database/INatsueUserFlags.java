@@ -27,6 +27,11 @@ public interface INatsueUserFlags {
 	public static final int FLAG_RECEIVE_NB_NORNS = 4;
 
 	/**
+	 * Account is removed from random selection.
+	 */
+	public static final int FLAG_NO_RANDOM = 8;
+
+	/**
 	 * Gets the flags of this user.
 	 * These can be mutated by modUserFlags on regular users.
 	 * See INatsueUserFlags for flag values.
@@ -56,12 +61,21 @@ public interface INatsueUserFlags {
 	}
 
 	/**
+	 * Does this user opt-out of NET: RUSO?
+	 */
+	default boolean isNoRandom() {
+		return (getFlags() & FLAG_NO_RANDOM) != 0;
+	}
+
+	/**
 	 * This enum is used for dynamic flag monkey business 
 	 */
 	public enum Flag {
 		admin(FLAG_ADMINISTRATOR),
 		frozen(FLAG_FROZEN),
-		recvnb(FLAG_RECEIVE_NB_NORNS);
+		recvnb(FLAG_RECEIVE_NB_NORNS),
+		noruso(FLAG_NO_RANDOM);
+
 		public final int value;
 
 		Flag(int v) {

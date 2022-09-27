@@ -28,6 +28,7 @@ public class FlagControlBotCommand extends BaseBotCommand {
 	public void run(Context args) {
 		try (INatsueUserData.LongTermPrivileged ltp = args.hub.openUserDataByUINLT(args.senderUIN)) {
 			if ((ltp != null) && ltp.updateFlags(targetAnd, targetXor)) {
+				args.hub.considerRandomStatus(ltp);
 				args.response.append(successMsg);
 			} else {
 				args.response.append("Failed.\n");

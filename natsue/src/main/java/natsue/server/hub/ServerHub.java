@@ -30,6 +30,7 @@ import natsue.server.hubapi.IHubPrivilegedClientAPI;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
 import natsue.server.userdata.IHubUserDataCachePrivileged;
 import natsue.server.userdata.INatsueUserData;
+import natsue.server.userdata.INatsueUserData.LongTerm;
 
 /**
  * Class that contains everything important to everything ever.
@@ -198,23 +199,38 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			ihc.forceDisconnect(sync); // X.X
 	}
 
+	/**
+	 * Note: For reliability reasons, this catches and logs exceptions internally.
+	 * By this point, you see, the login has already been confirmed.
+	 * Dumping the connection now would essentially corrupt caller state.
+	 */
 	private void lateClientLogin(IHubClient cc, LinkedList<IWWRListener> wwrNotify) {
 		long uin = cc.getUIN();
-		for (IWWRListener ihc : wwrNotify)
-			ihc.wwrNotify(true, cc);
-		if (UINUtils.isRegularUser(uin)) {
-			int uid = UINUtils.uid(uin);
-			// This is presumably a user in the database, dump all spool contents
-			while (true) {
-				byte[] pm = database.popFirstSpooledMessage(uid);
-				if (pm != null) {
-					cc.incomingMessage(PackedMessage.read(pm, config.maxDecompressedPRAYSize.getValue()), () -> {
-						database.spoolMessage(uid, pm);
-					});
-				} else {
-					break;
+		for (IWWRListener ihc : wwrNotify) {
+			try {
+				ihc.wwrNotify(true, cc);
+			} catch (Exception ex) {
+				log(ex);
+			}
+		}
+		try {
+			if (UINUtils.isRegularUser(uin)) {
+				int uid = UINUtils.uid(uin);
+				// This is presumably a user in the database, dump all spool contents
+				int maxSpool = config.maxSpoolToReadOnConnect.getValue();
+				for (int i = 0; i < maxSpool; i++) {
+					byte[] pm = database.popFirstSpooledMessage(uid);
+					if (pm != null) {
+						cc.incomingMessage(PackedMessage.read(pm, config.maxDecompressedPRAYSize.getValue()), () -> {
+							database.spoolMessage(uid, pm);
+						});
+					} else {
+						break;
+					}
 				}
 			}
+		} catch (Exception ex) {
+			log(ex);
 		}
 	}
 
@@ -236,7 +252,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		return true;
 	}
 
-	private synchronized <X extends IHubClient> LinkedList<IWWRListener> earlyClientLoginWithReceiver(X client, ILoginReceiver<X> makeClient) {
+	private synchronized <X extends IHubClient> LinkedList<IWWRListener> earlyClientLoginWithReceiverStep(X client, ILoginReceiver<X> makeClient) {
 		LinkedList<IWWRListener> wwrNotify = users.earlyClientLoginInSync(client);
 		// wwrNotify being null here means a conflict happened.
 		if (wwrNotify != null) {
@@ -254,9 +270,9 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	/**
 	 * Contains just the connection shootdown & earlyClientLoginInSync trigger logic.
 	 */
-	private <X extends IHubClient> LinkedList<IWWRListener> clientLoginWithReceiver(long uin, X client, ILoginReceiver<X> makeClient) {
+	private <X extends IHubClient> LinkedList<IWWRListener> earlyClientLoginWithReceiver(long uin, X client, ILoginReceiver<X> makeClient) {
 		// -- Pass 1 --
-		LinkedList<IWWRListener> wwrNotify = earlyClientLoginWithReceiver(client, makeClient);
+		LinkedList<IWWRListener> wwrNotify = earlyClientLoginWithReceiverStep(client, makeClient);
 		if (wwrNotify != null)
 			return wwrNotify;
 
@@ -268,7 +284,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		forceDisconnectUIN(uin, true);
 
 		// -- Pass 2 --
-		return earlyClientLoginWithReceiver(client, makeClient);
+		return earlyClientLoginWithReceiverStep(client, makeClient);
 	}
 
 	@Override
@@ -285,19 +301,11 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			X client = makeClient.receive(userData, this);
 			if (client.getUserData() != userData)
 				throw new RuntimeException("Client logging in tried to be cheeky and use the wrong user data root.");
-			LinkedList<IWWRListener> wwrNotify = clientLoginWithReceiver(userData.getUIN(), client, makeClient);
+			LinkedList<IWWRListener> wwrNotify = earlyClientLoginWithReceiver(userData.getUIN(), client, makeClient);
 			if (wwrNotify == null)
 				return new LoginResult.FailedConflict(userData.getBabelUserData());
-			// ** Past this point we need to worry about logging out the client **
-			try {
-				lateClientLogin(client, wwrNotify);
-				return LoginResult.SUCCESS;
-			} catch (Exception ex) {
-				synchronized (this) {
-					users.earlyClientLogoutInSync(client);
-				}
-				throw ex;
-			}
+			lateClientLogin(client, wwrNotify);
+			return LoginResult.SUCCESS;
 		}
 	}
 
@@ -306,10 +314,14 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		LinkedList<IWWRListener> wwrNotify;
 		synchronized (this) {
 			wwrNotify = new LinkedList<IWWRListener>(users.wwrListeners);
-			users.earlyClientLogoutInSync(cc);
 		}
+		// It's very important that this happens BEFORE we officially logout.
+		// Otherwise, race condition, See the wwrNotify function's definition.
 		for (IWWRListener ihc : wwrNotify)
 			ihc.wwrNotify(false, cc);
+		synchronized (this) {
+			users.earlyClientLogoutInSync(cc);
+		}
 	}
 
 	@Override
@@ -342,5 +354,10 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public IHubUserDataCachePrivileged getUserDataCachePrivileged() {
 		return userDataCache;
+	}
+
+	@Override
+	public synchronized void considerRandomStatus(LongTerm user) {
+		users.considerRandomStatusInSync(user);
 	}
 }
