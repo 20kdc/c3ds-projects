@@ -40,6 +40,20 @@ public class StandardMessages {
 	}
 
 	/**
+	 * A chat request.
+	 */
+	public static PackedMessage chatRequest(long senderUIN, String nickname, String chatID) {
+		PRAYTags res = new PRAYTags();
+		res.strMap.put("Sender UserID", UINUtils.toString(senderUIN));
+		// vanilla really does NOT care, but it *does* read this field in for some reason
+		res.strMap.put("Date Sent", "19551101000000");
+		res.strMap.put("Request Type", "Request");
+		res.strMap.put("ChatID", chatID);
+		res.strMap.put("Sender Nickname", nickname);
+		return tagsMessage(senderUIN, "REQU", res);
+	}
+
+	/**
 	 * Accept chat request.
 	 */
 	public static PackedMessage acceptChatRequest(long senderUIN, String nickname, String chatID) {
@@ -61,6 +75,20 @@ public class StandardMessages {
 		res.strMap.put("ChatID", chatID);
 		res.strMap.put("Sender Nickname", senderNick);
 		res.strMap.put("Chat Message", text);
+		return tagsMessage(senderUIN, "CHAT", res);
+	}
+
+	/**
+	 * Leaving chat.
+	 */
+	public static PackedMessage chatLeave(long senderUIN, String senderNick, String chatID, long targetUIN, String targetNick) {
+		PRAYTags res = new PRAYTags();
+		res.strMap.put("ChatID", chatID);
+		res.strMap.put("Sender Nickname", senderNick);
+		res.strMap.put("Sender UserID", UINUtils.toString(senderUIN));
+		res.strMap.put("Chat Message Type", "Chatter go Bye Bye");
+		res.strMap.put("Exiting Chatter Nickname", targetNick);
+		res.strMap.put("Exiting Chatter UserID", UINUtils.toString(targetUIN));
 		return tagsMessage(senderUIN, "CHAT", res);
 	}
 

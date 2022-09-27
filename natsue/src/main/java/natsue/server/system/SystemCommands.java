@@ -129,6 +129,7 @@ public class SystemCommands {
 				args.response.append("(allow/deny)nbnorns (WARNING: Crashes you if unmodded!)\n");
 				args.response.append("(allow/deny)random\n");
 				args.response.append("setpw 1234 (sets your password)\n");
+				args.response.append("globalchat\n");
 				if (args.hub.isUINAdmin(args.senderUIN))
 					args.response.append("For admin tasks try: ahelp\n");
 			}
