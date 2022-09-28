@@ -121,7 +121,7 @@ public class SystemCommands {
 				args.response.append("You can send a global system message by mail, subject \"SYSTEM MSG\".\n");
 			}
 		},
-		new BaseBotCommand("help", "", Cat.Admin) {
+		new BaseBotCommand("help", "", Cat.Public) {
 			public void run(Context args) {
 				args.response.append("whois !System\n");
 				args.response.append("contact !System\n");
