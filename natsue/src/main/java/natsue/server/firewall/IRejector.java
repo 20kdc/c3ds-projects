@@ -9,6 +9,7 @@ package natsue.server.firewall;
 
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
+import natsue.server.userdata.INatsueUserData;
 
 /**
  * Contains the logic to rebound a message that's been rejected.
@@ -22,4 +23,12 @@ public interface IRejector {
 	 * The message sender UIN is assumed to be perfectly accurate - they will receive the rejection.
 	 */
 	public void rejectMessage(long destinationUIN, PackedMessage message, String reason);
+
+	/**
+	 * See the other rejectMessage definition.
+	 * Note that destUser is just used as a source for the UIN.
+	 */
+	public default void rejectMessage(INatsueUserData destUser, PackedMessage message, String reason) {
+		rejectMessage(destUser.getUIN(), message, reason);
+	}
 }

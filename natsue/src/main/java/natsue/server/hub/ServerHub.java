@@ -23,7 +23,7 @@ import natsue.log.ILogSource;
 import natsue.names.CreatureDataVerifier;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.NatsueDBUserInfo;
-import natsue.server.firewall.IFirewall;
+import natsue.server.firewall.IFWModule;
 import natsue.server.firewall.IRejector;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
@@ -43,7 +43,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	/**
 	 * The firewall. This should be set before the server receives any clients, on pain of malfunction.
 	 */
-	private IFirewall firewall;
+	private IFWModule[] firewall;
 
 	/**
 	 * The rejector, similar to firewall.
@@ -73,11 +73,12 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		return logParent;
 	}
 
-	public void setFirewall(IFirewall fw, IRejector ir) {
+	public void setFirewall(IFWModule[] fw, IRejector ir) {
 		firewall = fw;
 		rejector = ir;
 		// This is assumed to be occurring before the server goes multi-threaded.
-		users.wwrListeners.add(fw);
+		for (IFWModule fm : fw)
+			users.wwrListeners.add(fm);
 	}
 
 	@Override
@@ -327,9 +328,32 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message) {
 		INatsueUserData.Root userData = cc.getUserData();
-		// Just make sure of this here and now.
+		// Just make sure of these here and now.
 		message.senderUIN = userData.getUIN();
-		firewall.handleMessage(userData, destinationUIN, message);
+		INatsueUserData destUserInfo = getUserDataByUIN(destinationUIN);
+		if (destUserInfo == null) {
+			rejectMessage(destinationUIN, message, "Non-existent user " + UINUtils.toString(destinationUIN));
+			return;
+		} else if (userData.isFrozen()) {
+			rejectMessage(destinationUIN, message, "Source frozen");
+			return;
+		} else if (destUserInfo.isFrozen()) {
+			rejectMessage(destinationUIN, message, "Destination frozen");
+			return;
+		}
+		// Firewall modules.
+		try {
+			for (IFWModule fm : firewall)
+				if (fm.handleMessage(userData, destUserInfo, message))
+					return;
+		} catch (Exception ex2) {
+			// oh no you DON'T
+			log(ex2);
+			rejectMessage(destinationUIN, message, "Firewall threw exception");
+			return;
+		}
+		// Send.
+		sendMessage(destinationUIN, message, MsgSendType.Temp);
 	}
 
 	@Override

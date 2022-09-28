@@ -44,6 +44,14 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	void sendMessage(long destinationUIN, PackedMessage message, MsgSendType type);
 
 	/**
+	 * See the other sendMessage definition.
+	 * Note that destUser is just used as a source for the UIN.
+	 */
+	default void sendMessage(INatsueUserData destUser, PackedMessage message, MsgSendType type) {
+		sendMessage(destUser.getUIN(), message, type);
+	}
+
+	/**
 	 * Attempts to forcibly disconnect a user by UIN.
 	 * Note that this may not work (system users can shrug it off) but regular users are gone.
 	 */

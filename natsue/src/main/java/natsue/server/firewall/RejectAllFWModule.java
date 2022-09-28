@@ -8,15 +8,26 @@
 package natsue.server.firewall;
 
 import natsue.data.babel.pm.PackedMessage;
-import natsue.server.hub.IWWRListener;
+import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.userdata.INatsueUserData;
 
 /**
- * Responsible for filtering messages to prevent malicious stuff going through the server.
+ * TESTING ONLY
  */
-public interface IFirewall extends IWWRListener {
-	/**
-	 * Handles a message. NOTE: The message may be modified by this function!
-	 */
-	public void handleMessage(INatsueUserData sourceUser, long destinationUIN, PackedMessage message);
+public class RejectAllFWModule implements IFWModule {
+	public final IHubPrivilegedAPI hub;
+
+	public RejectAllFWModule(IHubPrivilegedAPI h) {
+		hub = h;
+	}
+
+	@Override
+	public void wwrNotify(boolean online, INatsueUserData userData) {
+	}
+
+	@Override
+	public boolean handleMessage(INatsueUserData sourceUser, INatsueUserData destUser, PackedMessage message) {
+		hub.rejectMessage(destUser, message, "Rejecting everything");
+		return true;
+	}
 }

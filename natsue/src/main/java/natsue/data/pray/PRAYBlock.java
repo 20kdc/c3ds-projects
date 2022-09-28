@@ -19,7 +19,10 @@ import natsue.data.IOUtils;
  * Not all into the details, but good enough
  */
 public class PRAYBlock {
-	public final byte[] type = new byte[4];
+	private final byte[] type = new byte[4];
+	// mirror of type, keep up to date!
+	// exists just as a way to reduce unnecessary conversion.
+	private String typeStr;
 	public final byte[] name = new byte[128];
 	public byte[] data;
 
@@ -35,12 +38,13 @@ public class PRAYBlock {
 
 	public void setType(String t) {
 		IOUtils.setFixedLength(type, 4, t);
+		typeStr = t;
 	}
 	public void setName(String t) {
 		IOUtils.setFixedLength(name, 128, t);
 	}
 	public String getType() {
-		return IOUtils.getFixedLength(type);
+		return typeStr;
 	}
 	public String getName() {
 		return IOUtils.getFixedLength(name);
@@ -70,6 +74,7 @@ public class PRAYBlock {
 	public static PRAYBlock readOne(ByteBuffer dataSlice, int maxBlockSize) {
 		PRAYBlock block = new PRAYBlock();
 		dataSlice.get(block.type);
+		block.typeStr = IOUtils.getFixedLength(block.type);
 		dataSlice.get(block.name);
 		int compressedDataSize = dataSlice.getInt();
 		int decompressedDataSize = dataSlice.getInt();

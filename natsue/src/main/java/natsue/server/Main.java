@@ -20,12 +20,13 @@ import natsue.log.ILogSource;
 import natsue.log.StdoutLogProvider;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.jdbc.JDBCNatsueDatabase;
-import natsue.server.firewall.ComplexFirewall;
+import natsue.server.firewall.ComplexFWModule;
 import natsue.server.firewall.FirewallLevel;
-import natsue.server.firewall.IFirewall;
-import natsue.server.firewall.RejectAllFirewall;
+import natsue.server.firewall.IFWModule;
+import natsue.server.firewall.PRAYBlockListsFWModule;
+import natsue.server.firewall.RejectAllFWModule;
 import natsue.server.firewall.Rejector;
-import natsue.server.firewall.TrivialFirewall;
+import natsue.server.firewall.SpoolListFWModule;
 import natsue.server.hub.ServerHub;
 import natsue.server.packet.SocketThread;
 import natsue.server.session.LoginSessionState;
@@ -57,24 +58,36 @@ public class Main {
 
 		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
 		// determine the firewall
-		IFirewall firewall = null;
+		IFWModule[] firewall = null;
 		switch (config.firewallLevel.getValue()) {
 		case minimal:
 			mySource.log("Firewall level: minimal: MINIMAL, HAZARDOUS TO VANILLA CLIENTS");
-			firewall = new TrivialFirewall(serverHub);
+			firewall = new IFWModule[] {
+				new SpoolListFWModule(serverHub)
+			};
 			break;
 		case vanillaSafe:
 			mySource.log("Firewall level: vanillaSafe: Should be safe enough.");
-			firewall = new ComplexFirewall(ilp, serverHub, false);
+			firewall = new IFWModule[] {
+				new PRAYBlockListsFWModule(serverHub, false),
+				new ComplexFWModule(serverHub),
+				new SpoolListFWModule(serverHub)
+			};
 			break;
 		case full:
 		default:
 			mySource.log("Firewall level: full: No fun allowed.");
-			firewall = new ComplexFirewall(ilp, serverHub, true);
+			firewall = new IFWModule[] {
+				new PRAYBlockListsFWModule(serverHub, true),
+				new ComplexFWModule(serverHub),
+				new SpoolListFWModule(serverHub)
+			};
 			break;
 		case rejectAll:
 			mySource.log("Firewall level: rejectAll: FOR TESTING ONLY");
-			firewall = new RejectAllFirewall(serverHub);
+			firewall = new IFWModule[] {
+				new RejectAllFWModule(serverHub)
+			};
 			break;
 		}
 		serverHub.setFirewall(firewall, new Rejector(serverHub, SystemUserHubClient.IDENTITY));
