@@ -326,7 +326,10 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	@Override
 	public void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message) {
-		firewall.handleMessage(cc.getUserData(), destinationUIN, message);
+		INatsueUserData.Root userData = cc.getUserData();
+		// Just make sure of this here and now.
+		message.senderUIN = userData.getUIN();
+		firewall.handleMessage(userData, destinationUIN, message);
 	}
 
 	@Override

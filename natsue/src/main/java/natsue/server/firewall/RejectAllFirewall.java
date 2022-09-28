@@ -29,7 +29,6 @@ public class RejectAllFirewall implements IFirewall {
 
 	@Override
 	public void handleMessage(INatsueUserData sourceUser, long destinationUIN, PackedMessage message) {
-		message.senderUIN = sourceUser.getUIN();
 		hub.rejectMessage(destinationUIN, message, "Rejecting everything");
 	}
 }

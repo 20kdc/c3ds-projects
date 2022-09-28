@@ -73,7 +73,6 @@ public class ComplexFirewall implements IFirewall, ILogSource {
 
 	@Override
 	public void handleMessage(INatsueUserData sourceUser, long destinationUIN, PackedMessage message) {
-		message.senderUIN = sourceUser.getUIN();
 		INatsueUserData destUserInfo = hub.getUserDataByUIN(destinationUIN);
 		boolean temp = false;
 		String rejection = null;

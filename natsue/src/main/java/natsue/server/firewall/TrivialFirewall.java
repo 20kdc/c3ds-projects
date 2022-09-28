@@ -29,7 +29,6 @@ public class TrivialFirewall implements IFirewall {
 
 	@Override
 	public void handleMessage(INatsueUserData sourceUser, long destinationUIN, PackedMessage message) {
-		message.senderUIN = sourceUser.getUIN();
 		hub.sendMessage(destinationUIN, message, MsgSendType.Perm);
 	}
 }
