@@ -13,12 +13,14 @@ import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
+import natsue.data.hli.StandardMessages;
 import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
+import natsue.server.system.SystemUserHubClient;
 import natsue.server.userdata.INatsueUserData;
 
 /**
@@ -98,6 +100,16 @@ public class ComplexFirewall implements IFirewall, ILogSource {
 					// Block-specific procedures
 					if (type.equals("MESG")) {
 						sanitizeMESG(sourceUser, block);
+					} else if (type.equals("REQU")) {
+						PRAYTags pt = new PRAYTags();
+						pt.read(block.data);
+						String chatID = pt.strMap.getOrDefault("ChatID", "?");
+						String reqType = pt.strMap.getOrDefault("Request Type", "?");
+						if (chatID.equals(SystemUserHubClient.CHATID_GLOBAL) && !reqType.equals("Accept")) {
+							// This request is forfeit as it would break the global chat system
+							hub.sendMessage(message.senderUIN, StandardMessages.systemMessage(message.senderUIN, "You can't invite people to Global Chat."), MsgSendType.Temp);
+							return;
+						}
 					} else if (type.equals("warp")) {
 						// NB norn detector
 						PRAYTags pt = new PRAYTags();

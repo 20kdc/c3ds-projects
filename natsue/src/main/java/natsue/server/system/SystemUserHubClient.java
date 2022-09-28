@@ -7,8 +7,6 @@
 
 package natsue.server.system;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -24,7 +22,6 @@ import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
-import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
@@ -38,6 +35,7 @@ import natsue.server.userdata.INatsueUserData;
  */
 public class SystemUserHubClient implements IHubClient, ILogSource {
 	public static final String CHATID_GLOBAL = "pettables (19551101000000) - 1+2";
+	public static final String NICK_GLOBALCHAT = "!GlobalChat";
 
 	public final IHubPrivilegedClientAPI hub;
 	private final ILogProvider logParent;
@@ -219,14 +217,14 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	private void sendGlobalChatRequest(long targetUIN) {
-		hub.sendMessage(targetUIN, StandardMessages.chatRequest(UIN, getNickname(), CHATID_GLOBAL), MsgSendType.Temp);
+		hub.sendMessage(targetUIN, StandardMessages.chatRequest(UIN, NICK_GLOBALCHAT, CHATID_GLOBAL), MsgSendType.Temp);
 	}
 	
 	private void addToGlobalChat(long senderUIN) {
 		synchronized (peopleInGroupChatLock) {
 			peopleInGroupChat.add(senderUIN);
 		}
-		String leader = "<tint 255 255 255> - GLOBAL CHAT -\n" + ChatColours.CHAT + "Other chatters invisible due to quirks of the Docking Station chat system. Please DO NOT invite users, tell them to use the globalchat !System command.\n";
+		String leader = "<tint 255 255 255> - GLOBAL CHAT -\n";
 		PackedMessage npm = StandardMessages.chatMessage(UIN, "", CHATID_GLOBAL, leader);
 		hub.sendMessage(senderUIN, npm, MsgSendType.Temp);
 		sendGlobalChatStatusUpdate(senderUIN, "joined");
@@ -247,7 +245,11 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		INatsueUserData nud = hub.getUserDataByUIN(targetUIN);
 		if (nud != null)
 			quickNick = nud.getNickname();
-		sendToGlobalChatExcept(0, "", ChatColours.NICKNAME + quickNick + ChatColours.CHAT + " " + status + ".\n");
+		int count;
+		synchronized (peopleInGroupChatLock) {
+			count = peopleInGroupChat.size();
+		}
+		sendToGlobalChatExcept(0, "", ChatColours.NICKNAME + quickNick + ChatColours.CHAT + " " + status + ". (" + count + " people)\n");
 	}
 
 	private boolean sendToGlobalChatExcept(long senderUIN, String nickname, String text) {
