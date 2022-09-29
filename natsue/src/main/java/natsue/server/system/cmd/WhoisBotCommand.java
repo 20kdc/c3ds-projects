@@ -22,6 +22,7 @@ public class WhoisBotCommand extends BaseBotCommand {
 
 	@Override
 	public void run(Context args) {
+		boolean showUINs = args.hub.isUINAdmin(args.senderUIN);
 		while (args.remaining()) {
 			String user = args.nextArg();
 			INatsueUserData userData = args.commandLookupUser(user);
@@ -35,16 +36,20 @@ public class WhoisBotCommand extends BaseBotCommand {
 				} else {
 					args.response.append("<tint 255 64 64>Offline\n");
 				}
-				args.response.append(ChatColours.CHAT);
-				args.response.append("UIN: ");
-				args.response.append(userData.getUINString());
-				int hid = UINUtils.hid(userData.getUIN()); 
-				if (hid == UINUtils.HID_SYSTEM) {
-					args.response.append(" <tint 64 64 255>(SYSTEM)\n");
-				} else if (hid == UINUtils.HID_USER) {
-					args.response.append(" <tint 64 255 64>(USER)\n");
-				} else {
-					args.response.append(" <tint 255 64 64>(" + hid + ")\n");
+				// Only admins can see UINs.
+				// This isn't a security thing, but it's done in the wake of The Amazing Floatingry.
+				if (showUINs) {
+					args.response.append(ChatColours.CHAT);
+					args.response.append("UIN: ");
+					args.response.append(userData.getUINString());
+					int hid = UINUtils.hid(userData.getUIN()); 
+					if (hid == UINUtils.HID_SYSTEM) {
+						args.response.append(" <tint 64 64 255>(SYSTEM)\n");
+					} else if (hid == UINUtils.HID_USER) {
+						args.response.append(" <tint 64 255 64>(USER)\n");
+					} else {
+						args.response.append(" <tint 255 64 64>(" + hid + ")\n");
+					}
 				}
 				args.response.append(ChatColours.CHAT);
 				args.response.append("Flags: ");
