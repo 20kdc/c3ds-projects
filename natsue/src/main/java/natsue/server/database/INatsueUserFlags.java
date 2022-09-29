@@ -32,6 +32,11 @@ public interface INatsueUserFlags {
 	public static final int FLAG_NO_RANDOM = 8;
 
 	/**
+	 * Account can receive Geats.
+	 */
+	public static final int FLAG_RECEIVE_GEATS = 16;
+
+	/**
 	 * Gets the flags of this user.
 	 * These can be mutated by modUserFlags on regular users.
 	 * See INatsueUserFlags for flag values.
@@ -68,13 +73,22 @@ public interface INatsueUserFlags {
 	}
 
 	/**
+	 * Is this user willing to receive Geats (Genus 4)?
+	 * NOTE: These can cause the Wasteland glitch.
+	 */
+	default boolean isReceivingGeats() {
+		return (getFlags() & FLAG_RECEIVE_GEATS) != 0;
+	}
+
+	/**
 	 * This enum is used for dynamic flag monkey business 
 	 */
 	public enum Flag {
 		admin(FLAG_ADMINISTRATOR),
 		frozen(FLAG_FROZEN),
 		recvnb(FLAG_RECEIVE_NB_NORNS),
-		noruso(FLAG_NO_RANDOM);
+		noruso(FLAG_NO_RANDOM),
+		recvgt(FLAG_RECEIVE_GEATS);
 
 		public final int value;
 

@@ -98,6 +98,8 @@ public class SystemCommands {
 		},
 		new FlagControlBotCommand("allownbnorns", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_NB_NORNS, true, "NB norn receipt enabled\n"),
 		new FlagControlBotCommand("denynbnorns", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_NB_NORNS, false, "NB norn receipt disabled\n"),
+		new FlagControlBotCommand("allowgeats", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_GEATS, true, "Geat receipt enabled\n"),
+		new FlagControlBotCommand("denygeats", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_GEATS, false, "Geat receipt disabled\n"),
 		// note the inverse in the test for DB compat.
 		new FlagControlBotCommand("allowrandom", "", Cat.Public, INatsueUserFlags.FLAG_NO_RANDOM, false, "Random selection enabled\n"),
 		new FlagControlBotCommand("denyrandom", "", Cat.Public, INatsueUserFlags.FLAG_NO_RANDOM, true, "Random selection disabled\n"),
@@ -127,6 +129,7 @@ public class SystemCommands {
 				args.response.append("contact !System\n");
 				args.response.append("who (show who's online)\n");
 				args.response.append("(allow/deny)nbnorns (WARNING: Crashes you if unmodded!)\n");
+				args.response.append("(allow/deny)geats (WARNING: wasteland glitch!)\n");
 				args.response.append("(allow/deny)random\n");
 				args.response.append("setpw 1234 (sets your password)\n");
 				args.response.append("globalchat\n");

@@ -56,8 +56,17 @@ public class ComplexFWModule implements IFWModule {
 					pt.read(block.data);
 					// not checking Genus right now - patch it when someone breaks it, things are on fire rn
 					int reC = pt.intMap.get("Gender");
+					int reG = pt.intMap.get("Genus");
 					boolean isNB = reC != 1 && reC != 2;
-					if (isNB && !destUser.isReceivingNBNorns()) {
+					boolean isGeat = reG == 4;
+					if (reG < 1 || reG > 4) {
+						hub.rejectMessage(destUser.getUIN(), message, "Invalid creature genus");
+						return true;
+					} else if (isGeat && !destUser.isReceivingGeats()) {
+						// Wasteland glitch prevention (CACL 4 4 0 19!!!!)
+						hub.rejectMessage(destUser.getUIN(), message, "Geat that target couldn't receive");
+						return true;
+					} else if (isNB && !destUser.isReceivingNBNorns()) {
 						// NB norns crash people who aren't prepared to receive them.
 						hub.rejectMessage(destUser.getUIN(), message, "NB norn that target couldn't receive");
 						return true;
