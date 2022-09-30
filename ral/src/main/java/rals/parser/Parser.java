@@ -6,6 +6,10 @@
  */
 package rals.parser;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
 import rals.code.Module;
 import rals.expr.RALConstant;
 import rals.lex.Lexer;
@@ -22,17 +26,37 @@ import rals.types.ScriptIdentifier;
  * Parser, but also discards any hope of this being an AST...
  */
 public class Parser {
-	public static void parseFile(TypeSystem ts, Module m, Lexer lx) {
-		while (true) {
-			Token tkn = lx.next();
-			if (tkn == null)
-				break;
-			try {
-				parseDeclaration(ts, m, tkn, lx);
-			} catch (Exception ex) {
-				throw new RuntimeException("declaration of " + tkn + " at line " + tkn.lineNumber, ex);
+	public static void parseFile(TypeSystem ts, Module m, File[] searchPaths, String inc) throws IOException {
+		for (File sp : searchPaths) {
+			File f = new File(sp, inc);
+			if (!f.exists())
+				continue;
+			try (FileInputStream fis = new FileInputStream(f)) {
+				Lexer lx = new Lexer(f.getPath(), fis);
+				while (true) {
+					Token tkn = lx.next();
+					if (tkn == null)
+						break;
+					if (tkn.isKeyword("include")) {
+						String str = ParserExpr.parseConstString(ts, lx);
+						lx.requireNextKw(";");
+						try {
+							parseFile(ts, m, searchPaths, str);
+						} catch (Exception ex) {
+							throw new RuntimeException("in included file " + str, ex);
+						}
+					} else {
+						try {
+							parseDeclaration(ts, m, tkn, lx);
+						} catch (Exception ex) {
+							throw new RuntimeException("declaration of " + tkn + " at line " + tkn.lineNumber, ex);
+						}
+					}
+				}
 			}
+			return;
 		}
+		throw new RuntimeException("Ran out of search paths trying to find " + inc);
 	}
 	public static void parseDeclaration(TypeSystem ts, Module m, Token tkn, Lexer lx) {
 		if (tkn.isKeyword("class")) {
@@ -58,6 +82,10 @@ public class Parser {
 			String name = lx.requireNextID();
 			RALType.Agent ag = ts.declareInterface(name);
 			parseExtendsClauses(ts, ag, lx);
+		} else if (tkn.isKeyword("typedef")) {
+			String name = lx.requireNextID();
+			ts.declareTypedef(name, ParserType.parseType(ts, lx));
+			lx.requireNextKw(";");
 		} else if (tkn.isKeyword("message")) {
 			String name = lx.requireNextID();
 			RALType rt = ts.byName(name);

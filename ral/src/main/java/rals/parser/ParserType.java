@@ -6,6 +6,8 @@
  */
 package rals.parser;
 
+import java.util.LinkedList;
+
 import rals.lex.Lexer;
 import rals.lex.Token;
 import rals.types.RALType;
@@ -16,6 +18,19 @@ import rals.types.TypeSystem;
  */
 public class ParserType {
 	public static RALType parseType(TypeSystem ts, Lexer lx) {
+		LinkedList<RALType> rts = new LinkedList<>();
+		rts.add(parseTypeBranch(ts, lx));
+		while (true) {
+			Token tkn = lx.requireNext();
+			if (!tkn.isKeyword("|")) {
+				lx.back();
+				break;
+			}
+			rts.add(parseTypeBranch(ts, lx));
+		}
+		return ts.byUnion(rts);
+	}
+	public static RALType parseTypeBranch(TypeSystem ts, Lexer lx) {
 		String name = lx.requireNextID();
 		RALType rt = ts.byName(name);
 		if (rt == null)

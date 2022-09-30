@@ -36,6 +36,14 @@ public class ParserExpr {
 			throw new RuntimeException("Expected constant integer.");
 		}
 	}
+	public static String parseConstString(TypeSystem ts, Lexer lx) {
+		RALConstant re = parseConst(ts, lx);
+		if (re instanceof RALConstant.Str) {
+			return ((RALConstant.Str) re).value;
+		} else {
+			throw new RuntimeException("Expected constant string.");
+		}
+	}
 
 	public static RALExprUR parseExpr(TypeSystem ts, Lexer lx) {
 		RALExprUR firstAtom = parseExprAtomOrNull(ts, lx);

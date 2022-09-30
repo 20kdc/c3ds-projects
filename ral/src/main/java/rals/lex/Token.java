@@ -20,7 +20,7 @@ public class Token {
 		keywords.add("class");
 		keywords.add("interface");
 		keywords.add("extends");
-		keywords.add("union");
+		keywords.add("typedef");
 		keywords.add("message");
 		keywords.add("field");
 		// code declarations
@@ -31,6 +31,10 @@ public class Token {
 		keywords.add("remove");
 		// in-function
 		keywords.add("let");
+		keywords.add("if");
+		keywords.add("loop");
+		keywords.add("ever");
+		keywords.add("until");
 	}
 
 	public final SrcPos lineNumber;

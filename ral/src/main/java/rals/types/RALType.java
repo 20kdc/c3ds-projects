@@ -34,15 +34,28 @@ public abstract class RALType {
 		if (other instanceof Any)
 			return true;
 		if (other instanceof Union) {
+			Union uo = (Union) other;
 			if (this instanceof Union) {
 				// Does the union include all our types?
 				if (((Union) other).contents.containsAll(((Union) this).contents))
 					return true;
 			} else {
-				// Does the union include us?
-				if (((Union) other).contains(this))
-					return true;
+				// Can we be cast to any type in this union?
+				for (RALType otherOpt : uo.contents)
+					if (canImplicitlyCast(otherOpt))
+						return true;
 			}
+		} else if (this instanceof Union) {
+			boolean ok = true;
+			// If all of our types can be cast to this type then it's ok
+			for (RALType opt : ((Union) this).contents) {
+				if (!opt.canImplicitlyCast(other)) {
+					ok = false;
+					break;
+				}
+			}
+			if (ok)
+				return true;
 		}
 		// Check parent types
 		if (this instanceof Agent) {

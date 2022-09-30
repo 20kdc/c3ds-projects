@@ -22,7 +22,7 @@ public class Lexer {
 	private Token lastToken;
 	private int lineNumber = 1;
 	private static final String LONERS = ";[]{}(),";
-	private static final String OPERATORS_BREAKING = "<>=?!/*-+:&^%";
+	private static final String OPERATORS_BREAKING = "<>=?!/*-+:&|^%";
 	private static final String OPERATORS_UNBREAKING = ".";
 	private static final String OPERATORS = OPERATORS_BREAKING + OPERATORS_UNBREAKING;
 	// note that the '#' breaker (comment) is inducted into whitespace

@@ -110,6 +110,11 @@ public class TypeSystem {
 				types.add(rt);
 			}
 		}
+		HashSet<RALType> typesCopy = new HashSet<>(types);
+		for (final RALType rt : typesCopy) {
+			// Remove inferior types that aren't this type.
+			types.removeIf((target) -> target != rt && target.canImplicitlyCast(rt));
+		}
 		int ts = types.size();
 		if (ts == 1) {
 			// single-type union? nuh.
@@ -183,5 +188,11 @@ public class TypeSystem {
 		if (maybeClassifier instanceof RALType.AgentClassifier)
 			return (RALType.AgentClassifier) maybeClassifier;
 		return null;
+	}
+
+	public void declareTypedef(String name, RALType parseType) {
+		RALType existing = namedTypes.get(name);
+		if (existing != null && existing != parseType)
+			throw new RuntimeException("Can't redeclare type " + name);
 	}
 }

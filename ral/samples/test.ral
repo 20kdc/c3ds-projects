@@ -1,0 +1,43 @@
+include "std/c3.ral";
+
+class FavoritePlace 1 4 0;
+class Bramboo 2 4 13;
+
+meepFamily = 6;
+meepGenus = 6;
+meepSpecies = 6;
+
+interface Boop;
+interface Beep;
+class Meep meepFamily meepGenus meepSpecies extends Boop, Beep;
+
+typedef NotNornCreature Grendel|Ettin|Geat;
+
+message Agent:windowResized 123;
+
+#macro () inst () {
+#	inline "inst\n";
+#}
+
+#macro () kill (Agent x) {
+#	inline "kill " x "\n";
+#}
+
+install {
+	let integer counterA = 0;
+	let integer counterB = 0;
+	inline "addv " counterA " " 1 "\n";
+	counterA, counterB = 4, 1;
+}
+
+script Geat 5 {
+	# :(
+}
+
+script Geat:windowResized {
+	# :)
+}
+
+remove {
+}
+

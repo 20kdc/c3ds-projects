@@ -1,0 +1,14 @@
+# c3ds-projects - Assorted compatibility fixes & useful tidbits
+# Written starting in 2022 by contributors (see CREDITS.txt)
+# To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+# You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+# Standard Library
+
+class Daemon 1 1 0;
+class Creature 4 0 0;
+class Norn 4 1 0;
+class Grendel 4 2 0;
+class Ettin 4 3 0;
+class Geat 4 4 0;
+
