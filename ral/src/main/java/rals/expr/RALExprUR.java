@@ -6,8 +6,6 @@
  */
 package rals.expr;
 
-import java.io.StringWriter;
-
 import rals.code.ScopeContext;
 
 /**

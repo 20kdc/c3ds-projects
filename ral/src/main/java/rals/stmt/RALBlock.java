@@ -8,22 +8,43 @@ package rals.stmt;
 
 import java.util.LinkedList;
 
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.lex.SrcPos;
 
 /**
  * Block "statement"
  */
-public class RALBlock extends RALStatement {
-	public LinkedList<RALStatement> content = new LinkedList<>();
-	public RALBlock(SrcPos lineNumber) {
+public class RALBlock extends RALStatementUR {
+	public LinkedList<RALStatementUR> content = new LinkedList<>();
+	public final boolean isScopeBreaking;
+	public RALBlock(SrcPos lineNumber, boolean scopeBreaking) {
 		super(lineNumber);
+		isScopeBreaking = scopeBreaking;
 	}
+
 	@Override
-	protected void compileInner(StringBuilder writer, ScopeContext scope) {
-		try (ScopeContext innerScope = new ScopeContext(scope)) {
-			for (RALStatement rl : content)
-				rl.compile(writer, innerScope);
-		}
+	public RALStatement resolve(ScopeContext scope) {
+		if (isScopeBreaking)
+			scope = new ScopeContext(scope);
+
+		final LinkedList<RALStatement> content2 = new LinkedList<>();
+		for (RALStatementUR ur : content)
+			content2.add(ur.resolve(scope));
+
+		return new RALStatement(lineNumber) {
+			@Override
+			protected void compileInner(StringBuilder writer, CompileContext cc) {
+				if (isScopeBreaking) {
+					try (CompileContext innerScope = new CompileContext(cc)) {
+						for (RALStatement rl : content2)
+							rl.compile(writer, innerScope);
+					}
+				} else {
+					for (RALStatement rl : content2)
+						rl.compile(writer, cc);
+				}
+			}
+		};
 	}
 }

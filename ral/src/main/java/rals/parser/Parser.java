@@ -19,6 +19,7 @@ import rals.expr.RALExprUR;
 import rals.lex.Lexer;
 import rals.lex.Token;
 import rals.stmt.RALStatement;
+import rals.stmt.RALStatementUR;
 import rals.types.AgentInterface;
 import rals.types.Classifier;
 import rals.types.RALType;
@@ -124,7 +125,7 @@ public class Parser {
 					throw new RuntimeException("No such message ID: " + name + ":" + msgName);
 				scriptId = new ScriptIdentifier(ac.classifier, msgId);
 			}
-			RALStatement stmt = ParserCode.parseStatement(ts, lx);
+			RALStatementUR stmt = ParserCode.parseStatement(ts, lx);
 			m.eventScripts.put(scriptId, stmt);
 		} else if (tkn.isKeyword("install")) {
 			m.installScript = ParserCode.parseStatement(ts, lx);

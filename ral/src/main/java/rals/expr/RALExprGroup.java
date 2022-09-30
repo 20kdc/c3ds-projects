@@ -9,6 +9,7 @@ package rals.expr;
 import java.io.StringWriter;
 import java.util.LinkedList;
 
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
 import rals.types.RALType;
@@ -59,11 +60,11 @@ public class RALExprGroup implements RALExprUR {
 		}
 	
 		@Override
-		public RALType[] outTypes(ScriptContext context) {
+		public RALType[] outTypes() {
 			RALType[][] collection = new RALType[contents.length][];
 			int total = 0;
 			for (int i = 0; i < contents.length; i++) {
-				collection[i] = contents[i].outTypes(context);
+				collection[i] = contents[i].outTypes();
 				total += collection[i].length;
 			}
 			RALType[] res = new RALType[total];
@@ -76,10 +77,10 @@ public class RALExprGroup implements RALExprUR {
 		}
 	
 		@Override
-		public void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context) {
+		public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
 			int ptr = 0;
 			for (int i = 0; i < contents.length; i++) {
-				int count = contents[i].outTypes(context).length;
+				int count = contents[i].outTypes().length;
 				RALExpr[] slice = new RALExpr[count];
 				System.arraycopy(out, ptr, slice, 0, count);
 				contents[i].outCompile(writer, slice, context);
@@ -88,12 +89,12 @@ public class RALExprGroup implements RALExprUR {
 		}
 	
 		@Override
-		public RALType inType(ScriptContext context) {
+		public RALType inType() {
 			throw new RuntimeException("Not writable");
 		}
 	
 		@Override
-		public void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context) {
+		public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
 			throw new RuntimeException("Not writable");
 		}
 	}

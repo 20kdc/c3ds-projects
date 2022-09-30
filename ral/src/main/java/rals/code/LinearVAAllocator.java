@@ -6,20 +6,21 @@
  */
 package rals.code;
 
-import rals.types.RALType;
-import rals.types.TypeSystem;
-
 /**
- * General context for compilation and such.
+ * Useful as part of the machinery that creates the root VA allocator.
  */
-public class ScriptContext {
-	public final RALType ownrType;
-	public final TypeSystem typeSystem;
-	public final Module module;
+public class LinearVAAllocator implements IVAAllocator {
+	public int currentVA = 0;
 
-	public ScriptContext(TypeSystem ts, Module m, RALType ot) {
-		typeSystem = ts;
-		module = m;
-		ownrType = ot;
+	@Override
+	public int allocVA() {
+		int va = currentVA++;
+		if (va >= 100)
+			throw new RuntimeException("Out of VAs");
+		return va;
+	}
+
+	@Override
+	public void releaseVA(int i) {
 	}
 }

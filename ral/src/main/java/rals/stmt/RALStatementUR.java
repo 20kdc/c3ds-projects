@@ -6,34 +6,43 @@
  */
 package rals.stmt;
 
-import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALExpr;
 import rals.expr.RALExprUR;
 import rals.lex.SrcPos;
+import rals.types.RALType;
 
 /**
- * Represents a statement inside a RAL script.
+ * Represents an unresolved statement.
  */
-public abstract class RALStatement {
+public abstract class RALStatementUR {
 	public final SrcPos lineNumber;
-	public RALStatement(SrcPos ln) {
+	public RALStatementUR(SrcPos ln) {
 		lineNumber = ln;
 	}
 
-	public final void compile(StringBuilder writer, CompileContext scope) {
-		writer.append(" * @ ");
-		writer.append(lineNumber);
-		writer.append("\n");
-		try {
-			compileInner(writer, scope);
-		} catch (Exception ex) {
-			throw new RuntimeException("At " + lineNumber, ex);
-		}
+	/**
+	 * Resolves an array of expressions.
+	 */
+	public static RALExpr[] resolveExprs(RALExprUR[] xi, ScopeContext scope) {
+		RALExpr[] res = new RALExpr[xi.length];
+		for (int i = 0; i < xi.length; i++)
+			res[i] = xi[i].resolve(scope);
+		return res;
 	}
 
 	/**
-	 * Compiles the statement.
+	 * In types from array of expressions.
 	 */
-	protected abstract void compileInner(StringBuilder writer, CompileContext scope);
+	public static RALType[] inTypesOf(RALExpr[] xi) {
+		RALType[] res = new RALType[xi.length];
+		for (int i = 0; i < xi.length; i++)
+			res[i] = xi[i].inType();
+		return res;
+	}
+
+	/**
+	 * Resolves the statement.
+	 */
+	public abstract RALStatement resolve(ScopeContext scope);
 }

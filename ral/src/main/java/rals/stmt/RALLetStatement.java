@@ -6,10 +6,11 @@
  */
 package rals.stmt;
 
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALExpr;
 import rals.expr.RALExprUR;
-import rals.expr.RALStringVar;
+import rals.expr.RALVAVar;
 import rals.lex.SrcPos;
 import rals.types.RALType;
 
@@ -17,7 +18,7 @@ import rals.types.RALType;
  * Let statement.
  * Introduces new locals or shadows existing locals.
  */
-public class RALLetStatement extends RALStatement {
+public class RALLetStatement extends RALStatementUR {
 	public final String[] names;
 	public final RALType[] types;
 	public final RALExprUR init;
@@ -30,35 +31,55 @@ public class RALLetStatement extends RALStatement {
 	}
 
 	@Override
-	protected void compileInner(StringBuilder writer, ScopeContext scope) {
-		// Ok, so we want to define this local in the outer environment, but carefully.
-		// In particular we want to be able to use local definitions as a cast.
-		RALStringVar[] vars = new RALStringVar[names.length];
-		for (int i = 0; i < vars.length; i++) {
-			RALStringVar rsv = scope.allocLocal(types[i]);
-			writer.append(" * ");
-			writer.append(rsv.code);
-			writer.append(": ");
-			writer.append(types[i]);
-			writer.append(" ");
-			writer.append(names[i]);
-			writer.append("\n");
-			vars[i] = rsv;
-		}
-
+	public RALStatement resolve(ScopeContext scope) {
+		RALExpr initRes = null;
 		if (init != null) {
-			RALExpr re = init.resolve(scope);
-			try (ScopeContext iScope = new ScopeContext(scope)) {
-				RALType[] initChk = re.outTypes(iScope.script);
-				if (initChk.length != names.length)
-					throw new RuntimeException("Expression return values don't match amount of defined variables");
-				for (int i = 0; i < vars.length; i++)
-					initChk[i].implicitlyCastOrThrow(types[i]);
-				re.outCompile(writer, vars, iScope.script);
+			initRes = init.resolve(scope);
+			// Type-check
+			RALType[] initChk = initRes.outTypes();
+			if (initChk.length != names.length)
+				throw new RuntimeException("Expression return values don't match amount of defined variables");
+			for (int i = 0; i < names.length; i++)
+				initChk[i].implicitlyCastOrThrow(types[i]);
+		}
+		RALVAVar[] vars = new RALVAVar[names.length];
+		for (int i = 0; i < names.length; i++) {
+			RALVAVar rvv = scope.newLocal(names[i], types[i]);
+			vars[i] = rvv;
+		}
+		return new Resolved(lineNumber, vars, initRes);
+	}
+
+	public class Resolved extends RALStatement {
+		public final RALVAVar[] vars;
+		public final RALExpr init;
+	
+		public Resolved(SrcPos sp, RALVAVar[] v, RALExpr i) {
+			super(sp);
+			vars = v;
+			init = i;
+		}
+	
+		@Override
+		protected void compileInner(StringBuilder writer, CompileContext scope) {
+			// Ok, so we want to define this local in the outer environment, but carefully.
+			// In particular we want to be able to use local definitions as a cast.
+			for (int i = 0; i < vars.length; i++) {
+				scope.allocVA(vars[i].handle);
+				writer.append(" * ");
+				writer.append(vars[i].getInlineCAOS(scope));
+				writer.append(": ");
+				writer.append(types[i]);
+				writer.append(" ");
+				writer.append(names[i]);
+				writer.append("\n");
+			}
+			
+			if (init != null) {
+				try (CompileContext iScope = new CompileContext(scope)) {
+					init.outCompile(writer, vars, iScope);
+				}
 			}
 		}
-
-		for (int i = 0; i < vars.length; i++)
-			scope.scopedVariables.put(names[i], vars[i]);
 	}
 }

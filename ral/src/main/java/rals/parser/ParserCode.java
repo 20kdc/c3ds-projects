@@ -19,6 +19,7 @@ import rals.stmt.RALBlock;
 import rals.stmt.RALInlineStatement;
 import rals.stmt.RALLetStatement;
 import rals.stmt.RALStatement;
+import rals.stmt.RALStatementUR;
 import rals.types.RALType;
 import rals.types.TypeSystem;
 
@@ -26,10 +27,10 @@ import rals.types.TypeSystem;
  * Code parser.
  */
 public class ParserCode {
-	public static RALStatement parseStatement(TypeSystem ts, Lexer lx) {
+	public static RALStatementUR parseStatement(TypeSystem ts, Lexer lx) {
 		Token tkn = lx.requireNext();
 		if (tkn.isKeyword("{")) {
-			RALBlock rb = new RALBlock(tkn.lineNumber);
+			RALBlock rb = new RALBlock(tkn.lineNumber, true);
 			while (true) {
 				tkn = lx.requireNext();
 				if (tkn.isKeyword("}"))

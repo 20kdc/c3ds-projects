@@ -6,20 +6,30 @@
  */
 package rals.code;
 
+import rals.expr.RALStringVar;
 import rals.types.RALType;
-import rals.types.TypeSystem;
 
 /**
- * General context for compilation and such.
+ * Allocates variable slots.
  */
-public class ScriptContext {
-	public final RALType ownrType;
-	public final TypeSystem typeSystem;
-	public final Module module;
+public interface IVAAllocator {
+	/**
+	 * Allocates a given VA.
+	 */
+	int allocVA();
 
-	public ScriptContext(TypeSystem ts, Module m, RALType ot) {
-		typeSystem = ts;
-		module = m;
-		ownrType = ot;
+	/**
+	 * Releases a given VA.
+	 */
+	void releaseVA(int i);
+
+	/**
+	 * Allocates a VA and returns it as a RALStringVar.
+	 */
+	default RALStringVar allocVA(RALType t) {
+		int slot = allocVA();
+		String slotS = ScopeContext.vaToString(slot);
+		RALStringVar res = new RALStringVar(slotS, t, true);
+		return res;
 	}
 }

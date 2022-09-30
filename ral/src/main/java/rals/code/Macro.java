@@ -13,6 +13,7 @@ import rals.expr.RALCast;
 import rals.expr.RALExpr;
 import rals.expr.RALExprUR;
 import rals.expr.RALStringVar;
+import rals.expr.RALVAVar;
 import rals.types.RALType;
 
 /**
@@ -33,61 +34,64 @@ public class Macro implements RALCallable {
 	public RALExpr instance(final RALExpr[] a, ScopeContext sc) {
 		if (a.length != args.length)
 			throw new RuntimeException("Macro called with wrong arg count (decomposition failure?)");
-		try (ScopeContext macroContext = new ScopeContext(sc)) {
-			final RALStringVar[] toCopy = new RALStringVar[args.length];
-			for (int i = 0; i < a.length; i++) {
-				// Check this early
-				RALExpr argExpr = a[i];
-				RALType[] rt = argExpr.outTypes(sc.script);
-				if (rt.length != 1)
-					throw new RuntimeException("Macro arg " + i + ":" + args[i].name + " given >1 value.");
-				rt[0].implicitlyCastOrThrow(args[i].type, rt[0], args[i]);
-				// Now actually apply
-				if (args[i].isInline) {
-					// Note that we don't do a two-way check.
-					// Instead any type errors caused by writing to the variable are handled during resolution or writeout.
-					macroContext.scopedVariables.put(args[i].name, a[i]);
-				} else {
-					toCopy[i] = macroContext.allocLocal(args[i].name, args[i].type);
-				}
+		// Our vars are going to be used outside of this context, so we attach vars and such to the parent.
+		
+		ScopeContext macroContext = new ScopeContext(sc);
+
+		final RALVAVar[] toCopy = new RALVAVar[args.length];
+		for (int i = 0; i < a.length; i++) {
+			// Check this early
+			RALExpr argExpr = a[i];
+			RALType[] rt = argExpr.outTypes();
+			if (rt.length != 1)
+				throw new RuntimeException("Macro arg " + i + ":" + args[i].name + " given >1 value.");
+			rt[0].implicitlyCastOrThrow(args[i].type, rt[0], args[i]);
+			// Now actually apply
+			if (args[i].isInline) {
+				// Note that we don't do a two-way check.
+				// Instead any type errors caused by writing to the variable are handled during resolution or writeout.
+				macroContext.scopedVariables.put(args[i].name, a[i]);
+			} else {
+				toCopy[i] = macroContext.newLocal(args[i].name, args[i].type);
 			}
-			final RALExpr innards = code.resolve(macroContext);
-			return new RALExpr() {
-				private void copyArgs(StringBuilder writer, ScriptContext sc) {
-					for (int i = 0; i < toCopy.length; i++) {
-						if (toCopy[i] != null) {
-							writer.append(" * ");
-							writer.append(toCopy[i].code);
-							writer.append(": " + name + " arg ");
-							writer.append(i);
-							writer.append(": ");
-							writer.append(args[i].type);
-							writer.append(" ");
-							writer.append(args[i].name);
-							writer.append("\n");
-							a[i].outCompile(writer, new RALExpr[] {toCopy[i]}, sc);
-						}
+		}
+		final RALExpr innards = code.resolve(macroContext);
+		return new RALExpr() {
+			private void copyArgs(StringBuilder writer, CompileContext sc) {
+				for (int i = 0; i < args.length; i++) {
+					if (toCopy[i] != null) {
+						sc.allocVA(toCopy[i].handle);
+						writer.append(" * ");
+						writer.append(toCopy[i].getInlineCAOS(sc));
+						writer.append(": " + name + " arg ");
+						writer.append(i);
+						writer.append(": ");
+						writer.append(args[i].type);
+						writer.append(" ");
+						writer.append(args[i].name);
+						writer.append("\n");
+						a[i].outCompile(writer, new RALExpr[] {toCopy[i]}, sc);
 					}
 				}
-				@Override
-				public void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context) {
-					copyArgs(writer, context);
-					innards.inCompile(writer, input, inputExactType, context);
-				}
-				@Override
-				public RALType inType(ScriptContext context) {
-					return innards.inType(context);
-				}
-				@Override
-				public void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context) {
-					copyArgs(writer, context);
-					innards.outCompile(writer, out, context);
-				}
-				@Override
-				public RALType[] outTypes(ScriptContext context) {
-					return innards.outTypes(context);
-				}
-			};
-		}
+			}
+			@Override
+			public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+				copyArgs(writer, context);
+				innards.inCompile(writer, input, inputExactType, context);
+			}
+			@Override
+			public RALType inType() {
+				return innards.inType();
+			}
+			@Override
+			public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+				copyArgs(writer, context);
+				innards.outCompile(writer, out, context);
+			}
+			@Override
+			public RALType[] outTypes() {
+				return innards.outTypes();
+			}
+		};
 	}
 }

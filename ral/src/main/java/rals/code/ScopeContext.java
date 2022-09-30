@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import rals.expr.RALDiscard;
 import rals.expr.RALExpr;
 import rals.expr.RALStringVar;
+import rals.expr.RALVAVar;
 import rals.types.RALType;
 
 /**
@@ -19,18 +20,8 @@ import rals.types.RALType;
  * Good with try-with-resources pattern.
  * Note that these don't have to be specifically nested.
  */
-public class ScopeContext implements AutoCloseable {
+public class ScopeContext {
 	public final ScriptContext script;
-
-	/**
-	 * Allocations specific to this scope group
-	 */
-	public final LinkedList<Integer> allocation;
-
-	/**
-	 * If allocation is owned by this specific ScopeContext
-	 */
-	public final boolean ownsAllocation;
 
 	/**
 	 * Scoped variables (including inherited)
@@ -41,8 +32,6 @@ public class ScopeContext implements AutoCloseable {
 
 	public ScopeContext(ScriptContext parent) {
 		script = parent;
-		allocation = new LinkedList<>();
-		ownsAllocation = true;
 		scopedVariables.put("ownr", new RALStringVar("ownr", parent.ownrType, true));
 		// Dynamic VMVars would be nice, but we need hard logic anyway for, say, ownrType
 		scopedVariables.put("from", new RALStringVar("from", parent.typeSystem.gAny, true));
@@ -51,56 +40,12 @@ public class ScopeContext implements AutoCloseable {
 		scopedVariables.put("_p1_", new RALStringVar("_p1_", parent.typeSystem.gAny, true));
 		scopedVariables.put("_p2_", new RALStringVar("_p2_", parent.typeSystem.gAny, true));
 		scopedVariables.put("null", new RALStringVar("null", parent.typeSystem.gNull, true));
-		scopedVariables.put("_", RALDiscard.INSTANCE);
+		scopedVariables.put("_", new RALDiscard(parent.typeSystem));
 	}
 
-	/**
-	 * Standard fork.
-	 */
 	public ScopeContext(ScopeContext parent) {
-		this(parent, true);
-	}
-
-	/**
-	 * Standard fork.
-	 */
-	public ScopeContext(ScopeContext parent, boolean selfAllocates) {
 		script = parent.script;
-		if (selfAllocates) {
-			allocation = new LinkedList<>();
-			ownsAllocation = true;
-		} else {
-			allocation = parent.allocation;
-			ownsAllocation = false;
-		}
 		scopedVariables.putAll(parent.scopedVariables);
-	}
-
-	public int alloc() {
-		int res = script.allocateVA();
-		allocation.add(res);
-		return res;
-	}
-
-	public RALStringVar allocLocal(RALType t) {
-		int slot = alloc();
-		String slotS = vaToString(slot);
-		RALStringVar res = new RALStringVar(slotS, t, true);
-		return res;
-	}
-
-	public RALStringVar allocLocal(String name, RALType t) {
-		RALStringVar res = allocLocal(t);
-		scopedVariables.put(name, res);
-		return res;
-	}
-
-	@Override
-	public void close() {
-		if (!ownsAllocation)
-			return;
-		for (Integer i : allocation)
-			script.releaseVA(i);
 	}
 
 	/**
@@ -111,5 +56,19 @@ public class ScopeContext implements AutoCloseable {
 		if (res.length() == 1)
 			return "va0" + res;
 		return "va" + res;
+	}
+
+	/**
+	 * Note: You still have to actualize the VA handle for this!
+	 */
+	public RALVAVar newLocal(String name, RALType type) {
+		RALVAVar rvv = new RALVAVar(new IVAHandle() {
+			@Override
+			public String toString() {
+				return name;
+			}
+		}, type);
+		scopedVariables.put(name, rvv);
+		return rvv;
 	}
 }

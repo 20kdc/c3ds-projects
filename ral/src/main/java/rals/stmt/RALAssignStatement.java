@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALDiscard;
 import rals.expr.RALExpr;
@@ -16,7 +17,7 @@ import rals.types.RALType;
 /**
  * Assignment statement
  */
-public class RALAssignStatement extends RALStatement {
+public class RALAssignStatement extends RALStatementUR {
 	public final RALExprUR[] targets;
 	public final RALExprUR source;
 
@@ -27,33 +28,31 @@ public class RALAssignStatement extends RALStatement {
 	}
 
 	@Override
-	protected void compileInner(StringBuilder writer, ScopeContext scope) {
-		if (targets == null) {
-			// Assign everything to discard
-			RALExpr be = source.resolve(scope);
-			RALType[] sourceTypes = be.outTypes(scope.script);
-			RALDiscard rd = RALDiscard.INSTANCE;
-			RALExpr[] discards = new RALExpr[sourceTypes.length];
-			for (int i = 0; i < discards.length; i++)
-				discards[i] = rd;
-			be.outCompile(writer, discards, scope.script);
-		} else {
-			RALExpr[] ae = new RALExpr[targets.length];
-			RALType[] targetTypes = new RALType[targets.length];
-			for (int i = 0; i < ae.length; i++) {
-				ae[i] = targets[i].resolve(scope);
-				targetTypes[i] = ae[i].inType(scope.script);
-			}
-			RALExpr be = source.resolve(scope);
-			RALType[] sourceTypes = be.outTypes(scope.script);
-	
-			// type-check
-			if (targetTypes.length != sourceTypes.length)
-				throw new RuntimeException("Targets != sources");
-			for (int i = 0; i < targetTypes.length; i++)
-				sourceTypes[i].implicitlyCastOrThrow(targetTypes[i], be, ae[i]);
-			
-			be.outCompile(writer, ae, scope.script);
+	public RALStatement resolve(ScopeContext scope) {
+		final RALExpr[] targetsR = targets == null ? null : resolveExprs(targets, scope);
+		final RALType[] targetsT = targets == null ? null : inTypesOf(targetsR);
+		final RALExpr sourceR = source.resolve(scope);
+		if (targets != null) {
+			// Type-check
+			RALType[] sourceTypes = sourceR.outTypes();
+			if (targetsT.length != sourceTypes.length)
+				throw new RuntimeException("Targets len != sources len");
+			for (int i = 0; i < targetsT.length; i++)
+				sourceTypes[i].implicitlyCastOrThrow(targetsT[i], sourceR, targetsR[i]);
 		}
+		return new RALStatement(lineNumber) {
+			@Override
+			protected void compileInner(StringBuilder writer, CompileContext cc) {
+				if (targets == null) {
+					// Assign everything to discard
+					RALExpr[] discards = new RALExpr[sourceR.outTypes().length];
+					for (int i = 0; i < discards.length; i++)
+						discards[i] = new RALDiscard(cc.typeSystem);
+					sourceR.outCompile(writer, discards, cc);
+				} else {
+					sourceR.outCompile(writer, targetsR, cc);
+				}
+			}
+		};
 	}
 }

@@ -8,6 +8,7 @@ package rals.expr;
 
 import java.io.StringWriter;
 
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
 import rals.types.RALType;
@@ -24,7 +25,7 @@ public class RALConstant implements RALExpr, RALExprUR {
 	}
 
 	@Override
-	public String getInlineCAOS() {
+	public String getInlineCAOS(CompileContext context) {
 		return toString();
 	}
 
@@ -34,22 +35,22 @@ public class RALConstant implements RALExpr, RALExprUR {
 	}
 
 	@Override
-	public void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context) {
+	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
 		out[0].inCompile(writer, toString(), type, context);
 	}
 
 	@Override
-	public RALType[] outTypes(ScriptContext context) {
+	public RALType[] outTypes() {
 		return new RALType[] {type};
 	}
 
 	@Override
-	public RALType inType(ScriptContext context) {
+	public RALType inType() {
 		throw new RuntimeException("Constants are not writable");
 	}
 
 	@Override
-	public void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context) {
+	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
 		throw new RuntimeException("Constants are not writable");
 	}
 

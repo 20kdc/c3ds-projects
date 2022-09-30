@@ -6,6 +6,7 @@
  */
 package rals.expr;
 
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
 import rals.cond.RALCondition;
@@ -41,22 +42,22 @@ public class RALTernary implements RALExprUR {
 		}
 
 		@Override
-		public RALType[] outTypes(ScriptContext context) {
+		public RALType[] outTypes() {
 			throw new RuntimeException("Ternary guts NYI (union???)");
 		}
 
 		@Override
-		public void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context) {
+		public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
 			throw new RuntimeException("Ternary guts NYI (union???)");
 		}
 
 		@Override
-		public RALType inType(ScriptContext context) {
+		public RALType inType() {
 			throw new RuntimeException("Can't write to ternary");
 		}
 
 		@Override
-		public void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context) {
+		public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
 			throw new RuntimeException("Can't write to ternary");
 		}
 	}

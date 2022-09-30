@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALExpr;
 import rals.expr.RALExprUR;
@@ -14,7 +15,7 @@ import rals.lex.SrcPos;
 /**
  * Aliases an expression to another.
  */
-public class RALAliasStatement extends RALStatement {
+public class RALAliasStatement extends RALStatementUR {
 	public String name;
 	public RALExprUR target;
 	public RALAliasStatement(SrcPos sp, String id, RALExprUR e) {
@@ -24,13 +25,18 @@ public class RALAliasStatement extends RALStatement {
 	}
 
 	@Override
-	protected void compileInner(StringBuilder writer, ScopeContext scope) {
-		RALExpr exp = target.resolve(scope);
-		writer.append(" * ");
-		writer.append(exp);
-		writer.append(": ");
-		writer.append(name);
-		writer.append("\n");
+	public RALStatement resolve(ScopeContext scope) {
+		final RALExpr exp = target.resolve(scope);
 		scope.scopedVariables.put(name, exp);
+		return new RALStatement(lineNumber) {
+			@Override
+			protected void compileInner(StringBuilder writer, CompileContext scope) {
+				writer.append(" * ");
+				writer.append(exp);
+				writer.append(": ");
+				writer.append(name);
+				writer.append("\n");
+			}
+		};
 	}
 }

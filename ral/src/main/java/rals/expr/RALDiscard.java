@@ -6,18 +6,20 @@
  */
 package rals.expr;
 
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
 import rals.types.RALType;
+import rals.types.TypeSystem;
 
 /**
  * Underscore, or the discard expression.
  * This is injected in ScopeContext alongside other "semi-keywords".
  */
 public class RALDiscard implements RALExpr, RALExprUR {
-	public static final RALDiscard INSTANCE = new RALDiscard();
-
-	private RALDiscard() {
+	public final RALType any;
+	public RALDiscard(TypeSystem ts) {
+		any = ts.gAny;
 	}
 
 	@Override
@@ -26,26 +28,26 @@ public class RALDiscard implements RALExpr, RALExprUR {
 	}
 
 	@Override
-	public RALType[] outTypes(ScriptContext context) {
+	public RALType[] outTypes() {
 		return new RALType[0];
 	}
 
 	@Override
-	public void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context) {
-		// ?
+	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+		throw new RuntimeException("Discard isn't a real value");
 	}
 
 	@Override
-	public void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context) {
+	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
 		// We need to discard this safely, soooo
-		try (ScopeContext ic = new ScopeContext(context)) {
-			RALStringVar rsv = ic.allocLocal(input, inputExactType);
+		try (CompileContext ccr = new CompileContext(context)) {
+			RALStringVar rsv = ccr.allocVA(inputExactType);
 			rsv.inCompile(writer, input, inputExactType, context);
 		}
 	}
 
 	@Override
-	public RALType inType(ScriptContext context) {
-		return context.typeSystem.gAny;
+	public RALType inType() {
+		return any;
 	}
 }

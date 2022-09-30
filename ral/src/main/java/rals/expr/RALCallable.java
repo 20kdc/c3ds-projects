@@ -16,7 +16,7 @@ import rals.code.ScopeContext;
 public interface RALCallable {
 	/**
 	 * Given some arguments, converts to an expression.
-	 * The expression presumably does whatever it has to do to make this work.
+	 * See RALExpr.resolve for details on how this all works. 
 	 */
 	RALExpr instance(RALExpr[] args, ScopeContext sc);
 }

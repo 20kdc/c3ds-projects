@@ -8,6 +8,7 @@ package rals.expr;
 
 import java.io.StringWriter;
 
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
 import rals.types.RALType;
@@ -48,7 +49,7 @@ public final class RALCast implements RALExprUR {
 		@Override
 		public RALExpr resolve(ScopeContext context) {
 			RALExpr r = base.resolve(context);
-			RALType[] rt = r.outTypes(context.script);
+			RALType[] rt = r.outTypes();
 			if (rt.length != 1)
 				throw new RuntimeException("Can't denull >1 value");
 			RALType nn = rt[0];
@@ -82,37 +83,37 @@ public final class RALCast implements RALExprUR {
 		}
 
 		@Override
-		public RALType[] outTypes(ScriptContext context) {
-			RALType[] t = expr.outTypes(context);
+		public RALType[] outTypes() {
+			RALType[] t = expr.outTypes();
 			if (t.length != 1)
 				throw new RuntimeException("Can't cast this, not a single type!");
 			return new RALType[] {target};
 		}
 
 		@Override
-		public void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context) {
+		public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
 			// Invert ourselves so we apply to the target.
 			// This is important because it ensures we overwrite inputExactType for storage.
 			expr.outCompile(writer, new RALExpr[] {new Resolved(out[0], target)}, context);
 		}
 
 		@Override
-		public RALType inType(ScriptContext context) {
+		public RALType inType() {
 			// Useful for throwing assertions.
-			expr.inType(context);
+			expr.inType();
 			return target;
 		}
 
 		@Override
-		public void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context) {
+		public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
 			// Overwriting inputExactType here is what turns, i.e. null|integer (major type unknown) into integer (Int).
 			// This is important for set instruction selection.
 			expr.inCompile(writer, input, target, context);
 		}
 
 		@Override
-		public String getInlineCAOS() {
-			return expr.getInlineCAOS();
+		public String getInlineCAOS(CompileContext context) {
+			return expr.getInlineCAOS(context);
 		}
 	}
 }

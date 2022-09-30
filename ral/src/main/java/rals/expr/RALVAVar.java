@@ -7,27 +7,25 @@
 package rals.expr;
 
 import rals.code.CompileContext;
+import rals.code.IVAHandle;
 import rals.code.ScopeContext;
-import rals.code.ScriptContext;
 import rals.types.RALType;
 
 /**
  * For trivial expressions & variables.
  * Goes nicely with inline statements.
  */
-public class RALStringVar implements RALExpr {
-	public final String code;
+public class RALVAVar implements RALExpr {
+	public final IVAHandle handle;
 	public final RALType type;
-	public final boolean isWritable;
-	public RALStringVar(String c, RALType ot, boolean w) {
-		code = c;
+	public RALVAVar(IVAHandle h, RALType ot) {
+		handle = h;
 		type = ot;
-		isWritable = w;
 	}
 
 	@Override
 	public String toString() {
-		return (isWritable ? "SVW" : "SV") + "[" + code + "!" + type + "]";
+		return "VA[" + handle + "!" + type + "]";
 	}
 
 	@Override
@@ -44,8 +42,6 @@ public class RALStringVar implements RALExpr {
 
 	@Override
 	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
-		if (!isWritable)
-			throw new RuntimeException("Not writable");
 		switch (inputExactType.majorType) {
 		case Agent:
 			writer.append("seta ");
@@ -59,7 +55,7 @@ public class RALStringVar implements RALExpr {
 		default:
 			throw new RuntimeException("Unknown major type of " + input + " (" + inputExactType + ")");
 		}
-		writer.append(code);
+		writer.append(getInlineCAOS(context));
 		writer.append(" ");
 		writer.append(input);
 		writer.append("\n");
@@ -67,11 +63,14 @@ public class RALStringVar implements RALExpr {
 
 	@Override
 	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
-		out[0].inCompile(writer, code, type, context);
+		out[0].inCompile(writer, getInlineCAOS(context), type, context);
 	}
 
 	@Override
 	public String getInlineCAOS(CompileContext context) {
-		return code;
+		Integer i = context.heldVAHandles.get(handle);
+		if (i == null)
+			throw new RuntimeException("VA handle " + handle + " escaped containment");
+		return ScopeContext.vaToString(i);
 	}
 }

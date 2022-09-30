@@ -6,6 +6,8 @@
  */
 package rals.expr;
 
+import rals.code.CompileContext;
+import rals.code.IVAAllocator;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
 import rals.types.RALType;
@@ -15,32 +17,32 @@ import rals.types.RALType;
  */
 public interface RALExpr {
 	/**
-	 * In the given context, what types can be read?
+	 * What types can be read?
 	 */
-	RALType[] outTypes(ScriptContext context);
+	RALType[] outTypes();
 
 	/**
-	 * Compiles this expression.
+	 * Compiles this expression, which writes into the given output expressions.
 	 */
-	void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context);
+	void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context);
 
 	/**
-	 * In the given context, what type can be written?
+	 * What type can be written?
 	 */
-	RALType inType(ScriptContext context);
+	RALType inType();
 
 	/**
 	 * Compiles a write.
 	 * WARNING: May alter TARG before input runs. If this matters, make a temporary.
 	 */
-	void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context);
+	void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context);
 
 	/**
 	 * Gets the inline CAOS for this expression, or null if that's not possible.
 	 * This acts as a "fast-path" to avoid temporary variables.
 	 * It's also critical to how inline statements let you modify variables, hence the name.
 	 */
-	default String getInlineCAOS() {
+	default String getInlineCAOS(CompileContext context) {
 		return null;
 	}
 }
