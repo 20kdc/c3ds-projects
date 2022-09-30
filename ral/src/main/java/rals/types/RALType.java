@@ -53,7 +53,11 @@ public abstract class RALType {
 					return true;
 		}
 		// Check parent types
-		if (this instanceof Agent) {
+		if (this instanceof Opaque) {
+			RALType pt = ((Opaque) this).parentType;
+			if (pt != null && pt.canImplicitlyCast(other))
+				return true;
+		} else if (this instanceof Agent) {
 			Agent tAgent = (Agent) this;
 			for (Agent a : tAgent.parents)
 				if (a.canImplicitlyCast(other))
@@ -129,10 +133,17 @@ public abstract class RALType {
 	 */
 	public static class Opaque extends RALType {
 		public final String name;
+		public final RALType parentType;
 
 		public Opaque(Major mj, String nameHint) {
+			this(mj, nameHint, null);
+		}
+		public Opaque(Major mj, String nameHint, RALType p) {
 			super(mj);
 			name = nameHint;
+			parentType = p;
+			if (p != null)
+				p.influencesInterfacesOf.add(this);
 			regenInterfaces();
 		}
 
@@ -143,6 +154,8 @@ public abstract class RALType {
 
 		@Override
 		protected AgentInterface[] genInterfaces() {
+			if (parentType != null)
+				return parentType.genInterfaces();
 			return new AgentInterface[0];
 		}
 	}

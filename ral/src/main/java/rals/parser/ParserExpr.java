@@ -28,6 +28,14 @@ import rals.types.TypeSystem;
  * Expression parser.
  */
 public class ParserExpr {
+	public static final String[][] operatorPrecedenceGroups = new String[][] {
+		// Outermost in tree
+		{"&&", "||"},
+		{"==", "!=", "<=", ">=", "<", ">"},
+		{"+", "-"},
+		{"/", "*"}
+	};
+
 	public static RALConstant parseConst(TypeSystem ts, Lexer lx) {
 		RALExprUR ex = parseExpr(ts, lx, true);
 		RALExpr ex2 = ex.resolve(null);
@@ -53,13 +61,12 @@ public class ParserExpr {
 	}
 
 	public static RALExprUR parseExpr(TypeSystem ts, Lexer lx, boolean must) {
-		RALExprUR firstAtom = parseExprAtomOrNull(ts, lx);
+		RALExprUR firstAtom = parseExprFullAtomOrNull(ts, lx);
 		if (firstAtom == null) {
 			if (must)
 				throw new RuntimeException("expected at least one expression around " + lx.genLN());
 			return RALExprGroup.of();
 		}
-		firstAtom = parseExprSuffix(firstAtom, ts, lx);
 		LinkedList<RALExprUR> atoms = new LinkedList<>();
 		atoms.add(firstAtom);
 		while (true) {
@@ -68,8 +75,9 @@ public class ParserExpr {
 				lx.back();
 				break;
 			}
-			firstAtom = parseExprAtomOrNull(ts, lx);
-			firstAtom = parseExprSuffix(firstAtom, ts, lx);
+			firstAtom = parseExprFullAtomOrNull(ts, lx);
+			if (firstAtom == null)
+				throw new RuntimeException("Comma without expression at " + tkn.lineNumber);
 			atoms.add(firstAtom);
 		}
 		if (atoms.size() == 1) {
@@ -79,7 +87,14 @@ public class ParserExpr {
 		}
 	}
 
-	public static RALExprUR parseExprAtomOrNull(TypeSystem ts, Lexer lx) {
+	public static RALExprUR parseExprFullAtomOrNull(TypeSystem ts, Lexer lx) {
+		RALExprUR firstAtom = parseExprAtomOrNull(ts, lx);
+		if (firstAtom == null)
+			return null;
+		return parseExprSuffix(firstAtom, ts, lx);
+	}
+
+	private static RALExprUR parseExprAtomOrNull(TypeSystem ts, Lexer lx) {
 		Token tkn = lx.requireNext();
 		if (tkn instanceof Token.Int) {
 			return new RALConstant.Int(ts, ((Token.Int) tkn).value);
@@ -107,13 +122,17 @@ public class ParserExpr {
 				stmt.content.add(ParserCode.parseStatement(ts, lx));
 			}
 			return new RALStmtExpr(stmt, ret);
+		} else if (tkn.isKeyword("(")) {
+			RALExprUR interior = parseExpr(ts, lx, false);
+			lx.requireNextKw(")");
+			return interior;
 		} else {
 			lx.back();
 			return null;
 		}
 	}
 
-	public static RALExprUR parseExprSuffix(RALExprUR base, TypeSystem ts, Lexer lx) {
+	private static RALExprUR parseExprSuffix(RALExprUR base, TypeSystem ts, Lexer lx) {
 		while (true) {
 			Token tkn = lx.requireNext();
 			if (tkn.isKeyword("(")) {

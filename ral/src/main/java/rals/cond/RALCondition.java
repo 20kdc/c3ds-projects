@@ -6,16 +6,66 @@
  */
 package rals.cond;
 
-import rals.code.ScopeContext;
+import rals.code.CompileContext;
+import rals.expr.RALExpr;
+import rals.types.RALType;
+import rals.types.TypeSystem;
 
 /**
  * Condition.
+ * Note that there's no unresolved form, as that's just RALExprUR.
  */
-public interface RALCondition {
+public abstract class RALCondition implements RALExpr {
+	public final RALType bool;
+	public RALCondition(TypeSystem ts) {
+		bool = ts.gBoolean;
+	}
+
+	public static RALCondition of(RALExpr re) {
+		if (re instanceof RALCondition)
+			return (RALCondition) re;
+		throw new RuntimeException("coercion not implemented");
+	}
+
 	/**
 	 * Compiles a condition. The CAOS condition code is returned.
 	 * writer writes into the prelude.
-	 * sharedScopeContext is a context held between the prelude and the use of the condition.
+	 * sharedContext is a context held between the prelude and the use of the condition.
 	 */
-	String compile(StringBuilder writer, ScopeContext sharedScopeContext);
+	public abstract String compileCond(StringBuilder writer, CompileContext sharedContext);
+
+	@Override
+	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+		throw new RuntimeException("Can't write into condition");
+	}
+
+	@Override
+	public RALType inType() {
+		throw new RuntimeException("Can't write into condition");
+	}
+
+	@Override
+	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+		writer.append("doif ");
+		writer.append(compileCond(writer, context));
+		writer.append("\n");
+		out[0].inCompile(writer, "1", bool, context);
+		writer.append("else\n");
+		out[0].inCompile(writer, "0", bool, context);
+		writer.append("endi\n");
+	}
+
+	@Override
+	public RALType[] outTypes() {
+		return new RALType[] {bool};
+	}
+
+	/**
+	 * Implies this fits snugly into a branch of a condition. 
+	 */
+	public static abstract class Branch extends RALCondition {
+		public Branch(TypeSystem ts) {
+			super(ts);
+		}
+	}
 }
