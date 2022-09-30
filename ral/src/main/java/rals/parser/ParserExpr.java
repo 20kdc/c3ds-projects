@@ -99,7 +99,7 @@ public class ParserExpr {
 				Token tkn2 = lx.requireNext();
 				lx.back();
 				if (tkn2 instanceof Token.ID) {
-					base = new RALCast(base, ParserType.parseType(ts, lx));
+					base = RALCast.of(base, ParserType.parseType(ts, lx));
 				} else {
 					base = new RALCast.Denull(base);
 				}

@@ -30,11 +30,13 @@ install {
 	counterA, counterB = 4, 1;
 	# VERY INVALID
 	counterA = null!integer;
-	# test casting
+	# test normal stuff
+	let Bramboo? y = null;
+	let Agent? y = y;
+	# test deliberate nonsense
 	let Bramboo? x = null;
-	let Agent? x = x;
-	# expected failure
-	# let FavoritePlace? x = x;
+	alias x = x!FavoritePlace?;
+	let FavoritePlace? x = x;
 }
 
 script Geat 5 {

@@ -13,6 +13,7 @@ import rals.expr.RALExpr;
 import rals.expr.RALExprUR;
 import rals.lex.Lexer;
 import rals.lex.Token;
+import rals.stmt.RALAliasStatement;
 import rals.stmt.RALAssignStatement;
 import rals.stmt.RALBlock;
 import rals.stmt.RALInlineStatement;
@@ -54,6 +55,7 @@ public class ParserCode {
 		} else if (tkn.isKeyword("let")) {
 			LinkedList<String> names = new LinkedList<>();
 			LinkedList<RALType> types = new LinkedList<>();
+			RALExprUR re = null;
 			while (true) {
 				RALType rt = ParserType.parseType(ts, lx);
 				String n = lx.requireNextID();
@@ -61,14 +63,22 @@ public class ParserCode {
 				types.add(rt);
 				Token chk = lx.requireNext();
 				if (chk.isKeyword("=")) {
+					re = ParserExpr.parseExpr(ts, lx);
+					lx.requireNextKw(";");
+					break;
+				} else if (chk.isKeyword(";")) {
 					break;
 				} else if (!chk.isKeyword(",")) {
 					throw new RuntimeException("Expected = or ,");
 				}
 			}
-			RALExprUR re = ParserExpr.parseExpr(ts, lx);
-			lx.requireNextKw(";");
 			return new RALLetStatement(tkn.lineNumber, names.toArray(new String[0]), types.toArray(new RALType[0]), re);
+		} else if (tkn.isKeyword("alias")) {
+			String id = lx.requireNextID();
+			lx.requireNextKw("=");
+			RALExprUR res = ParserExpr.parseExpr(ts, lx);
+			lx.requireNextKw(";");
+			return new RALAliasStatement(tkn.lineNumber, id, res);
 		} else {
 			lx.back();
 			RALExprUR target = ParserExpr.parseExpr(ts, lx);

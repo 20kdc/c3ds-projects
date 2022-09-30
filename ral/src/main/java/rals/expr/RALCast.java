@@ -13,18 +13,27 @@ import rals.types.RALType;
 /**
  * Typecast.
  */
-public class RALCast implements RALExprUR {
+public final class RALCast implements RALExprUR {
 	public final RALExprUR base;
 	public final RALType target;
 
-	public RALCast(RALExprUR b, RALType t) {
+	private RALCast(RALExprUR b, RALType t) {
 		base = b;
 		target = t;
 	}
 
+	/**
+	 * Tries to prevent layers from piling up unnecessarily.
+	 */
+	public static RALCast of(RALExprUR bx, RALType t) {
+		if (bx instanceof RALCast)
+			bx = ((RALCast) bx).base;
+		return new RALCast(bx, t);
+	}
+
 	@Override
 	public RALExpr resolve(ScopeContext context) {
-		return new Resolved(base.resolve(context), target);
+		return Resolved.of(base.resolve(context), target);
 	}
 
 	public static class Denull implements RALExprUR {
@@ -44,16 +53,25 @@ public class RALCast implements RALExprUR {
 			// System.out.println(nn);
 			nn = context.script.typeSystem.byNonNullable(nn);
 			// System.out.println(nn);
-			return new Resolved(r, nn);
+			return Resolved.of(r, nn);
 		}
 	}
 
 	public static class Resolved implements RALExpr {
 		public final RALExpr expr;
 		public final RALType target;
-		public Resolved(RALExpr e, RALType t) {
+		private Resolved(RALExpr e, RALType t) {
 			expr = e;
 			target = t;
+		}
+
+		/**
+		 * Tries to prevent layers from piling up unnecessarily.
+		 */
+		public static Resolved of(RALExpr e, RALType t) {
+			if (e instanceof Resolved)
+				e = ((Resolved) e).expr;
+			return new Resolved(e, t);
 		}
 
 		@Override

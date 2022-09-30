@@ -35,6 +35,7 @@ public class Token {
 		keywords.add("loop");
 		keywords.add("ever");
 		keywords.add("until");
+		keywords.add("alias");
 	}
 
 	public final SrcPos lineNumber;
