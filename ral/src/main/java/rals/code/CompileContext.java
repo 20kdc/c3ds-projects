@@ -8,6 +8,7 @@ package rals.code;
 
 import java.util.HashMap;
 
+import rals.expr.RALExpr;
 import rals.types.TypeSystem;
 
 /**
@@ -17,6 +18,7 @@ public class CompileContext implements AutoCloseable, IVAAllocator {
 	public final TypeSystem typeSystem;
 	public final Module module;
 	public final HashMap<IVAHandle, Integer> heldVAHandles = new HashMap<>();
+	public final HashMap<IEHHandle, RALExpr> heldExprHandles = new HashMap<>();
 	public final ScopedVAAllocator alloc;
 
 	public CompileContext(ScriptContext sc) {
@@ -32,6 +34,7 @@ public class CompileContext implements AutoCloseable, IVAAllocator {
 		module = sc.module;
 		alloc = new ScopedVAAllocator(sc.alloc);
 		heldVAHandles.putAll(sc.heldVAHandles);
+		heldExprHandles.putAll(sc.heldExprHandles);
 	}
 
 	public void allocVA(IVAHandle obj) {

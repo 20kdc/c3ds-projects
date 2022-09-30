@@ -40,6 +40,7 @@ public class ScopeContext {
 		scopedVariables.put("_p1_", new RALStringVar("_p1_", parent.typeSystem.gAny, true));
 		scopedVariables.put("_p2_", new RALStringVar("_p2_", parent.typeSystem.gAny, true));
 		scopedVariables.put("null", new RALStringVar("null", parent.typeSystem.gNull, true));
+		scopedVariables.put("targ", new RALStringVar("targ", parent.typeSystem.gAgentNullable, true));
 		scopedVariables.put("_", new RALDiscard(parent.typeSystem));
 	}
 

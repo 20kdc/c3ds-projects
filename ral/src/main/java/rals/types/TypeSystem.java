@@ -211,7 +211,11 @@ public class TypeSystem {
 
 	public void declareTypedef(String name, RALType parseType) {
 		RALType existing = namedTypes.get(name);
-		if (existing != null && existing != parseType)
-			throw new RuntimeException("Can't redeclare type " + name);
+		if (existing != null) {
+			if (existing != parseType)
+				throw new RuntimeException("Can't redeclare type " + name);
+		} else {
+			namedTypes.put(name, parseType);
+		}
 	}
 }

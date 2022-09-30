@@ -16,9 +16,9 @@ import rals.code.MacroArg;
 import rals.code.Module;
 import rals.expr.RALConstant;
 import rals.expr.RALExprUR;
+import rals.expr.RALStmtExprInverted;
 import rals.lex.Lexer;
 import rals.lex.Token;
-import rals.stmt.RALStatement;
 import rals.stmt.RALStatementUR;
 import rals.types.AgentInterface;
 import rals.types.Classifier;
@@ -132,11 +132,22 @@ public class Parser {
 		} else if (tkn.isKeyword("remove")) {
 			m.removeScript = ParserCode.parseStatement(ts, lx);
 		} else if (tkn.isKeyword("macro")) {
-			String name = lx.requireNextID();
-			MacroArg[] args = parseArgList(ts, lx);
-			RALExprUR rs = ParserExpr.parseExpr(ts, lx, false);
-			lx.requireNextKw(";");
-			m.addMacro(name, args.length, new Macro(name, args, rs));
+			boolean isStmtMacro = lx.requireNext().isKeyword("(");
+			lx.back();
+			if (isStmtMacro) {
+				MacroArg[] rets = parseArgList(ts, lx, false);
+				String name = lx.requireNextID();
+				MacroArg[] args = parseArgList(ts, lx, true);
+				RALStatementUR rs = ParserCode.parseStatement(ts, lx);
+				m.addMacro(name, args.length, new Macro(name, args, new RALStmtExprInverted(rets, rs)));
+			} else {
+				String name = lx.requireNextID();
+				MacroArg[] args = parseArgList(ts, lx, true);
+				RALExprUR rs = ParserExpr.parseExpr(ts, lx, false);
+				m.addMacro(name, args.length, new Macro(name, args, rs));
+			}
+		} else if (tkn.isKeyword(";")) {
+			// :D
 		} else if (tkn instanceof Token.ID) {
 			String name = ((Token.ID) tkn).text;
 			Token tx = lx.requireNext();
@@ -151,7 +162,7 @@ public class Parser {
 		}
 	}
 
-	private static MacroArg[] parseArgList(TypeSystem ts, Lexer lx) {
+	private static MacroArg[] parseArgList(TypeSystem ts, Lexer lx, boolean allowInline) {
 		lx.requireNextKw("(");
 		Token first = lx.requireNext();
 		if (first.isKeyword(")"))

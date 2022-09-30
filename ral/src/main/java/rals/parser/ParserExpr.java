@@ -21,6 +21,7 @@ import rals.lex.Lexer;
 import rals.lex.Token;
 import rals.stmt.RALBlock;
 import rals.stmt.RALStatementUR;
+import rals.types.RALType;
 import rals.types.TypeSystem;
 
 /**
@@ -123,6 +124,18 @@ public class ParserExpr {
 					base = new RALCall(((RALAmbiguousID) base).text, group);
 				} else {
 					throw new RuntimeException("You can't put a call on anything but an ambiguous ID, and certainly not " + base);
+				}
+			} else if (tkn.isKeyword(":")) {
+				String msgName = lx.requireNextID();
+				if (base instanceof RALAmbiguousID) {
+					String typeName = ((RALAmbiguousID) base).text;
+					RALType rt = ts.byName(typeName);
+					Integer msgId = rt.lookupMessageID(msgName);
+					if (msgId == null)
+						throw new RuntimeException("No such message " + typeName + ":" + msgName);
+					return new RALConstant.Int(ts, msgId);
+				} else {
+					throw new RuntimeException("You can't get the message ID of anything but an ambiguous ID, and certainly not " + base);
 				}
 			} else if (tkn.isKeyword("!")) {
 				// Forced cast.

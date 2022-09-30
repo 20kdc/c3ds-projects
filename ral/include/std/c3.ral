@@ -12,3 +12,5 @@ class Grendel 4 2 0;
 class Ettin 4 3 0;
 class Geat 4 4 0;
 
+typedef number integer|float;
+

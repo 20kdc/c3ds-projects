@@ -30,16 +30,13 @@ public class Macro implements RALCallable {
 		code = c;
 	}
 
-	@Override
-	public RALExpr instance(final RALExpr[] a, ScopeContext sc) {
-		if (a.length != args.length)
-			throw new RuntimeException("Macro called with wrong arg count (decomposition failure?)");
-		// Our vars are going to be used outside of this context, so we attach vars and such to the parent.
-		
-		ScopeContext macroContext = new ScopeContext(sc);
-
+	/**
+	 * Inserts macro arguments into the context.
+	 * Creates a copy list for stage 2.
+	 */
+	public static RALVAVar[] makeToCopy(MacroArg[] args, RALExpr[] a, ScopeContext macroContext) {
 		final RALVAVar[] toCopy = new RALVAVar[args.length];
-		for (int i = 0; i < a.length; i++) {
+		for (int i = 0; i < args.length; i++) {
 			// Check this early
 			RALExpr argExpr = a[i];
 			RALType[] rt = argExpr.outTypes();
@@ -55,28 +52,43 @@ public class Macro implements RALCallable {
 				toCopy[i] = macroContext.newLocal(args[i].name, args[i].type);
 			}
 		}
+		return toCopy;
+	}
+	/**
+	 * Allocates VAs for and copies arguments into the compile context.
+	 */
+	public static void copyArgs(StringBuilder writer, CompileContext sc, RALVAVar[] toCopy, RALExpr[] a, String name, MacroArg[] args) {
+		for (int i = 0; i < toCopy.length; i++) {
+			if (toCopy[i] != null) {
+				sc.allocVA(toCopy[i].handle);
+				writer.append(" * ");
+				writer.append(toCopy[i].getInlineCAOS(sc));
+				writer.append(": " + name + " arg ");
+				writer.append(i);
+				writer.append(": ");
+				writer.append(args[i].type);
+				writer.append(" ");
+				writer.append(args[i].name);
+				writer.append("\n");
+				a[i].outCompile(writer, new RALExpr[] {toCopy[i]}, sc);
+			}
+		}
+	}
+
+	@Override
+	public RALExpr instance(final RALExpr[] a, ScopeContext sc) {
+		if (a.length != args.length)
+			throw new RuntimeException("Macro called with wrong arg count (decomposition failure?)");
+		// Our vars are going to be used outside of this context, so we attach vars and such to the parent.
+		
+		ScopeContext macroContext = new ScopeContext(sc);
+
+		final RALVAVar[] toCopy = makeToCopy(args, a, macroContext);
 		final RALExpr innards = code.resolve(macroContext);
 		return new RALExpr() {
-			private void copyArgs(StringBuilder writer, CompileContext sc) {
-				for (int i = 0; i < args.length; i++) {
-					if (toCopy[i] != null) {
-						sc.allocVA(toCopy[i].handle);
-						writer.append(" * ");
-						writer.append(toCopy[i].getInlineCAOS(sc));
-						writer.append(": " + name + " arg ");
-						writer.append(i);
-						writer.append(": ");
-						writer.append(args[i].type);
-						writer.append(" ");
-						writer.append(args[i].name);
-						writer.append("\n");
-						a[i].outCompile(writer, new RALExpr[] {toCopy[i]}, sc);
-					}
-				}
-			}
 			@Override
 			public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
-				copyArgs(writer, context);
+				copyArgs(writer, context, toCopy, a, name, args);
 				innards.inCompile(writer, input, inputExactType, context);
 			}
 			@Override
@@ -85,7 +97,7 @@ public class Macro implements RALCallable {
 			}
 			@Override
 			public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
-				copyArgs(writer, context);
+				copyArgs(writer, context, toCopy, a, name, args);
 				innards.outCompile(writer, out, context);
 			}
 			@Override

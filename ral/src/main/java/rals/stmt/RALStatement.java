@@ -24,6 +24,8 @@ public abstract class RALStatement {
 	public final void compile(StringBuilder writer, CompileContext context) {
 		writer.append(" * @ ");
 		writer.append(lineNumber);
+		writer.append(" ");
+		writer.append(getClass().getName());
 		writer.append("\n");
 		try {
 			compileInner(writer, context);
