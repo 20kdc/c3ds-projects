@@ -21,12 +21,12 @@ public abstract class RALStatement {
 		lineNumber = ln;
 	}
 
-	public final void compile(StringBuilder writer, CompileContext scope) {
+	public final void compile(StringBuilder writer, CompileContext context) {
 		writer.append(" * @ ");
 		writer.append(lineNumber);
 		writer.append("\n");
 		try {
-			compileInner(writer, scope);
+			compileInner(writer, context);
 		} catch (Exception ex) {
 			throw new RuntimeException("At " + lineNumber, ex);
 		}
@@ -35,5 +35,5 @@ public abstract class RALStatement {
 	/**
 	 * Compiles the statement.
 	 */
-	protected abstract void compileInner(StringBuilder writer, CompileContext scope);
+	protected abstract void compileInner(StringBuilder writer, CompileContext context);
 }

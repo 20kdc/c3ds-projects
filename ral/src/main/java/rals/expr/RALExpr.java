@@ -18,16 +18,19 @@ import rals.types.RALType;
 public interface RALExpr {
 	/**
 	 * What types can be read?
+	 * Also used to test readability (throws exception if not readable)
 	 */
 	RALType[] outTypes();
 
 	/**
 	 * Compiles this expression, which writes into the given output expressions.
+	 * This is done by calling their inCompile methods, or in some cases using getInlineCAOS.
 	 */
 	void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context);
 
 	/**
 	 * What type can be written?
+	 * Also used to test writability (throws exception if not writable)
 	 */
 	RALType inType();
 

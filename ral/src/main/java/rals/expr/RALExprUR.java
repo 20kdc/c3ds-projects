@@ -17,7 +17,7 @@ public interface RALExprUR {
 	 * Will fill ScopeContext with stuff that might be important for the target expression to be runnable.
 	 * Note that this doesn't generate code - it just gets all the variables into place.
 	 */
-	RALExpr resolve(ScopeContext context);
+	RALExpr resolve(ScopeContext scope);
 
 	/**
 	 * Decomposites expression groups.

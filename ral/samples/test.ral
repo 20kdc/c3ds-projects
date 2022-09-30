@@ -15,7 +15,16 @@ typedef NotNornCreature Grendel|Ettin|Geat;
 
 message Agent:windowResized 123;
 
-macro identity(integer funnel) funnel;
+macro inc(inline integer funnel) {
+	inline "adds " funnel " 1\n";
+	return funnel;
+};
+
+macro add(inline integer a, inline integer b) {
+	let integer c = a;
+	inline "adds " c " " b "\n";
+	return c;
+};
 
 #macro inst() {
 #	inline "inst\n";
@@ -29,7 +38,13 @@ install {
 	let integer counterA = 0;
 	let integer counterB = 0;
 	inline "addv " counterA " " 1 "\n";
-	counterA, counterB = 4, identity(1276);
+	counterA, counterB = 4, 1;
+	# little macro test
+	counterA = inc(counterB);
+	# big macro test
+	inline " * -- big macro test\n";
+	counterA = add(counterA, 10);
+	inline " * --\n";
 	# VERY INVALID
 	counterA = null!integer;
 	# test normal stuff

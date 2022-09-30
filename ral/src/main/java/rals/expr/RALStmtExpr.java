@@ -6,25 +6,56 @@
  */
 package rals.expr;
 
-import java.io.StringWriter;
-
+import rals.code.CompileContext;
 import rals.code.ScopeContext;
+import rals.lex.SrcPos;
 import rals.stmt.RALStatement;
+import rals.stmt.RALStatementUR;
+import rals.types.RALType;
 
 /**
  * Statement expression, used for fancy stuff.
  */
 public class RALStmtExpr implements RALExprUR {
-	public final RALStatement[] statements;
+	public final RALStatementUR statement;
 	public final RALExprUR expr;
 
-	public RALStmtExpr(RALStatement[] st, RALExprUR er) {
-		statements = st;
+	public RALStmtExpr(RALStatementUR st, RALExprUR er) {
+		statement = st;
 		expr = er;
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext context) {
-		throw new RuntimeException("NYI");
+	public RALExpr resolve(ScopeContext scope) {
+		ScopeContext sc = new ScopeContext(scope);
+		final RALStatement rStmt = statement.resolve(sc);
+		final RALExpr rExpr = expr.resolve(sc); 
+		return new RALExpr() {
+			@Override
+			public RALType[] outTypes() {
+				return rExpr.outTypes();
+			}
+
+			@Override
+			public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+				try (CompileContext cc = new CompileContext(context)) {
+					rStmt.compile(writer, context);
+					rExpr.outCompile(writer, out, context);
+				}
+			}
+
+			@Override
+			public RALType inType() {
+				return rExpr.inType();
+			}
+
+			@Override
+			public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+				try (CompileContext cc = new CompileContext(context)) {
+					rStmt.compile(writer, context);
+					rExpr.inCompile(writer, input, inputExactType, context);
+				}
+			}
+		};
 	}
 }

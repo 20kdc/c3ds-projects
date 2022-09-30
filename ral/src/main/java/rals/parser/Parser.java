@@ -134,7 +134,7 @@ public class Parser {
 		} else if (tkn.isKeyword("macro")) {
 			String name = lx.requireNextID();
 			MacroArg[] args = parseArgList(ts, lx);
-			RALExprUR rs = ParserExpr.parseExpr(ts, lx);
+			RALExprUR rs = ParserExpr.parseExpr(ts, lx, false);
 			lx.requireNextKw(";");
 			m.addMacro(name, args.length, new Macro(name, args, rs));
 		} else if (tkn instanceof Token.ID) {

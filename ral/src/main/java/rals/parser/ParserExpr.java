@@ -16,8 +16,11 @@ import rals.expr.RALDiscard;
 import rals.expr.RALExpr;
 import rals.expr.RALExprGroup;
 import rals.expr.RALExprUR;
+import rals.expr.RALStmtExpr;
 import rals.lex.Lexer;
 import rals.lex.Token;
+import rals.stmt.RALBlock;
+import rals.stmt.RALStatementUR;
 import rals.types.TypeSystem;
 
 /**
@@ -25,7 +28,7 @@ import rals.types.TypeSystem;
  */
 public class ParserExpr {
 	public static RALConstant parseConst(TypeSystem ts, Lexer lx) {
-		RALExprUR ex = parseExpr(ts, lx);
+		RALExprUR ex = parseExpr(ts, lx, true);
 		RALExpr ex2 = ex.resolve(null);
 		if (!(ex2 instanceof RALConstant))
 			throw new RuntimeException("Unable to resolve " + ex + " to constant expression.");
@@ -48,10 +51,13 @@ public class ParserExpr {
 		}
 	}
 
-	public static RALExprUR parseExpr(TypeSystem ts, Lexer lx) {
+	public static RALExprUR parseExpr(TypeSystem ts, Lexer lx, boolean must) {
 		RALExprUR firstAtom = parseExprAtomOrNull(ts, lx);
-		if (firstAtom == null)
+		if (firstAtom == null) {
+			if (must)
+				throw new RuntimeException("expected at least one expression around " + lx.genLN());
 			return RALExprGroup.of();
+		}
 		firstAtom = parseExprSuffix(firstAtom, ts, lx);
 		LinkedList<RALExprUR> atoms = new LinkedList<>();
 		atoms.add(firstAtom);
@@ -82,6 +88,24 @@ public class ParserExpr {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
 			return new RALAmbiguousID(ts, ((Token.ID) tkn).text);
+		} else if (tkn.isKeyword("{")) {
+			// Oh, this gets weird...
+			RALBlock stmt = new RALBlock(tkn.lineNumber, false);
+			RALExprUR ret = RALExprGroup.of();
+			while (true) {
+				Token chk = lx.requireNext();
+				if (chk.isKeyword("}")) {
+					break;
+				} else if (chk.isKeyword("return")) {
+					ret = parseExpr(ts, lx, false);
+					lx.requireNextKw(";");
+					lx.requireNextKw("}");
+					break;
+				}
+				lx.back();
+				stmt.content.add(ParserCode.parseStatement(ts, lx));
+			}
+			return new RALStmtExpr(stmt, ret);
 		} else {
 			lx.back();
 			return null;
@@ -93,7 +117,7 @@ public class ParserExpr {
 			Token tkn = lx.requireNext();
 			if (tkn.isKeyword("(")) {
 				// Call.
-				RALExprUR group = ParserExpr.parseExpr(ts, lx);
+				RALExprUR group = ParserExpr.parseExpr(ts, lx, false);
 				lx.requireNextKw(")");
 				if (base instanceof RALAmbiguousID) {
 					base = new RALCall(((RALAmbiguousID) base).text, group);

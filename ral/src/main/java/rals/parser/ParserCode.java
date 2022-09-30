@@ -49,7 +49,7 @@ public class ParserCode {
 					obj.add(((Token.Str) tkn2).text);
 				} else {
 					lx.back();
-					obj.add(ParserExpr.parseExpr(ts, lx));
+					obj.add(ParserExpr.parseExpr(ts, lx, true));
 				}
 			}
 			return new RALInlineStatement(tkn.lineNumber, obj.toArray());
@@ -64,7 +64,7 @@ public class ParserCode {
 				types.add(rt);
 				Token chk = lx.requireNext();
 				if (chk.isKeyword("=")) {
-					re = ParserExpr.parseExpr(ts, lx);
+					re = ParserExpr.parseExpr(ts, lx, true);
 					lx.requireNextKw(";");
 					break;
 				} else if (chk.isKeyword(";")) {
@@ -77,17 +77,17 @@ public class ParserCode {
 		} else if (tkn.isKeyword("alias")) {
 			String id = lx.requireNextID();
 			lx.requireNextKw("=");
-			RALExprUR res = ParserExpr.parseExpr(ts, lx);
+			RALExprUR res = ParserExpr.parseExpr(ts, lx, true);
 			lx.requireNextKw(";");
 			return new RALAliasStatement(tkn.lineNumber, id, res);
 		} else {
 			lx.back();
-			RALExprUR target = ParserExpr.parseExpr(ts, lx);
+			RALExprUR target = ParserExpr.parseExpr(ts, lx, false);
 			Token sp = lx.requireNext();
 			if (sp.isKeyword(";")) {
 				return new RALAssignStatement(tkn.lineNumber, null, target);
 			} else if (sp.isKeyword("=")) {
-				RALExprUR source = ParserExpr.parseExpr(ts, lx);
+				RALExprUR source = ParserExpr.parseExpr(ts, lx, true);
 				return new RALAssignStatement(tkn.lineNumber, target.decomposite(), source);
 			} else {
 				throw new RuntimeException("Saw expression at " + tkn + " but then was wrong about it.");
