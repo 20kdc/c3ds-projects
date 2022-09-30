@@ -30,29 +30,32 @@ public class RALIfStatement extends RALStatementUR {
 	@Override
 	public RALStatement resolve(ScopeContext scope) {
 		scope = new ScopeContext(scope);
-		// deliberately run the condition in the same scope as the contents
-		// this might turn out to be useful
+		// scope juggling
 		ScopeContext subScope = new ScopeContext(scope);
 		final RALCondition conditionR = RALCondition.coerceToCondition(condition.resolve(subScope), scope.script.typeSystem);
-		final RALStatement mainBranchR = mainBranch.resolve(subScope);
-		final RALStatement elseBranchR = elseBranch != null ? elseBranch.resolve(new ScopeContext(scope)) : null;
+		final RALStatement mainBranchR = mainBranch != null ? mainBranch.resolve(new ScopeContext(subScope)) : null;
+		final RALStatement elseBranchR = elseBranch != null ? elseBranch.resolve(new ScopeContext(subScope)) : null;
 		return new RALStatement(lineNumber) {
 			@Override
 			protected void compileInner(StringBuilder writer, CompileContext context) {
-				try (CompileContext bsr = new CompileContext(context)) {
-					String inl = conditionR.compileCond(writer, bsr);
+				try (CompileContext outerCtx = new CompileContext(context)) {
+					String inl = conditionR.compileCond(writer, outerCtx);
 					writer.append("doif ");
 					writer.append(inl);
 					writer.append("\n");
-					mainBranchR.compile(writer, bsr);
-				}
-				if (elseBranchR != null) {
-					writer.append("else\n");
-					try (CompileContext bsr = new CompileContext(context)) {
-						elseBranchR.compile(writer, bsr);
+					if (mainBranchR != null) {
+						try (CompileContext bsr = new CompileContext(outerCtx)) {
+							mainBranchR.compile(writer, bsr);
+						}
 					}
+					if (elseBranchR != null) {
+						writer.append("else\n");
+						try (CompileContext bsr = new CompileContext(outerCtx)) {
+							elseBranchR.compile(writer, bsr);
+						}
+					}
+					writer.append("endi\n");
 				}
-				writer.append("endi\n");
 			}
 		};
 	}

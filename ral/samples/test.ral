@@ -126,6 +126,10 @@ install {
 		outs("Meh!");
 	}
 
+	# RAL also has sane loops, at least where possible...
+	while counter == 4 {
+	}
+
 	# Agent classifiers expand to their components.
 	# THIS DOESN'T WORK YET
 	#let WorldAgent? y = rtar(WorldAgent)!WorldAgent?;

@@ -22,12 +22,26 @@ public class CompileContext implements AutoCloseable, IVAAllocator {
 	public final HashMap<IEHHandle, RALExpr> heldExprHandles = new HashMap<>();
 	public final ScopedVAAllocator alloc;
 
+	/**
+	 * Just to be sure...
+	 */
+	private int subUsers = 0;
+	private final CompileContext subUserTrackingParent; 
+
 	public final AtomicInteger labelAllocator;
+
+	/**
+	 * Two break methods.
+	 * If Bool is set, then the bool is set to 1 and you go to the label.
+	 * If only Label is set, then you just go to the label.
+	 */
+	public String breakLabel, breakBool;
 
 	public CompileContext(ScriptContext sc) {
 		typeSystem = sc.typeSystem;
 		module = sc.module;
 		labelAllocator = new AtomicInteger();
+		subUserTrackingParent = null;
 		// create the VA allocator
 		alloc = new ScopedVAAllocator(new LinearVAAllocator());
 		alloc.ensureFree(100);
@@ -38,8 +52,20 @@ public class CompileContext implements AutoCloseable, IVAAllocator {
 		module = sc.module;
 		labelAllocator = sc.labelAllocator;
 		alloc = new ScopedVAAllocator(sc.alloc);
+		// inherit break label
+		breakLabel = sc.breakLabel;
+		breakBool = sc.breakBool;
+		// inherit handles
 		heldVAHandles.putAll(sc.heldVAHandles);
 		heldExprHandles.putAll(sc.heldExprHandles);
+		// track subusers
+		subUserTrackingParent = sc;
+		sc.subUsers++;
+	}
+
+	public void clearBreak() {
+		breakLabel = null;
+		breakBool = null;
 	}
 
 	public String allocLabel() {
@@ -62,6 +88,10 @@ public class CompileContext implements AutoCloseable, IVAAllocator {
 
 	@Override
 	public void close() {
+		if (subUsers != 0)
+			throw new RuntimeException("Closing a CompileContext with sub-users");
+		if (subUserTrackingParent != null)
+			subUserTrackingParent.subUsers--;
 		alloc.close();
 	}
 }

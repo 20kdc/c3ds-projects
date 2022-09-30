@@ -16,6 +16,8 @@ import rals.lex.Token;
 import rals.stmt.RALAliasStatement;
 import rals.stmt.RALAssignStatement;
 import rals.stmt.RALBlock;
+import rals.stmt.RALBreakFromLoop;
+import rals.stmt.RALBreakableLoop;
 import rals.stmt.RALIfStatement;
 import rals.stmt.RALInlineStatement;
 import rals.stmt.RALLetStatement;
@@ -92,6 +94,16 @@ public class ParserCode {
 				lx.back();
 			}
 			return new RALIfStatement(tkn.lineNumber, cond, body, elseBranch);
+		} else if (tkn.isKeyword("while")) {
+			RALExprUR cond = ParserExpr.parseExpr(ts, lx, true);
+			RALStatementUR body = ParserCode.parseStatement(ts, lx);
+			RALBlock outerBlock = new RALBlock(tkn.lineNumber, true);
+			outerBlock.content.add(new RALIfStatement(tkn.lineNumber, cond, null, new RALBreakFromLoop(tkn.lineNumber)));
+			outerBlock.content.add(body);
+			return new RALBreakableLoop(tkn.lineNumber, outerBlock);
+		} else if (tkn.isKeyword("break")) {
+			lx.requireNextKw(";");
+			return new RALBreakFromLoop(tkn.lineNumber);
 		} else {
 			lx.back();
 			RALExprUR target = ParserExpr.parseExpr(ts, lx, false);
