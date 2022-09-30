@@ -33,21 +33,9 @@ public abstract class RALType {
 			return true;
 		if (other instanceof Any)
 			return true;
-		if (other instanceof Union) {
-			Union uo = (Union) other;
-			if (this instanceof Union) {
-				// Does the union include all our types?
-				if (((Union) other).contents.containsAll(((Union) this).contents))
-					return true;
-			} else {
-				// Can we be cast to any type in this union?
-				for (RALType otherOpt : uo.contents)
-					if (canImplicitlyCast(otherOpt))
-						return true;
-			}
-		} else if (this instanceof Union) {
+		if (this instanceof Union) {
 			boolean ok = true;
-			// If all of our types can be cast to this type then it's ok
+			// If all of our subtypes fit in the target union then it's ok
 			for (RALType opt : ((Union) this).contents) {
 				if (!opt.canImplicitlyCast(other)) {
 					ok = false;
@@ -56,6 +44,13 @@ public abstract class RALType {
 			}
 			if (ok)
 				return true;
+		} else if (other instanceof Union) {
+			Union uo = (Union) other;
+			// If we fit in any subtype then it's okay
+			// (for us to require multiple subtypes, that'd make us a union, see above)
+			for (RALType otherOpt : uo.contents)
+				if (canImplicitlyCast(otherOpt))
+					return true;
 		}
 		// Check parent types
 		if (this instanceof Agent) {
@@ -70,6 +65,11 @@ public abstract class RALType {
 	public final void implicitlyCastOrThrow(RALType type) {
 		if (!canImplicitlyCast(type))
 			throw new RuntimeException("Cannot cast " + this + " to " + type);
+	}
+
+	public final void implicitlyCastOrThrow(RALType type, Object src, Object dst) {
+		if (!canImplicitlyCast(type))
+			throw new RuntimeException("Cannot cast " + this + "(" + src + ") to " + type + "(" + dst + ")");
 	}
 
 	protected void regenInterfaces() {

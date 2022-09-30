@@ -6,6 +6,7 @@
  */
 package rals.code;
 
+import rals.expr.RALExpr;
 import rals.types.RALType;
 import rals.types.TypeSystem;
 
@@ -16,9 +17,11 @@ public class ScriptContext {
 	public final boolean[] allocMap = new boolean[100];
 	public final RALType ownrType;
 	public final TypeSystem typeSystem;
+	public final Module module;
 
-	public ScriptContext(TypeSystem ts, RALType ot) {
+	public ScriptContext(TypeSystem ts, Module m, RALType ot) {
 		typeSystem = ts;
+		module = m;
 		ownrType = ot;
 	}
 

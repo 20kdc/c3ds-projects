@@ -6,6 +6,8 @@
  */
 package rals.expr;
 
+import java.util.LinkedList;
+
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
 import rals.types.RALType;
@@ -23,6 +25,13 @@ public class RALExprGroup implements RALExprUR {
 	}
 
 	public static RALExprUR of(RALExprUR... c) {
+		// decompose here - this is so that further decomposition acts right
+		LinkedList<RALExprUR> decomposed = new LinkedList<>();
+		for (RALExprUR ur : c)
+			for (RALExprUR e : ur.decomposite())
+				decomposed.add(e);
+		c = decomposed.toArray(new RALExprUR[0]);
+		// now that it's decomposed...
 		if (c.length == 1)
 			return c[0];
 		if (c.length == 0)

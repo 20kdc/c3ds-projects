@@ -9,6 +9,7 @@ package rals.parser;
 import java.util.LinkedList;
 
 import rals.expr.RALAmbiguousID;
+import rals.expr.RALCast;
 import rals.expr.RALConstant;
 import rals.expr.RALDiscard;
 import rals.expr.RALExpr;
@@ -86,6 +87,27 @@ public class ParserExpr {
 	}
 
 	public static RALExprUR parseExprSuffix(RALExprUR base, TypeSystem ts, Lexer lx) {
+		while (true) {
+			Token tkn = lx.requireNext();
+			if (tkn.isKeyword("(")) {
+				// Call.
+				throw new RuntimeException("Call NYI");
+			} else if (tkn.isKeyword("!")) {
+				// Forced cast.
+				// If followed immediately by an ID, it's a cast to a specific type.
+				// Otherwise, it's a nullability cast.
+				Token tkn2 = lx.requireNext();
+				lx.back();
+				if (tkn2 instanceof Token.ID) {
+					base = new RALCast(base, ParserType.parseType(ts, lx));
+				} else {
+					base = new RALCast.Denull(base);
+				}
+			} else {
+				lx.back();
+				break;
+			}
+		}
 		return base;
 	}
 }

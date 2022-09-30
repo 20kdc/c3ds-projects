@@ -51,7 +51,7 @@ public class RALAssignStatement extends RALStatement {
 			if (targetTypes.length != sourceTypes.length)
 				throw new RuntimeException("Targets != sources");
 			for (int i = 0; i < targetTypes.length; i++)
-				sourceTypes[i].implicitlyCastOrThrow(targetTypes[i]);
+				sourceTypes[i].implicitlyCastOrThrow(targetTypes[i], be, ae[i]);
 			
 			be.outCompile(writer, ae, scope.script);
 		}

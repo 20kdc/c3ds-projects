@@ -6,13 +6,26 @@
  */
 package rals.expr;
 
+import rals.code.ScopeContext;
+
 /**
- * Something callable (i.e. a macro or something like it)...
+ * Calls a macro, or something like that.
  */
-public interface RALCallable {
-	/**
-	 * Given some arguments, converts to an expression.
-	 * The expression presumably does whatever it has to do to make this work.
-	 */
-	RALExpr instance(RALExprUR[] args);
+public class RALCall implements RALExprUR {
+	public final String name;
+	public final RALExprUR[] params;
+
+	public RALCall(String n, RALExprUR p) {
+		name = n;
+		params = p.decomposite();
+	}
+
+	@Override
+	public RALExpr resolve(ScopeContext context) {
+		RALExprUR[] paramR = params;
+		RALCallable rc = context.script.module.callable.get(name);
+		if (rc == null)
+			throw new RuntimeException("No such callable: " + name);
+		return rc.instance(paramR);
+	}
 }

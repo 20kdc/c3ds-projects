@@ -25,6 +25,11 @@ public class RALStringVar implements RALExpr {
 	}
 
 	@Override
+	public String toString() {
+		return (isWritable ? "SVW" : "SV") + "[" + code + "!" + type + "]";
+	}
+
+	@Override
 	public RALType inType(ScriptContext context) {
 		return type;
 	}
@@ -51,7 +56,7 @@ public class RALStringVar implements RALExpr {
 			writer.append("setv ");
 			break;
 		default:
-			throw new RuntimeException("Unknown major type of " + input);
+			throw new RuntimeException("Unknown major type of " + input + " (" + inputExactType + ")");
 		}
 		writer.append(code);
 		writer.append(" ");
@@ -64,5 +69,10 @@ public class RALStringVar implements RALExpr {
 		if (!isWritable)
 			throw new RuntimeException("Not writable");
 		out[0].inCompile(writer, code, type, context);
+	}
+
+	@Override
+	public String getInlineCAOS() {
+		return code;
 	}
 }

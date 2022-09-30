@@ -13,13 +13,7 @@ import rals.types.RALType;
 /**
  * Expression. Outputs a given set of types.
  */
-public interface RALExpr extends RALExprUR {
-
-	@Override
-	default RALExpr resolve(ScopeContext context) {
-		return this;
-	}
-
+public interface RALExpr {
 	/**
 	 * In the given context, what types can be read?
 	 */
@@ -40,4 +34,13 @@ public interface RALExpr extends RALExprUR {
 	 * WARNING: May alter TARG before input runs. If this matters, make a temporary.
 	 */
 	void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context);
+
+	/**
+	 * Gets the inline CAOS for this expression, or null if that's not possible.
+	 * This acts as a "fast-path" to avoid temporary variables.
+	 * It's also critical to how inline statements let you modify variables, hence the name.
+	 */
+	default String getInlineCAOS() {
+		return null;
+	}
 }

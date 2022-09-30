@@ -28,6 +28,13 @@ install {
 	let integer counterB = 0;
 	inline "addv " counterA " " 1 "\n";
 	counterA, counterB = 4, 1;
+	# VERY INVALID
+	counterA = null!integer;
+	# test casting
+	let Bramboo? x = null;
+	let Agent? x = x;
+	# expected failure
+	# let FavoritePlace? x = x;
 }
 
 script Geat 5 {

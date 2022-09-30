@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 import rals.expr.RALCallable;
 import rals.expr.RALExpr;
+import rals.expr.RALExprUR;
 
 /**
  * A set of macro definitions.
@@ -23,7 +24,7 @@ public class MacroDefSet implements RALCallable {
 	}
 
 	@Override
-	public RALExpr instance(RALExpr[] args) {
+	public RALExpr instance(RALExprUR[] args) {
 		RALCallable res = map.get(args.length);
 		if (res == null)
 			throw new RuntimeException(name + " doesn't have " + args.length + "-parameter variant");

@@ -35,10 +35,9 @@ public class RALInlineStatement extends RALStatement {
 				} else if (o instanceof RALExprUR) {
 					RALExprUR reu = (RALExprUR) o;
 					RALExpr re = reu.resolve(iScope);
-					if (re instanceof RALStringVar) {
-						interiorWriter.append(((RALStringVar) re).code);
-					} else if (re instanceof RALConstant) {
-						interiorWriter.append(re);
+					String inlineRepr = re.getInlineCAOS();
+					if (inlineRepr != null) {
+						interiorWriter.append(inlineRepr);
 					} else {
 						RALType[] slots = re.outTypes(iScope.script);
 						RALStringVar[] vars = new RALStringVar[slots.length];

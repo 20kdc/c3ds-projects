@@ -9,9 +9,11 @@ package rals.types;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 import rals.expr.RALConstant;
 import rals.expr.RALExprGroup;
+import rals.expr.RALExprUR;
 import rals.types.RALType.AgentClassifier;
 import rals.types.RALType.Opaque;
 
@@ -123,13 +125,30 @@ public class TypeSystem {
 			// impossible
 			return gVoid;
 		}
-		RALType.Union res = new RALType.Union(types);
+		// -- 'types' value finalized past here --
+		// check for existing union
+		RALType.Union res = unions.get(types);
+		if (res != null)
+			return res;
+		// this should be the only reference to this constructor
+		res = new RALType.Union(types);
 		unions.put(types, res);
 		return res;
 	}
 
 	public RALType byNullable(RALType t) {
 		return byUnion(Arrays.asList(t, gNull));
+	}
+
+	public RALType byNonNullable(RALType t) {
+		if (t instanceof RALType.Union) {
+			LinkedList<RALType> res = new LinkedList<>();
+			for (RALType rt : (RALType.Union) t)
+				if (rt != gNull)
+					res.add(rt);
+			return byUnion(res);
+		}
+		throw new RuntimeException("Can't remove the null option from a non-union.");
 	}
 
 	/**

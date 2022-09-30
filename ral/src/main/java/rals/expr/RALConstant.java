@@ -15,10 +15,20 @@ import rals.types.TypeSystem;
  * A constant.
  * The toString returns these in CAOS form.
  */
-public class RALConstant implements RALExpr {
+public class RALConstant implements RALExpr, RALExprUR {
 	public final RALType type;
 	public RALConstant(RALType r) {
 		type = r;
+	}
+
+	@Override
+	public String getInlineCAOS() {
+		return toString();
+	}
+
+	@Override
+	public RALExpr resolve(ScopeContext context) {
+		return this;
 	}
 
 	@Override

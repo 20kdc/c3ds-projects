@@ -14,10 +14,15 @@ import rals.types.RALType;
  * Underscore, or the discard expression.
  * This is injected in ScopeContext alongside other "semi-keywords".
  */
-public class RALDiscard implements RALExpr {
+public class RALDiscard implements RALExpr, RALExprUR {
 	public static final RALDiscard INSTANCE = new RALDiscard();
 
 	private RALDiscard() {
+	}
+
+	@Override
+	public RALExpr resolve(ScopeContext context) {
+		return this;
 	}
 
 	@Override

@@ -48,7 +48,7 @@ public class Module {
 	 */
 	public void compile(StringBuilder outText, TypeSystem ts) {
 		if (installScript != null) {
-			ScriptContext scr = new ScriptContext(ts, ts.gNull);
+			ScriptContext scr = new ScriptContext(ts, this, ts.gNull);
 			try (ScopeContext sc = new ScopeContext(scr)) {
 				installScript.compile(outText, sc);
 			}
@@ -77,7 +77,7 @@ public class Module {
 			outText.append(" ");
 			outText.append(k.script);
 			outText.append("\n");
-			ScriptContext scr = new ScriptContext(ts, ts.byClassifier(k.classifier));
+			ScriptContext scr = new ScriptContext(ts, this, ts.byClassifier(k.classifier));
 			try (ScopeContext sc = new ScopeContext(scr)) {
 				v.compile(outText, sc);
 			}
@@ -86,7 +86,7 @@ public class Module {
 
 		if (removeScript != null) {
 			outText.append("rscr\n");
-			ScriptContext scr = new ScriptContext(ts, ts.gNull);
+			ScriptContext scr = new ScriptContext(ts, this, ts.gNull);
 			try (ScopeContext sc = new ScopeContext(scr)) {
 				removeScript.compile(outText, sc);
 			}
