@@ -7,6 +7,7 @@
 package rals.cond;
 
 import rals.code.CompileContext;
+import rals.expr.RALConstant;
 import rals.expr.RALExpr;
 import rals.types.RALType;
 import rals.types.TypeSystem;
@@ -21,10 +22,15 @@ public abstract class RALCondition implements RALExpr {
 		bool = ts.gBoolean;
 	}
 
-	public static RALCondition of(RALExpr re) {
+	/**
+	 * Coerces the input to a condition by one of two methods:
+	 * + Returns it as-is if it's a condition
+	 * + Turns it into a != 0 clause otherwise
+	 */
+	public static RALCondition coerceToCondition(RALExpr re, TypeSystem ts) {
 		if (re instanceof RALCondition)
 			return (RALCondition) re;
-		throw new RuntimeException("coercion not implemented");
+		return RALCondSimple.Resolved.of(ts, "!=", re, new RALConstant.Int(ts, 0));
 	}
 
 	/**

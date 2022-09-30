@@ -33,8 +33,8 @@ public class RALCondLogOp implements RALExprUR {
 		lE.assertOutTypeSingleImpcast(scope.script.typeSystem.gBoolean);
 		final RALExpr rE = right.resolve(scope);
 		rE.assertOutTypeSingleImpcast(scope.script.typeSystem.gBoolean);
-		final RALCondition lC = RALCondition.of(lE);
-		final RALCondition rC = RALCondition.of(rE);
+		final RALCondition lC = RALCondition.coerceToCondition(lE, scope.script.typeSystem);
+		final RALCondition rC = RALCondition.coerceToCondition(rE, scope.script.typeSystem);
 
 		return new RALCondition(scope.script.typeSystem) {
 			@Override

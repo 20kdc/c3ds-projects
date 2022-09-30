@@ -32,6 +32,7 @@ public class Token {
 		// in-function
 		keywords.add("let");
 		keywords.add("if");
+		keywords.add("else");
 		keywords.add("loop");
 		keywords.add("ever");
 		keywords.add("until");

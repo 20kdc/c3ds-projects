@@ -16,6 +16,7 @@ import rals.lex.Token;
 import rals.stmt.RALAliasStatement;
 import rals.stmt.RALAssignStatement;
 import rals.stmt.RALBlock;
+import rals.stmt.RALIfStatement;
 import rals.stmt.RALInlineStatement;
 import rals.stmt.RALLetStatement;
 import rals.stmt.RALStatement;
@@ -80,6 +81,17 @@ public class ParserCode {
 			RALExprUR res = ParserExpr.parseExpr(ts, lx, true);
 			lx.requireNextKw(";");
 			return new RALAliasStatement(tkn.lineNumber, id, res);
+		} else if (tkn.isKeyword("if")) {
+			RALExprUR cond = ParserExpr.parseExpr(ts, lx, true);
+			RALStatementUR body = ParserCode.parseStatement(ts, lx);
+			RALStatementUR elseBranch = null;
+			Token chk = lx.requireNext();
+			if (chk.isKeyword("else")) {
+				elseBranch = ParserCode.parseStatement(ts, lx);
+			} else {
+				lx.back();
+			}
+			return new RALIfStatement(tkn.lineNumber, cond, body, elseBranch);
 		} else {
 			lx.back();
 			RALExprUR target = ParserExpr.parseExpr(ts, lx, false);

@@ -117,6 +117,14 @@ install {
 	# Booleans are strictly speaking integers (and are castable to such).
 	# But they're useful nonetheless.
 	let boolean testBool = counter == 2 && counter < 4 || counter > 3;
+	# And of course they can be used in conditionals.
+	if testBool && counter == 1 {
+		outs("Moo!");
+	} else if counter == 2 {
+		outs("Blep!");
+	} else {
+		outs("Meh!");
+	}
 
 	# Agent classifiers expand to their components.
 	# THIS DOESN'T WORK YET
