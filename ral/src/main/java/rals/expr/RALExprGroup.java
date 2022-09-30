@@ -7,6 +7,7 @@
 package rals.expr;
 
 import rals.code.ScopeContext;
+import rals.code.ScriptContext;
 import rals.types.RALType;
 
 /**
@@ -15,8 +16,18 @@ import rals.types.RALType;
 public class RALExprGroup implements RALExprUR {
 	public final RALExprUR[] contents;
 
-	public RALExprGroup(RALExprUR... c) {
+	private RALExprGroup(RALExprUR... c) {
+		if (c.length <= 1)
+			throw new RuntimeException("Don't make these for single elements or less");
 		contents = c;
+	}
+
+	public static RALExprUR of(RALExprUR... c) {
+		if (c.length == 1)
+			return c[0];
+		if (c.length == 0)
+			return RALDiscard.INSTANCE;
+		return new RALExprGroup(c);
 	}
 
 	@Override
@@ -27,18 +38,24 @@ public class RALExprGroup implements RALExprUR {
 		return new Resolved(res);
 	}
 
+	@Override
+	public RALExprUR[] decomposite() {
+		return contents;
+	}
+
 	public static class Resolved implements RALExpr {
 		public final RALExpr[] contents;
 
 		public Resolved(RALExpr[] c) {
 			contents = c;
 		}
-
-		private RALType[] inOutTypes(ScopeContext context, boolean in) {
+	
+		@Override
+		public RALType[] outTypes(ScriptContext context) {
 			RALType[][] collection = new RALType[contents.length][];
 			int total = 0;
 			for (int i = 0; i < contents.length; i++) {
-				collection[i] = in ? contents[i].inTypes(context) : contents[i].outTypes(context);
+				collection[i] = contents[i].outTypes(context);
 				total += collection[i].length;
 			}
 			RALType[] res = new RALType[total];
@@ -51,12 +68,7 @@ public class RALExprGroup implements RALExprUR {
 		}
 	
 		@Override
-		public RALType[] outTypes(ScopeContext context) {
-			return inOutTypes(context, false);
-		}
-	
-		@Override
-		public void outCompile(StringBuilder writer, RALExpr[] out, ScopeContext context) {
+		public void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context) {
 			int ptr = 0;
 			for (int i = 0; i < contents.length; i++) {
 				int count = contents[i].outTypes(context).length;
@@ -68,22 +80,13 @@ public class RALExprGroup implements RALExprUR {
 		}
 	
 		@Override
-		public RALType[] inTypes(ScopeContext context) {
-			return inOutTypes(context, true);
+		public RALType inType(ScriptContext context) {
+			throw new RuntimeException("Not writable");
 		}
 	
 		@Override
-		public void inCompile(StringBuilder writer, String[] input, RALType[] inputExactType, ScopeContext context) {
-			int ptr = 0;
-			for (int i = 0; i < contents.length; i++) {
-				int count = contents[i].inTypes(context).length;
-				String[] sliceS = new String[count];
-				RALType[] sliceT = new RALType[count];
-				System.arraycopy(input, ptr, sliceS, 0, count);
-				System.arraycopy(inputExactType, ptr, sliceT, 0, count);
-				contents[i].inCompile(writer, sliceS, sliceT, context);
-				ptr += count;
-			}
+		public void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context) {
+			throw new RuntimeException("Not writable");
 		}
 	}
 }

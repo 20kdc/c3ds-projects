@@ -7,6 +7,7 @@
 package rals.expr;
 
 import rals.code.ScopeContext;
+import rals.code.ScriptContext;
 import rals.types.RALType;
 
 /**
@@ -20,23 +21,23 @@ public interface RALExpr extends RALExprUR {
 	}
 
 	/**
-	 * In the given context, what types are here?
+	 * In the given context, what types can be read?
 	 */
-	RALType[] outTypes(ScopeContext context);
+	RALType[] outTypes(ScriptContext context);
 
 	/**
 	 * Compiles this expression.
 	 */
-	void outCompile(StringBuilder writer, RALExpr[] out, ScopeContext context);
+	void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context);
 
 	/**
-	 * In the given context, what types are here?
+	 * In the given context, what type can be written?
 	 */
-	RALType[] inTypes(ScopeContext context);
+	RALType inType(ScriptContext context);
 
 	/**
-	 * Compiles a RALWritable.
+	 * Compiles a write.
 	 * WARNING: May alter TARG before input runs. If this matters, make a temporary.
 	 */
-	void inCompile(StringBuilder writer, String[] input, RALType[] inputExactType, ScopeContext context);
+	void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context);
 }

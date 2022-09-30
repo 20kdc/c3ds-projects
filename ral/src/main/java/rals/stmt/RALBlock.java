@@ -21,7 +21,9 @@ public class RALBlock extends RALStatement {
 	}
 	@Override
 	protected void compileInner(StringBuilder writer, ScopeContext scope) {
-		for (RALStatement rl : content)
-			rl.compile(writer, scope);
+		try (ScopeContext innerScope = new ScopeContext(scope)) {
+			for (RALStatement rl : content)
+				rl.compile(writer, innerScope);
+		}
 	}
 }

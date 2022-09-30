@@ -40,7 +40,7 @@ public class ParserExpr {
 	public static RALExprUR parseExpr(TypeSystem ts, Lexer lx) {
 		RALExprUR firstAtom = parseExprAtomOrNull(ts, lx);
 		if (firstAtom == null)
-			return new RALDiscard();
+			return RALDiscard.INSTANCE;
 		firstAtom = parseExprSuffix(firstAtom, ts, lx);
 		LinkedList<RALExprUR> atoms = new LinkedList<>();
 		atoms.add(firstAtom);
@@ -57,7 +57,7 @@ public class ParserExpr {
 		if (atoms.size() == 1) {
 			return atoms.getFirst();
 		} else {
-			return new RALExprGroup(atoms.toArray(new RALExprUR[0]));
+			return RALExprGroup.of(atoms.toArray(new RALExprUR[0]));
 		}
 	}
 

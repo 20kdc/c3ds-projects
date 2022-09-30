@@ -9,6 +9,7 @@ package rals.code;
 import java.util.HashMap;
 import java.util.Map;
 
+import rals.expr.RALCallable;
 import rals.stmt.RALStatement;
 import rals.types.RALType;
 import rals.types.ScriptIdentifier;
@@ -23,6 +24,24 @@ public class Module {
 	public RALStatement installScript;
 	public HashMap<ScriptIdentifier, RALStatement> eventScripts = new HashMap<>();
 	public RALStatement removeScript;
+
+	public HashMap<String, MacroDefSet> macroDefs = new HashMap<>();
+	public HashMap<String, RALCallable> callable = new HashMap<>();
+
+	public Module() {
+		
+	}
+
+	public void addMacro(String name, int count, RALCallable c) {
+		if (!callable.containsKey(name)) {
+			MacroDefSet mds = macroDefs.computeIfAbsent(name, (n) -> new MacroDefSet(name));
+			callable.put(name, mds);
+		}
+		MacroDefSet res = macroDefs.get(name);
+		if (res == null)
+			throw new RuntimeException(name + " can't have a macro declared as a different type of callable is already present.");
+		res.addMacro(count, c);
+	}
 
 	/**
 	 * Compiles the module.

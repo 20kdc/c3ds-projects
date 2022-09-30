@@ -49,12 +49,12 @@ public class RALLetStatement extends RALStatement {
 		if (init != null) {
 			RALExpr re = init.resolve(scope);
 			try (ScopeContext iScope = new ScopeContext(scope)) {
-				RALType[] initChk = re.outTypes(iScope);
+				RALType[] initChk = re.outTypes(iScope.script);
 				if (initChk.length != names.length)
 					throw new RuntimeException("Expression return values don't match amount of defined variables");
 				for (int i = 0; i < vars.length; i++)
 					initChk[i].implicitlyCastOrThrow(types[i]);
-				re.outCompile(writer, vars, iScope);
+				re.outCompile(writer, vars, iScope.script);
 			}
 		}
 

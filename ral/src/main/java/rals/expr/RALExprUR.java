@@ -18,4 +18,12 @@ public interface RALExprUR {
 	 * So only do it if you're sure (read: const-related stuff)
 	 */
 	RALExpr resolve(ScopeContext context);
+
+	/**
+	 * Decomposites expression groups.
+	 * Used for assignment statements because of how writing works.
+	 */
+	default RALExprUR[] decomposite() {
+		return new RALExprUR[] {this};
+	}
 }

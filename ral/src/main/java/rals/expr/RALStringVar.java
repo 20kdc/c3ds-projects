@@ -7,6 +7,7 @@
 package rals.expr;
 
 import rals.code.ScopeContext;
+import rals.code.ScriptContext;
 import rals.types.RALType;
 
 /**
@@ -24,24 +25,22 @@ public class RALStringVar implements RALExpr {
 	}
 
 	@Override
-	public RALType[] inTypes(ScopeContext context) {
+	public RALType inType(ScriptContext context) {
+		return type;
+	}
+
+	@Override
+	public RALType[] outTypes(ScriptContext context) {
 		return new RALType[] {
 			type
 		};
 	}
 
 	@Override
-	public RALType[] outTypes(ScopeContext context) {
-		return new RALType[] {
-			type
-		};
-	}
-
-	@Override
-	public void inCompile(StringBuilder writer, String[] input, RALType[] inputExactType, ScopeContext context) {
+	public void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context) {
 		if (!isWritable)
 			throw new RuntimeException("Not writable");
-		switch (inputExactType[0].majorType) {
+		switch (inputExactType.majorType) {
 		case Agent:
 			writer.append("seta ");
 			break;
@@ -52,18 +51,18 @@ public class RALStringVar implements RALExpr {
 			writer.append("setv ");
 			break;
 		default:
-			throw new RuntimeException("Unknown major type of " + input[0]);
+			throw new RuntimeException("Unknown major type of " + input);
 		}
 		writer.append(code);
 		writer.append(" ");
-		writer.append(input[0]);
+		writer.append(input);
 		writer.append("\n");
 	}
 
 	@Override
-	public void outCompile(StringBuilder writer, RALExpr[] out, ScopeContext context) {
+	public void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context) {
 		if (!isWritable)
 			throw new RuntimeException("Not writable");
-		out[0].inCompile(writer, new String[] {code}, new RALType[] {type}, context);
+		out[0].inCompile(writer, code, type, context);
 	}
 }

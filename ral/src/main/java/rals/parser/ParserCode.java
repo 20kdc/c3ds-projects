@@ -13,6 +13,7 @@ import rals.expr.RALExpr;
 import rals.expr.RALExprUR;
 import rals.lex.Lexer;
 import rals.lex.Token;
+import rals.stmt.RALAssignStatement;
 import rals.stmt.RALBlock;
 import rals.stmt.RALInlineStatement;
 import rals.stmt.RALLetStatement;
@@ -69,7 +70,17 @@ public class ParserCode {
 			lx.requireNextKw(";");
 			return new RALLetStatement(tkn.lineNumber, names.toArray(new String[0]), types.toArray(new RALType[0]), re);
 		} else {
-			throw new RuntimeException("NYI - hit " + tkn);
+			lx.back();
+			RALExprUR target = ParserExpr.parseExpr(ts, lx);
+			Token sp = lx.requireNext();
+			if (sp.isKeyword(";")) {
+				return new RALAssignStatement(tkn.lineNumber, null, target);
+			} else if (sp.isKeyword("=")) {
+				RALExprUR source = ParserExpr.parseExpr(ts, lx);
+				return new RALAssignStatement(tkn.lineNumber, target.decomposite(), source);
+			} else {
+				throw new RuntimeException("Saw expression at " + tkn + " but then was wrong about it.");
+			}
 		}
 	}
 }

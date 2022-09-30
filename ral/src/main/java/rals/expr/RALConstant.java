@@ -7,6 +7,7 @@
 package rals.expr;
 
 import rals.code.ScopeContext;
+import rals.code.ScriptContext;
 import rals.types.RALType;
 import rals.types.TypeSystem;
 
@@ -21,22 +22,22 @@ public class RALConstant implements RALExpr {
 	}
 
 	@Override
-	public void outCompile(StringBuilder writer, RALExpr[] out, ScopeContext context) {
-		out[0].inCompile(writer, new String[] {toString()}, new RALType[] {type}, context);
+	public void outCompile(StringBuilder writer, RALExpr[] out, ScriptContext context) {
+		out[0].inCompile(writer, toString(), type, context);
 	}
 
 	@Override
-	public RALType[] outTypes(ScopeContext context) {
+	public RALType[] outTypes(ScriptContext context) {
 		return new RALType[] {type};
 	}
 
 	@Override
-	public RALType[] inTypes(ScopeContext context) {
+	public RALType inType(ScriptContext context) {
 		throw new RuntimeException("Constants are not writable");
 	}
 
 	@Override
-	public void inCompile(StringBuilder writer, String[] input, RALType[] inputExactType, ScopeContext context) {
+	public void inCompile(StringBuilder writer, String input, RALType inputExactType, ScriptContext context) {
 		throw new RuntimeException("Constants are not writable");
 	}
 

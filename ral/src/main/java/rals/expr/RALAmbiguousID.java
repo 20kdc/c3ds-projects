@@ -41,7 +41,7 @@ public class RALAmbiguousID implements RALExprUR {
 		RALType.AgentClassifier maybeClassifier = typeSystem.tryGetAsClassifier(text);
 		if (maybeClassifier != null) {
 			Classifier cl = maybeClassifier.classifier;
-			return new RALExprGroup(
+			return RALExprGroup.of(
 				new RALConstant.Int(typeSystem, cl.family),
 				new RALConstant.Int(typeSystem, cl.genus),
 				new RALConstant.Int(typeSystem, cl.species)

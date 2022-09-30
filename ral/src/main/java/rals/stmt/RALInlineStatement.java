@@ -40,12 +40,12 @@ public class RALInlineStatement extends RALStatement {
 					} else if (re instanceof RALConstant) {
 						interiorWriter.append(re);
 					} else {
-						RALType[] slots = re.outTypes(iScope);
+						RALType[] slots = re.outTypes(iScope.script);
 						RALStringVar[] vars = new RALStringVar[slots.length];
 						for (int i = 0; i < vars.length; i++)
 							vars[i] = iScope.allocLocal(slots[i]);
 						// Note that this goes to writer (for setup), while interiorWriter is building the main thing.
-						re.outCompile(writer, vars, iScope);
+						re.outCompile(writer, vars, iScope.script);
 						for (int i = 0; i < vars.length; i++) {
 							if (i != 0)
 								interiorWriter.append(" ");
