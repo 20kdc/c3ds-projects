@@ -9,27 +9,22 @@ package rals.expr;
 import java.io.StringWriter;
 
 import rals.code.ScopeContext;
+import rals.stmt.RALStatement;
 
 /**
- * Calls a macro, or something like that.
+ * Statement expression, used for fancy stuff.
  */
-public class RALCall implements RALExprUR {
-	public final String name;
-	public final RALExprUR[] params;
+public class RALStmtExpr implements RALExprUR {
+	public final RALStatement[] statements;
+	public final RALExprUR expr;
 
-	public RALCall(String n, RALExprUR p) {
-		name = n;
-		params = p.decomposite();
+	public RALStmtExpr(RALStatement[] st, RALExprUR er) {
+		statements = st;
+		expr = er;
 	}
 
 	@Override
 	public RALExpr resolve(ScopeContext context) {
-		RALExpr[] paramR = new RALExpr[params.length];
-		for (int i = 0; i < paramR.length; i++)
-			paramR[i] = params[i].resolve(context);
-		RALCallable rc = context.script.module.callable.get(name);
-		if (rc == null)
-			throw new RuntimeException("No such callable: " + name);
-		return rc.instance(paramR, context);
+		throw new RuntimeException("NYI");
 	}
 }

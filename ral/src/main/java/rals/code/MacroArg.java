@@ -4,19 +4,25 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.expr;
+package rals.code;
 
-import java.io.StringWriter;
-
-import rals.code.ScopeContext;
+import rals.types.RALType;
 
 /**
- * Something callable (i.e. a macro or something like it)...
+ * Argument/parameter to a macro.
  */
-public interface RALCallable {
-	/**
-	 * Given some arguments, converts to an expression.
-	 * The expression presumably does whatever it has to do to make this work.
-	 */
-	RALExpr instance(RALExpr[] args, ScopeContext sc);
+public class MacroArg {
+	public final RALType type;
+	public final boolean isInline;
+	public final String name;
+	public MacroArg(RALType rt, boolean in, String n) {
+		type = rt;
+		name = n;
+		isInline = in;
+	}
+
+	@Override
+	public String toString() {
+		return "macro arg " + name;
+	}
 }

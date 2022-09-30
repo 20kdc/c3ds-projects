@@ -6,6 +6,8 @@
  */
 package rals.expr;
 
+import java.io.StringWriter;
+
 import rals.code.ScopeContext;
 import rals.types.Classifier;
 import rals.types.RALType;

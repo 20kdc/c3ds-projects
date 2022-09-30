@@ -15,11 +15,13 @@ typedef NotNornCreature Grendel|Ettin|Geat;
 
 message Agent:windowResized 123;
 
-#macro () inst () {
+macro identity(integer funnel) funnel;
+
+#macro inst() {
 #	inline "inst\n";
 #}
 
-#macro () kill (Agent x) {
+#macro kill(Agent x) {
 #	inline "kill " x "\n";
 #}
 
@@ -27,7 +29,7 @@ install {
 	let integer counterA = 0;
 	let integer counterB = 0;
 	inline "addv " counterA " " 1 "\n";
-	counterA, counterB = 4, 1;
+	counterA, counterB = 4, identity(1276);
 	# VERY INVALID
 	counterA = null!integer;
 	# test normal stuff

@@ -9,6 +9,7 @@ package rals.parser;
 import java.util.LinkedList;
 
 import rals.expr.RALAmbiguousID;
+import rals.expr.RALCall;
 import rals.expr.RALCast;
 import rals.expr.RALConstant;
 import rals.expr.RALDiscard;
@@ -24,10 +25,11 @@ import rals.types.TypeSystem;
  */
 public class ParserExpr {
 	public static RALConstant parseConst(TypeSystem ts, Lexer lx) {
-		RALExpr re = parseExpr(ts, lx).resolve(null);
-		if (!(re instanceof RALConstant))
-			throw new RuntimeException("Unable to resolve " + re + " to constant expression.");
-		return (RALConstant) re;
+		RALExprUR ex = parseExpr(ts, lx);
+		RALExpr ex2 = ex.resolve(null);
+		if (!(ex2 instanceof RALConstant))
+			throw new RuntimeException("Unable to resolve " + ex + " to constant expression.");
+		return (RALConstant) ex2;
 	}
 	public static int parseConstInteger(TypeSystem ts, Lexer lx) {
 		RALConstant re = parseConst(ts, lx);
@@ -49,7 +51,7 @@ public class ParserExpr {
 	public static RALExprUR parseExpr(TypeSystem ts, Lexer lx) {
 		RALExprUR firstAtom = parseExprAtomOrNull(ts, lx);
 		if (firstAtom == null)
-			return RALDiscard.INSTANCE;
+			return RALExprGroup.of();
 		firstAtom = parseExprSuffix(firstAtom, ts, lx);
 		LinkedList<RALExprUR> atoms = new LinkedList<>();
 		atoms.add(firstAtom);
@@ -91,7 +93,13 @@ public class ParserExpr {
 			Token tkn = lx.requireNext();
 			if (tkn.isKeyword("(")) {
 				// Call.
-				throw new RuntimeException("Call NYI");
+				RALExprUR group = ParserExpr.parseExpr(ts, lx);
+				lx.requireNextKw(")");
+				if (base instanceof RALAmbiguousID) {
+					base = new RALCall(((RALAmbiguousID) base).text, group);
+				} else {
+					throw new RuntimeException("You can't put a call on anything but an ambiguous ID, and certainly not " + base);
+				}
 			} else if (tkn.isKeyword("!")) {
 				// Forced cast.
 				// If followed immediately by an ID, it's a cast to a specific type.

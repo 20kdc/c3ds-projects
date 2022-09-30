@@ -6,6 +6,8 @@
  */
 package rals.expr;
 
+import java.io.StringWriter;
+
 import rals.code.ScopeContext;
 
 /**
@@ -14,8 +16,8 @@ import rals.code.ScopeContext;
 public interface RALExprUR {
 	/**
 	 * Must resolve.
-	 * Note that ScopeContext can be null here, but doing that could lead to unwanted failures.
-	 * So only do it if you're sure (read: const-related stuff)
+	 * Will fill ScopeContext with stuff that might be important for the target expression to be runnable.
+	 * Note that this doesn't generate code - it just gets all the variables into place.
 	 */
 	RALExpr resolve(ScopeContext context);
 

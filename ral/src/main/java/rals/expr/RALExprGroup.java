@@ -6,6 +6,7 @@
  */
 package rals.expr;
 
+import java.io.StringWriter;
 import java.util.LinkedList;
 
 import rals.code.ScopeContext;
@@ -19,8 +20,8 @@ public class RALExprGroup implements RALExprUR {
 	public final RALExprUR[] contents;
 
 	private RALExprGroup(RALExprUR... c) {
-		if (c.length <= 1)
-			throw new RuntimeException("Don't make these for single elements or less");
+		if (c.length == 1)
+			throw new RuntimeException("Don't make these for single elements.");
 		contents = c;
 	}
 
@@ -34,8 +35,6 @@ public class RALExprGroup implements RALExprUR {
 		// now that it's decomposed...
 		if (c.length == 1)
 			return c[0];
-		if (c.length == 0)
-			return RALDiscard.INSTANCE;
 		return new RALExprGroup(c);
 	}
 

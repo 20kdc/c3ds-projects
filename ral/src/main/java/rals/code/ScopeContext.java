@@ -21,8 +21,17 @@ import rals.types.RALType;
  */
 public class ScopeContext implements AutoCloseable {
 	public final ScriptContext script;
-	// Allocations specific to this scope (so freed on close)
-	public LinkedList<Integer> allocation = new LinkedList<>();
+
+	/**
+	 * Allocations specific to this scope group
+	 */
+	public final LinkedList<Integer> allocation;
+
+	/**
+	 * If allocation is owned by this specific ScopeContext
+	 */
+	public final boolean ownsAllocation;
+
 	/**
 	 * Scoped variables (including inherited)
 	 * Note that the entries here will change chronologically as we move forward lexically in the blocks and as things get shadowed.
@@ -32,6 +41,8 @@ public class ScopeContext implements AutoCloseable {
 
 	public ScopeContext(ScriptContext parent) {
 		script = parent;
+		allocation = new LinkedList<>();
+		ownsAllocation = true;
 		scopedVariables.put("ownr", new RALStringVar("ownr", parent.ownrType, true));
 		// Dynamic VMVars would be nice, but we need hard logic anyway for, say, ownrType
 		scopedVariables.put("from", new RALStringVar("from", parent.typeSystem.gAny, true));
@@ -43,8 +54,25 @@ public class ScopeContext implements AutoCloseable {
 		scopedVariables.put("_", RALDiscard.INSTANCE);
 	}
 
+	/**
+	 * Standard fork.
+	 */
 	public ScopeContext(ScopeContext parent) {
+		this(parent, true);
+	}
+
+	/**
+	 * Standard fork.
+	 */
+	public ScopeContext(ScopeContext parent, boolean selfAllocates) {
 		script = parent.script;
+		if (selfAllocates) {
+			allocation = new LinkedList<>();
+			ownsAllocation = true;
+		} else {
+			allocation = parent.allocation;
+			ownsAllocation = false;
+		}
 		scopedVariables.putAll(parent.scopedVariables);
 	}
 
@@ -69,6 +97,8 @@ public class ScopeContext implements AutoCloseable {
 
 	@Override
 	public void close() {
+		if (!ownsAllocation)
+			return;
 		for (Integer i : allocation)
 			script.releaseVA(i);
 	}

@@ -9,9 +9,13 @@ package rals.parser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.LinkedList;
 
+import rals.code.Macro;
+import rals.code.MacroArg;
 import rals.code.Module;
 import rals.expr.RALConstant;
+import rals.expr.RALExprUR;
 import rals.lex.Lexer;
 import rals.lex.Token;
 import rals.stmt.RALStatement;
@@ -126,6 +130,12 @@ public class Parser {
 			m.installScript = ParserCode.parseStatement(ts, lx);
 		} else if (tkn.isKeyword("remove")) {
 			m.removeScript = ParserCode.parseStatement(ts, lx);
+		} else if (tkn.isKeyword("macro")) {
+			String name = lx.requireNextID();
+			MacroArg[] args = parseArgList(ts, lx);
+			RALExprUR rs = ParserExpr.parseExpr(ts, lx);
+			lx.requireNextKw(";");
+			m.addMacro(name, args.length, new Macro(name, args, rs));
 		} else if (tkn instanceof Token.ID) {
 			String name = ((Token.ID) tkn).text;
 			Token tx = lx.requireNext();
@@ -139,6 +149,36 @@ public class Parser {
 			throw new RuntimeException("unknown declaration " + tkn);
 		}
 	}
+
+	private static MacroArg[] parseArgList(TypeSystem ts, Lexer lx) {
+		lx.requireNextKw("(");
+		Token first = lx.requireNext();
+		if (first.isKeyword(")"))
+			return new MacroArg[0];
+		lx.back();
+		LinkedList<MacroArg> args = new LinkedList<>();
+		while (true) {
+			boolean isInline = false;
+			first = lx.requireNext();
+			if (first.isKeyword("inline")) {
+				isInline = true;
+			} else {
+				lx.back();
+			}
+			RALType typ = ParserType.parseType(ts, lx);
+			String name = lx.requireNextID();
+			args.add(new MacroArg(typ, isInline, name));
+			first = lx.requireNext();
+			if (first.isKeyword(")")) {
+				return args.toArray(new MacroArg[0]);
+			} else if (first.isKeyword(",")) {
+				// okie-dokie
+			} else {
+				throw new RuntimeException("Unusual termination of argument list " + first);
+			}
+		}
+	}
+
 	public static void parseExtendsClauses(TypeSystem ts, RALType.Agent ag, Lexer lx) {
 		while (true) {
 			Token clause = lx.requireNext();
