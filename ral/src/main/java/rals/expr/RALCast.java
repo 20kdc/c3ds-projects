@@ -49,10 +49,7 @@ public final class RALCast implements RALExprUR {
 		@Override
 		public RALExpr resolve(ScopeContext context) {
 			RALExpr r = base.resolve(context);
-			RALType[] rt = r.outTypes();
-			if (rt.length != 1)
-				throw new RuntimeException("Can't denull >1 value");
-			RALType nn = rt[0];
+			RALType nn = r.assertOutTypeSingle();
 			// System.out.println(nn);
 			nn = context.script.typeSystem.byNonNullable(nn);
 			// System.out.println(nn);
@@ -84,9 +81,8 @@ public final class RALCast implements RALExprUR {
 
 		@Override
 		public RALType[] outTypes() {
-			RALType[] t = expr.outTypes();
-			if (t.length != 1)
-				throw new RuntimeException("Can't cast this, not a single type!");
+			// make sure the length is right
+			expr.assertOutTypeSingle();
 			return new RALType[] {target};
 		}
 

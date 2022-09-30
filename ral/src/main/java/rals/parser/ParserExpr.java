@@ -6,8 +6,11 @@
  */
 package rals.parser;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 
+import rals.cond.RALCondLogOp;
+import rals.cond.RALCondSimple;
 import rals.expr.RALAmbiguousID;
 import rals.expr.RALCall;
 import rals.expr.RALCast;
@@ -29,12 +32,20 @@ import rals.types.TypeSystem;
  */
 public class ParserExpr {
 	public static final String[][] operatorPrecedenceGroups = new String[][] {
-		// Outermost in tree
-		{"&&", "||"},
+		// Outermost in tree to innermost
+		{","},
+		{"||"},
+		{"&&"},
 		{"==", "!=", "<=", ">=", "<", ">"},
 		{"+", "-"},
 		{"/", "*"}
 	};
+	public static final HashSet<String> allOps = new HashSet<>();
+	static {
+		for (String[] s : operatorPrecedenceGroups)
+			for (String t : s)
+				allOps.add(t);
+	}
 
 	public static RALConstant parseConst(TypeSystem ts, Lexer lx) {
 		RALExprUR ex = parseExpr(ts, lx, true);
@@ -68,23 +79,73 @@ public class ParserExpr {
 			return RALExprGroup.of();
 		}
 		LinkedList<RALExprUR> atoms = new LinkedList<>();
+		LinkedList<String> ops = new LinkedList<>();
 		atoms.add(firstAtom);
 		while (true) {
 			Token tkn = lx.requireNext();
-			if (!tkn.isKeyword(",")) {
+			if (!(tkn instanceof Token.Kw)) {
+				// definitely not
 				lx.back();
 				break;
 			}
+			String opId = ((Token.Kw) tkn).text;
+			if (!allOps.contains(opId)) {
+				// still no
+				lx.back();
+				break;
+			}
+			ops.add(opId);
 			firstAtom = parseExprFullAtomOrNull(ts, lx);
 			if (firstAtom == null)
-				throw new RuntimeException("Comma without expression at " + tkn.lineNumber);
+				throw new RuntimeException(opId + " without expression at " + tkn.lineNumber);
 			atoms.add(firstAtom);
 		}
-		if (atoms.size() == 1) {
-			return atoms.getFirst();
-		} else {
-			return RALExprGroup.of(atoms.toArray(new RALExprUR[0]));
+		// now for op processing
+		RALExprUR[] atomsArr = atoms.toArray(new RALExprUR[0]);
+		String[] opsArr = ops.toArray(new String[0]);
+		return binopProcessor(atomsArr, opsArr, 0, opsArr.length);
+	}
+
+	public static RALExprUR binopProcessor(RALExprUR[] atomArr, String[] opArr, int aBase, int opCount) {
+		if (opCount == 0)
+			return atomArr[aBase];
+		for (String[] pCl : operatorPrecedenceGroups) {
+			for (int i = aBase; i < aBase + opCount; i++) {
+				for (String op : pCl) {
+					if (op.equals(opArr[i])) {
+						// if i == aBase then opCount needs to be 0 (LHS is just the atom directly left)
+						RALExprUR l = binopProcessor(atomArr, opArr, aBase, i - aBase);
+						// if i == aBase + opCount - 1 then opCount needs to be 0 (RHS is just the atom directly right)
+						RALExprUR r = binopProcessor(atomArr, opArr, i + 1, aBase + opCount - (i + 1));
+						return binopMaker(l, opArr[i], r);
+					}
+				}
+			}
 		}
+		throw new RuntimeException("Operator not in any precedence groups: " + opArr[0]);
+	}
+
+	private static RALExprUR binopMaker(RALExprUR l, String string, RALExprUR r) {
+		if (string.equals(",")) {
+			return RALExprGroup.of(l, r);
+		} else if (string.equals("==")) {
+			return new RALCondSimple(l, "eq", r);
+		} else if (string.equals("!=")) {
+			return new RALCondSimple(l, "ne", r);
+		} else if (string.equals(">")) {
+			return new RALCondSimple(l, "gt", r);
+		} else if (string.equals(">=")) {
+			return new RALCondSimple(l, "ge", r);
+		} else if (string.equals("<")) {
+			return new RALCondSimple(l, "lt", r);
+		} else if (string.equals("<=")) {
+			return new RALCondSimple(l, "le", r);
+		} else if (string.equals("&&")) {
+			return new RALCondLogOp(l, "and", r);
+		} else if (string.equals("||")) {
+			return new RALCondLogOp(l, "or", r);
+		}
+		throw new RuntimeException("No handler for binop " + string);
 	}
 
 	public static RALExprUR parseExprFullAtomOrNull(TypeSystem ts, Lexer lx) {

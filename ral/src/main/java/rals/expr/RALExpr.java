@@ -23,6 +23,27 @@ public interface RALExpr {
 	RALType[] outTypes();
 
 	/**
+	 * Just get the typechecking over with already
+	 */
+	default RALType assertOutTypeSingle() {
+		RALType[] rt = outTypes();
+		if (rt.length != 1)
+			throw new RuntimeException("Expected single got " + this);
+		return rt[0];
+	}
+
+	/**
+	 * Just get the typechecking over with already
+	 */
+	default RALType assertOutTypeSingleImpcast(RALType target) {
+		RALType[] rt = outTypes();
+		if (rt.length != 1)
+			throw new RuntimeException("Expected single " + target + " here");
+		rt[0].implicitlyCastOrThrow(target);
+		return rt[0];
+	}
+
+	/**
 	 * Compiles this expression, which writes into the given output expressions.
 	 * This is done by calling their inCompile methods, or in some cases using getInlineCAOS.
 	 */

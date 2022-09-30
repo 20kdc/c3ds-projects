@@ -46,8 +46,9 @@ public abstract class RALCondition implements RALExpr {
 
 	@Override
 	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+		String cc = compileCond(writer, context);
 		writer.append("doif ");
-		writer.append(compileCond(writer, context));
+		writer.append(cc);
 		writer.append("\n");
 		out[0].inCompile(writer, "1", bool, context);
 		writer.append("else\n");
@@ -63,8 +64,8 @@ public abstract class RALCondition implements RALExpr {
 	/**
 	 * Implies this fits snugly into a branch of a condition. 
 	 */
-	public static abstract class Branch extends RALCondition {
-		public Branch(TypeSystem ts) {
+	public static abstract class Clause extends RALCondition {
+		public Clause(TypeSystem ts) {
 			super(ts);
 		}
 	}

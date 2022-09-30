@@ -39,10 +39,7 @@ public class Macro implements RALCallable {
 		for (int i = 0; i < args.length; i++) {
 			// Check this early
 			RALExpr argExpr = a[i];
-			RALType[] rt = argExpr.outTypes();
-			if (rt.length != 1)
-				throw new RuntimeException("Macro arg " + i + ":" + args[i].name + " given >1 value.");
-			rt[0].implicitlyCastOrThrow(args[i].type, rt[0], args[i]);
+			argExpr.assertOutTypeSingleImpcast(args[i].type);
 			// Now actually apply
 			if (args[i].isInline) {
 				// Note that we don't do a two-way check.

@@ -114,6 +114,10 @@ install {
 	inline " * --add--\n";
 	counter = add(counter, 1);
 
+	# Booleans are strictly speaking integers (and are castable to such).
+	# But they're useful nonetheless.
+	let boolean testBool = counter == 2 && counter < 4 || counter > 3;
+
 	# Agent classifiers expand to their components.
 	# THIS DOESN'T WORK YET
 	#let WorldAgent? y = rtar(WorldAgent)!WorldAgent?;
