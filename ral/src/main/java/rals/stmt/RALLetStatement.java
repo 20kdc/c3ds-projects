@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALExpr;
@@ -61,18 +62,12 @@ public class RALLetStatement extends RALStatementUR {
 		}
 	
 		@Override
-		protected void compileInner(StringBuilder writer, CompileContext scope) {
+		protected void compileInner(CodeWriter writer, CompileContext scope) {
 			// Ok, so we want to define this local in the outer environment, but carefully.
 			// In particular we want to be able to use local definitions as a cast.
 			for (int i = 0; i < vars.length; i++) {
 				scope.allocVA(vars[i].handle);
-				writer.append(" * ");
-				writer.append(vars[i].getInlineCAOS(scope));
-				writer.append(": ");
-				writer.append(types[i]);
-				writer.append(" ");
-				writer.append(names[i]);
-				writer.append("\n");
+				writer.writeComment(vars[i].getInlineCAOS(scope, false) + ": " + types[i] + " " + names[i]);
 			}
 			
 			if (init != null) {

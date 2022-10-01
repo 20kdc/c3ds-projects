@@ -6,6 +6,7 @@
  */
 package rals.cond;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.expr.RALConstant;
 import rals.expr.RALExpr;
@@ -53,10 +54,10 @@ public abstract class RALCondition implements RALExpr {
 	 * writer writes into the prelude.
 	 * sharedContext is a context held between the prelude and the use of the condition.
 	 */
-	public abstract String compileCond(StringBuilder writer, CompileContext sharedContext, boolean invert);
+	public abstract String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert);
 
 	@Override
-	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
 		throw new RuntimeException("Can't write into condition");
 	}
 
@@ -66,15 +67,13 @@ public abstract class RALCondition implements RALExpr {
 	}
 
 	@Override
-	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
 		String cc = compileCond(writer, context, false);
-		writer.append("doif ");
-		writer.append(cc);
-		writer.append("\n");
+		writer.writeCode("doif " + cc, 1);
 		out[0].inCompile(writer, "1", bool, context);
-		writer.append("else\n");
+		writer.writeCode(-1, "else", 1);
 		out[0].inCompile(writer, "0", bool, context);
-		writer.append("endi\n");
+		writer.writeCode(-1, "endi");
 	}
 
 	@Override

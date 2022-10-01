@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.lex.SrcPos;
@@ -22,16 +23,12 @@ public class RALBreakFromLoop extends RALStatementUR {
 	public RALStatement resolveInner(ScopeContext scope) {
 		return new RALStatement(lineNumber) {
 			@Override
-			protected void compileInner(StringBuilder writer, CompileContext context) {
-				if (context.breakBool != null) {
-					writer.append("setv ");
-					writer.append(context.breakBool);
-					writer.append(" 1\n");
-				}
+			protected void compileInner(CodeWriter writer, CompileContext context) {
+				if (context.breakBool != null)
+					writer.writeCode("setv " + context.breakBool + " 1");
+
 				if (context.breakLabel != null) {
-					writer.append("goto ");
-					writer.append(context.breakLabel);
-					writer.append("\n");
+					writer.writeCode("goto " + context.breakLabel);
 				} else {
 					throw new RuntimeException("Cannot break at this place!");
 				}

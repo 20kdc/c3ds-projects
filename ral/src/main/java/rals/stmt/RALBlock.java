@@ -8,6 +8,7 @@ package rals.stmt;
 
 import java.util.LinkedList;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.lex.SrcPos;
@@ -34,7 +35,7 @@ public class RALBlock extends RALStatementUR {
 
 		return new RALStatement(lineNumber) {
 			@Override
-			protected void compileInner(StringBuilder writer, CompileContext cc) {
+			protected void compileInner(CodeWriter writer, CompileContext cc) {
 				if (isScopeBreaking) {
 					try (CompileContext innerScope = new CompileContext(cc)) {
 						for (RALStatement rl : content2)

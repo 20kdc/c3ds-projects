@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.lex.SrcPos;
@@ -25,25 +26,17 @@ public class RALBreakableLoop extends RALStatementUR {
 		final RALStatement rs = content.resolve(new ScopeContext(scope));
 		return new RALStatement(lineNumber) {
 			@Override
-			protected void compileInner(StringBuilder writer, CompileContext context) {
+			protected void compileInner(CodeWriter writer, CompileContext context) {
 				try (CompileContext ccs = new CompileContext(context)) {
 					String labelTop = ccs.allocLabel();
 					String labelEnd = ccs.allocLabel();
 					ccs.clearBreak();
 					ccs.breakLabel = labelEnd;
-					writer.append("goto ");
-					writer.append(labelTop);
-					writer.append("\n");
-					writer.append("subr ");
-					writer.append(labelTop);
-					writer.append("\n");
+					writer.writeCode("goto " + labelTop);
+					writer.writeCode("subr " + labelTop, 1);
 					rs.compile(writer, ccs);
-					writer.append("goto ");
-					writer.append(labelTop);
-					writer.append("\n");
-					writer.append("subr ");
-					writer.append(labelEnd);
-					writer.append("\n");
+					writer.writeCode(-1, "goto " + labelTop);
+					writer.writeCode("subr " + labelEnd);
 				}
 			}
 		};

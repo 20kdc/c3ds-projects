@@ -6,6 +6,7 @@
  */
 package rals.expr;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.lex.SrcPos;
@@ -37,7 +38,7 @@ public class RALStmtExpr implements RALExprUR {
 			}
 
 			@Override
-			public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+			public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
 				try (CompileContext cc = new CompileContext(context)) {
 					rStmt.compile(writer, context);
 					rExpr.outCompile(writer, out, context);
@@ -50,7 +51,7 @@ public class RALStmtExpr implements RALExprUR {
 			}
 
 			@Override
-			public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+			public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
 				try (CompileContext cc = new CompileContext(context)) {
 					rStmt.compile(writer, context);
 					rExpr.inCompile(writer, input, inputExactType, context);

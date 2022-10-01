@@ -6,6 +6,7 @@
  */
 package rals.cond;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALConstant;
@@ -78,9 +79,9 @@ public class RALCondSimple implements RALExprUR {
 		}
 
 		@Override
-		public String compileCond(StringBuilder writer, CompileContext sharedContext, boolean invert) {
-			String lInline = lR.getInlineCAOS(sharedContext);
-			String rInline = rR.getInlineCAOS(sharedContext);
+		public String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert) {
+			String lInline = lR.getInlineCAOS(sharedContext, false);
+			String rInline = rR.getInlineCAOS(sharedContext, false);
 			if (lInline == null) {
 				RALStringVar lV = sharedContext.allocVA(lT);
 				lR.outCompile(writer, new RALExpr[] {lV}, sharedContext);

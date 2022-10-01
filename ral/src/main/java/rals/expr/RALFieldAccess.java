@@ -9,6 +9,7 @@ package rals.expr;
 import java.io.StringWriter;
 import java.util.function.Consumer;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.types.AgentInterface.OVar;
@@ -46,8 +47,8 @@ public class RALFieldAccess implements RALExprUR {
 			}
 
 			@Override
-			public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
-				String outInline = out[0].getInlineCAOS(context);
+			public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
+				String outInline = out[0].getInlineCAOS(context, true);
 				if (outInline != null) {
 					// This means we have a guarantee of being able to safely output, which is great
 					inlineIO(writer, context, (va) -> {
@@ -74,7 +75,7 @@ public class RALFieldAccess implements RALExprUR {
 			}
 
 			@Override
-			public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+			public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
 				inlineIO(writer, context, (va) -> {
 					RALStringVar.writeSet(writer, va, input, inputExactType);
 				});
@@ -83,7 +84,7 @@ public class RALFieldAccess implements RALExprUR {
 			/**
 			 * This is used for when we have a guarantee of being able to do whatever we needed to do in a simple CAOS line.
 			 */
-			private void inlineIO(StringBuilder writer, CompileContext context, Consumer<String> doTheThing) {
+			private void inlineIO(CodeWriter writer, CompileContext context, Consumer<String> doTheThing) {
 				SpecialInline si = baseExpr.getSpecialInline(context);
 				if ((si == SpecialInline.Ownr) || (si == SpecialInline.Targ)) {
 					String pfx = "ov";
@@ -100,23 +101,19 @@ public class RALFieldAccess implements RALExprUR {
 				}
 			}
 
-			private String backupAndSet(StringBuilder writer, CompileContext cc) {
+			private String backupAndSet(CodeWriter writer, CompileContext cc) {
 				String targTmpVA = ScopeContext.vaToString(cc.allocVA());
-				writer.append("seta ");
-				writer.append(targTmpVA);
-				writer.append(" targ\n");
+				writer.writeCode("seta " + targTmpVA + " targ");
 				baseExpr.outCompile(writer, new RALExpr[] {new RALSIVar(SpecialInline.Targ, baseType, true)}, cc);
 				return targTmpVA;
 			}
 
-			private void restore(StringBuilder writer, String targTmpVA) {
-				writer.append("seta targ ");
-				writer.append(targTmpVA);
-				writer.append("\n");
+			private void restore(CodeWriter writer, String targTmpVA) {
+				writer.writeCode("targ " + targTmpVA);
 			}
 
 			@Override
-			public String getInlineCAOS(CompileContext context) {
+			public String getInlineCAOS(CompileContext context, boolean write) {
 				// We can't trust that targ won't be messed with unless we ensure it personally.
 				// That in mind, only translate this for OWNR.
 				if (baseExpr.getSpecialInline(context) == SpecialInline.Ownr)

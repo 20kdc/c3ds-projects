@@ -180,7 +180,7 @@ public class ParserCode {
 					" ",
 					RALCast.of(p2, ts.gAny, true),
 					" ",
-					after,
+					RALCast.of(after, ts.gInteger, true),
 					"\n"
 				});
 			} else {

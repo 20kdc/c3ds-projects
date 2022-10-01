@@ -6,6 +6,7 @@
  */
 package rals.cond;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALConstant;
@@ -35,7 +36,7 @@ public class RALCondInvert implements RALExprUR {
 		RALCondition resolved = RALCondition.coerceToCondition(inside.resolve(scope), scope.script.typeSystem);
 		return new RALCondition(scope.script.typeSystem) {
 			@Override
-			public String compileCond(StringBuilder writer, CompileContext sharedContext, boolean invert) {
+			public String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert) {
 				return resolved.compileCond(writer, sharedContext, !invert);
 			}
 		};

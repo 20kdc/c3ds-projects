@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALExpr;
@@ -30,12 +31,8 @@ public class RALAliasStatement extends RALStatementUR {
 		scope.scopedVariables.put(name, exp);
 		return new RALStatement(lineNumber) {
 			@Override
-			protected void compileInner(StringBuilder writer, CompileContext scope) {
-				writer.append(" * ");
-				writer.append(exp);
-				writer.append(": ");
-				writer.append(name);
-				writer.append("\n");
+			protected void compileInner(CodeWriter writer, CompileContext scope) {
+				writer.writeComment(exp + ": " + name);
 			}
 		};
 	}

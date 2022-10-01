@@ -6,6 +6,7 @@
  */
 package rals.expr;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
@@ -33,12 +34,12 @@ public class RALDiscard implements RALExpr, RALExprUR {
 	}
 
 	@Override
-	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
 		throw new RuntimeException("Discard isn't a real value");
 	}
 
 	@Override
-	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
 		// We need to discard this safely, soooo
 		try (CompileContext ccr = new CompileContext(context)) {
 			RALStringVar rsv = ccr.allocVA(inputExactType);

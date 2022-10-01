@@ -6,6 +6,7 @@
  */
 package rals.expr;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.IVAAllocator;
 import rals.code.ScopeContext;
@@ -47,7 +48,7 @@ public interface RALExpr {
 	 * Compiles this expression, which writes into the given output expressions.
 	 * This is done by calling their inCompile methods, or in some cases using getInlineCAOS.
 	 */
-	void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context);
+	void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context);
 
 	/**
 	 * What type can be written?
@@ -59,15 +60,18 @@ public interface RALExpr {
 	 * Compiles a write.
 	 * WARNING: May alter TARG before input runs. If this matters, make a temporary.
 	 */
-	void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context);
+	void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context);
 
 	/**
 	 * Gets the inline CAOS for this expression, or null if that's not possible.
 	 * This acts as a "fast-path" to avoid temporary variables.
 	 * It's also critical to how inline statements let you modify variables, hence the name.
 	 */
-	default String getInlineCAOS(CompileContext context) {
-		return getSpecialInline(context).code;
+	default String getInlineCAOS(CompileContext context, boolean write) {
+		SpecialInline si = getSpecialInline(context);
+		if (write && !si.inlineWritable)
+			return null;
+		return si.code;
 	}
 
 	/**
@@ -81,12 +85,14 @@ public interface RALExpr {
 	 * This is similar to getInlineCAOS, but it's for very specific circumstances.
 	 */
 	public enum SpecialInline {
-		None(null),
-		Ownr("ownr"),
-		Targ("targ");
+		None(null, false),
+		Ownr("ownr", true),
+		Targ("targ", false);
 		public final String code;
-		SpecialInline(String s) {
+		public final boolean inlineWritable;
+		SpecialInline(String s, boolean iw) {
 			code = s;
+			inlineWritable = iw;
 		}
 	}
 }

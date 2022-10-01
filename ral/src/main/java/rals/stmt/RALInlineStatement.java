@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALExpr;
@@ -40,7 +41,7 @@ public class RALInlineStatement extends RALStatementUR {
 		}
 		return new RALStatement(lineNumber) {
 			@Override
-			protected void compileInner(StringBuilder writer, CompileContext scope) {
+			protected void compileInner(CodeWriter writer, CompileContext scope) {
 				// scope for all the temporary VAs we may make
 				try (CompileContext scope2 = new CompileContext(scope)) {
 					StringBuilder interiorWriter = new StringBuilder();
@@ -49,7 +50,7 @@ public class RALInlineStatement extends RALStatementUR {
 							interiorWriter.append(o);
 						} else if (o instanceof RALExpr) {
 							RALExpr re = (RALExpr) o;
-							String inlineRepr = re.getInlineCAOS(scope2);
+							String inlineRepr = re.getInlineCAOS(scope2, false);
 							if (inlineRepr != null) {
 								interiorWriter.append(inlineRepr);
 							} else {
@@ -69,7 +70,7 @@ public class RALInlineStatement extends RALStatementUR {
 							throw new RuntimeException("RALInlineStatement intern takes Strings and RALExprs.");
 						}
 					}
-					writer.append(interiorWriter.toString());
+					writer.writeCode(interiorWriter.toString());
 				}
 			}
 		};

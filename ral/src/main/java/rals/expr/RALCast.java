@@ -8,6 +8,7 @@ package rals.expr;
 
 import java.io.StringWriter;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
@@ -124,7 +125,7 @@ public final class RALCast implements RALExprUR {
 		}
 
 		@Override
-		public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+		public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
 			// Invert ourselves so we apply to the target.
 			// This is important because it ensures we overwrite inputExactType for storage.
 			expr.outCompile(writer, new RALExpr[] {new Resolved(out[0], target, doImplicitCheck)}, context);
@@ -140,15 +141,15 @@ public final class RALCast implements RALExprUR {
 		}
 
 		@Override
-		public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+		public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
 			// Overwriting inputExactType here is what turns, i.e. null|integer (major type unknown) into integer (Int).
 			// This is important for set instruction selection.
-			expr.inCompile(writer, input, target, context);
+			expr.inCompile(writer, input, doImplicitCheck ? inputExactType : target, context);
 		}
 
 		@Override
-		public String getInlineCAOS(CompileContext context) {
-			return expr.getInlineCAOS(context);
+		public String getInlineCAOS(CompileContext context, boolean write) {
+			return expr.getInlineCAOS(context, write);
 		}
 
 		@Override

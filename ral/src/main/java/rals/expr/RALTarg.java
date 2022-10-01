@@ -8,23 +8,26 @@ package rals.expr;
 
 import rals.code.CodeWriter;
 import rals.code.CompileContext;
-import rals.code.IEHHandle;
+import rals.code.ScopeContext;
 import rals.types.RALType;
 
 /**
- * Used by the inverted statement expression stuff.
+ * INTENSIFYING SIGHING
  */
-public class RALEHVar implements RALExpr {
-	public final IEHHandle handle;
+public class RALTarg implements RALExpr, RALExprUR {
 	public final RALType type;
-	public RALEHVar(IEHHandle h, RALType ot) {
-		handle = h;
+	public RALTarg(RALType ot) {
 		type = ot;
 	}
 
 	@Override
+	public RALExpr resolve(ScopeContext scope) {
+		return this;
+	}
+
+	@Override
 	public String toString() {
-		return "EH[" + handle + "!" + type + "]";
+		return "targ";
 	}
 
 	@Override
@@ -39,30 +42,18 @@ public class RALEHVar implements RALExpr {
 		};
 	}
 
-	public RALExpr getUnderlying(CompileContext cc) {
-		RALExpr ex = cc.heldExprHandles.get(handle);
-		if (ex == null)
-			throw new RuntimeException("Missing: " + this);
-		return ex;
-	}
-
 	@Override
 	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
-		getUnderlying(context).inCompile(writer, input, inputExactType, context);
+		writer.writeCode("targ " + input);
 	}
 
 	@Override
 	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-		getUnderlying(context).outCompile(writer, out, context);
-	}
-
-	@Override
-	public String getInlineCAOS(CompileContext context, boolean write) {
-		return getUnderlying(context).getInlineCAOS(context, write);
+		out[0].inCompile(writer, "targ", type, context);
 	}
 
 	@Override
 	public SpecialInline getSpecialInline(CompileContext context) {
-		return getUnderlying(context).getSpecialInline(context);
+		return SpecialInline.Targ;
 	}
 }

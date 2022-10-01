@@ -54,19 +54,11 @@ public class Macro implements RALCallable {
 	/**
 	 * Allocates VAs for and copies arguments into the compile context.
 	 */
-	public static void copyArgs(StringBuilder writer, CompileContext sc, RALVAVar[] toCopy, RALExpr[] a, String name, MacroArg[] args) {
+	public static void copyArgs(CodeWriter writer, CompileContext sc, RALVAVar[] toCopy, RALExpr[] a, String name, MacroArg[] args) {
 		for (int i = 0; i < toCopy.length; i++) {
 			if (toCopy[i] != null) {
 				sc.allocVA(toCopy[i].handle);
-				writer.append(" * ");
-				writer.append(toCopy[i].getInlineCAOS(sc));
-				writer.append(": " + name + " arg ");
-				writer.append(i);
-				writer.append(": ");
-				writer.append(args[i].type);
-				writer.append(" ");
-				writer.append(args[i].name);
-				writer.append("\n");
+				writer.writeComment(toCopy[i].getInlineCAOS(sc, false) + ": " + name + " arg " + i + ": " + args[i].type + " " + args[i].name);
 				a[i].outCompile(writer, new RALExpr[] {toCopy[i]}, sc);
 			}
 		}
@@ -84,7 +76,7 @@ public class Macro implements RALCallable {
 		final RALExpr innards = code.resolve(macroContext);
 		return new RALExpr() {
 			@Override
-			public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+			public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
 				copyArgs(writer, context, toCopy, a, name, args);
 				innards.inCompile(writer, input, inputExactType, context);
 			}
@@ -93,7 +85,7 @@ public class Macro implements RALCallable {
 				return innards.inType();
 			}
 			@Override
-			public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+			public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
 				copyArgs(writer, context, toCopy, a, name, args);
 				innards.outCompile(writer, out, context);
 			}

@@ -6,6 +6,7 @@
  */
 package rals.expr;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.IVAHandle;
 import rals.code.ScopeContext;
@@ -41,33 +42,17 @@ public class RALVAVar implements RALExpr {
 	}
 
 	@Override
-	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
-		switch (inputExactType.majorType) {
-		case Agent:
-			writer.append("seta ");
-			break;
-		case String:
-			writer.append("sets ");
-			break;
-		case Value:
-			writer.append("setv ");
-			break;
-		default:
-			throw new RuntimeException("Unknown major type of " + input + " (" + inputExactType + ")");
-		}
-		writer.append(getInlineCAOS(context));
-		writer.append(" ");
-		writer.append(input);
-		writer.append("\n");
+	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
+		RALStringVar.writeSet(writer, getInlineCAOS(context, true), input, inputExactType);
 	}
 
 	@Override
-	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
-		out[0].inCompile(writer, getInlineCAOS(context), type, context);
+	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
+		out[0].inCompile(writer, getInlineCAOS(context, false), type, context);
 	}
 
 	@Override
-	public String getInlineCAOS(CompileContext context) {
+	public String getInlineCAOS(CompileContext context, boolean write) {
 		Integer i = context.heldVAHandles.get(handle);
 		if (i == null)
 			throw new RuntimeException("VA handle " + handle + " escaped containment");

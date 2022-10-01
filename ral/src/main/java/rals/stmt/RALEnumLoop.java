@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALCast;
@@ -53,7 +54,7 @@ public class RALEnumLoop extends RALStatementUR {
 		// finally make it
 		return new RALStatement(lineNumber) {
 			@Override
-			protected void compileInner(StringBuilder writer, CompileContext context) {
+			protected void compileInner(CodeWriter writer, CompileContext context) {
 				try (CompileContext cc = new CompileContext(context)) {
 					// just don't allow it
 					cc.clearBreak();
@@ -62,29 +63,25 @@ public class RALEnumLoop extends RALStatementUR {
 					if (isAdjustingLoopBodyForBreak) {
 						breakBool = cc.allocVA(cc.typeSystem.gBoolean).code;
 						// initialize break bool to 0
-						writer.append("setv ");
-						writer.append(breakBool);
-						writer.append(" 0\n");
+						writer.writeCode("setv " + breakBool + " 0");
 					}
 					loopStarter.compileInner(writer, cc);
+					// loopStarter is weird, do indent manually
+					writer.indent++;
 					if (isAdjustingLoopBodyForBreak) {
 						cc.breakLabel = endJumpLabel;
 						cc.breakBool = breakBool;
 						// if break bool is still 0, run body
-						writer.append("doif ");
-						writer.append(cc.breakBool);
-						writer.append(" == 0\n");
+						writer.writeCode("doif " + breakBool + " == 0");
 					}
 					loopBodyR.compileInner(writer, cc);
 					if (isAdjustingLoopBodyForBreak) {
 						// endif, then jump label NOP
-						writer.append("endi\ngoto ");
-						writer.append(endJumpLabel);
-						writer.append("\nsubr ");
-						writer.append(endJumpLabel);
-						writer.append("\n");
+						writer.writeCode("endi");
+						writer.writeCode("goto " + endJumpLabel);
+						writer.writeCode("subr " + endJumpLabel);
 					}
-					writer.append("next\n");
+					writer.writeCode(-1, "next");
 				}
 			}
 		};

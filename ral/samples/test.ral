@@ -167,6 +167,8 @@ script Creature:windowResized {
 	ownr->exampleTypeSpecific(0, 0) after 0;
 	ownr.someString = "Wowzers";
 	ownr.someRef.someString = "Indirection!";
+	// test this!
+	targ = ownr.someRef;
 	// test enum stuff
 	foreach (Creature in econ ownr) {
 		targ.someString = "econ";

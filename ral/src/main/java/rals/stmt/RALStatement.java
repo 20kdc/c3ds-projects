@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALExpr;
@@ -21,12 +22,8 @@ public abstract class RALStatement {
 		lineNumber = ln;
 	}
 
-	public final void compile(StringBuilder writer, CompileContext context) {
-		writer.append(" * @ ");
-		writer.append(lineNumber);
-		writer.append(" ");
-		writer.append(getClass().getName());
-		writer.append("\n");
+	public final void compile(CodeWriter writer, CompileContext context) {
+		writer.queuedCommentForNextLine = "@ " + lineNumber + " " + this;
 		try {
 			compileInner(writer, context);
 		} catch (Exception ex) {
@@ -37,5 +34,5 @@ public abstract class RALStatement {
 	/**
 	 * Compiles the statement.
 	 */
-	protected abstract void compileInner(StringBuilder writer, CompileContext context);
+	protected abstract void compileInner(CodeWriter writer, CompileContext context);
 }

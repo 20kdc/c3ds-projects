@@ -6,6 +6,7 @@
  */
 package rals.expr;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.IEHHandle;
 import rals.code.IVAHandle;
@@ -51,7 +52,7 @@ public class RALStmtExprInverted implements RALExprUR {
 		final RALStatement innards = code.resolve(scope);
 		return new RALExpr() {
 			@Override
-			public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+			public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
 				throw new RuntimeException("Can't put values into StmtExprInverted (statement macro)");
 			}
 
@@ -61,7 +62,7 @@ public class RALStmtExprInverted implements RALExprUR {
 			}
 
 			@Override
-			public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+			public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
 				// alright, now we're here, just need to wire this up
 				try (CompileContext cci = new CompileContext(context)) {
 					// These handles wire everything up nicely

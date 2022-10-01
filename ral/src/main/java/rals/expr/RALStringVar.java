@@ -6,6 +6,7 @@
  */
 package rals.expr;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
@@ -48,39 +49,39 @@ public class RALStringVar implements RALExpr, RALExprUR {
 	}
 
 	@Override
-	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
 		if (!isWritable)
 			throw new RuntimeException("Not writable");
 		writeSet(writer, code, input, inputExactType);
 	}
 
-	public static void writeSet(StringBuilder writer, String code, String input, RALType inputExactType) {
+	public static void writeSet(CodeWriter writer, String code, String input, RALType inputExactType) {
+		String set;
 		switch (inputExactType.majorType) {
 		case Agent:
-			writer.append("seta ");
+			set = "seta ";
 			break;
 		case String:
-			writer.append("sets ");
+			set = "sets ";
 			break;
 		case Value:
-			writer.append("setv ");
+			set = "setv ";
 			break;
 		default:
 			throw new RuntimeException("Unknown major type of " + input + " (" + inputExactType + ")");
 		}
-		writer.append(code);
-		writer.append(" ");
-		writer.append(input);
-		writer.append("\n");
+		writer.writeCode(set + code + " " + input);
 	}
 
 	@Override
-	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
 		out[0].inCompile(writer, code, type, context);
 	}
 
 	@Override
-	public String getInlineCAOS(CompileContext context) {
+	public String getInlineCAOS(CompileContext context, boolean write) {
+		if (write && !isWritable)
+			return null;
 		return code;
 	}
 }

@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALDiscard;
@@ -42,7 +43,7 @@ public class RALAssignStatement extends RALStatementUR {
 		}
 		return new RALStatement(lineNumber) {
 			@Override
-			protected void compileInner(StringBuilder writer, CompileContext cc) {
+			protected void compileInner(CodeWriter writer, CompileContext cc) {
 				if (targets == null) {
 					// Assign everything to discard
 					RALExpr[] discards = new RALExpr[sourceR.outTypes().length];

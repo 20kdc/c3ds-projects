@@ -50,7 +50,7 @@ public class Module {
 	public void compile(StringBuilder outText, TypeSystem ts) {
 		if (installScript != null) {
 			ScriptContext scr = new ScriptContext(ts, this, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
-			compile(outText, ts, scr, installScript);
+			compile(outText, ts, scr, installScript, 0);
 		}
 
 		for (Map.Entry<ScriptIdentifier, RALStatementUR> eventScript : eventScripts.entrySet()) {
@@ -86,20 +86,22 @@ public class Module {
 				oFrom = oOwnr;
 			}
 			ScriptContext scr = new ScriptContext(ts, this, oOwnr, oFrom, oP1, oP2);
-			compile(outText, ts, scr, v);
+			compile(outText, ts, scr, v, 1);
 			outText.append("endm\n");
 		}
 
 		if (removeScript != null) {
 			outText.append("rscr\n");
 			ScriptContext scr = new ScriptContext(ts, this, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
-			compile(outText, ts, scr, removeScript);
+			compile(outText, ts, scr, removeScript, 1);
 		}
 	}
 
-	private void compile(StringBuilder outText, TypeSystem ts, ScriptContext scr, RALStatementUR v) {
+	private void compile(StringBuilder outText, TypeSystem ts, ScriptContext scr, RALStatementUR v, int ii) {
 		ScopeContext scope = new ScopeContext(scr);
 		RALStatement res = v.resolve(scope);
-		res.compile(outText, new CompileContext(scr));
+		CodeWriter cw = new CodeWriter(outText);
+		cw.indent = ii;
+		res.compile(cw, new CompileContext(scr));
 	}
 }

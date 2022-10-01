@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import rals.expr.RALDiscard;
 import rals.expr.RALExpr;
 import rals.expr.RALStringVar;
+import rals.expr.RALTarg;
 import rals.expr.RALVAVar;
 import rals.expr.RALExpr.SpecialInline;
 import rals.expr.RALSIVar;
@@ -42,7 +43,7 @@ public class ScopeContext {
 		scopedVariables.put("_p1_", new RALStringVar("_p1_", parent.p1Type, true));
 		scopedVariables.put("_p2_", new RALStringVar("_p2_", parent.p2Type, true));
 		scopedVariables.put("null", new RALStringVar("null", parent.typeSystem.gNull, true));
-		scopedVariables.put("targ", new RALSIVar(SpecialInline.Targ, parent.typeSystem.gAgentNullable, true));
+		scopedVariables.put("targ", new RALTarg(parent.typeSystem.gAgentNullable));
 		scopedVariables.put("_", new RALDiscard(parent.typeSystem));
 	}
 

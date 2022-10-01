@@ -6,6 +6,7 @@
  */
 package rals.cond;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.expr.RALConstant;
@@ -65,7 +66,7 @@ public class RALCondLogOp implements RALExprUR {
 
 		return new RALCondition(scope.script.typeSystem) {
 			@Override
-			public String compileCond(StringBuilder writer, CompileContext sharedContext, boolean invert) {
+			public String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert) {
 
 				// NOTE:
 				// See codeInv's details, but in short, yes, inverting the innards is INTENTIONAL!!!
@@ -100,7 +101,7 @@ public class RALCondLogOp implements RALExprUR {
 					}
 				}
 			}
-			private String wrapVar(StringBuilder writer, CompileContext sharedContext, RALCondition rc, boolean invert) {
+			private String wrapVar(CodeWriter writer, CompileContext sharedContext, RALCondition rc, boolean invert) {
 				// complex condition into var
 				RALStringVar tmp = sharedContext.allocVA(bool);
 				rc.outCompile(writer, new RALExpr[] {tmp}, sharedContext);

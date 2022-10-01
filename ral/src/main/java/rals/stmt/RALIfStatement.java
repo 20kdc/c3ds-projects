@@ -6,6 +6,7 @@
  */
 package rals.stmt;
 
+import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.cond.RALCondition;
@@ -47,7 +48,7 @@ public class RALIfStatement extends RALStatementUR {
 				return execBranchR;
 			return new RALStatement(lineNumber) {
 				@Override
-				protected void compileInner(StringBuilder writer, CompileContext context) {
+				protected void compileInner(CodeWriter writer, CompileContext context) {
 					// nothing to do here!
 				}
 			};
@@ -57,22 +58,20 @@ public class RALIfStatement extends RALStatementUR {
 			final RALStatement elseBranchR = elseBranch != null ? elseBranch.resolve(new ScopeContext(subScope)) : null;
 			return new RALStatement(lineNumber) {
 				@Override
-				protected void compileInner(StringBuilder writer, CompileContext context) {
+				protected void compileInner(CodeWriter writer, CompileContext context) {
 					try (CompileContext outerCtx = new CompileContext(context)) {
 						String inl = conditionR.compileCond(writer, outerCtx, invert);
-						writer.append("doif ");
-						writer.append(inl);
-						writer.append("\n");
+						writer.writeCode("doif " + inl, 1);
 						try (CompileContext bsr = new CompileContext(outerCtx)) {
 							mainBranchR.compile(writer, bsr);
 						}
 						if (elseBranchR != null) {
-							writer.append("else\n");
+							writer.writeCode(-1, "else", 1);
 							try (CompileContext bsr = new CompileContext(outerCtx)) {
 								elseBranchR.compile(writer, bsr);
 							}
 						}
-						writer.append("endi\n");
+						writer.writeCode(-1, "endi");
 					}
 				}
 			};
