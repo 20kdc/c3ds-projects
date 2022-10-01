@@ -15,7 +15,20 @@ import java.util.HashMap;
 public final class AgentInterface {
 	public final HashMap<String, Integer> messages = new HashMap<>();
 	public final HashMap<Integer, String> messagesInv = new HashMap<>();
+	public final HashMap<String, Integer> scripts = new HashMap<>();
+	public final HashMap<Integer, String> scriptsInv = new HashMap<>();
+
+	public final HashMap<String, OVar> fields = new HashMap<>();
 
 	public AgentInterface() {
+	}
+
+	public static class OVar {
+		public final int slot;
+		public final RALType type;
+		public OVar(int s, RALType t) {
+			slot = s;
+			type = t;
+		}
 	}
 }

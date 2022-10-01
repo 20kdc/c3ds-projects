@@ -59,7 +59,7 @@ public class Module {
 			outText.append(" * ");
 			RALType.AgentClassifier type = ts.byClassifier(k.classifier);
 			outText.append(type.typeName);
-			String msgName = type.lookupMessageName(k.script);
+			String msgName = type.lookupMSName(k.script, true);
 			if (msgName != null) {
 				outText.append(":");
 				outText.append(msgName);

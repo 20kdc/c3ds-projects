@@ -97,12 +97,34 @@ public abstract class RALType {
 		return interfaces;
 	}
 
+	private static boolean messageHasSpecialHandling(int msg) {
+		if (msg == 0) // a1
+			return true;
+		if (msg == 1) // a2
+			return true;
+		if (msg == 2) // da
+			return true;
+		if (msg == 3) // hit
+			return true;
+		if (msg == 4) // pick
+			return true;
+		if (msg == 5) // drop
+			return true;
+		if (msg == 12) // eat
+			return true;
+		if (msg == 13) // hh
+			return true;
+		if (msg == 14) // shh
+			return true;
+		return false;
+	}
+
 	/**
-	 * Lookup a message ID by name.
+	 * Lookup a message or script ID by name.
 	 */
-	public final Integer lookupMessageID(String name) {
+	public final Integer lookupMSID(String name, boolean asScript) {
 		for (AgentInterface ai : interfaces) {
-			Integer a = ai.messages.get(name);
+			Integer a = (asScript ? ai.scripts : ai.messages).get(name);
 			if (a != null)
 				return a;
 		}
@@ -112,9 +134,9 @@ public abstract class RALType {
 	/**
 	 * Lookup a message ID by name.
 	 */
-	public final String lookupMessageName(int id) {
+	public final String lookupMSName(int id, boolean asScript) {
 		for (AgentInterface ai : interfaces) {
-			String a = ai.messagesInv.get(id);
+			String a = (asScript ? ai.scriptsInv : ai.messagesInv).get(id);
 			if (a != null)
 				return a;
 		}
@@ -299,6 +321,38 @@ public abstract class RALType {
 					if (!total.contains(ai))
 						total.add(ai);
 			return total.toArray(new AgentInterface[0]);
+		}
+
+		/**
+		 * Declares a message or a script.
+		 */
+		public final void declareMS(String name, int id, boolean asScript) {
+			boolean asMessage = !asScript;
+			if (!messageHasSpecialHandling(id)) {
+				asMessage = true;
+				asScript = true;
+			}
+			if (asMessage) {
+				if (lookupMSID(name, false) != null)
+					throw new RuntimeException("message " + name + ":" + name + " already declared");
+				if (lookupMSName(id, false) != null)
+					throw new RuntimeException("message " + name + " " + id + " already declared");
+			}
+			if (asScript) {
+				if (lookupMSID(name, true) != null)
+					throw new RuntimeException("script " + name + ":" + name + " already declared");
+				if (lookupMSName(id, true) != null)
+					throw new RuntimeException("script " + name + " " + id + " already declared");
+			}
+		
+			if (asMessage) {
+				inherent.messages.put(name, id);
+				inherent.messagesInv.put(id, name);
+			}
+			if (asScript) {
+				inherent.scripts.put(name, id);
+				inherent.scriptsInv.put(id, name);
+			}
 		}
 
 		@Override

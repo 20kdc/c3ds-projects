@@ -210,7 +210,7 @@ public class ParserExpr {
 				if (base instanceof RALAmbiguousID) {
 					String typeName = ((RALAmbiguousID) base).text;
 					RALType rt = ts.byName(typeName);
-					Integer msgId = rt.lookupMessageID(msgName);
+					Integer msgId = rt.lookupMSID(msgName, false);
 					if (msgId == null)
 						throw new RuntimeException("No such message " + typeName + ":" + msgName);
 					return new RALConstant.Int(ts, msgId);

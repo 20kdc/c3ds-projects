@@ -97,36 +97,58 @@ public class Parser {
 			if (rt instanceof RALType.Agent) {
 				lx.requireNextKw(":");
 				String msgName = lx.requireNextID();
-				AgentInterface tgt = ((RALType.Agent) rt).inherent;
 				int msgId = lx.requireNextInteger();
-				if (rt.lookupMessageID(msgName) != null)
-					throw new RuntimeException(name + ":" + msgName + " already declared");
-				if (rt.lookupMessageName(msgId) != null)
-					throw new RuntimeException(name + " " + msgId + " already declared");
-				tgt.messages.put(msgName, msgId);
-				tgt.messagesInv.put(msgId, msgName);
+				((RALType.Agent) rt).declareMS(msgName, msgId, false);
 				lx.requireNextKw(";");
 			} else {
 				throw new RuntimeException("No class/interface " + name);
 			}
 		} else if (tkn.isKeyword("script")) {
 			String name = lx.requireNextID();
-			RALType.AgentClassifier ac = ts.tryGetAsClassifier(name);
-			if (ac == null)
-				throw new RuntimeException("Scripts can only be defined on classes, not " + name);
-			ScriptIdentifier scriptId;
+			RALType typ = ts.byName(name);
+			if (!(typ instanceof RALType.Agent))
+				throw new RuntimeException("Scripts can only be defined on classes/interfaces, not " + name);
+			RALType.Agent ac = (RALType.Agent) typ; 
+			// Ok, so there are three forms here:
+			// script A:B {}
+			// script A 1 {}
+			// script A:B 1;
+			// Express which form is being used by 3 variables.
+			int scriptId;
+			String msgName = null;
+			RALStatementUR stmt = null;
+			// ...
 			if (!lx.requireNext().isKeyword(":")) {
+				// Not providing a name so not declaring a message ID.
 				lx.back();
-				scriptId = new ScriptIdentifier(ac.classifier, ParserExpr.parseConstInteger(ts, lx));
+				scriptId = ParserExpr.parseConstInteger(ts, lx);
+				stmt = ParserCode.parseStatement(ts, lx);
 			} else {
-				String msgName = lx.requireNextID();
-				Integer msgId = ac.lookupMessageID(msgName);
-				if (msgId == null)
-					throw new RuntimeException("No such message ID: " + name + ":" + msgName);
-				scriptId = new ScriptIdentifier(ac.classifier, msgId);
+				msgName = lx.requireNextID();
+				// If this form is followed by a { then we assume it to be a declaration.
+				// Otherwise it's a constant integer.
+				Token chk = lx.requireNext();
+				boolean isDeclaration = !chk.isKeyword("{");
+				lx.back();
+				if (isDeclaration) {
+					scriptId = ParserExpr.parseConstInteger(ts, lx);
+					lx.requireNextKw(";");
+				} else {
+					Integer msgId = ac.lookupMSID(msgName, true);
+					if (msgId == null)
+						throw new RuntimeException("No such message ID: " + name + ":" + msgName);
+					scriptId = msgId;
+					stmt = ParserCode.parseStatement(ts, lx);
+				}
 			}
-			RALStatementUR stmt = ParserCode.parseStatement(ts, lx);
-			m.eventScripts.put(scriptId, stmt);
+			if (stmt != null) {
+				if (!(ac instanceof RALType.AgentClassifier))
+					throw new RuntimeException("Scripts can only be implemented on classes.");
+				RALType.AgentClassifier acl = (RALType.AgentClassifier) ac; 
+				m.eventScripts.put(new ScriptIdentifier(acl.classifier, scriptId), stmt);
+			} else {
+				ac.declareMS(msgName, scriptId, true);
+			}
 		} else if (tkn.isKeyword("install")) {
 			m.installScript = ParserCode.parseStatement(ts, lx);
 		} else if (tkn.isKeyword("remove")) {
