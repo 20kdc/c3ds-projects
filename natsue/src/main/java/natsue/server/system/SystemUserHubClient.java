@@ -37,6 +37,8 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	public static final String CHATID_GLOBAL = "pettables (19551101000000) - 1+2";
 	public static final String NICK_GLOBALCHAT = "!GlobalChat";
 
+	public static final String MSG_MUTED = "<tint 255 0 0>You are muted in global chat.\n";
+
 	public final IHubPrivilegedClientAPI hub;
 	private final ILogProvider logParent;
 	public static final long UIN = UINUtils.SERVER_UIN;
@@ -141,7 +143,9 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 								hub.sendMessage(message.senderUIN, npm, MsgSendType.Temp);
 							} else if (str.equals("Accept")) {
 								if (chatID.equals(CHATID_GLOBAL)) {
-									addToGlobalChat(message.senderUIN);
+									INatsueUserData nud = hub.getUserDataByUIN(message.senderUIN);
+									if (nud != null)
+										addToGlobalChat(nud);
 								}
 							}
 						}
@@ -195,6 +199,10 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			INatsueUserData nud = hub.getUserDataByUIN(senderUIN);
 			if (nud == null)
 				return;
+			if (nud.isMutedGlobalChat()) {
+				sendChatMessage(senderUIN, chatID, MSG_MUTED);
+				return;
+			}
 			String senderNick = nud.getNickname();
 			if (!sendToGlobalChatExcept(senderUIN, senderNick, text)) {
 				sendChatMessage(senderUIN, chatID, "Error: not in global chat.\nAttempting to correct.\n");
@@ -207,10 +215,10 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 						hub.sendMessage(potential.getUIN(), pm, MsgSendType.Temp);
 					}
 				}
-				addToGlobalChat(senderUIN);
+				addToGlobalChat(nud);
 			}
 		} else {
-			BaseBotCommand.Context ctx = new BaseBotCommand.Context(hub, senderUIN, text);
+			BaseBotCommand.Context ctx = new BaseBotCommand.Context(hub, senderUIN, text, this);
 			handleCommand(ctx);
 			sendChatMessage(senderUIN, chatID, ctx.response.toString());
 		}
@@ -220,11 +228,14 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		hub.sendMessage(targetUIN, StandardMessages.chatRequest(UIN, NICK_GLOBALCHAT, CHATID_GLOBAL), MsgSendType.Temp);
 	}
 	
-	private void addToGlobalChat(long senderUIN) {
+	private void addToGlobalChat(INatsueUserData nud) {
+		long senderUIN = nud.getUIN();
 		synchronized (peopleInGroupChatLock) {
 			peopleInGroupChat.add(senderUIN);
 		}
 		String leader = "<tint 255 255 255> - GLOBAL CHAT -\n";
+		if (nud.isMutedGlobalChat())
+			leader += MSG_MUTED;
 		PackedMessage npm = StandardMessages.chatMessage(UIN, "", CHATID_GLOBAL, leader);
 		hub.sendMessage(senderUIN, npm, MsgSendType.Temp);
 		sendGlobalChatStatusUpdate(senderUIN, "joined");

@@ -7,6 +7,7 @@
 
 package natsue.server;
 
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
@@ -102,6 +103,7 @@ public class Main {
 
 			while (true) {
 				Socket skt = sv.accept();
+
 				new SocketThread(skt, (st) -> {
 					return new LoginSessionState(config, st, serverHub);
 				}, ilp, config).start();

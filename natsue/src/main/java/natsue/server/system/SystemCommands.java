@@ -21,6 +21,11 @@ import natsue.server.userdata.INatsueUserData;
  */
 public class SystemCommands {
 	public static final BaseBotCommand[] commands = new BaseBotCommand[] {
+		new BaseBotCommand("version", "", Cat.Public) {
+			public void run(Context args) {
+				args.response.append("01/10/22\n");
+			}
+		},
 		new WhoisBotCommand(),
 		new BaseBotCommand("contact", "<users...>", Cat.Public) {
 			public void run(Context args) {
@@ -115,11 +120,14 @@ public class SystemCommands {
 				args.response.append("Others may say differently.\n");
 			}
 		},
+		new RemoteFlagControlBotCommand(),
 		new BaseBotCommand("ahelp", "", Cat.Admin) {
 			public void run(Context args) {
 				args.response.append("admin commands:\n");
 				args.response.append("kick Someone\n");
 				args.response.append("resetpw Someone\n");
+				args.response.append("flags Someone [+FLAG/-FLAG...] (adds/removes flags)\n");
+				args.response.append("flags (reference)\n");
 				args.response.append("You can send a global system message by mail, subject \"SYSTEM MSG\".\n");
 			}
 		},

@@ -37,6 +37,11 @@ public interface INatsueUserFlags {
 	public static final int FLAG_RECEIVE_GEATS = 16;
 
 	/**
+	 * Account is banned from global chat.
+	 */
+	public static final int FLAG_MUTED_GLOBAL_CHAT = 32;
+
+	/**
 	 * Gets the flags of this user.
 	 * These can be mutated by modUserFlags on regular users.
 	 * See INatsueUserFlags for flag values.
@@ -81,19 +86,29 @@ public interface INatsueUserFlags {
 	}
 
 	/**
+	 * Is this user muted from global chat?
+	 */
+	default boolean isMutedGlobalChat() {
+		return (getFlags() & FLAG_MUTED_GLOBAL_CHAT) != 0;
+	}
+
+	/**
 	 * This enum is used for dynamic flag monkey business 
 	 */
 	public enum Flag {
-		admin(FLAG_ADMINISTRATOR),
-		frozen(FLAG_FROZEN),
-		recvnb(FLAG_RECEIVE_NB_NORNS),
-		noruso(FLAG_NO_RANDOM),
-		recvgt(FLAG_RECEIVE_GEATS);
+		admin(FLAG_ADMINISTRATOR, "For bonus RP points, call yourself a Warpshaper... ;)"),
+		frozen(FLAG_FROZEN, "Prevents login and message receipt"),
+		recvnb(FLAG_RECEIVE_NB_NORNS, "Allows receipt of NB norns"),
+		norandom(FLAG_NO_RANDOM, "Disables random"),
+		recvgeat(FLAG_RECEIVE_GEATS, "Allows receipt of geats"),
+		muteglob(FLAG_MUTED_GLOBAL_CHAT, "Mutes the user in global chat");
 
 		public final int value;
+		public final String detail;
 
-		Flag(int v) {
+		Flag(int v, String d) {
 			value = v;
+			detail = d;
 		}
 
 		/**

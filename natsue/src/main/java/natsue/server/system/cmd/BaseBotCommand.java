@@ -9,6 +9,8 @@ package natsue.server.system.cmd;
 
 import natsue.data.babel.UINUtils;
 import natsue.data.hli.ChatColours;
+import natsue.log.ILogProvider;
+import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
 import natsue.server.userdata.INatsueUserData;
 
@@ -56,7 +58,13 @@ public abstract class BaseBotCommand {
 		 */
 		public int index = 0;
 
-		public Context(IHubPrivilegedClientAPI h, long s, String tex) {
+		/**
+		 * Log source for commands that log stuff.
+		 */
+		public final ILogSource log;
+
+		public Context(IHubPrivilegedClientAPI h, long s, String tex, ILogSource lSrc) {
+			log = lSrc;
 			response.append(ChatColours.CHAT);
 			hub = h;
 			senderUIN = s;
