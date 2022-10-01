@@ -168,6 +168,14 @@ public class Parser {
 				RALExprUR rs = ParserExpr.parseExpr(ts, lx, false);
 				m.addMacro(name, args.length, new Macro(name, args, rs));
 			}
+		} else if (tkn.isKeyword("overrideOwnr")) {
+			int scrId = ParserExpr.parseConstInteger(ts, lx);
+			ts.overrideOwnr.put(scrId, ParserType.parseType(ts, lx));
+			lx.requireNextKw(";");
+		} else if (tkn.isKeyword("messageHook")) {
+			int scrId = ParserExpr.parseConstInteger(ts, lx);
+			ts.messageHooks.add(scrId);
+			lx.requireNextKw(";");
 		} else if (tkn.isKeyword(";")) {
 			// :D
 		} else if (tkn instanceof Token.ID) {

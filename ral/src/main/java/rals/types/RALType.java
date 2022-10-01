@@ -97,28 +97,6 @@ public abstract class RALType {
 		return interfaces;
 	}
 
-	private static boolean messageHasSpecialHandling(int msg) {
-		if (msg == 0) // a1
-			return true;
-		if (msg == 1) // a2
-			return true;
-		if (msg == 2) // da
-			return true;
-		if (msg == 3) // hit
-			return true;
-		if (msg == 4) // pick
-			return true;
-		if (msg == 5) // drop
-			return true;
-		if (msg == 12) // eat
-			return true;
-		if (msg == 13) // hh
-			return true;
-		if (msg == 14) // shh
-			return true;
-		return false;
-	}
-
 	/**
 	 * Lookup a message or script ID by name.
 	 */
@@ -297,9 +275,15 @@ public abstract class RALType {
 		 */
 		private HashSet<Agent> parents = new HashSet<>();
 
-		public Agent(String tn) {
+		/**
+		 * Used for declaration stuff
+		 */
+		private final TypeSystem typeSystem;
+
+		public Agent(TypeSystem ts, String tn) {
 			super(Major.Agent);
 			typeName = tn;
+			typeSystem = ts;
 			regenInterfaces();
 		}
 
@@ -328,7 +312,7 @@ public abstract class RALType {
 		 */
 		public final void declareMS(String name, int id, boolean asScript) {
 			boolean asMessage = !asScript;
-			if (!messageHasSpecialHandling(id)) {
+			if (!typeSystem.messageHooks.contains(id)) {
 				asMessage = true;
 				asScript = true;
 			}
@@ -378,8 +362,8 @@ public abstract class RALType {
 		 */
 		public final AgentClassifier classifierParentAsAgent;
 
-		public AgentClassifier(Classifier c, AgentClassifier p) {
-			super(c.toString());
+		public AgentClassifier(TypeSystem ts, Classifier c, AgentClassifier p) {
+			super(ts, c.toString());
 			classifier = c;
 			classifierParentAsAgent = p;
 			if (p != null)

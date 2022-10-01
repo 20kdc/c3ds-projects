@@ -29,7 +29,7 @@ public class TypeSystem {
 	public final Opaque gFloat = new Opaque(RALType.Major.Value, "float");
 	public final Opaque gNull = new Opaque(RALType.Major.Agent, "null");
 	public final Opaque gVoid = new Opaque(RALType.Major.Unknown, "void");
-	public final RALType.AgentClassifier gAgent = new RALType.AgentClassifier(new Classifier(0, 0, 0), null);
+	public final RALType.AgentClassifier gAgent = new RALType.AgentClassifier(this, new Classifier(0, 0, 0), null);
 	public final RALType gAgentNullable;
 
 	/**
@@ -55,6 +55,16 @@ public class TypeSystem {
 	 * Named constants!
 	 */
 	public final HashMap<String, RALConstant> namedConstants = new HashMap<>();
+
+	/**
+	 * If these message numbers have special behaviour, add here.
+	 */
+	public final HashSet<Integer> messageHooks = new HashSet<Integer>();
+
+	/**
+	 * These script numbers are called on the wrong OWNR.
+	 */
+	public final HashMap<Integer, RALType> overrideOwnr = new HashMap<Integer, RALType>();
 
 	public TypeSystem() {
 		namedTypes.put("any", gAny);
@@ -83,7 +93,7 @@ public class TypeSystem {
 		RALType.AgentClassifier agParent = null;
 		if (clParent != null)
 			agParent = byClassifier(clParent);
-		rt = new RALType.AgentClassifier(cl, agParent);
+		rt = new RALType.AgentClassifier(this, cl, agParent);
 		classifiers.put(cl, rt);
 		return rt;
 	}
@@ -183,7 +193,7 @@ public class TypeSystem {
 		// nevermind then
 		checkConflictType(name);
 		checkConflictInterface(name);
-		RALType.Agent ag = new RALType.Agent(name);
+		RALType.Agent ag = new RALType.Agent(this, name);
 		namedTypes.put(name, ag);
 		namedInterfaces.put(name, ag.inherent);
 		return ag;

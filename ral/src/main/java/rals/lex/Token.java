@@ -23,6 +23,10 @@ public class Token {
 		keywords.add("typedef");
 		keywords.add("message");
 		keywords.add("field");
+		keywords.add("assertConst");
+		// evil decls
+		keywords.add("overrideOwnr");
+		keywords.add("messageHook");
 		// code declarations
 		keywords.add("macro");
 		keywords.add("inline");
@@ -37,6 +41,7 @@ public class Token {
 		keywords.add("break");
 		keywords.add("alias");
 		keywords.add("return");
+		keywords.add("assertType");
 	}
 
 	public final SrcPos lineNumber;
