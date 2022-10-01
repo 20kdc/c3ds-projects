@@ -26,7 +26,7 @@ public class RALInlineStatement extends RALStatementUR {
 	}
 
 	@Override
-	public RALStatement resolve(ScopeContext csc) {
+	public RALStatement resolveInner(ScopeContext csc) {
 		final Object[] parts2 = new Object[parts.length];
 		for (int i = 0; i < parts2.length; i++) {
 			Object o = parts[i];

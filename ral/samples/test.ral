@@ -160,9 +160,11 @@ script Creature 5 {
 
 // ...or by message name.
 
+message Creature:exampleTypeSpecific 8000;
+
 script Creature:windowResized {
 	// :)
-	ownr->windowResized(0, 0) after 0;
+	ownr->exampleTypeSpecific(0, 0) after 0;
 }
 
 // The remove script is handled similarly to the install script.

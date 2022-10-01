@@ -44,5 +44,16 @@ public abstract class RALStatementUR {
 	/**
 	 * Resolves the statement.
 	 */
-	public abstract RALStatement resolve(ScopeContext scope);
+	public final RALStatement resolve(ScopeContext scope) {
+		try {
+			return resolveInner(scope);
+		} catch (Exception ex) {
+			throw new RuntimeException("At " + lineNumber, ex);
+		}
+	}
+
+	/**
+	 * Resolves the statement.
+	 */
+	protected abstract RALStatement resolveInner(ScopeContext scope);
 }

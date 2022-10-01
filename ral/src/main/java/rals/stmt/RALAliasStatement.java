@@ -25,7 +25,7 @@ public class RALAliasStatement extends RALStatementUR {
 	}
 
 	@Override
-	public RALStatement resolve(ScopeContext scope) {
+	public RALStatement resolveInner(ScopeContext scope) {
 		final RALExpr exp = target.resolve(scope);
 		scope.scopedVariables.put(name, exp);
 		return new RALStatement(lineNumber) {

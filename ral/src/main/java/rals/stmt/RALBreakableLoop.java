@@ -21,7 +21,7 @@ public class RALBreakableLoop extends RALStatementUR {
 	}
 
 	@Override
-	public RALStatement resolve(ScopeContext scope) {
+	public RALStatement resolveInner(ScopeContext scope) {
 		final RALStatement rs = content.resolve(new ScopeContext(scope));
 		return new RALStatement(lineNumber) {
 			@Override
@@ -36,7 +36,7 @@ public class RALBreakableLoop extends RALStatementUR {
 					writer.append("subr ");
 					writer.append(labelTop);
 					writer.append("\n");
-					rs.compileInner(writer, ccs);
+					rs.compile(writer, ccs);
 					writer.append("goto ");
 					writer.append(labelTop);
 					writer.append("\n");

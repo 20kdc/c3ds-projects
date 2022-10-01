@@ -31,7 +31,7 @@ public class RALLetStatement extends RALStatementUR {
 	}
 
 	@Override
-	public RALStatement resolve(ScopeContext scope) {
+	public RALStatement resolveInner(ScopeContext scope) {
 		RALExpr initRes = null;
 		if (init != null) {
 			initRes = init.resolve(scope);

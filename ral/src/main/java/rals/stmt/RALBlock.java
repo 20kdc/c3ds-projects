@@ -24,7 +24,7 @@ public class RALBlock extends RALStatementUR {
 	}
 
 	@Override
-	public RALStatement resolve(ScopeContext scope) {
+	public RALStatement resolveInner(ScopeContext scope) {
 		if (isScopeBreaking)
 			scope = new ScopeContext(scope);
 

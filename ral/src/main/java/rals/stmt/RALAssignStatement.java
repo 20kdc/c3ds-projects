@@ -28,7 +28,7 @@ public class RALAssignStatement extends RALStatementUR {
 	}
 
 	@Override
-	public RALStatement resolve(ScopeContext scope) {
+	public RALStatement resolveInner(ScopeContext scope) {
 		final RALExpr[] targetsR = targets == null ? null : resolveExprs(targets, scope);
 		final RALType[] targetsT = targets == null ? null : inTypesOf(targetsR);
 		final RALExpr sourceR = source.resolve(scope);

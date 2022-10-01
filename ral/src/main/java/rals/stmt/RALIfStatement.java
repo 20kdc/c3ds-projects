@@ -31,7 +31,7 @@ public class RALIfStatement extends RALStatementUR {
 	}
 
 	@Override
-	public RALStatement resolve(ScopeContext scope) {
+	public RALStatement resolveInner(ScopeContext scope) {
 		scope = new ScopeContext(scope);
 		// scope juggling
 		final RALConstant conditionConstant = condition.resolveConst(scope.script.typeSystem);
