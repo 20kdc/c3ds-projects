@@ -21,6 +21,7 @@ import rals.stmt.RALAssignStatement;
 import rals.stmt.RALBlock;
 import rals.stmt.RALBreakFromLoop;
 import rals.stmt.RALBreakableLoop;
+import rals.stmt.RALEnumLoop;
 import rals.stmt.RALIfStatement;
 import rals.stmt.RALInlineStatement;
 import rals.stmt.RALLetStatement;
@@ -107,6 +108,24 @@ public class ParserCode {
 		} else if (tkn.isKeyword("break")) {
 			lx.requireNextKw(";");
 			return new RALBreakFromLoop(tkn.lineNumber);
+		} else if (tkn.isKeyword("foreach")) {
+			lx.requireNextKw("(");
+			RALType iterOver = ParserType.parseType(ts, lx);
+			lx.requireNextKw("in");
+			String subType = lx.requireNextID();
+			RALExprUR econAgent = null;
+			if (subType.equals("econ")) {
+				econAgent = ParserExpr.parseExpr(ts, lx, true);
+			} else if (subType.equals("enum")) {
+			} else if (subType.equals("epas")) {
+			} else if (subType.equals("esee")) {
+			} else if (subType.equals("etch")) {
+			} else {
+				throw new RuntimeException("Unrecognized subtype");
+			}
+			lx.requireNextKw(")");
+			RALStatementUR body = ParserCode.parseStatement(ts, lx);
+			return new RALEnumLoop(tkn.lineNumber, iterOver, subType, econAgent, body);
 		} else {
 			lx.back();
 			RALExprUR target = ParserExpr.parseExpr(ts, lx, false);

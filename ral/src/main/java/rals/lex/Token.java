@@ -43,6 +43,8 @@ public class Token {
 		keywords.add("return");
 		keywords.add("assertType");
 		keywords.add("after");
+		keywords.add("foreach");
+		keywords.add("in");
 	}
 
 	public final SrcPos lineNumber;

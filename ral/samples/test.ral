@@ -167,6 +167,28 @@ script Creature:windowResized {
 	ownr->exampleTypeSpecific(0, 0) after 0;
 	ownr.someString = "Wowzers";
 	ownr.someRef.someString = "Indirection!";
+	// test enum stuff
+	foreach (Creature in econ ownr) {
+		targ.someString = "econ";
+	}
+	foreach (Creature in enum) {
+		targ.someString = "enum";
+	}
+	foreach (Creature in epas) {
+		targ.someString = "epas";
+	}
+	foreach (Creature in esee) {
+		targ.someString = "esee";
+	}
+	foreach (Creature in etch) {
+		targ.someString = "etch";
+	}
+	// test break
+	foreach (Creature in econ ownr) {
+		if targ.someString == "break" {
+			break;
+		}
+	}
 }
 
 // The remove script is handled similarly to the install script.
