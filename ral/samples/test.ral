@@ -1,7 +1,9 @@
-// c3ds-projects - Assorted compatibility fixes & useful tidbits
-// Written starting in 2022 by contributors (see CREDITS.txt)
-// To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
-// You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
 
 // Rational (as opposed to CAOS) Agent Language
 // Sample/Compiler Test Sheet
@@ -9,7 +11,7 @@
 // Consts can be defined as so:
 creatureGenus = 4;
 
-// Some expressions can be calculated as consts!
+/* Some expressions can be calculated as consts! */
 aTrue = !(1 || 0);
 
 // Files can be included.

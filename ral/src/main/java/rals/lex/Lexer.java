@@ -86,7 +86,6 @@ public class Lexer {
 							b = getNextByte();
 							if (b == '/') {
 								// End of block comment!
-								lastComment = sb.toString();
 								break;
 							} else {
 								// just in case it was -1, let next loop grab it
@@ -97,6 +96,9 @@ public class Lexer {
 						if ((b != 13))
 							sb.append((char) b);
 					}
+					lastComment = sb.toString();
+					didAnything = true;
+					continue;
 				} else if (b == '/') {
 					// Line comment.
 					StringBuilder sb = new StringBuilder();
