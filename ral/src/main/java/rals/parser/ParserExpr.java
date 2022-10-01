@@ -9,6 +9,7 @@ package rals.parser;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import rals.cond.RALCondInvert;
 import rals.cond.RALCondLogOp;
 import rals.cond.RALCondSimple;
 import rals.expr.RALAmbiguousID;
@@ -38,7 +39,8 @@ public class ParserExpr {
 		{"&&"},
 		{"==", "!=", "<=", ">=", "<", ">"},
 		{"+", "-"},
-		{"/", "*"}
+		{"/", "*"},
+		{"|", "&", "^"}
 	};
 	public static final HashSet<String> allOps = new HashSet<>();
 	static {
@@ -49,10 +51,10 @@ public class ParserExpr {
 
 	public static RALConstant parseConst(TypeSystem ts, Lexer lx) {
 		RALExprUR ex = parseExpr(ts, lx, true);
-		RALExpr ex2 = ex.resolve(null);
-		if (!(ex2 instanceof RALConstant))
+		RALConstant ex2 = ex.resolveConst(ts);
+		if (ex2 == null)
 			throw new RuntimeException("Unable to resolve " + ex + " to constant expression.");
-		return (RALConstant) ex2;
+		return ex2;
 	}
 	public static int parseConstInteger(TypeSystem ts, Lexer lx) {
 		RALConstant re = parseConst(ts, lx);
@@ -129,21 +131,21 @@ public class ParserExpr {
 		if (string.equals(",")) {
 			return RALExprGroup.of(l, r);
 		} else if (string.equals("==")) {
-			return new RALCondSimple(l, "eq", r);
+			return new RALCondSimple(l, RALCondSimple.Op.Equal, r);
 		} else if (string.equals("!=")) {
-			return new RALCondSimple(l, "ne", r);
+			return new RALCondSimple(l, RALCondSimple.Op.NotEqual, r);
 		} else if (string.equals(">")) {
-			return new RALCondSimple(l, "gt", r);
+			return new RALCondSimple(l, RALCondSimple.Op.GreaterThan, r);
 		} else if (string.equals(">=")) {
-			return new RALCondSimple(l, "ge", r);
+			return new RALCondSimple(l, RALCondSimple.Op.GreaterEqual, r);
 		} else if (string.equals("<")) {
-			return new RALCondSimple(l, "lt", r);
+			return new RALCondSimple(l, RALCondSimple.Op.LessThan, r);
 		} else if (string.equals("<=")) {
-			return new RALCondSimple(l, "le", r);
+			return new RALCondSimple(l, RALCondSimple.Op.LessEqual, r);
 		} else if (string.equals("&&")) {
-			return new RALCondLogOp(l, "and", r);
+			return new RALCondLogOp(l, RALCondLogOp.Op.And, r);
 		} else if (string.equals("||")) {
-			return new RALCondLogOp(l, "or", r);
+			return new RALCondLogOp(l, RALCondLogOp.Op.Or, r);
 		}
 		throw new RuntimeException("No handler for binop " + string);
 	}
@@ -187,6 +189,12 @@ public class ParserExpr {
 			RALExprUR interior = parseExpr(ts, lx, false);
 			lx.requireNextKw(")");
 			return interior;
+		} else if (tkn.isKeyword("!")) {
+			// logical NOT
+			RALExprUR interior = parseExprAtomOrNull(ts, lx);
+			if (interior == null)
+				throw new RuntimeException("Logical NOT with no expression at " + tkn.lineNumber);
+			return new RALCondInvert(interior);
 		} else {
 			lx.back();
 			return null;

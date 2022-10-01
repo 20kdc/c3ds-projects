@@ -19,10 +19,10 @@ import rals.types.TypeSystem;
  * Simple CAOS condition clause.
  */
 public class RALCondSimple implements RALExprUR {
-	public final String centre;
+	public final Op centre;
 	public final RALExprUR left, right;
 
-	public RALCondSimple(RALExprUR l, String c, RALExprUR r) {
+	public RALCondSimple(RALExprUR l, Op c, RALExprUR r) {
 		centre = c;
 		left = l;
 		right = r;
@@ -36,13 +36,13 @@ public class RALCondSimple implements RALExprUR {
 	}
 	
 	public static final class Resolved extends RALCondition.Clause {
-		private final String centre;
+		private final Op centre;
 		private final RALExpr rR;
 		private final RALExpr lR;
 		private final RALType rT;
 		private final RALType lT;
 
-		public Resolved(TypeSystem ts, String c, RALExpr rR, RALExpr lR, RALType rT, RALType lT) {
+		public Resolved(TypeSystem ts, Op c, RALExpr rR, RALExpr lR, RALType rT, RALType lT) {
 			super(ts);
 			centre = c;
 			this.rR = rR;
@@ -51,7 +51,7 @@ public class RALCondSimple implements RALExprUR {
 			this.lT = lT;
 		}
 
-		public static Resolved of(TypeSystem ts, String centre, RALExpr lR, RALExpr rR) {
+		public static Resolved of(TypeSystem ts, Op centre, RALExpr lR, RALExpr rR) {
 			RALType lT = lR.assertOutTypeSingle();
 			RALType rT = rR.assertOutTypeSingle();
 			if (lT.majorType != rT.majorType)
@@ -61,7 +61,7 @@ public class RALCondSimple implements RALExprUR {
 		}
 
 		@Override
-		public String compileCond(StringBuilder writer, CompileContext sharedContext) {
+		public String compileCond(StringBuilder writer, CompileContext sharedContext, boolean invert) {
 			String lInline = lR.getInlineCAOS(sharedContext);
 			String rInline = rR.getInlineCAOS(sharedContext);
 			if (lInline == null) {
@@ -74,7 +74,21 @@ public class RALCondSimple implements RALExprUR {
 				rR.outCompile(writer, new RALExpr[] {rV}, sharedContext);
 				rInline = rV.code;
 			}
-			return lInline + " " + centre + " " + rInline;
+			return lInline + " " + (invert ? centre.codeInv : centre.code) + " " + rInline;
+		}
+	}
+	public static enum Op {
+		LessThan("lt", "ge"),
+		GreaterThan("gt", "le"),
+		LessEqual("le", "gt"),
+		GreaterEqual("ge", "lt"),
+		Equal("eq", "ne"),
+		NotEqual("ne", "eq");
+		// codeInv is the inverse.
+		public final String code, codeInv;
+		Op(String c, String ci) {
+			code = c;
+			codeInv = ci;
 		}
 	}
 }

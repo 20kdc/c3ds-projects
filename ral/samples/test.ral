@@ -9,6 +9,9 @@
 # Consts can be defined as so:
 creatureGenus = 4;
 
+# Some expressions can be calculated as consts!
+aTrue = !(1 || 0);
+
 # Files can be included.
 # Where constants are expected, defined constants are usable.
 # In practice, you are expected to use include like C++ headers.
@@ -139,7 +142,8 @@ install {
 # Scripts can be defined by class name and message ID...
 
 script Creature 5 {
-	# :(
+	# Test complex constant expressions
+	inline "outv " aTrue "\n";
 }
 
 # ...or by message name.

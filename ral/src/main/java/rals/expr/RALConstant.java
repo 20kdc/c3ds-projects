@@ -25,6 +25,11 @@ public class RALConstant implements RALExpr, RALExprUR {
 	}
 
 	@Override
+	public RALConstant resolveConst(TypeSystem ts) {
+		return this;
+	}
+
+	@Override
 	public String getInlineCAOS(CompileContext context) {
 		return toString();
 	}
@@ -92,10 +97,20 @@ public class RALConstant implements RALExpr, RALExprUR {
 			super(ts.gInteger);
 			value = v;
 		}
+		public Int(RALType t, int v) {
+			super(t);
+			value = v;
+		}
 
 		@Override
 		public String toString() {
 			return Integer.toString(value);
+		}
+	}
+
+	public static class Bool extends RALConstant.Int {
+		public Bool(TypeSystem ts, boolean v) {
+			super(ts.gBoolean, v ? 1 : 0);
 		}
 	}
 

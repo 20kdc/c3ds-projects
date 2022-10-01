@@ -31,15 +31,22 @@ public class RALAmbiguousID implements RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext context) {
-		if (context != null) {
-			RALExpr re = context.scopedVariables.get(text);
-			if (re != null)
-				return re;
-		}
+	public RALConstant resolveConst(TypeSystem ts) {
 		RALConstant rc = typeSystem.namedConstants.get(text);
 		if (rc != null)
 			return rc;
+		return null;
+	}
+
+	@Override
+	public RALExpr resolve(ScopeContext context) {
+		// Constants go first for consistency with the const resolver.
+		RALConstant rc = typeSystem.namedConstants.get(text);
+		if (rc != null)
+			return rc;
+		RALExpr re = context.scopedVariables.get(text);
+		if (re != null)
+			return re;
 		RALType.AgentClassifier maybeClassifier = typeSystem.tryGetAsClassifier(text);
 		if (maybeClassifier != null) {
 			Classifier cl = maybeClassifier.classifier;

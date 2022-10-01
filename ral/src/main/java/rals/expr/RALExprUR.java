@@ -7,11 +7,19 @@
 package rals.expr;
 
 import rals.code.ScopeContext;
+import rals.types.TypeSystem;
 
 /**
  * Unresolved expression. Created to ensure expressions get resolved.
  */
 public interface RALExprUR {
+	/**
+	 * Attempts to resolve as a const, or returns null otherwise.
+	 */
+	default RALConstant resolveConst(TypeSystem ts) {
+		return null;
+	}
+
 	/**
 	 * Must resolve.
 	 * Will fill ScopeContext with stuff that might be important for the target expression to be runnable.

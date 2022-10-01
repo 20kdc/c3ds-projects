@@ -30,7 +30,22 @@ public abstract class RALCondition implements RALExpr {
 	public static RALCondition coerceToCondition(RALExpr re, TypeSystem ts) {
 		if (re instanceof RALCondition)
 			return (RALCondition) re;
-		return RALCondSimple.Resolved.of(ts, "!=", re, new RALConstant.Int(ts, 0));
+		return RALCondSimple.Resolved.of(ts, RALCondSimple.Op.NotEqual, re, new RALConstant.Int(ts, 0));
+	}
+
+	/**
+	 * Coerces a constant.
+	 */
+	public static boolean constToBool(RALConstant rcR) {
+		if (rcR instanceof RALConstant.Flo)
+			return ((RALConstant.Flo) rcR).value != 0;
+		if (rcR instanceof RALConstant.Int)
+			return ((RALConstant.Int) rcR).value != 0;
+		throw new RuntimeException("Attempt to coerce constant " + rcR + " to boolean");
+	}
+
+	public static RALConstant boolToConst(TypeSystem ts, boolean b) {
+		return new RALConstant.Bool(ts, b);
 	}
 
 	/**
@@ -38,7 +53,7 @@ public abstract class RALCondition implements RALExpr {
 	 * writer writes into the prelude.
 	 * sharedContext is a context held between the prelude and the use of the condition.
 	 */
-	public abstract String compileCond(StringBuilder writer, CompileContext sharedContext);
+	public abstract String compileCond(StringBuilder writer, CompileContext sharedContext, boolean invert);
 
 	@Override
 	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
@@ -52,7 +67,7 @@ public abstract class RALCondition implements RALExpr {
 
 	@Override
 	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
-		String cc = compileCond(writer, context);
+		String cc = compileCond(writer, context, false);
 		writer.append("doif ");
 		writer.append(cc);
 		writer.append("\n");

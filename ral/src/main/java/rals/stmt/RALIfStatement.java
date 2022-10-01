@@ -19,12 +19,14 @@ public class RALIfStatement extends RALStatementUR {
 	public final RALExprUR condition;
 	public final RALStatementUR mainBranch;
 	public final RALStatementUR elseBranch;
+	public final boolean invert;
 
-	public RALIfStatement(SrcPos sp, RALExprUR c, RALStatementUR m, RALStatementUR e) {
+	public RALIfStatement(SrcPos sp, RALExprUR c, RALStatementUR m, RALStatementUR e, boolean inv) {
 		super(sp);
 		condition = c;
 		mainBranch = m;
 		elseBranch = e;
+		invert = inv;
 	}
 
 	@Override
@@ -33,20 +35,18 @@ public class RALIfStatement extends RALStatementUR {
 		// scope juggling
 		ScopeContext subScope = new ScopeContext(scope);
 		final RALCondition conditionR = RALCondition.coerceToCondition(condition.resolve(subScope), scope.script.typeSystem);
-		final RALStatement mainBranchR = mainBranch != null ? mainBranch.resolve(new ScopeContext(subScope)) : null;
+		final RALStatement mainBranchR = mainBranch.resolve(new ScopeContext(subScope));
 		final RALStatement elseBranchR = elseBranch != null ? elseBranch.resolve(new ScopeContext(subScope)) : null;
 		return new RALStatement(lineNumber) {
 			@Override
 			protected void compileInner(StringBuilder writer, CompileContext context) {
 				try (CompileContext outerCtx = new CompileContext(context)) {
-					String inl = conditionR.compileCond(writer, outerCtx);
+					String inl = conditionR.compileCond(writer, outerCtx, invert);
 					writer.append("doif ");
 					writer.append(inl);
 					writer.append("\n");
-					if (mainBranchR != null) {
-						try (CompileContext bsr = new CompileContext(outerCtx)) {
-							mainBranchR.compile(writer, bsr);
-						}
+					try (CompileContext bsr = new CompileContext(outerCtx)) {
+						mainBranchR.compile(writer, bsr);
 					}
 					if (elseBranchR != null) {
 						writer.append("else\n");

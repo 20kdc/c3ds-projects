@@ -93,12 +93,12 @@ public class ParserCode {
 			} else {
 				lx.back();
 			}
-			return new RALIfStatement(tkn.lineNumber, cond, body, elseBranch);
+			return new RALIfStatement(tkn.lineNumber, cond, body, elseBranch, false);
 		} else if (tkn.isKeyword("while")) {
 			RALExprUR cond = ParserExpr.parseExpr(ts, lx, true);
 			RALStatementUR body = ParserCode.parseStatement(ts, lx);
 			RALBlock outerBlock = new RALBlock(tkn.lineNumber, true);
-			outerBlock.content.add(new RALIfStatement(tkn.lineNumber, cond, null, new RALBreakFromLoop(tkn.lineNumber)));
+			outerBlock.content.add(new RALIfStatement(tkn.lineNumber, cond, new RALBreakFromLoop(tkn.lineNumber), null, true));
 			outerBlock.content.add(body);
 			return new RALBreakableLoop(tkn.lineNumber, outerBlock);
 		} else if (tkn.isKeyword("break")) {
