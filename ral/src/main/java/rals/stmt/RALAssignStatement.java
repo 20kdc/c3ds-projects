@@ -54,6 +54,11 @@ public class RALAssignStatement extends RALStatementUR {
 					sourceR.outCompile(writer, targetsR, cc);
 				}
 			}
+
+			@Override
+			public String toString() {
+				return "(...) = " + sourceR;
+			}
 		};
 	}
 }

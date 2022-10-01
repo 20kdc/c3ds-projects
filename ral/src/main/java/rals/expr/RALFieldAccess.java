@@ -120,6 +120,11 @@ public class RALFieldAccess implements RALExprUR {
 					return ScopeContext.vaToString("mv", slot.slot);
 				return null;
 			}
+
+			@Override
+			public String toString() {
+				return baseExpr + "[" + baseType + "." + field + "]";
+			}
 		};
 	}
 

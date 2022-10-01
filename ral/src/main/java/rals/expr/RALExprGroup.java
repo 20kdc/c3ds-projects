@@ -98,5 +98,10 @@ public class RALExprGroup implements RALExprUR {
 		public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
 			throw new RuntimeException("Not writable");
 		}
+
+		@Override
+		public String toString() {
+			return "(...)";
+		}
 	}
 }

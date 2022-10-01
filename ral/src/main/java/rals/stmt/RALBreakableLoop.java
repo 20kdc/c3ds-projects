@@ -39,6 +39,10 @@ public class RALBreakableLoop extends RALStatementUR {
 					writer.writeCode("subr " + labelEnd);
 				}
 			}
+			@Override
+			public String toString() {
+				return "loop { (...) }";
+			}
 		};
 	}
 }

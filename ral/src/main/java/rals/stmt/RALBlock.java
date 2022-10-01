@@ -46,6 +46,10 @@ public class RALBlock extends RALStatementUR {
 						rl.compile(writer, cc);
 				}
 			}
+			@Override
+			public String toString() {
+				return "{...}";
+			}
 		};
 	}
 }

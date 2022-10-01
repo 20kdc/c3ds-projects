@@ -33,8 +33,10 @@ public class Macro implements RALCallable {
 	/**
 	 * Inserts macro arguments into the context.
 	 * Creates a copy list for stage 2.
+	 * Returns null if nothing to copy.
 	 */
 	public static RALVAVar[] makeToCopy(MacroArg[] args, RALExpr[] a, ScopeContext macroContext) {
+		boolean hadToCopyAnything = false;
 		final RALVAVar[] toCopy = new RALVAVar[args.length];
 		for (int i = 0; i < args.length; i++) {
 			// Check this early
@@ -47,14 +49,21 @@ public class Macro implements RALCallable {
 				macroContext.scopedVariables.put(args[i].name, a[i]);
 			} else {
 				toCopy[i] = macroContext.newLocal(args[i].name, args[i].type);
+				hadToCopyAnything = true;
 			}
 		}
+		if (!hadToCopyAnything)
+			return null;
 		return toCopy;
 	}
 	/**
 	 * Allocates VAs for and copies arguments into the compile context.
 	 */
 	public static void copyArgs(CodeWriter writer, CompileContext sc, RALVAVar[] toCopy, RALExpr[] a, String name, MacroArg[] args) {
+		if (toCopy == null) {
+			writer.writeComment("copyArgs given empty copy list, are you missing out on optimization?");
+			return;
+		}
 		for (int i = 0; i < toCopy.length; i++) {
 			if (toCopy[i] != null) {
 				sc.allocVA(toCopy[i].handle);
@@ -74,6 +83,8 @@ public class Macro implements RALCallable {
 
 		final RALVAVar[] toCopy = makeToCopy(args, a, macroContext);
 		final RALExpr innards = code.resolve(macroContext);
+		if (toCopy == null)
+			return innards;
 		return new RALExpr() {
 			@Override
 			public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
@@ -92,6 +103,11 @@ public class Macro implements RALCallable {
 			@Override
 			public RALType[] outTypes() {
 				return innards.outTypes();
+			}
+
+			@Override
+			public String toString() {
+				return "macro arg copier of " + name;
 			}
 		};
 	}

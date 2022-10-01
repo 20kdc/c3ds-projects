@@ -94,6 +94,11 @@ public class RALCondSimple implements RALExprUR {
 			}
 			return lInline + " " + (invert ? centre.codeInv : centre.code) + " " + rInline;
 		}
+
+		@Override
+		public String toString() {
+			return "(" + lR + ") " + centre.code + " (" + rR + ")";
+		}
 	}
 	public static enum Op {
 		LessThan("lt", "ge"),

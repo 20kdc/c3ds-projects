@@ -34,6 +34,11 @@ public class RALAliasStatement extends RALStatementUR {
 			protected void compileInner(CodeWriter writer, CompileContext scope) {
 				writer.writeComment(exp + ": " + name);
 			}
+
+			@Override
+			public String toString() {
+				return "alias (...);";
+			}
 		};
 	}
 }

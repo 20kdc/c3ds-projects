@@ -23,7 +23,16 @@ public class CodeWriter {
 			writer.append('\t');
 	}
 
+	private void writeNLC() {
+		if (queuedCommentForNextLine != null) {
+			String qc = queuedCommentForNextLine;
+			queuedCommentForNextLine = null;
+			writeComment(qc);
+		}
+	}
+
 	public void writeComment(String comment) {
+		writeNLC();
 		writeIndent();
 		writer.append(" * ");
 		for (char c : comment.toCharArray()) {
@@ -51,10 +60,7 @@ public class CodeWriter {
 	}
 
 	public void writeCode(String text) {
-		if (queuedCommentForNextLine != null) {
-			writeComment(queuedCommentForNextLine);
-			queuedCommentForNextLine = null;
-		}
+		writeNLC();
 		writeIndent();
 		for (char c : text.toCharArray()) {
 			writer.append(c);

@@ -41,6 +41,11 @@ public class RALInlineStatement extends RALStatementUR {
 		}
 		return new RALStatement(lineNumber) {
 			@Override
+			public String toString() {
+				return "inline (...);";
+			}
+
+			@Override
 			protected void compileInner(CodeWriter writer, CompileContext scope) {
 				// scope for all the temporary VAs we may make
 				try (CompileContext scope2 = new CompileContext(scope)) {
@@ -54,6 +59,7 @@ public class RALInlineStatement extends RALStatementUR {
 							if (inlineRepr != null) {
 								interiorWriter.append(inlineRepr);
 							} else {
+								writer.writeComment("Inline shunt: " + re.toString());
 								RALType[] slots = re.outTypes();
 								RALStringVar[] vars = new RALStringVar[slots.length];
 								for (int i = 0; i < vars.length; i++)

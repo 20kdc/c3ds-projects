@@ -33,6 +33,10 @@ public class RALBreakFromLoop extends RALStatementUR {
 					throw new RuntimeException("Cannot break at this place!");
 				}
 			}
+			@Override
+			public String toString() {
+				return "break;";
+			}
 		};
 	}
 

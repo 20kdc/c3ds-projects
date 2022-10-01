@@ -84,6 +84,10 @@ public class RALEnumLoop extends RALStatementUR {
 					writer.writeCode(-1, "next");
 				}
 			}
+			@Override
+			public String toString() {
+				return enumToken + " " + targType;
+			}
 		};
 	}
 

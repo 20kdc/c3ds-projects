@@ -107,6 +107,11 @@ public class RALCondLogOp implements RALExprUR {
 				rc.outCompile(writer, new RALExpr[] {tmp}, sharedContext);
 				return tmp.code + (invert ? " eq 0" : " ne 0");
 			}
+
+			@Override
+			public String toString() {
+				return "(" + lC.toString() + ") " + logOp.code + " (" + rC.toString() + ")";
+			}
 		};
 	}
 

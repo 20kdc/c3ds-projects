@@ -76,5 +76,10 @@ public class RALLetStatement extends RALStatementUR {
 				}
 			}
 		}
+
+		@Override
+		public String toString() {
+			return "let (...);";
+		}
 	}
 }

@@ -51,6 +51,11 @@ public class RALIfStatement extends RALStatementUR {
 				protected void compileInner(CodeWriter writer, CompileContext context) {
 					// nothing to do here!
 				}
+
+				@Override
+				public String toString() {
+					return "if (DCE'd)";
+				}
 			};
 		} else {
 			final RALCondition conditionR = RALCondition.coerceToCondition(condition.resolve(subScope), scope.script.typeSystem);
@@ -73,6 +78,11 @@ public class RALIfStatement extends RALStatementUR {
 						}
 						writer.writeCode(-1, "endi");
 					}
+				}
+
+				@Override
+				public String toString() {
+					return "if " + (invert ? "! " : "") + conditionR.toString() + " (...)";
 				}
 			};
 		}
