@@ -13,6 +13,8 @@ import rals.expr.RALDiscard;
 import rals.expr.RALExpr;
 import rals.expr.RALStringVar;
 import rals.expr.RALVAVar;
+import rals.expr.RALExpr.SpecialInline;
+import rals.expr.RALSIVar;
 import rals.types.RALType;
 
 /**
@@ -32,7 +34,7 @@ public class ScopeContext {
 
 	public ScopeContext(ScriptContext parent) {
 		script = parent;
-		scopedVariables.put("ownr", new RALStringVar("ownr", parent.ownrType, true));
+		scopedVariables.put("ownr", new RALSIVar(SpecialInline.Ownr, parent.ownrType, true));
 		// Dynamic VMVars would be nice, but we need hard logic anyway for, say, ownrType
 		scopedVariables.put("from", new RALStringVar("from", parent.fromType, true));
 		scopedVariables.put("_it_", new RALStringVar("_it_", parent.typeSystem.gAgentNullable, true));
@@ -40,7 +42,7 @@ public class ScopeContext {
 		scopedVariables.put("_p1_", new RALStringVar("_p1_", parent.p1Type, true));
 		scopedVariables.put("_p2_", new RALStringVar("_p2_", parent.p2Type, true));
 		scopedVariables.put("null", new RALStringVar("null", parent.typeSystem.gNull, true));
-		scopedVariables.put("targ", new RALStringVar("targ", parent.typeSystem.gAgentNullable, true));
+		scopedVariables.put("targ", new RALSIVar(SpecialInline.Targ, parent.typeSystem.gAgentNullable, true));
 		scopedVariables.put("_", new RALDiscard(parent.typeSystem));
 	}
 
@@ -53,10 +55,17 @@ public class ScopeContext {
 	 * Converts a VA index into the VA name.
 	 */
 	public static String vaToString(int va) {
+		return vaToString("va", va);
+	}
+
+	/**
+	 * Converts a VA index into the VA name.
+	 */
+	public static String vaToString(String pfx, int va) {
 		String res = Integer.toString(va);
 		if (res.length() == 1)
-			return "va0" + res;
-		return "va" + res;
+			return pfx + "0" + res;
+		return pfx + res;
 	}
 
 	/**

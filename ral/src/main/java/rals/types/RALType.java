@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import rals.types.AgentInterface.OVar;
+
 /**
  * Type in the RAL language.
  * This represents a set of CAOS types, but with more detail.
@@ -115,6 +117,18 @@ public abstract class RALType {
 	public final String lookupMSName(int id, boolean asScript) {
 		for (AgentInterface ai : interfaces) {
 			String a = (asScript ? ai.scriptsInv : ai.messagesInv).get(id);
+			if (a != null)
+				return a;
+		}
+		return null;
+	}
+
+	/**
+	 * Lookup a field by name.
+	 */
+	public final OVar lookupField(String name) {
+		for (AgentInterface ai : interfaces) {
+			OVar a = ai.fields.get(name);
 			if (a != null)
 				return a;
 		}
@@ -337,6 +351,15 @@ public abstract class RALType {
 				inherent.scripts.put(name, id);
 				inherent.scriptsInv.put(id, name);
 			}
+		}
+
+		/**
+		 * Declares a field.
+		 */
+		public void declareField(String fieldName, RALType fieldType, int ovSlot) {
+			if (lookupField(fieldName) != null)
+				throw new RuntimeException("Field " + fieldName + " already exists in " + this);
+			inherent.fields.put(fieldName, new OVar(ovSlot, fieldType));
 		}
 
 		@Override

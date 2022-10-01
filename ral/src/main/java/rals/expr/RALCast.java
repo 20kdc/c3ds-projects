@@ -150,5 +150,10 @@ public final class RALCast implements RALExprUR {
 		public String getInlineCAOS(CompileContext context) {
 			return expr.getInlineCAOS(context);
 		}
+
+		@Override
+		public SpecialInline getSpecialInline(CompileContext context) {
+			return expr.getSpecialInline(context);
+		}
 	}
 }

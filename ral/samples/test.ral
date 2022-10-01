@@ -62,15 +62,7 @@ macro outs(inline string text) {
 	// In particular, it may have a return statement at the end.
 }
 
-// There is a second style of macros.
-// This style is useful for when a macro needs to modify variables in-place for efficiency.
-// In this style, the "return values" are given as explicit slots.
-// Such a macro is a statement or list of statements, not an expression.
-// It returns it's values through it's side effects.
-
-macro (string rt) modu() {
-	inline "sets " rt " modu\n";
-}
+macro modu() inline "modu"!string;
 
 // In any case, inline parameters can alter values.
 // So it comes down to desired style.
@@ -91,6 +83,12 @@ macro add(inline integer a, inline integer b) {
 	inline "addv " c " " b "\n";
 	return c;
 }
+
+// There is a second style of macros.
+// This style is useful for when a macro needs to modify variables in-place for efficiency.
+// In this style, the "return values" are given as explicit slots.
+// Such a macro is a statement or list of statements, not an expression.
+// It returns it's values through it's side effects.
 
 // Null is considered a separate type.
 // ? acts as syntactic sugar for allowing null in a type.
@@ -161,10 +159,14 @@ script Creature 5 {
 // ...or by message name.
 
 message Creature:exampleTypeSpecific 8000;
+field string Creature.someString 1;
+field Creature Creature.someRef 2;
 
 script Creature:windowResized {
 	// :)
 	ownr->exampleTypeSpecific(0, 0) after 0;
+	ownr.someString = "Wowzers";
+	ownr.someRef.someString = "Indirection!";
 }
 
 // The remove script is handled similarly to the install script.

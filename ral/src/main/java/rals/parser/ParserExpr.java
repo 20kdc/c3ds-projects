@@ -20,7 +20,9 @@ import rals.expr.RALDiscard;
 import rals.expr.RALExpr;
 import rals.expr.RALExprGroup;
 import rals.expr.RALExprUR;
+import rals.expr.RALFieldAccess;
 import rals.expr.RALStmtExpr;
+import rals.expr.RALStringVar;
 import rals.lex.Lexer;
 import rals.lex.Token;
 import rals.stmt.RALBlock;
@@ -167,6 +169,11 @@ public class ParserExpr {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
 			return new RALAmbiguousID(ts, ((Token.ID) tkn).text);
+		} else if (tkn.isKeyword("inline")) {
+			Token strTkn = lx.requireNext();
+			if (!(strTkn instanceof Token.Str))
+				throw new RuntimeException("Inline CAOS expression can only be exactly one constant string token");
+			return new RALStringVar(((Token.Str) strTkn).text, ts.gAny, true);
 		} else if (tkn.isKeyword("{")) {
 			// Oh, this gets weird...
 			RALBlock stmt = new RALBlock(tkn.lineNumber, false);
@@ -221,10 +228,13 @@ public class ParserExpr {
 					Integer msgId = rt.lookupMSID(msgName, false);
 					if (msgId == null)
 						throw new RuntimeException("No such message " + typeName + ":" + msgName);
-					return new RALConstant.Int(ts, msgId);
+					base = new RALConstant.Int(ts, msgId);
 				} else {
 					throw new RuntimeException("You can't get the message ID of anything but an ambiguous ID, and certainly not " + base);
 				}
+			} else if (tkn.isKeyword(".")) {
+				String fieldName = lx.requireNextID();
+				base = new RALFieldAccess(base, fieldName);
 			} else if (tkn.isKeyword("!")) {
 				// Forced cast.
 				// If followed immediately by an ID, it's a cast to a specific type.

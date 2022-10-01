@@ -15,7 +15,7 @@ import rals.types.RALType;
  * For trivial expressions & variables.
  * Goes nicely with inline statements.
  */
-public class RALStringVar implements RALExpr {
+public class RALStringVar implements RALExpr, RALExprUR {
 	public final String code;
 	public final RALType type;
 	public final boolean isWritable;
@@ -23,6 +23,11 @@ public class RALStringVar implements RALExpr {
 		code = c;
 		type = ot;
 		isWritable = w;
+	}
+
+	@Override
+	public RALExpr resolve(ScopeContext scope) {
+		return this;
 	}
 
 	@Override
@@ -46,6 +51,10 @@ public class RALStringVar implements RALExpr {
 	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
 		if (!isWritable)
 			throw new RuntimeException("Not writable");
+		writeSet(writer, code, input, inputExactType);
+	}
+
+	public static void writeSet(StringBuilder writer, String code, String input, RALType inputExactType) {
 		switch (inputExactType.majorType) {
 		case Agent:
 			writer.append("seta ");

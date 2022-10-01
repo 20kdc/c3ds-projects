@@ -59,4 +59,9 @@ public class RALEHVar implements RALExpr {
 	public String getInlineCAOS(CompileContext context) {
 		return getUnderlying(context).getInlineCAOS(context);
 	}
+
+	@Override
+	public SpecialInline getSpecialInline(CompileContext context) {
+		return getUnderlying(context).getSpecialInline(context);
+	}
 }

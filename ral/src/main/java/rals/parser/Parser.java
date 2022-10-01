@@ -92,6 +92,19 @@ public class Parser {
 			String name = lx.requireNextID();
 			ts.declareTypedef(name, ParserType.parseType(ts, lx));
 			lx.requireNextKw(";");
+		} else if (tkn.isKeyword("field")) {
+			RALType fieldType = ParserType.parseType(ts, lx);
+			String name = lx.requireNextID();
+			RALType rt = ts.byName(name);
+			if (rt instanceof RALType.Agent) {
+				lx.requireNextKw(".");
+				String fieldName = lx.requireNextID();
+				int ovSlot = lx.requireNextInteger();
+				((RALType.Agent) rt).declareField(fieldName, fieldType, ovSlot);
+				lx.requireNextKw(";");
+			} else {
+				throw new RuntimeException("No class/interface " + name);
+			}
 		} else if (tkn.isKeyword("message")) {
 			String name = lx.requireNextID();
 			RALType rt = ts.byName(name);

@@ -67,6 +67,26 @@ public interface RALExpr {
 	 * It's also critical to how inline statements let you modify variables, hence the name.
 	 */
 	default String getInlineCAOS(CompileContext context) {
-		return null;
+		return getSpecialInline(context).code;
+	}
+
+	/**
+	 * Like getInlineCAOS but better.
+	 */
+	default SpecialInline getSpecialInline(CompileContext context) {
+		return SpecialInline.None;
+	}
+
+	/**
+	 * This is similar to getInlineCAOS, but it's for very specific circumstances.
+	 */
+	public enum SpecialInline {
+		None(null),
+		Ownr("ownr"),
+		Targ("targ");
+		public final String code;
+		SpecialInline(String s) {
+			code = s;
+		}
 	}
 }
