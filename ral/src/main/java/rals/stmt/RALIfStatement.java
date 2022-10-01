@@ -9,6 +9,7 @@ package rals.stmt;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.cond.RALCondition;
+import rals.expr.RALConstant;
 import rals.expr.RALExprUR;
 import rals.lex.SrcPos;
 
@@ -33,31 +34,49 @@ public class RALIfStatement extends RALStatementUR {
 	public RALStatement resolve(ScopeContext scope) {
 		scope = new ScopeContext(scope);
 		// scope juggling
+		final RALConstant conditionConstant = condition.resolveConst(scope.script.typeSystem);
 		ScopeContext subScope = new ScopeContext(scope);
-		final RALCondition conditionR = RALCondition.coerceToCondition(condition.resolve(subScope), scope.script.typeSystem);
-		final RALStatement mainBranchR = mainBranch.resolve(new ScopeContext(subScope));
-		final RALStatement elseBranchR = elseBranch != null ? elseBranch.resolve(new ScopeContext(subScope)) : null;
-		return new RALStatement(lineNumber) {
-			@Override
-			protected void compileInner(StringBuilder writer, CompileContext context) {
-				try (CompileContext outerCtx = new CompileContext(context)) {
-					String inl = conditionR.compileCond(writer, outerCtx, invert);
-					writer.append("doif ");
-					writer.append(inl);
-					writer.append("\n");
-					try (CompileContext bsr = new CompileContext(outerCtx)) {
-						mainBranchR.compile(writer, bsr);
-					}
-					if (elseBranchR != null) {
-						writer.append("else\n");
-						try (CompileContext bsr = new CompileContext(outerCtx)) {
-							elseBranchR.compile(writer, bsr);
-						}
-					}
-					writer.append("endi\n");
+		if (conditionConstant != null) {
+			boolean answer = RALCondition.constToBool(conditionConstant);
+			if (invert)
+				answer = !answer;
+			final RALStatementUR execBranch = answer ? mainBranch : elseBranch;
+			// we don't really need another scope, since the condition had to be scopeless
+			final RALStatement execBranchR = execBranch != null ? execBranch.resolve(subScope) : null;
+			if (execBranchR != null)
+				return execBranchR;
+			return new RALStatement(lineNumber) {
+				@Override
+				protected void compileInner(StringBuilder writer, CompileContext context) {
+					// nothing to do here!
 				}
-			}
-		};
+			};
+		} else {
+			final RALCondition conditionR = RALCondition.coerceToCondition(condition.resolve(subScope), scope.script.typeSystem);
+			final RALStatement mainBranchR = mainBranch.resolve(new ScopeContext(subScope));
+			final RALStatement elseBranchR = elseBranch != null ? elseBranch.resolve(new ScopeContext(subScope)) : null;
+			return new RALStatement(lineNumber) {
+				@Override
+				protected void compileInner(StringBuilder writer, CompileContext context) {
+					try (CompileContext outerCtx = new CompileContext(context)) {
+						String inl = conditionR.compileCond(writer, outerCtx, invert);
+						writer.append("doif ");
+						writer.append(inl);
+						writer.append("\n");
+						try (CompileContext bsr = new CompileContext(outerCtx)) {
+							mainBranchR.compile(writer, bsr);
+						}
+						if (elseBranchR != null) {
+							writer.append("else\n");
+							try (CompileContext bsr = new CompileContext(outerCtx)) {
+								elseBranchR.compile(writer, bsr);
+							}
+						}
+						writer.append("endi\n");
+					}
+				}
+			};
+		}
 	}
 
 	public static class Branch<C, T> {

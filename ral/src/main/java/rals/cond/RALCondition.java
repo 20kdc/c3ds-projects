@@ -45,7 +45,7 @@ public abstract class RALCondition implements RALExpr {
 	}
 
 	public static RALConstant boolToConst(TypeSystem ts, boolean b) {
-		return new RALConstant.Bool(ts, b);
+		return new RALConstant.Int(ts.gBoolean, b ? 1 : 0);
 	}
 
 	/**

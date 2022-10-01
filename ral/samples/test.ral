@@ -12,7 +12,11 @@
 creatureGenus = 4;
 
 /* Some expressions can be calculated as consts! */
-aTrue = !(1 || 0);
+aFalse = !(1 || 0);
+
+assertConst aFalse == 0;
+
+aTrue = !aFalse;
 
 // Files can be included.
 // Where constants are expected, defined constants are usable.
@@ -144,8 +148,14 @@ install {
 // Scripts can be defined by class name and message ID...
 
 script Creature 5 {
-	// Test complex constant expressions
+	// Constant expressions can be written inline...
 	inline "outv " aTrue "\n";
+	// And constant expressions can cause code to be elided at compile-time
+	if aFalse {
+		inline "outs \"Invisible\"\n";
+	} else {
+		inline "outs \"Visible\"\n";
+	}
 }
 
 // ...or by message name.

@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import rals.code.Macro;
 import rals.code.MacroArg;
 import rals.code.Module;
+import rals.cond.RALCondition;
 import rals.expr.RALConstant;
 import rals.expr.RALExprUR;
 import rals.expr.RALStmtExprInverted;
@@ -176,6 +177,10 @@ public class Parser {
 			int scrId = ParserExpr.parseConstInteger(ts, lx);
 			ts.messageHooks.add(scrId);
 			lx.requireNextKw(";");
+		} else if (tkn.isKeyword("assertConst")) {
+			RALConstant rc1 = ParserExpr.parseConst(ts, lx);
+			if (!RALCondition.constToBool(rc1))
+				throw new RuntimeException("failed constant assert at " + tkn.lineNumber);
 		} else if (tkn.isKeyword(";")) {
 			// :D
 		} else if (tkn instanceof Token.ID) {

@@ -8,6 +8,7 @@ package rals.cond;
 
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
+import rals.expr.RALConstant;
 import rals.expr.RALExpr;
 import rals.expr.RALExprUR;
 import rals.expr.RALStringVar;
@@ -26,6 +27,22 @@ public class RALCondSimple implements RALExprUR {
 		centre = c;
 		left = l;
 		right = r;
+	}
+
+	@Override
+	public RALConstant resolveConst(TypeSystem ts) {
+		RALConstant cL = left.resolveConst(ts);
+		if (cL == null)
+			return null;
+		RALConstant cR = right.resolveConst(ts);
+		if (cR == null)
+			return null;
+		if (centre == Op.Equal) {
+			return RALCondition.boolToConst(ts, cL.equals(cR));
+		} else if (centre == Op.NotEqual) {
+			return RALCondition.boolToConst(ts, !cL.equals(cR));
+		}
+		return null;
 	}
 
 	@Override

@@ -12,6 +12,7 @@ import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.code.ScriptContext;
 import rals.types.RALType;
+import rals.types.TypeSystem;
 
 /**
  * Typecast.
@@ -23,6 +24,14 @@ public final class RALCast implements RALExprUR {
 	private RALCast(RALExprUR b, RALType t) {
 		base = b;
 		target = t;
+	}
+
+	@Override
+	public RALConstant resolveConst(TypeSystem ts) {
+		RALConstant rc = base.resolveConst(ts);
+		if (rc instanceof RALConstant.Single)
+			return ((RALConstant.Single) rc).cast(target);
+		return null;
 	}
 
 	/**

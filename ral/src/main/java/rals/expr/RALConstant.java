@@ -6,11 +6,9 @@
  */
 package rals.expr;
 
-import java.io.StringWriter;
 
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
-import rals.code.ScriptContext;
 import rals.types.RALType;
 import rals.types.TypeSystem;
 
@@ -18,12 +16,7 @@ import rals.types.TypeSystem;
  * A constant.
  * The toString returns these in CAOS form.
  */
-public class RALConstant implements RALExpr, RALExprUR {
-	public final RALType type;
-	public RALConstant(RALType r) {
-		type = r;
-	}
-
+public abstract class RALConstant implements RALExpr, RALExprUR {
 	@Override
 	public RALConstant resolveConst(TypeSystem ts) {
 		return this;
@@ -35,35 +28,70 @@ public class RALConstant implements RALExpr, RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext context) {
-		return this;
+	public String toString() {
+		throw new RuntimeException("Not implemented, should be!");
 	}
 
-	@Override
-	public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
-		out[0].inCompile(writer, toString(), type, context);
+	public static abstract class Single extends RALConstant {
+		public final RALType type;
+		public Single(RALType r) {
+			type = r;
+		}
+
+		public abstract RALConstant.Single cast(RALType rt);
+
+		@Override
+		public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
+			out[0].inCompile(writer, toString(), type, context);
+		}
+
+		@Override
+		public RALType[] outTypes() {
+			return new RALType[] {type};
+		}
+
+		@Override
+		public RALType inType() {
+			throw new RuntimeException("Constants are not writable");
+		}
+
+		@Override
+		public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+			throw new RuntimeException("Constants are not writable");
+		}
+
+		@Override
+		public RALExpr resolve(ScopeContext context) {
+			return this;
+		}
 	}
 
-	@Override
-	public RALType[] outTypes() {
-		return new RALType[] {type};
-	}
-
-	@Override
-	public RALType inType() {
-		throw new RuntimeException("Constants are not writable");
-	}
-
-	@Override
-	public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
-		throw new RuntimeException("Constants are not writable");
-	}
-
-	public static class Str extends RALConstant {
+	public static class Str extends Single {
 		public final String value;
 		public Str(TypeSystem ts, String s) {
 			super(ts.gString);
 			value = s;
+		}
+		public Str(RALType t, String s) {
+			super(t);
+			value = s;
+		}
+
+		@Override
+		public Str cast(RALType rt) {
+			return new Str(rt, value);
+		}
+
+		@Override
+		public int hashCode() {
+			return value.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof Str)
+				return value.equals(((Str) obj).value);
+			return false;
 		}
 
 		@Override
@@ -91,7 +119,7 @@ public class RALConstant implements RALExpr, RALExprUR {
 		}
 	}
 
-	public static class Int extends RALConstant {
+	public static class Int extends Single {
 		public final int value;
 		public Int(TypeSystem ts, int v) {
 			super(ts.gInteger);
@@ -103,22 +131,60 @@ public class RALConstant implements RALExpr, RALExprUR {
 		}
 
 		@Override
+		public Int cast(RALType rt) {
+			return new Int(rt, value);
+		}
+
+		@Override
+		public int hashCode() {
+			return value;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof Int) {
+				return value == ((Int) obj).value;
+			} else if (obj instanceof Flo) {
+				return ((double) value) == ((Flo) obj).value;
+			}
+			return false;
+		}
+
+		@Override
 		public String toString() {
 			return Integer.toString(value);
 		}
 	}
 
-	public static class Bool extends RALConstant.Int {
-		public Bool(TypeSystem ts, boolean v) {
-			super(ts.gBoolean, v ? 1 : 0);
-		}
-	}
-
-	public static class Flo extends RALConstant {
+	public static class Flo extends Single {
 		public final float value;
 		public Flo(TypeSystem ts, float f) {
 			super(ts.gFloat);
 			value = f;
+		}
+		public Flo(RALType t, float f) {
+			super(t);
+			value = f;
+		}
+
+		@Override
+		public Flo cast(RALType rt) {
+			return new Flo(rt, value);
+		}
+
+		@Override
+		public int hashCode() {
+			return Float.hashCode(value);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof Int) {
+				return value == (double) ((Int) obj).value;
+			} else if (obj instanceof Flo) {
+				return value == ((Flo) obj).value;
+			}
+			return false;
 		}
 
 		@Override
