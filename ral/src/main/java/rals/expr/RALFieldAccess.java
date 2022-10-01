@@ -7,6 +7,7 @@
 package rals.expr;
 
 import java.io.StringWriter;
+import java.util.function.Consumer;
 
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
@@ -46,38 +47,54 @@ public class RALFieldAccess implements RALExprUR {
 
 			@Override
 			public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
-				SpecialInline si = baseExpr.getSpecialInline(context);
-				if (si == SpecialInline.Ownr) {
-					// Don't do this with TARG because we could in theory be victim to a switcheroo.
-					out[0].inCompile(writer, ScopeContext.vaToString("mv", slot.slot), slot.type, context);
+				String outInline = out[0].getInlineCAOS(context);
+				if (outInline != null) {
+					// This means we have a guarantee of being able to safely output, which is great
+					inlineIO(writer, context, (va) -> {
+						RALStringVar.writeSet(writer, outInline, va, slot.type);
+					});
 				} else {
-					// alright, we're doing something complicated I see
-					try (CompileContext cc = new CompileContext(context)) {
-						// create a temporary, in which we'll store the result 
-						RALStringVar rsv = cc.allocVA(slot.type);
-						String store = backupAndSet(writer, cc);
-						rsv.inCompile(writer, ScopeContext.vaToString("ov", slot.slot), slot.type, context);
-						restore(writer, store);
-						// done, give it
-						out[0].inCompile(writer, rsv.code, slot.type, context);
+					SpecialInline si = baseExpr.getSpecialInline(context);
+					if (si == SpecialInline.Ownr) {
+						// Don't do this with TARG because we could in theory be victim to a switcheroo.
+						out[0].inCompile(writer, ScopeContext.vaToString("mv", slot.slot), slot.type, context);
+					} else {
+						// alright, we're doing something complicated I see
+						try (CompileContext cc = new CompileContext(context)) {
+							// create a temporary, in which we'll store the result
+							RALStringVar rsv = cc.allocVA(slot.type);
+							String store = backupAndSet(writer, cc);
+							rsv.inCompile(writer, ScopeContext.vaToString("ov", slot.slot), slot.type, context);
+							restore(writer, store);
+							// done, give it
+							out[0].inCompile(writer, rsv.code, slot.type, context);
+						}
 					}
 				}
 			}
 
 			@Override
 			public void inCompile(StringBuilder writer, String input, RALType inputExactType, CompileContext context) {
+				inlineIO(writer, context, (va) -> {
+					RALStringVar.writeSet(writer, va, input, inputExactType);
+				});
+			}
+
+			/**
+			 * This is used for when we have a guarantee of being able to do whatever we needed to do in a simple CAOS line.
+			 */
+			private void inlineIO(StringBuilder writer, CompileContext context, Consumer<String> doTheThing) {
 				SpecialInline si = baseExpr.getSpecialInline(context);
 				if ((si == SpecialInline.Ownr) || (si == SpecialInline.Targ)) {
 					String pfx = "ov";
 					if (si == SpecialInline.Ownr)
 						pfx = "mv";
-					RALStringVar.writeSet(writer, ScopeContext.vaToString(pfx, slot.slot), input, inputExactType);
+					doTheThing.accept(ScopeContext.vaToString(pfx, slot.slot));
 				} else {
 					// alright, we're doing something complicated I see
 					try (CompileContext cc = new CompileContext(context)) {
 						String store = backupAndSet(writer, cc);
-						// Do the thing
-						RALStringVar.writeSet(writer, ScopeContext.vaToString("ov", slot.slot), input, inputExactType);
+						doTheThing.accept(ScopeContext.vaToString("ov", slot.slot));
 						restore(writer, store);
 					}
 				}
