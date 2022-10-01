@@ -242,6 +242,16 @@ public class Lexer {
 		throw new RuntimeException("Expected " + kw);
 	}
 
+	public boolean optNextKw(String string) {
+		Token tkn = next();
+		if (tkn == null)
+			return false;
+		if (tkn.isKeyword(string))
+			return true;
+		back();
+		return false;
+	}
+
 	public String requireNextID() {
 		Token tkn = requireNext();
 		if (tkn instanceof Token.ID)

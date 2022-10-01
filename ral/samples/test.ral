@@ -162,6 +162,7 @@ script Creature 5 {
 
 script Creature:windowResized {
 	// :)
+	ownr->windowResized(0, 0) after 0;
 }
 
 // The remove script is handled similarly to the install script.

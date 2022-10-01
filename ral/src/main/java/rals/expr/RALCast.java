@@ -20,17 +20,28 @@ import rals.types.TypeSystem;
 public final class RALCast implements RALExprUR {
 	public final RALExprUR base;
 	public final RALType target;
+	public final boolean doImplicitCheck;
 
 	private RALCast(RALExprUR b, RALType t) {
 		base = b;
 		target = t;
+		doImplicitCheck = false;
+	}
+
+	private RALCast(RALExprUR b, RALType t, boolean imp) {
+		base = b;
+		target = t;
+		doImplicitCheck = imp;
 	}
 
 	@Override
 	public RALConstant resolveConst(TypeSystem ts) {
 		RALConstant rc = base.resolveConst(ts);
-		if (rc instanceof RALConstant.Single)
+		if (rc instanceof RALConstant.Single) {
+			if (doImplicitCheck)
+				((RALConstant.Single) rc).type.implicitlyCastOrThrow(target);
 			return ((RALConstant.Single) rc).cast(target);
+		}
 		return null;
 	}
 
@@ -38,14 +49,24 @@ public final class RALCast implements RALExprUR {
 	 * Tries to prevent layers from piling up unnecessarily.
 	 */
 	public static RALCast of(RALExprUR bx, RALType t) {
+		return of(bx, t, false);
+	}
+
+	/**
+	 * Tries to prevent layers from piling up unnecessarily.
+	 */
+	public static RALCast of(RALExprUR bx, RALType t, boolean checked) {
+		// Skip layers of unchecked casts.
+		// Checked ones we keep.
 		if (bx instanceof RALCast)
-			bx = ((RALCast) bx).base;
-		return new RALCast(bx, t);
+			if (!((RALCast) bx).doImplicitCheck)
+				bx = ((RALCast) bx).base;
+		return new RALCast(bx, t, checked);
 	}
 
 	@Override
 	public RALExpr resolve(ScopeContext context) {
-		return Resolved.of(base.resolve(context), target);
+		return Resolved.of(base.resolve(context), target, doImplicitCheck);
 	}
 
 	public static class Denull implements RALExprUR {
@@ -62,36 +83,43 @@ public final class RALCast implements RALExprUR {
 			// System.out.println(nn);
 			nn = context.script.typeSystem.byNonNullable(nn);
 			// System.out.println(nn);
-			return Resolved.of(r, nn);
+			return Resolved.of(r, nn, false);
 		}
 	}
 
 	public static class Resolved implements RALExpr {
 		public final RALExpr expr;
 		public final RALType target;
-		private Resolved(RALExpr e, RALType t) {
+		private final boolean doImplicitCheck;
+		private Resolved(RALExpr e, RALType t, boolean c) {
 			expr = e;
 			target = t;
+			doImplicitCheck = c;
 		}
 
 		/**
 		 * Tries to prevent layers from piling up unnecessarily.
 		 */
-		public static Resolved of(RALExpr e, RALType t) {
+		public static Resolved of(RALExpr e, RALType t, boolean doImplicitCheck) {
 			if (e instanceof Resolved)
 				e = ((Resolved) e).expr;
-			return new Resolved(e, t);
+			return new Resolved(e, t, doImplicitCheck);
 		}
 
 		@Override
 		public String toString() {
-			return "Cast[" + expr + "!" + target + "]";
+			return "Cast" + (doImplicitCheck ? "Imp" : "") + "[" + expr + "!" + target + "]";
 		}
 
 		@Override
 		public RALType[] outTypes() {
 			// make sure the length is right
-			expr.assertOutTypeSingle();
+			// also ensure implicit cast is possible if we want that
+			if (doImplicitCheck) {
+				expr.assertOutTypeSingleImpcast(target);
+			} else {
+				expr.assertOutTypeSingle();
+			}
 			return new RALType[] {target};
 		}
 
@@ -99,13 +127,15 @@ public final class RALCast implements RALExprUR {
 		public void outCompile(StringBuilder writer, RALExpr[] out, CompileContext context) {
 			// Invert ourselves so we apply to the target.
 			// This is important because it ensures we overwrite inputExactType for storage.
-			expr.outCompile(writer, new RALExpr[] {new Resolved(out[0], target)}, context);
+			expr.outCompile(writer, new RALExpr[] {new Resolved(out[0], target, doImplicitCheck)}, context);
 		}
 
 		@Override
 		public RALType inType() {
 			// Useful for throwing assertions.
-			expr.inType();
+			RALType rt = expr.inType();
+			if (doImplicitCheck)
+				target.implicitlyCastOrThrow(rt);
 			return target;
 		}
 

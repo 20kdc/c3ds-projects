@@ -15,13 +15,17 @@ import rals.types.TypeSystem;
 public class ScriptContext {
 	public final RALType ownrType;
 	public final RALType fromType;
+	public final RALType p1Type;
+	public final RALType p2Type;
 	public final TypeSystem typeSystem;
 	public final Module module;
 
-	public ScriptContext(TypeSystem ts, Module m, RALType ot, RALType ft) {
+	public ScriptContext(TypeSystem ts, Module m, RALType ot, RALType ft, RALType p1, RALType p2) {
 		typeSystem = ts;
 		module = m;
 		ownrType = ot;
 		fromType = ft;
+		p1Type = p1;
+		p2Type = p2;
 	}
 }

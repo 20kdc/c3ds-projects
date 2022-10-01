@@ -49,7 +49,7 @@ public class Module {
 	 */
 	public void compile(StringBuilder outText, TypeSystem ts) {
 		if (installScript != null) {
-			ScriptContext scr = new ScriptContext(ts, this, ts.gAny, ts.gAny);
+			ScriptContext scr = new ScriptContext(ts, this, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
 			compile(outText, ts, scr, installScript);
 		}
 
@@ -78,19 +78,21 @@ public class Module {
 			outText.append("\n");
 			RALType oOwnr = ts.byClassifier(k.classifier);
 			RALType oFrom = ts.gAny;
+			RALType oP1 = ts.gAny;
+			RALType oP2 = ts.gAny;
 			RALType override = ts.overrideOwnr.get(k.script);
 			if (override != null) {
 				oOwnr = override;
 				oFrom = oOwnr;
 			}
-			ScriptContext scr = new ScriptContext(ts, this, oOwnr, oFrom);
+			ScriptContext scr = new ScriptContext(ts, this, oOwnr, oFrom, oP1, oP2);
 			compile(outText, ts, scr, v);
 			outText.append("endm\n");
 		}
 
 		if (removeScript != null) {
 			outText.append("rscr\n");
-			ScriptContext scr = new ScriptContext(ts, this, ts.gNull, ts.gAny);
+			ScriptContext scr = new ScriptContext(ts, this, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
 			compile(outText, ts, scr, removeScript);
 		}
 	}

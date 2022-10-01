@@ -34,11 +34,11 @@ public class ScopeContext {
 		script = parent;
 		scopedVariables.put("ownr", new RALStringVar("ownr", parent.ownrType, true));
 		// Dynamic VMVars would be nice, but we need hard logic anyway for, say, ownrType
-		scopedVariables.put("from", new RALStringVar("from", parent.typeSystem.gAny, true));
+		scopedVariables.put("from", new RALStringVar("from", parent.fromType, true));
 		scopedVariables.put("_it_", new RALStringVar("_it_", parent.typeSystem.gAgentNullable, true));
 		scopedVariables.put("part", new RALStringVar("part", parent.typeSystem.gInteger, false));
-		scopedVariables.put("_p1_", new RALStringVar("_p1_", parent.typeSystem.gAny, true));
-		scopedVariables.put("_p2_", new RALStringVar("_p2_", parent.typeSystem.gAny, true));
+		scopedVariables.put("_p1_", new RALStringVar("_p1_", parent.p1Type, true));
+		scopedVariables.put("_p2_", new RALStringVar("_p2_", parent.p2Type, true));
 		scopedVariables.put("null", new RALStringVar("null", parent.typeSystem.gNull, true));
 		scopedVariables.put("targ", new RALStringVar("targ", parent.typeSystem.gAgentNullable, true));
 		scopedVariables.put("_", new RALDiscard(parent.typeSystem));

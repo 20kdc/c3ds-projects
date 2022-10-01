@@ -8,9 +8,12 @@ package rals.parser;
 
 import java.util.LinkedList;
 
+import rals.expr.RALAmbiguousID;
+import rals.expr.RALCast;
 import rals.expr.RALConstant;
 import rals.expr.RALExpr;
 import rals.expr.RALExprUR;
+import rals.expr.RALMessageIDGrabber;
 import rals.lex.Lexer;
 import rals.lex.Token;
 import rals.stmt.RALAliasStatement;
@@ -113,6 +116,54 @@ public class ParserCode {
 			} else if (sp.isKeyword("=")) {
 				RALExprUR source = ParserExpr.parseExpr(ts, lx, true);
 				return new RALAssignStatement(tkn.lineNumber, target.decomposite(), source);
+			} else if (sp.isKeyword("->")) {
+				// MESG WRT+
+				Token messageId = lx.requireNext();
+				RALExprUR getMsgType;
+				if (messageId instanceof Token.ID) {
+					getMsgType = new RALMessageIDGrabber(target, ((Token.ID) messageId).text);
+				} else {
+					lx.back();
+					getMsgType = ParserExpr.parseExpr(ts, lx, true);
+				}
+				lx.requireNextKw("(");
+				RALExprUR[] params = ParserExpr.parseExpr(ts, lx, false).decomposite();
+				// work this out
+				RALExprUR p1;
+				RALExprUR p2;
+				if (params.length == 0) {
+					p1 = new RALConstant.Int(ts, 0);
+					p2 = new RALConstant.Int(ts, 0);
+				} else if (params.length == 1) {
+					p1 = params[0];
+					p2 = new RALConstant.Int(ts, 0);
+				} else if (params.length == 2) {
+					p1 = params[0];
+					p2 = params[1];
+				} else {
+					throw new RuntimeException("Abnormal amount of parameters to emit statement");
+				}
+				lx.requireNextKw(")");
+				RALExprUR after;
+				if (lx.optNextKw("after")) {
+					after = ParserExpr.parseExpr(ts, lx, true);
+				} else {
+					after = new RALConstant.Int(ts, 0);
+				}
+				lx.requireNextKw(";");
+				return new RALInlineStatement(tkn.lineNumber, new Object[] {
+					"mesg wrt+ ",
+					RALCast.of(target, ts.gAgent, true),
+					" ",
+					RALCast.of(getMsgType, ts.gInteger, true),
+					" ",
+					RALCast.of(p1, ts.gAny, true),
+					" ",
+					RALCast.of(p2, ts.gAny, true),
+					" ",
+					after,
+					"\n"
+				});
 			} else {
 				throw new RuntimeException("Saw expression at " + tkn + " but then was wrong about it.");
 			}

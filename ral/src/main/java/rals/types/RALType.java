@@ -110,7 +110,7 @@ public abstract class RALType {
 	}
 
 	/**
-	 * Lookup a message ID by name.
+	 * Lookup a message or script name by ID.
 	 */
 	public final String lookupMSName(int id, boolean asScript) {
 		for (AgentInterface ai : interfaces) {
