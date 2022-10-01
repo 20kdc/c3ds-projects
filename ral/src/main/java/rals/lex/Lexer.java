@@ -16,8 +16,12 @@ import rals.lex.Token.Int;
  */
 public class Lexer {
 	private InputStream input;
-	private boolean byteSaved;
-	private int lastByte = -1;
+
+	// If not at byteHistory.length, the next byte to "read".
+	private int byteHistoryPtr = 3;
+	// this is in stream order, 
+	private int[] byteHistory = new int[3];
+
 	private boolean tokenSaved;
 	private Token lastToken;
 	private int lineNumber = 1;
@@ -25,10 +29,14 @@ public class Lexer {
 	private static final String OPERATORS_BREAKING = "<>=?!/*-+:&|^%";
 	private static final String OPERATORS_UNBREAKING = ".";
 	private static final String OPERATORS = OPERATORS_BREAKING + OPERATORS_UNBREAKING;
-	// note that the '#' breaker (comment) is inducted into whitespace
-	private static final String BREAKERS = "\"\'#" + LONERS + OPERATORS_BREAKING;
+	private static final String BREAKERS = "\"\'" + LONERS + OPERATORS_BREAKING;
 
 	private String fileName;
+	/**
+	 * Last comment encountered.
+	 * Can be reset to null by caller to consume a comment.
+	 */
+	public String lastComment = null;
 
 	public Lexer(String fn, InputStream inp) {
 		input = inp;
@@ -36,15 +44,16 @@ public class Lexer {
 	}
 
 	private int getNextByte() {
-		if (byteSaved) {
-			byteSaved = false;
-			return lastByte;
-		}
+		if (byteHistoryPtr < byteHistory.length)
+			return byteHistory[byteHistoryPtr++];
 		try {
 			int val = input.read();
 			if (val == 10)
 				lineNumber++;
-			lastByte = val;
+			// 
+			for (int i = 0; i < byteHistory.length - 1; i++)
+				byteHistory[i] = byteHistory[i + 1];
+			byteHistory[byteHistory.length - 1] = val;
 			return val;
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);
@@ -52,30 +61,68 @@ public class Lexer {
 	}
 
 	private void backByte() {
-		if (byteSaved)
-			throw new RuntimeException("Can't go back two bytes in a row!");
-		byteSaved = true;
+		byteHistoryPtr--;
 	}
 
 	private boolean consumeWS() {
-		int b = getNextByte();
 		boolean didAnything = false;
 		while (true) {
+			int b = getNextByte();
 			if (b == -1)
 				break;
-			if (b == '#') {
-				while ((b != -1) && (b != 10))
+			if (b == '/') {
+				// This *could* be a line comment, or it *could* just be something else.
+				// Let's find out the difference...
+				b = getNextByte();
+				if (b == '*') {
+					SrcPos at = genLN();
+					StringBuilder sb = new StringBuilder();
+					// Block comment.
+					while (true) {
+						b = getNextByte();
+						if (b == -1)
+							throw new RuntimeException("Unterminated block comment, starting at " + at);
+						if (b == '*') {
+							b = getNextByte();
+							if (b == '/') {
+								// End of block comment!
+								lastComment = sb.toString();
+								break;
+							} else {
+								// just in case it was -1, let next loop grab it
+								backByte();
+							}
+						}
+						// not terminating the comment, so
+						if ((b != 13))
+							sb.append((char) b);
+					}
+				} else if (b == '/') {
+					// Line comment.
+					StringBuilder sb = new StringBuilder();
 					b = getNextByte();
-				// ate the newline, that's alright
-				didAnything = true;
-				continue;
+					while ((b != -1) && (b != 10)) {
+						if (b != 13)
+							sb.append((char) b);
+						b = getNextByte();
+					}
+					lastComment = sb.toString();
+					// ate the newline, that's alright
+					didAnything = true;
+					continue;
+				} else {
+					// Whoopsie!
+					backByte();
+					backByte();
+					break;
+				}
 			}
-			if (b > 32)
+			if (b > 32) {
+				backByte();
 				break;
-			b = getNextByte();
+			}
 			didAnything = true;
 		}
-		backByte();
 		return didAnything;
 	}
 

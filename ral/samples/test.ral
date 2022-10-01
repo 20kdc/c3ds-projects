@@ -1,84 +1,84 @@
-# c3ds-projects - Assorted compatibility fixes & useful tidbits
-# Written starting in 2022 by contributors (see CREDITS.txt)
-# To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
-# You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+// c3ds-projects - Assorted compatibility fixes & useful tidbits
+// Written starting in 2022 by contributors (see CREDITS.txt)
+// To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+// You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-# Rational (as opposed to CAOS) Agent Language
-# Sample/Compiler Test Sheet
+// Rational (as opposed to CAOS) Agent Language
+// Sample/Compiler Test Sheet
 
-# Consts can be defined as so:
+// Consts can be defined as so:
 creatureGenus = 4;
 
-# Some expressions can be calculated as consts!
+// Some expressions can be calculated as consts!
 aTrue = !(1 || 0);
 
-# Files can be included.
-# Where constants are expected, defined constants are usable.
-# In practice, you are expected to use include like C++ headers.
+// Files can be included.
+// Where constants are expected, defined constants are usable.
+// In practice, you are expected to use include like C++ headers.
 
 fileToIncludeFrom = "test-include.ral";
 include fileToIncludeFrom;
 
-# Interfaces represent shared APIs between agents.
-# They may also be declared as extending other interfaces (or classes).
+// Interfaces represent shared APIs between agents.
+// They may also be declared as extending other interfaces (or classes).
 
 interface SomethingCreaturesHave;
 
-# Classes are interfaces with a place in the Scriptorium.
-# Classes automatically extend other classes based on their classifier.
+// Classes are interfaces with a place in the Scriptorium.
+// Classes automatically extend other classes based on their classifier.
 
 class SystemAgent 1 0 0;
 class WorldAgent 2 0 0;
 class Creature creatureGenus 0 0 extends SomethingCreaturesHave;
 
-# Typedefs and TypeScript-style union types exist.
+// Typedefs and TypeScript-style union types exist.
 
 typedef number integer|float;
 
-# Messages may be defined on interfaces.
-# Message numbers so defined are available as constants.
+// Messages may be defined on interfaces.
+// Message numbers so defined are available as constants.
 
 message Agent:windowResized 123;
 
-# Macros are used to allow for global subroutines without message passing.
-# Macro parameters may be marked as inline.
-# These parameters are re-evaluated on each use.
-# Macro parameters not so marked will be copied into local variables.
+// Macros are used to allow for global subroutines without message passing.
+// Macro parameters may be marked as inline.
+// These parameters are re-evaluated on each use.
+// Macro parameters not so marked will be copied into local variables.
 
 macro outs(inline string text) {
-	# The inline command is used to write inline CAOS.
-	# Parameters given are converted into CAOS that returns their values.
-	# When possible, this CAOS can be used to write to the value.
+	// The inline command is used to write inline CAOS.
+	// Parameters given are converted into CAOS that returns their values.
+	// When possible, this CAOS can be used to write to the value.
 	inline "outs " text "\n";
-	# It's worth mentioning that this style of macro is considered an expression.
-	# {} is valid in expressions, although it has different semantics to
-	#  when used as a statement.
-	# In particular, it may have a return statement at the end.
+	// It's worth mentioning that this style of macro is considered an expression.
+	// {} is valid in expressions, although it has different semantics to
+	//  when used as a statement.
+	// In particular, it may have a return statement at the end.
 }
 
-# There is a second style of macros.
-# This style is useful for when a macro needs to modify variables in-place for efficiency.
-# In this style, the "return values" are given as explicit slots.
-# Such a macro is a statement or list of statements, not an expression.
-# It returns it's values through it's side effects.
+// There is a second style of macros.
+// This style is useful for when a macro needs to modify variables in-place for efficiency.
+// In this style, the "return values" are given as explicit slots.
+// Such a macro is a statement or list of statements, not an expression.
+// It returns it's values through it's side effects.
 
 macro (string rt) modu() {
 	inline "sets " rt " modu\n";
 }
 
-# In any case, inline parameters can alter values.
-# So it comes down to desired style.
+// In any case, inline parameters can alter values.
+// So it comes down to desired style.
 
 macro addInplace(inline integer a, inline integer b) {
-	# Assignment works as in most languages, more or less.
-	# However, you may assign multiple source values to multiple destinations.
-	# However, due to various design concerns, these assignments are not atomic.
-	# Therefore a,b = b,a; is not recommended.
+	// Assignment works as in most languages, more or less.
+	// However, you may assign multiple source values to multiple destinations.
+	// However, due to various design concerns, these assignments are not atomic.
+	// Therefore a,b = b,a; is not recommended.
 	inline "addv " a " " b "\n";
 }
 
-# And, of course, at the expense of a temporary variable...
-# It is possible to do things the simple way.
+// And, of course, at the expense of a temporary variable...
+// It is possible to do things the simple way.
 
 macro add(inline integer a, inline integer b) {
 	let integer c = a;
@@ -86,29 +86,29 @@ macro add(inline integer a, inline integer b) {
 	return c;
 }
 
-# Null is considered a separate type.
-# ? acts as syntactic sugar for allowing null in a type.
+// Null is considered a separate type.
+// ? acts as syntactic sugar for allowing null in a type.
 
 macro (Agent? res) rtar(inline integer family, inline integer genus, inline integer species) {
 	inline "rtar " family " " genus " " species "\n";
 	res = targ;
 }
 
-# The install script is simply install followed by a statement block.
+// The install script is simply install followed by a statement block.
 
 install {
 
 	inline " * --outs/modu--\n";
 
-	# Macro calls are relatively normal function if you're used to other languages.
+	// Macro calls are relatively normal function if you're used to other languages.
 	outs("Your MODU says:"); outs(modu()); outs("\n");
 
 	inline " * --defining counter--\n";
 
-	# Variables may be defined using the let keyword.
+	// Variables may be defined using the let keyword.
 	let number counter = 0;
 
-	# They may be aliased using the alias keyword, and this also allows redeclaring their type.
+	// They may be aliased using the alias keyword, and this also allows redeclaring their type.
 	alias counter = counter!integer;
 
 	inline " * --addInplace--\n";
@@ -117,10 +117,10 @@ install {
 	inline " * --add--\n";
 	counter = add(counter, 1);
 
-	# Booleans are strictly speaking integers (and are castable to such).
-	# But they're useful nonetheless.
+	// Booleans are strictly speaking integers (and are castable to such).
+	// But they're useful nonetheless.
 	let boolean testBool = counter == 2 && counter < 4 || counter > 3;
-	# And of course they can be used in conditionals.
+	// And of course they can be used in conditionals.
 	if testBool && counter == 1 {
 		outs("Moo!");
 	} else if counter == 2 {
@@ -129,30 +129,30 @@ install {
 		outs("Meh!");
 	}
 
-	# RAL also has sane loops, at least where possible...
+	// RAL also has sane loops, at least where possible...
 	while counter == 4 {
 	}
 
-	# Agent classifiers expand to their components.
-	# THIS DOESN'T WORK YET
-	#let WorldAgent? y = rtar(WorldAgent)!WorldAgent?;
+	// Agent classifiers expand to their components.
+	// THIS DOESN'T WORK YET
+	//let WorldAgent? y = rtar(WorldAgent)!WorldAgent?;
 	let WorldAgent? y = rtar(0, 0, 0)!WorldAgent?;
 }
 
-# Scripts can be defined by class name and message ID...
+// Scripts can be defined by class name and message ID...
 
 script Creature 5 {
-	# Test complex constant expressions
+	// Test complex constant expressions
 	inline "outv " aTrue "\n";
 }
 
-# ...or by message name.
+// ...or by message name.
 
 script Creature:windowResized {
-	# :)
+	// :)
 }
 
-# The remove script is handled similarly to the install script.
+// The remove script is handled similarly to the install script.
 
 remove {
 }
