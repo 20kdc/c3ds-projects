@@ -11,7 +11,7 @@ import natsue.config.BaseConfig.Bool;
 import natsue.config.BaseConfig.Int;
 
 /**
- * Configuration of allowed nickname format & registration
+ * Configuration of allowed nickname format and registration
  */
 public class ConfigAccounts extends BaseConfig.Group {
 	/**

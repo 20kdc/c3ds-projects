@@ -10,11 +10,37 @@ package natsue.data.babel;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * The information on a user sent to the client.
+ */
 public class BabelShortUserData {
+	/**
+	 * Theoretically, someone's first name.
+	 * In practice, don't send it - the client never uses this anyway, and it's not nice.
+	 */
 	public final String firstName;
+
+	/**
+	 * Theoretically, someone's last name.
+	 * In practice, don't send it - the client never uses this anyway, and it's not nice.
+	 */
 	public final String lastName;
+
+	/**
+	 * The user's nickname.
+	 * Note that this is the "unfolded" version.
+	 */
 	public final String nickname;
+
+	/**
+	 * The user's UIN - see {@link UINUtils}.
+	 */
 	public final long uin;
+
+	/**
+	 * A packed version of this BabelShortUserData (as these objects tend to stick around for long periods).
+	 * Do not modify contents!
+	 */
 	public final byte[] packed;
 
 	public BabelShortUserData(String f, String l, String n, long u) {
