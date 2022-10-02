@@ -11,7 +11,8 @@ c3ds-projects contributors are in no way affiliated with Creature Labs, this is 
 + colour-depth-fix: improves Linux & Mac compatibilty of Docking Station through renderer patching
 + creature-monitor-gd: tool for monitoring creatures that is hopefully more reliable than alternatives
 + tob: Babel protocol documentation attempt
-+ natsue: ???
++ natsue: Babel protocol server
++ ral: Experimental language compiling to CAOS
 
 ## License
 
@@ -23,6 +24,7 @@ c3ds-projects contributors are in no way affiliated with Creature Labs, this is 
 Some parts of this repository use third-party dependencies, in particular:
 
 + creature-monitor-gd uses Godot Engine ( https://godotengine.org/ ) and dependencies thereof.
++ natsue by default is packaged with sqlite-jdbc, mysql-connector-java, and dependencies of these (though these do not enter c3ds-projects binary releases).
 
 While c3ds-projects is under CC0, these dependencies are mostly not.
 
