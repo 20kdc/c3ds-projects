@@ -21,7 +21,7 @@ import rals.types.TypeSystem;
  * If you took away the Module, the output .cos file would be empty.
  * If you took away the TypeSystem, nothing would make sense (and things like constants would be missing).
  */
-public class Module {
+public class Scripts {
 	public RALStatementUR installScript;
 	public HashMap<ScriptIdentifier, RALStatementUR> eventScripts = new HashMap<>();
 	public RALStatementUR removeScript;
@@ -29,7 +29,7 @@ public class Module {
 	public HashMap<String, MacroDefSet> macroDefs = new HashMap<>();
 	public HashMap<String, RALCallable> callable = new HashMap<>();
 
-	public Module() {
+	public Scripts() {
 		
 	}
 

@@ -25,13 +25,13 @@ public class Main {
 			return;
 		}
 		TypeSystem ts = new TypeSystem();
-		Module m = new Module();
+		Scripts m = new Scripts();
 		String init = args[args.length - 2];
 		String outFile = args[args.length - 1];
 		File[] searchPaths = new File[args.length - 2];
 		for (int i = 0; i < args.length - 2; i++)
 			searchPaths[i] = new File(args[i]);
-		Parser.parseFile(ts, m, searchPaths, "std/compiler_helpers.ral");
+		Parser.parseFile(ts, m, searchPaths, "(internal) compiler_helpers.ral", Main.class.getClassLoader().getResourceAsStream("compiler_helpers.ral"));
 		Parser.parseFile(ts, m, searchPaths, init);
 		StringBuilder outText = new StringBuilder();
 		m.compile(outText, ts);

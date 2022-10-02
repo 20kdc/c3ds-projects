@@ -17,7 +17,7 @@ import rals.types.*;
  */
 public class CompileContext implements AutoCloseable, IVAAllocator {
 	public final TypeSystem typeSystem;
-	public final Module module;
+	public final Scripts module;
 	public final CodeWriter writer;
 	public final HashMap<IVAHandle, Integer> heldVAHandles = new HashMap<>();
 	public final HashMap<IEHHandle, RALExprSlice> heldExprHandles = new HashMap<>();
