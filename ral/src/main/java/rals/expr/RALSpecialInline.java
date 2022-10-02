@@ -4,31 +4,19 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.code;
-
-import rals.expr.RALVarString;
-import rals.types.RALType;
+package rals.expr;
 
 /**
- * Allocates variable slots.
+ * This is similar to getInlineCAOS, but it's for very specific circumstances.
  */
-public interface IVAAllocator {
-	/**
-	 * Allocates a given VA.
-	 */
-	int allocVA();
-
-	/**
-	 * Releases a given VA.
-	 */
-	void releaseVA(int i);
-
-	/**
-	 * Allocates a VA and returns it as a RALStringVar.
-	 */
-	default RALVarString.Fixed allocVA(RALType t) {
-		int slot = allocVA();
-		String slotS = CompileContext.vaToString(slot);
-		return new RALVarString.Fixed(slotS, t, true);
+public enum RALSpecialInline {
+	None(null, false),
+	Ownr("ownr", true),
+	Targ("targ", false);
+	public final String code;
+	public final boolean inlineWritable;
+	RALSpecialInline(String s, boolean iw) {
+		code = s;
+		inlineWritable = iw;
 	}
 }

@@ -4,31 +4,24 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.code;
+package rals.expr;
 
-import rals.expr.RALVarString;
+import rals.code.CompileContext;
 import rals.types.RALType;
 
 /**
- * Allocates variable slots.
+ * Like RALStringVar but even more picky.
  */
-public interface IVAAllocator {
-	/**
-	 * Allocates a given VA.
-	 */
-	int allocVA();
+public class RALVarSI extends RALVarString.Fixed {
+	public final RALSpecialInline specialInline;
 
-	/**
-	 * Releases a given VA.
-	 */
-	void releaseVA(int i);
+	public RALVarSI(RALSpecialInline s, RALType ot, boolean w) {
+		super(s.code, ot, w);
+		specialInline = s;
+	}
 
-	/**
-	 * Allocates a VA and returns it as a RALStringVar.
-	 */
-	default RALVarString.Fixed allocVA(RALType t) {
-		int slot = allocVA();
-		String slotS = CompileContext.vaToString(slot);
-		return new RALVarString.Fixed(slotS, t, true);
+	@Override
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+		return specialInline;
 	}
 }

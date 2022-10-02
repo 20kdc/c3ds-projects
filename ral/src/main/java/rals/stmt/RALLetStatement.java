@@ -6,14 +6,10 @@
  */
 package rals.stmt;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.expr.RALVAVar;
-import rals.lex.SrcPos;
-import rals.types.RALType;
+import rals.code.*;
+import rals.expr.*;
+import rals.lex.*;
+import rals.types.*;
 
 /**
  * Let statement.
@@ -33,29 +29,28 @@ public class RALLetStatement extends RALStatementUR {
 
 	@Override
 	public RALStatement resolveInner(ScopeContext scope) {
-		RALExpr initRes = null;
+		RALExprSlice initRes = null;
 		if (init != null) {
 			initRes = init.resolve(scope);
 			// Type-check
-			RALType[] initChk = initRes.outTypes();
-			if (initChk.length != names.length)
+			if (initRes.length != names.length)
 				throw new RuntimeException("Expression return values don't match amount of defined variables");
 			for (int i = 0; i < names.length; i++)
-				initChk[i].implicitlyCastOrThrow(types[i]);
+				initRes.readType(i).assertImpCast(types[i]);
 		}
-		RALVAVar[] vars = new RALVAVar[names.length];
+		RALVarVA[] vars = new RALVarVA[names.length];
 		for (int i = 0; i < names.length; i++) {
-			RALVAVar rvv = scope.newLocal(names[i], types[i]);
+			RALVarVA rvv = scope.newLocal(names[i], types[i]);
 			vars[i] = rvv;
 		}
 		return new Resolved(lineNumber, vars, initRes);
 	}
 
 	public class Resolved extends RALStatement {
-		public final RALVAVar[] vars;
-		public final RALExpr init;
+		public final RALVarVA[] vars;
+		public final RALExprSlice init;
 	
-		public Resolved(SrcPos sp, RALVAVar[] v, RALExpr i) {
+		public Resolved(SrcPos sp, RALVarVA[] v, RALExprSlice i) {
 			super(sp);
 			vars = v;
 			init = i;
@@ -67,12 +62,12 @@ public class RALLetStatement extends RALStatementUR {
 			// In particular we want to be able to use local definitions as a cast.
 			for (int i = 0; i < vars.length; i++) {
 				scope.allocVA(vars[i].handle);
-				writer.writeComment(vars[i].getInlineCAOS(scope, false) + ": " + types[i] + " " + names[i]);
+				writer.writeComment(vars[i].getInlineCAOS(0, false, scope) + ": " + types[i] + " " + names[i]);
 			}
-			
+
 			if (init != null) {
 				try (CompileContext iScope = new CompileContext(scope)) {
-					init.outCompile(writer, vars, iScope);
+					init.readCompile(RALExprSlice.concat(vars), iScope);
 				}
 			}
 		}

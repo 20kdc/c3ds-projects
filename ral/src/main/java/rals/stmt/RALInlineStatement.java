@@ -6,14 +6,10 @@
  */
 package rals.stmt;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.expr.RALStringVar;
-import rals.lex.SrcPos;
-import rals.types.RALType;
+import rals.code.*;
+import rals.expr.*;
+import rals.lex.*;
+import rals.types.*;
 
 /**
  * Inline statement, made up of a set of parts.
@@ -53,24 +49,18 @@ public class RALInlineStatement extends RALStatementUR {
 					for (Object o : parts2) {
 						if (o instanceof String) {
 							interiorWriter.append(o);
-						} else if (o instanceof RALExpr) {
-							RALExpr re = (RALExpr) o;
-							String inlineRepr = re.getInlineCAOS(scope2, false);
-							if (inlineRepr != null) {
+						} else if (o instanceof RALExprSlice) {
+							RALExprSlice re = (RALExprSlice) o;
+							boolean[] inline = new boolean[re.length];
+							for (int i = 0; i < re.length; i++)
+								inline[i] = re.getInlineCAOS(i, false, scope2) != null;
+							VarCacher vc = new VarCacher(re, inline, null);
+							vc.writeCacheCode(scope2);
+							for (int i = 0; i < vc.finishedOutput.length; i++) {
+								String inlineRepr = vc.finishedOutput.getInlineCAOS(i, false, scope2);
+								if (inlineRepr == null)
+									throw new RuntimeException("VarCacher did not cache something it was told to");
 								interiorWriter.append(inlineRepr);
-							} else {
-								writer.writeComment("Inline shunt: " + re.toString());
-								RALType[] slots = re.outTypes();
-								RALStringVar[] vars = new RALStringVar[slots.length];
-								for (int i = 0; i < vars.length; i++)
-									vars[i] = scope2.allocVA(slots[i]);
-								// Note that this goes to writer (for setup), while interiorWriter is building the main thing.
-								re.outCompile(writer, vars, scope2);
-								for (int i = 0; i < vars.length; i++) {
-									if (i != 0)
-										interiorWriter.append(" ");
-									interiorWriter.append(vars[i].code);
-								}
 							}
 						} else {
 							throw new RuntimeException("RALInlineStatement intern takes Strings and RALExprs.");

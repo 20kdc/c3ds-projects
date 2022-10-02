@@ -22,7 +22,7 @@ public class MacroDefSet implements RALCallable {
 	}
 
 	@Override
-	public RALExpr instance(RALExpr[] args, ScopeContext sc) {
+	public RALExprSlice instance(RALExprSlice args, ScopeContext sc) {
 		RALCallable res = map.get(args.length);
 		if (res == null)
 			throw new RuntimeException(name + " doesn't have " + args.length + "-parameter variant");

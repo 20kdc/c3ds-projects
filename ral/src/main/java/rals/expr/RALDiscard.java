@@ -13,38 +13,33 @@ import rals.types.*;
  * Underscore, or the discard expression.
  * This is injected in ScopeContext alongside other "semi-keywords".
  */
-public class RALDiscard implements RALExpr, RALExprUR {
+public class RALDiscard extends RALExprSlice implements RALExprUR {
 	public final RALType any;
-	public RALDiscard(TypeSystem ts) {
+	public RALDiscard(TypeSystem ts, int len) {
+		super(len);
 		any = ts.gAny;
+	}
+	private RALDiscard(RALType a, int len) {
+		super(len);
+		any = a;
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext context) {
+	public RALExprSlice resolve(ScopeContext context) {
 		return this;
 	}
 
 	@Override
-	public RALType[] outTypes() {
-		return new RALType[0];
+	protected RALExprSlice sliceInner(int base, int length) {
+		return new RALDiscard(any, length);
 	}
 
 	@Override
-	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-		throw new RuntimeException("Discard isn't a real value");
-	}
-
-	@Override
-	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
+	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
 		// We need to discard this safely, soooo
 		try (CompileContext ccr = new CompileContext(context)) {
-			RALStringVar rsv = ccr.allocVA(inputExactType);
-			rsv.inCompile(writer, input, inputExactType, context);
+			RALVarString.Fixed rsv = ccr.allocVA(inputExactType);
+			rsv.writeCompile(0, input, inputExactType, context);
 		}
-	}
-
-	@Override
-	public RALType inType() {
-		return any;
 	}
 }

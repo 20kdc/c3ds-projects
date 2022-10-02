@@ -50,11 +50,9 @@ public class RALCondLogOp implements RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext scope) {
-		final RALExpr lE = left.resolve(scope);
-		lE.assertOutTypeSingleImpcast(scope.script.typeSystem.gBoolean);
-		final RALExpr rE = right.resolve(scope);
-		rE.assertOutTypeSingleImpcast(scope.script.typeSystem.gBoolean);
+	public RALExprSlice resolve(ScopeContext scope) {
+		final RALExprSlice lE = left.resolve(scope);
+		final RALExprSlice rE = right.resolve(scope);
 		final RALCondition lC = RALCondition.coerceToCondition(lE, scope.script.typeSystem);
 		final RALCondition rC = RALCondition.coerceToCondition(rE, scope.script.typeSystem);
 
@@ -97,8 +95,8 @@ public class RALCondLogOp implements RALExprUR {
 			}
 			private String wrapVar(CodeWriter writer, CompileContext sharedContext, RALCondition rc, boolean invert) {
 				// complex condition into var
-				RALStringVar tmp = sharedContext.allocVA(bool);
-				rc.outCompile(writer, new RALExpr[] {tmp}, sharedContext);
+				RALVarString.Fixed tmp = sharedContext.allocVA(bool);
+				rc.readCompile(tmp, sharedContext);
 				return tmp.code + (invert ? " eq 0" : " ne 0");
 			}
 

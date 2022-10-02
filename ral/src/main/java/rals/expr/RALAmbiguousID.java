@@ -35,18 +35,18 @@ public class RALAmbiguousID implements RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext context) {
+	public RALExprSlice resolve(ScopeContext context) {
 		// Constants go first for consistency with the const resolver.
 		RALConstant rc = typeSystem.namedConstants.get(text);
 		if (rc != null)
 			return rc;
-		RALExpr re = context.scopedVariables.get(text);
+		RALExprSlice re = context.scopedVariables.get(text);
 		if (re != null)
 			return re;
 		RALType.AgentClassifier maybeClassifier = typeSystem.tryGetAsClassifier(text);
 		if (maybeClassifier != null) {
 			Classifier cl = maybeClassifier.classifier;
-			return RALExprGroup.of(
+			return RALExprGroupUR.of(
 				new RALConstant.Int(typeSystem, cl.family),
 				new RALConstant.Int(typeSystem, cl.genus),
 				new RALConstant.Int(typeSystem, cl.species)

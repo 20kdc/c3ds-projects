@@ -24,20 +24,20 @@ public class ScopeContext {
 	 * Note that the entries here will change chronologically as we move forward lexically in the blocks and as things get shadowed.
 	 * That's normal.
 	 */
-	public HashMap<String, RALExpr> scopedVariables = new HashMap<>();
+	public HashMap<String, RALExprSlice> scopedVariables = new HashMap<>();
 
 	public ScopeContext(ScriptContext parent) {
 		script = parent;
-		scopedVariables.put("ownr", new RALSIVar(RALExpr.SpecialInline.Ownr, parent.ownrType, true));
+		scopedVariables.put("ownr", new RALVarSI(RALSpecialInline.Ownr, parent.ownrType, true));
 		// Dynamic VMVars would be nice, but we need hard logic anyway for, say, ownrType
-		scopedVariables.put("from", new RALStringVar("from", parent.fromType, true));
-		scopedVariables.put("_it_", new RALStringVar("_it_", parent.typeSystem.gAgentNullable, true));
-		scopedVariables.put("part", new RALStringVar("part", parent.typeSystem.gInteger, false));
-		scopedVariables.put("_p1_", new RALStringVar("_p1_", parent.p1Type, true));
-		scopedVariables.put("_p2_", new RALStringVar("_p2_", parent.p2Type, true));
-		scopedVariables.put("null", new RALStringVar("null", parent.typeSystem.gNull, true));
+		scopedVariables.put("from", new RALVarString.Fixed("from", parent.fromType, true));
+		scopedVariables.put("_it_", new RALVarString.Fixed("_it_", parent.typeSystem.gAgentNullable, true));
+		scopedVariables.put("part", new RALVarString.Fixed("part", parent.typeSystem.gInteger, false));
+		scopedVariables.put("_p1_", new RALVarString.Fixed("_p1_", parent.p1Type, true));
+		scopedVariables.put("_p2_", new RALVarString.Fixed("_p2_", parent.p2Type, true));
+		scopedVariables.put("null", new RALVarString.Fixed("null", parent.typeSystem.gNull, true));
 		scopedVariables.put("targ", new RALTarg(parent.typeSystem.gAgentNullable));
-		scopedVariables.put("_", new RALDiscard(parent.typeSystem));
+		scopedVariables.put("_", new RALDiscard(parent.typeSystem, 1));
 	}
 
 	public ScopeContext(ScopeContext parent) {
@@ -46,27 +46,10 @@ public class ScopeContext {
 	}
 
 	/**
-	 * Converts a VA index into the VA name.
-	 */
-	public static String vaToString(int va) {
-		return vaToString("va", va);
-	}
-
-	/**
-	 * Converts a VA index into the VA name.
-	 */
-	public static String vaToString(String pfx, int va) {
-		String res = Integer.toString(va);
-		if (res.length() == 1)
-			return pfx + "0" + res;
-		return pfx + res;
-	}
-
-	/**
 	 * Note: You still have to actualize the VA handle for this!
 	 */
-	public RALVAVar newLocal(String name, RALType type) {
-		RALVAVar rvv = new RALVAVar(new IVAHandle() {
+	public RALVarVA newLocal(String name, RALType type) {
+		RALVarVA rvv = new RALVarVA(new IVAHandle() {
 			@Override
 			public String toString() {
 				return name;

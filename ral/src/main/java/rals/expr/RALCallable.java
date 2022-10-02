@@ -16,5 +16,5 @@ public interface RALCallable {
 	 * Given some arguments, converts to an expression.
 	 * See RALExpr.resolve for details on how this all works. 
 	 */
-	RALExpr instance(RALExpr[] args, ScopeContext sc);
+	RALExprSlice instance(RALExprSlice args, ScopeContext sc);
 }

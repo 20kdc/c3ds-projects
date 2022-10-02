@@ -9,7 +9,7 @@ package rals.cond;
 import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.expr.RALConstant;
-import rals.expr.RALExpr;
+import rals.expr.RALExprSlice;
 import rals.types.RALType;
 import rals.types.TypeSystem;
 
@@ -17,9 +17,10 @@ import rals.types.TypeSystem;
  * Condition.
  * Note that there's no unresolved form, as that's just RALExprUR.
  */
-public abstract class RALCondition implements RALExpr {
+public abstract class RALCondition extends RALExprSlice {
 	public final RALType bool;
 	public RALCondition(TypeSystem ts) {
+		super(1);
 		bool = ts.gBoolean;
 	}
 
@@ -27,8 +28,10 @@ public abstract class RALCondition implements RALExpr {
 	 * Coerces the input to a condition by one of two methods:
 	 * + Returns it as-is if it's a condition
 	 * + Turns it into a != 0 clause otherwise
+	 * Also checks the type is sane.
 	 */
-	public static RALCondition coerceToCondition(RALExpr re, TypeSystem ts) {
+	public static RALCondition coerceToCondition(RALExprSlice re, TypeSystem ts) {
+		re.assert1ReadType().assertImpCast(ts.gBoolean);
 		if (re instanceof RALCondition)
 			return (RALCondition) re;
 		return RALCondSimple.Resolved.of(ts, RALCondSimple.Op.NotEqual, re, new RALConstant.Int(ts, 0));
@@ -57,28 +60,18 @@ public abstract class RALCondition implements RALExpr {
 	public abstract String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert);
 
 	@Override
-	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
-		throw new RuntimeException("Can't write into condition");
+	protected void readCompileInner(RALExprSlice out, CompileContext context) {
+		String cc = compileCond(context.writer, context, false);
+		context.writer.writeCode("doif " + cc, 1);
+		out.writeCompile(0, "1", bool, context);
+		context.writer.writeCode(-1, "else", 1);
+		out.writeCompile(0, "0", bool, context);
+		context.writer.writeCode(-1, "endi");
 	}
 
 	@Override
-	public RALType inType() {
-		throw new RuntimeException("Can't write into condition");
-	}
-
-	@Override
-	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-		String cc = compileCond(writer, context, false);
-		writer.writeCode("doif " + cc, 1);
-		out[0].inCompile(writer, "1", bool, context);
-		writer.writeCode(-1, "else", 1);
-		out[0].inCompile(writer, "0", bool, context);
-		writer.writeCode(-1, "endi");
-	}
-
-	@Override
-	public RALType[] outTypes() {
-		return new RALType[] {bool};
+	protected RALType readTypeInner(int index) {
+		return bool;
 	}
 
 	/**

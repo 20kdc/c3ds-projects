@@ -6,12 +6,9 @@
  */
 package rals.stmt;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.lex.SrcPos;
+import rals.code.*;
+import rals.expr.*;
+import rals.lex.*;
 
 /**
  * Aliases an expression to another.
@@ -27,7 +24,7 @@ public class RALAliasStatement extends RALStatementUR {
 
 	@Override
 	public RALStatement resolveInner(ScopeContext scope) {
-		final RALExpr exp = target.resolve(scope);
+		final RALExprSlice exp = target.resolve(scope);
 		scope.scopedVariables.put(name, exp);
 		return new RALStatement(lineNumber) {
 			@Override

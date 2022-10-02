@@ -24,7 +24,7 @@ public class RALStmtExprInverted implements RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext scope) {
+	public RALExprSlice resolve(ScopeContext scope) {
 		// Notably, we don't need to do too much for this, just manipulate the context a bit.
 		// However, we don't have our outputs yet, so we're going to need to fudge things.
 		// Besides, it's healthy! Permissions checks and all that...
@@ -41,34 +41,29 @@ public class RALStmtExprInverted implements RALExprUR {
 				}
 			};
 			handles[i] = handle;
-			scope.scopedVariables.put(ret.name, new RALEHVar(handle, ret.type));
+			scope.scopedVariables.put(ret.name, new RALVarEH(handle, ret.type));
 		}
 		final RALStatement innards = code.resolve(scope);
-		return new RALExpr() {
+		return new RALExprSlice(types.length) {
 			@Override
-			public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
-				throw new RuntimeException("Can't put values into StmtExprInverted (statement macro)");
+			public String toString() {
+				return "resolved StmtExprInverted";
 			}
 
 			@Override
-			public RALType inType() {
-				throw new RuntimeException("Can't put values into StmtExprInverted (statement macro)");
-			}
-
-			@Override
-			public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
+			protected void readCompileInner(RALExprSlice out, CompileContext context) {
 				// alright, now we're here, just need to wire this up
 				try (CompileContext cci = new CompileContext(context)) {
 					// These handles wire everything up nicely
 					for (int i = 0; i < out.length; i++)
-						cci.heldExprHandles.put(handles[i], out[i]);
-					innards.compile(writer, cci);
+						cci.heldExprHandles.put(handles[i], out.slice(i, 1));
+					innards.compile(context.writer, cci);
 				}
 			}
 
 			@Override
-			public RALType[] outTypes() {
-				return types;
+			protected RALType readTypeInner(int index) {
+				return types[index];
 			}
 		};
 	}

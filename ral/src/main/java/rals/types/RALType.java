@@ -68,9 +68,13 @@ public abstract class RALType {
 		return false;
 	}
 
-	public final void implicitlyCastOrThrow(RALType type) {
+	/**
+	 * Assert this type can be implicitly cast to another (the supertype), then return this type (the subtype)
+	 */
+	public final RALType assertImpCast(RALType type) {
 		if (!canImplicitlyCast(type))
 			throw new RuntimeException("Cannot cast " + this + " to " + type);
+		return this;
 	}
 
 	public final void implicitlyCastOrThrow(RALType type, Object src, Object dst) {

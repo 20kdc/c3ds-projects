@@ -9,8 +9,8 @@ package rals.code;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import rals.expr.RALExpr;
-import rals.types.TypeSystem;
+import rals.expr.*;
+import rals.types.*;
 
 /**
  * Responsible for holding VA handles.
@@ -18,8 +18,9 @@ import rals.types.TypeSystem;
 public class CompileContext implements AutoCloseable, IVAAllocator {
 	public final TypeSystem typeSystem;
 	public final Module module;
+	public final CodeWriter writer;
 	public final HashMap<IVAHandle, Integer> heldVAHandles = new HashMap<>();
-	public final HashMap<IEHHandle, RALExpr> heldExprHandles = new HashMap<>();
+	public final HashMap<IEHHandle, RALExprSlice> heldExprHandles = new HashMap<>();
 	public final ScopedVAAllocator alloc;
 
 	/**
@@ -37,9 +38,10 @@ public class CompileContext implements AutoCloseable, IVAAllocator {
 	 */
 	public String breakLabel, breakBool;
 
-	public CompileContext(ScriptContext sc) {
+	public CompileContext(ScriptContext sc, CodeWriter cw) {
 		typeSystem = sc.typeSystem;
 		module = sc.module;
+		writer = cw;
 		labelAllocator = new AtomicInteger();
 		subUserTrackingParent = null;
 		// create the VA allocator
@@ -50,6 +52,7 @@ public class CompileContext implements AutoCloseable, IVAAllocator {
 	public CompileContext(CompileContext sc) {
 		typeSystem = sc.typeSystem;
 		module = sc.module;
+		writer = sc.writer;
 		labelAllocator = sc.labelAllocator;
 		alloc = new ScopedVAAllocator(sc.alloc);
 		// inherit break label
@@ -72,8 +75,10 @@ public class CompileContext implements AutoCloseable, IVAAllocator {
 		return "_RAL_" + labelAllocator.getAndIncrement();
 	}
 
-	public void allocVA(IVAHandle obj) {
-		heldVAHandles.put(obj, allocVA());
+	public int allocVA(IVAHandle obj) {
+		int res = allocVA();
+		heldVAHandles.put(obj, res);
+		return res;
 	}
 
 	@Override
@@ -93,5 +98,22 @@ public class CompileContext implements AutoCloseable, IVAAllocator {
 		if (subUserTrackingParent != null)
 			subUserTrackingParent.subUsers--;
 		alloc.close();
+	}
+
+	/**
+	 * Converts a VA index into the VA name.
+	 */
+	public static String vaToString(String pfx, int va) {
+		String res = Integer.toString(va);
+		if (res.length() == 1)
+			return pfx + "0" + res;
+		return pfx + res;
+	}
+
+	/**
+	 * Converts a VA index into the VA name.
+	 */
+	public static String vaToString(int va) {
+		return CompileContext.vaToString("va", va);
 	}
 }

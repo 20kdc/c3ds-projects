@@ -34,7 +34,7 @@ public final class RALCast implements RALExprUR {
 		RALConstant rc = base.resolveConst(ts);
 		if (rc instanceof RALConstant.Single) {
 			if (doImplicitCheck)
-				((RALConstant.Single) rc).type.implicitlyCastOrThrow(target);
+				((RALConstant.Single) rc).type.assertImpCast(target);
 			return ((RALConstant.Single) rc).cast(target);
 		}
 		return null;
@@ -60,7 +60,7 @@ public final class RALCast implements RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext context) {
+	public RALExprSlice resolve(ScopeContext context) {
 		return Resolved.of(base.resolve(context), target, doImplicitCheck);
 	}
 
@@ -72,9 +72,9 @@ public final class RALCast implements RALExprUR {
 		}
 
 		@Override
-		public RALExpr resolve(ScopeContext context) {
-			RALExpr r = base.resolve(context);
-			RALType nn = r.assertOutTypeSingle();
+		public RALExprSlice resolve(ScopeContext context) {
+			RALExprSlice r = base.resolve(context);
+			RALType nn = r.assert1ReadType();
 			// System.out.println(nn);
 			nn = context.script.typeSystem.byNonNullable(nn);
 			// System.out.println(nn);
@@ -82,12 +82,15 @@ public final class RALCast implements RALExprUR {
 		}
 	}
 
-	public static class Resolved implements RALExpr {
-		public final RALExpr expr;
+	public static class Resolved extends RALExprSlice {
+		public final RALExprSlice expr;
 		public final RALType target;
 		private final boolean doImplicitCheck;
-		private Resolved(RALExpr e, RALType t, boolean c) {
+		private Resolved(RALExprSlice e, RALType t, boolean c) {
+			super(1);
 			expr = e;
+			if (e.length != 1)
+				throw new RuntimeException("Cannot cast " + e + " which has length of " + e.length + ".");
 			target = t;
 			doImplicitCheck = c;
 		}
@@ -95,7 +98,7 @@ public final class RALCast implements RALExprUR {
 		/**
 		 * Tries to prevent layers from piling up unnecessarily.
 		 */
-		public static Resolved of(RALExpr e, RALType t, boolean doImplicitCheck) {
+		public static Resolved of(RALExprSlice e, RALType t, boolean doImplicitCheck) {
 			if (e instanceof Resolved)
 				e = ((Resolved) e).expr;
 			return new Resolved(e, t, doImplicitCheck);
@@ -107,48 +110,54 @@ public final class RALCast implements RALExprUR {
 		}
 
 		@Override
-		public RALType[] outTypes() {
+		protected RALType readTypeInner(int index) {
 			// make sure the length is right
 			// also ensure implicit cast is possible if we want that
 			if (doImplicitCheck) {
-				expr.assertOutTypeSingleImpcast(target);
+				expr.assert1ReadType().assertImpCast(target);
 			} else {
-				expr.assertOutTypeSingle();
+				expr.assert1ReadType();
 			}
-			return new RALType[] {target};
-		}
-
-		@Override
-		public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-			// Invert ourselves so we apply to the target.
-			// This is important because it ensures we overwrite inputExactType for storage.
-			expr.outCompile(writer, new RALExpr[] {new Resolved(out[0], target, doImplicitCheck)}, context);
-		}
-
-		@Override
-		public RALType inType() {
-			// Useful for throwing assertions.
-			RALType rt = expr.inType();
-			if (doImplicitCheck)
-				target.implicitlyCastOrThrow(rt);
 			return target;
 		}
 
 		@Override
-		public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
+		public void readCompileInner(RALExprSlice out, CompileContext context) {
+			// just to run the checks, because we have to run them late
+			readTypeInner(0);
+			// Invert ourselves so we apply to the target.
+			// This is important because it ensures we overwrite inputExactType for storage.
+			expr.readCompile(new Resolved(out, target, doImplicitCheck), context);
+		}
+
+		@Override
+		public RALType writeTypeInner(int index) {
+			// Useful for throwing assertions.
+			if (expr.length != 1)
+				throw new RuntimeException("How'd you even get here, anyway?");
+			RALType rt = expr.writeType(0);
+			if (doImplicitCheck)
+				target.assertImpCast(rt);
+			return target;
+		}
+
+		@Override
+		public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+			// trigger checks
+			writeTypeInner(0);
 			// Overwriting inputExactType here is what turns, i.e. null|integer (major type unknown) into integer (Int).
 			// This is important for set instruction selection.
-			expr.inCompile(writer, input, doImplicitCheck ? inputExactType : target, context);
+			expr.writeCompile(0, input, doImplicitCheck ? inputExactType : target, context);
 		}
 
 		@Override
-		public String getInlineCAOS(CompileContext context, boolean write) {
-			return expr.getInlineCAOS(context, write);
+		public String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+			return expr.getInlineCAOS(index, write, context);
 		}
 
 		@Override
-		public SpecialInline getSpecialInline(CompileContext context) {
-			return expr.getSpecialInline(context);
+		public RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+			return expr.getSpecialInline(index, context);
 		}
 	}
 }

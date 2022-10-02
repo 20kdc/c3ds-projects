@@ -6,66 +6,52 @@
  */
 package rals.expr;
 
-
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.types.RALType;
-import rals.types.TypeSystem;
+import rals.code.*;
+import rals.types.*;
 
 /**
  * A constant.
  * The toString returns these in CAOS form.
  */
-public abstract class RALConstant implements RALExpr, RALExprUR {
+public abstract class RALConstant extends RALExprSlice implements RALExprUR {
+	public RALConstant(int len) {
+		super(len);
+	}
+
 	@Override
 	public RALConstant resolveConst(TypeSystem ts) {
 		return this;
 	}
 
 	@Override
-	public String getInlineCAOS(CompileContext context, boolean write) {
-		if (write)
-			return null;
-		return toString();
-	}
-
-	@Override
-	public String toString() {
-		throw new RuntimeException("Not implemented, should be!");
+	public RALExprSlice resolve(ScopeContext context) {
+		return this;
 	}
 
 	public static abstract class Single extends RALConstant {
 		public final RALType type;
 		public Single(RALType r) {
+			super(1);
 			type = r;
+		}
+
+		@Override
+		public String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+			if (write)
+				return null;
+			return toString();
 		}
 
 		public abstract RALConstant.Single cast(RALType rt);
 
 		@Override
-		public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-			out[0].inCompile(writer, toString(), type, context);
+		protected RALType readTypeInner(int index) {
+			return type;
 		}
 
 		@Override
-		public RALType[] outTypes() {
-			return new RALType[] {type};
-		}
-
-		@Override
-		public RALType inType() {
-			throw new RuntimeException("Constants are not writable");
-		}
-
-		@Override
-		public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
-			throw new RuntimeException("Constants are not writable");
-		}
-
-		@Override
-		public RALExpr resolve(ScopeContext context) {
-			return this;
+		protected void readCompileInner(RALExprSlice out, CompileContext context) {
+			out.writeCompile(0, toString(), type, context);
 		}
 	}
 

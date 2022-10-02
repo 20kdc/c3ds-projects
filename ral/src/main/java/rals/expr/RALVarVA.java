@@ -6,22 +6,18 @@
  */
 package rals.expr;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.IVAHandle;
-import rals.code.ScopeContext;
-import rals.types.RALType;
+import rals.code.*;
+import rals.types.*;
 
 /**
  * For trivial expressions & variables.
  * Goes nicely with inline statements.
  */
-public class RALVAVar implements RALExpr {
+public class RALVarVA extends RALVarString {
 	public final IVAHandle handle;
-	public final RALType type;
-	public RALVAVar(IVAHandle h, RALType ot) {
+	public RALVarVA(IVAHandle h, RALType ot) {
+		super(ot, true);
 		handle = h;
-		type = ot;
 	}
 
 	@Override
@@ -30,32 +26,12 @@ public class RALVAVar implements RALExpr {
 	}
 
 	@Override
-	public RALType inType() {
-		return type;
-	}
-
-	@Override
-	public RALType[] outTypes() {
-		return new RALType[] {
-			type
-		};
-	}
-
-	@Override
-	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
-		RALStringVar.writeSet(writer, getInlineCAOS(context, true), input, inputExactType);
-	}
-
-	@Override
-	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-		out[0].inCompile(writer, getInlineCAOS(context, false), type, context);
-	}
-
-	@Override
-	public String getInlineCAOS(CompileContext context, boolean write) {
+	public String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+		if (write && !isWritable)
+			return null;
 		Integer i = context.heldVAHandles.get(handle);
 		if (i == null)
 			throw new RuntimeException("VA handle " + handle + " escaped containment");
-		return ScopeContext.vaToString(i);
+		return CompileContext.vaToString(i);
 	}
 }

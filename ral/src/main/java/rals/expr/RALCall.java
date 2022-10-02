@@ -13,18 +13,16 @@ import rals.code.*;
  */
 public class RALCall implements RALExprUR {
 	public final String name;
-	public final RALExprUR[] params;
+	public final RALExprUR params;
 
 	public RALCall(String n, RALExprUR p) {
 		name = n;
-		params = p.decomposite();
+		params = p;
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext context) {
-		RALExpr[] paramR = new RALExpr[params.length];
-		for (int i = 0; i < paramR.length; i++)
-			paramR[i] = params[i].resolve(context);
+	public RALExprSlice resolve(ScopeContext context) {
+		RALExprSlice paramR = params.resolve(context);
 		RALCallable rc = context.script.module.callable.get(name);
 		if (rc == null)
 			throw new RuntimeException("No such callable: " + name);

@@ -117,7 +117,7 @@ public class ParserCode {
 				return new RALAssignStatement(tkn.lineNumber, null, target);
 			} else if (sp.isKeyword("=")) {
 				RALExprUR source = ParserExpr.parseExpr(ts, lx, true);
-				return new RALAssignStatement(tkn.lineNumber, target.decomposite(), source);
+				return new RALAssignStatement(tkn.lineNumber, target, source);
 			} else if (sp.isKeyword("->")) {
 				// MESG WRT+
 				Token messageId = lx.requireNext();

@@ -6,16 +6,10 @@
  */
 package rals.cond;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.expr.RALConstant;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.expr.RALStringVar;
-import rals.types.RALType;
+import rals.code.*;
+import rals.expr.*;
+import rals.types.*;
 import rals.types.RALType.Major;
-import rals.types.TypeSystem;
 
 /**
  * Simple CAOS condition clause.
@@ -47,20 +41,20 @@ public class RALCondSimple implements RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext scope) {
-		final RALExpr lR = left.resolve(scope);
-		final RALExpr rR = right.resolve(scope);
+	public RALExprSlice resolve(ScopeContext scope) {
+		final RALExprSlice lR = left.resolve(scope);
+		final RALExprSlice rR = right.resolve(scope);
 		return Resolved.of(scope.script.typeSystem, centre, lR, rR);
 	}
 	
 	public static final class Resolved extends RALCondition.Clause {
 		private final Op centre;
-		private final RALExpr rR;
-		private final RALExpr lR;
+		private final RALExprSlice rR;
+		private final RALExprSlice lR;
 		private final RALType rT;
 		private final RALType lT;
 
-		public Resolved(TypeSystem ts, Op c, RALExpr rR, RALExpr lR, RALType rT, RALType lT) {
+		private Resolved(TypeSystem ts, Op c, RALExprSlice rR, RALExprSlice lR, RALType rT, RALType lT) {
 			super(ts);
 			centre = c;
 			this.rR = rR;
@@ -69,9 +63,9 @@ public class RALCondSimple implements RALExprUR {
 			this.lT = lT;
 		}
 
-		public static Resolved of(TypeSystem ts, Op centre, RALExpr lR, RALExpr rR) {
-			RALType lT = lR.assertOutTypeSingle();
-			RALType rT = rR.assertOutTypeSingle();
+		public static Resolved of(TypeSystem ts, Op centre, RALExprSlice lR, RALExprSlice rR) {
+			RALType lT = lR.assert1ReadType();
+			RALType rT = rR.assert1ReadType();
 			if (lT.majorType != rT.majorType)
 				if ((lT.majorType != Major.Unknown) && (rT.majorType != Major.Unknown))
 					throw new RuntimeException("major type mismatch in condition (" + lT.majorType + " vs " + rT.majorType + "), VM doesn't like this");
@@ -80,16 +74,16 @@ public class RALCondSimple implements RALExprUR {
 
 		@Override
 		public String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert) {
-			String lInline = lR.getInlineCAOS(sharedContext, false);
-			String rInline = rR.getInlineCAOS(sharedContext, false);
+			String lInline = lR.getInlineCAOS(0, false, sharedContext);
+			String rInline = rR.getInlineCAOS(0, false, sharedContext);
 			if (lInline == null) {
-				RALStringVar lV = sharedContext.allocVA(lT);
-				lR.outCompile(writer, new RALExpr[] {lV}, sharedContext);
+				RALVarString.Fixed lV = sharedContext.allocVA(lT);
+				lR.readCompile(lV, sharedContext);
 				lInline = lV.code;
 			}
 			if (rInline == null) {
-				RALStringVar rV = sharedContext.allocVA(rT);
-				rR.outCompile(writer, new RALExpr[] {rV}, sharedContext);
+				RALVarString.Fixed rV = sharedContext.allocVA(rT);
+				rR.readCompile(rV, sharedContext);
 				rInline = rV.code;
 			}
 			return lInline + " " + (invert ? centre.codeInv : centre.code) + " " + rInline;

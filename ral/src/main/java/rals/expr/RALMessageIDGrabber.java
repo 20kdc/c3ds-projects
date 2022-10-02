@@ -22,8 +22,8 @@ public class RALMessageIDGrabber implements RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext scope) {
-		RALType base = reference.resolve(new ScopeContext(scope)).assertOutTypeSingle();
+	public RALExprSlice resolve(ScopeContext scope) {
+		RALType base = reference.resolve(new ScopeContext(scope)).assert1ReadType();
 		Integer id = base.lookupMSID(msgName, false);
 		if (id == null)
 			throw new RuntimeException("No message name " + msgName + " in " + base);

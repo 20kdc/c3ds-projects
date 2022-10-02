@@ -13,43 +13,21 @@ import rals.types.*;
  * For trivial expressions & variables.
  * Goes nicely with inline statements.
  */
-public class RALStringVar implements RALExpr, RALExprUR {
-	public final String code;
-	public final RALType type;
-	public final boolean isWritable;
-	public RALStringVar(String c, RALType ot, boolean w) {
-		code = c;
-		type = ot;
-		isWritable = w;
+public class RALVarString extends RALVarBase {
+	public RALVarString(RALType ot, boolean w) {
+		super(ot, w);
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext scope) {
-		return this;
+	protected void readCompileInner(RALExprSlice out, CompileContext context) {
+		out.writeCompile(0, getInlineCAOS(0, false, context), type, context);
 	}
 
 	@Override
-	public String toString() {
-		return (isWritable ? "SVW" : "SV") + "[" + code + "!" + type + "]";
-	}
-
-	@Override
-	public RALType inType() {
-		return type;
-	}
-
-	@Override
-	public RALType[] outTypes() {
-		return new RALType[] {
-			type
-		};
-	}
-
-	@Override
-	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
+	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
 		if (!isWritable)
-			throw new RuntimeException("Not writable");
-		writeSet(writer, code, input, inputExactType);
+			throw new RuntimeException("Var " + this + " is not writable");
+		writeSet(context.writer, getInlineCAOS(index, true, context), input, inputExactType);
 	}
 
 	public static void writeSet(CodeWriter writer, String code, String input, RALType inputExactType) {
@@ -70,15 +48,28 @@ public class RALStringVar implements RALExpr, RALExprUR {
 		writer.writeCode(set + code + " " + input);
 	}
 
-	@Override
-	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-		out[0].inCompile(writer, code, type, context);
-	}
+	public static class Fixed extends RALVarString implements RALExprUR {
+		public final String code;
+		public Fixed(String c, RALType rt, boolean w) {
+			super(rt, w);
+			code = c;
+		}
 
-	@Override
-	public String getInlineCAOS(CompileContext context, boolean write) {
-		if (write && !isWritable)
-			return null;
-		return code;
+		@Override
+		public String toString() {
+			return (isWritable ? "SVW" : "SV") + "[" + code + "!" + type + "]";
+		}
+
+		@Override
+		public String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+			if (write && !isWritable)
+				return null;
+			return code;
+		}
+
+		@Override
+		public RALExprSlice resolve(ScopeContext scope) {
+			return this;
+		}
 	}
 }

@@ -65,7 +65,7 @@ public class ParserExpr {
 		if (firstAtom == null) {
 			if (must)
 				throw new RuntimeException("expected at least one expression around " + lx.genLN());
-			return RALExprGroup.of();
+			return RALExprGroupUR.of();
 		}
 		LinkedList<RALExprUR> atoms = new LinkedList<>();
 		LinkedList<String> ops = new LinkedList<>();
@@ -116,7 +116,7 @@ public class ParserExpr {
 
 	private static RALExprUR binopMaker(RALExprUR l, String string, RALExprUR r) {
 		if (string.equals(",")) {
-			return RALExprGroup.of(l, r);
+			return RALExprGroupUR.of(l, r);
 		} else if (string.equals("==")) {
 			return new RALCondSimple(l, RALCondSimple.Op.Equal, r);
 		} else if (string.equals("!=")) {
@@ -158,11 +158,11 @@ public class ParserExpr {
 			Token strTkn = lx.requireNext();
 			if (!(strTkn instanceof Token.Str))
 				throw new RuntimeException("Inline CAOS expression can only be exactly one constant string token");
-			return new RALStringVar(((Token.Str) strTkn).text, ts.gAny, true);
+			return new RALVarString.Fixed(((Token.Str) strTkn).text, ts.gAny, true);
 		} else if (tkn.isKeyword("{")) {
 			// Oh, this gets weird...
 			RALBlock stmt = new RALBlock(tkn.lineNumber, false);
-			RALExprUR ret = RALExprGroup.of();
+			RALExprUR ret = RALExprGroupUR.of();
 			while (true) {
 				Token chk = lx.requireNext();
 				if (chk.isKeyword("}")) {

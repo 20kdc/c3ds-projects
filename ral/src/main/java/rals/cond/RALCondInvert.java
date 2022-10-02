@@ -6,13 +6,9 @@
  */
 package rals.cond;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.expr.RALConstant;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.types.TypeSystem;
+import rals.code.*;
+import rals.expr.*;
+import rals.types.*;
 
 /**
  * Boolean NOT
@@ -32,7 +28,7 @@ public class RALCondInvert implements RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext scope) {
+	public RALExprSlice resolve(ScopeContext scope) {
 		RALCondition resolved = RALCondition.coerceToCondition(inside.resolve(scope), scope.script.typeSystem);
 		return new RALCondition(scope.script.typeSystem) {
 			@Override

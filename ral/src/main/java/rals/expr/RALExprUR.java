@@ -25,11 +25,12 @@ public interface RALExprUR {
 	 * Will fill ScopeContext with stuff that might be important for the target expression to be runnable.
 	 * Note that this doesn't generate code - it just gets all the variables into place.
 	 */
-	RALExpr resolve(ScopeContext scope);
+	RALExprSlice resolve(ScopeContext scope);
 
 	/**
 	 * Decomposites expression groups.
 	 * Used for assignment statements because of how writing works.
+	 * THIS NEEDS TO BE REMOVED IF AT ALL POSSIBLE post sliceapi
 	 */
 	default RALExprUR[] decomposite() {
 		return new RALExprUR[] {this};

@@ -6,22 +6,30 @@
  */
 package rals.expr;
 
-import rals.code.CompileContext;
 import rals.types.RALType;
 
 /**
- * Like RALStringVar but even more picky.
+ * Please do not instanceof, for the love of kittens
  */
-public class RALSIVar extends RALStringVar {
-	public final SpecialInline specialInline;
+public abstract class RALVarBase extends RALExprSlice {
+	public final RALType type;
+	public final boolean isWritable;
 
-	public RALSIVar(SpecialInline s, RALType ot, boolean w) {
-		super(s.code, ot, w);
-		specialInline = s;
+	public RALVarBase(RALType t, boolean w) {
+		super(1);
+		type = t;
+		isWritable = w;
 	}
 
 	@Override
-	public SpecialInline getSpecialInline(CompileContext context) {
-		return specialInline;
+	protected RALType readTypeInner(int index) {
+		return type;
+	}
+
+	@Override
+	protected RALType writeTypeInner(int index) {
+		if (!isWritable)
+			throw new RuntimeException("Var " + this + " not writable");
+		return type;
 	}
 }

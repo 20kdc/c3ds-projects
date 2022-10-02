@@ -6,22 +6,19 @@
  */
 package rals.expr;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.types.RALType;
+import rals.code.*;
+import rals.types.*;
 
 /**
  * INTENSIFYING SIGHING
  */
-public class RALTarg implements RALExpr, RALExprUR {
-	public final RALType type;
+public class RALTarg extends RALVarBase implements RALExprUR {
 	public RALTarg(RALType ot) {
-		type = ot;
+		super(ot, true);
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext scope) {
+	public RALExprSlice resolve(ScopeContext scope) {
 		return this;
 	}
 
@@ -31,29 +28,17 @@ public class RALTarg implements RALExpr, RALExprUR {
 	}
 
 	@Override
-	public RALType inType() {
-		return type;
+	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+		context.writer.writeCode("targ " + input);
 	}
 
 	@Override
-	public RALType[] outTypes() {
-		return new RALType[] {
-			type
-		};
+	protected void readCompileInner(RALExprSlice out, CompileContext context) {
+		out.writeCompile(0, "targ", type, context);
 	}
 
 	@Override
-	public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
-		writer.writeCode("targ " + input);
-	}
-
-	@Override
-	public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-		out[0].inCompile(writer, "targ", type, context);
-	}
-
-	@Override
-	public SpecialInline getSpecialInline(CompileContext context) {
-		return SpecialInline.Targ;
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+		return RALSpecialInline.Targ;
 	}
 }

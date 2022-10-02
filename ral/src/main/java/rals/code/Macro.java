@@ -23,79 +23,52 @@ public class Macro implements RALCallable {
 		code = c;
 	}
 
-	/**
-	 * Inserts macro arguments into the context.
-	 * Creates a copy list for stage 2.
-	 * Returns null if nothing to copy.
-	 */
-	public static RALVAVar[] makeToCopy(MacroArg[] args, RALExpr[] a, ScopeContext macroContext) {
-		boolean hadToCopyAnything = false;
-		final RALVAVar[] toCopy = new RALVAVar[args.length];
-		for (int i = 0; i < args.length; i++) {
-			// Check this early
-			RALExpr argExpr = a[i];
-			argExpr.assertOutTypeSingleImpcast(args[i].type);
-			// Now actually apply
-			if (args[i].isInline) {
-				// Note that we don't do a two-way check.
-				// Instead any type errors caused by writing to the variable are handled during resolution or writeout.
-				macroContext.scopedVariables.put(args[i].name, a[i]);
-			} else {
-				toCopy[i] = macroContext.newLocal(args[i].name, args[i].type);
-				hadToCopyAnything = true;
-			}
-		}
-		if (!hadToCopyAnything)
-			return null;
-		return toCopy;
-	}
-	/**
-	 * Allocates VAs for and copies arguments into the compile context.
-	 */
-	public static void copyArgs(CodeWriter writer, CompileContext sc, RALVAVar[] toCopy, RALExpr[] a, String name, MacroArg[] args) {
-		if (toCopy == null) {
-			writer.writeComment("copyArgs given empty copy list, are you missing out on optimization?");
-			return;
-		}
-		for (int i = 0; i < toCopy.length; i++) {
-			if (toCopy[i] != null) {
-				sc.allocVA(toCopy[i].handle);
-				writer.writeComment(toCopy[i].getInlineCAOS(sc, false) + ": " + name + " arg " + i + ": " + args[i].type + " " + args[i].name);
-				a[i].outCompile(writer, new RALExpr[] {toCopy[i]}, sc);
-			}
-		}
-	}
-
 	@Override
-	public RALExpr instance(final RALExpr[] a, ScopeContext sc) {
+	public RALExprSlice instance(final RALExprSlice a, ScopeContext sc) {
 		if (a.length != args.length)
-			throw new RuntimeException("Macro called with wrong arg count (decomposition failure?)");
+			throw new RuntimeException("Macro " + name + " called with " + a.length + " args, not " + args.length);
 		// Our vars are going to be used outside of this context, so we attach vars and such to the parent.
 		
 		ScopeContext macroContext = new ScopeContext(sc);
 
-		final RALVAVar[] toCopy = makeToCopy(args, a, macroContext);
-		final RALExpr innards = code.resolve(macroContext);
-		if (toCopy == null)
+		boolean[] inline = new boolean[args.length];
+		String[] names = new String[args.length];
+		for (int i = 0; i < args.length; i++) {
+			inline[i] = args[i].isInline;
+			names[i] = args[i].name;
+		}
+
+		VarCacher vc = new VarCacher(a, inline, names);
+		for (int i = 0; i < args.length; i++)
+			macroContext.scopedVariables.put(names[i], vc.finishedOutput.slice(i, 1));
+
+		final RALExprSlice innards = code.resolve(macroContext);
+
+		// If there are no copies, then the wrapping does nothing
+		if (vc.copies.length == 0)
 			return innards;
-		return new RALExpr() {
+
+		return new RALExprSlice(innards.length) {
 			@Override
-			public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
-				copyArgs(writer, context, toCopy, a, name, args);
-				innards.inCompile(writer, input, inputExactType, context);
+			public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+				vc.writeCacheCode(context);
+				innards.writeCompile(index, input, inputExactType, context);
 			}
+
 			@Override
-			public RALType inType() {
-				return innards.inType();
+			protected RALType writeTypeInner(int index) {
+				return innards.writeType(index);
 			}
+
 			@Override
-			public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-				copyArgs(writer, context, toCopy, a, name, args);
-				innards.outCompile(writer, out, context);
+			public void readCompileInner(RALExprSlice out, CompileContext context) {
+				vc.writeCacheCode(context);
+				innards.readCompile(out, context);
 			}
+
 			@Override
-			public RALType[] outTypes() {
-				return innards.outTypes();
+			protected RALType readTypeInner(int index) {
+				return innards.readType(index);
 			}
 
 			@Override

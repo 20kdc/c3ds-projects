@@ -23,36 +23,52 @@ public class RALStmtExpr implements RALExprUR {
 	}
 
 	@Override
-	public RALExpr resolve(ScopeContext scope) {
+	public RALExprSlice resolve(ScopeContext scope) {
 		ScopeContext sc = new ScopeContext(scope);
 		final RALStatement rStmt = statement.resolve(sc);
-		final RALExpr rExpr = expr.resolve(sc); 
-		return new RALExpr() {
-			@Override
-			public RALType[] outTypes() {
-				return rExpr.outTypes();
-			}
+		final RALExprSlice rExpr = expr.resolve(sc); 
+		return new Resolved(rStmt, rExpr);
+	}
 
-			@Override
-			public void outCompile(CodeWriter writer, RALExpr[] out, CompileContext context) {
-				try (CompileContext cc = new CompileContext(context)) {
-					rStmt.compile(writer, context);
-					rExpr.outCompile(writer, out, context);
-				}
-			}
+	public static final class Resolved extends RALExprSlice {
+		private final RALStatement rStmt;
+		private final RALExprSlice rExpr;
 
-			@Override
-			public RALType inType() {
-				return rExpr.inType();
-			}
+		public Resolved(RALStatement rStmt, RALExprSlice rExpr) {
+			super(rExpr.length);
+			this.rStmt = rStmt;
+			this.rExpr = rExpr;
+		}
 
-			@Override
-			public void inCompile(CodeWriter writer, String input, RALType inputExactType, CompileContext context) {
-				try (CompileContext cc = new CompileContext(context)) {
-					rStmt.compile(writer, context);
-					rExpr.inCompile(writer, input, inputExactType, context);
-				}
+		@Override
+		protected RALExprSlice sliceInner(int base, int length) {
+			return new Resolved(rStmt, rExpr.slice(base, length));
+		}
+
+		@Override
+		protected RALType readTypeInner(int index) {
+			return rExpr.readType(index);
+		}
+
+		@Override
+		protected void readCompileInner(RALExprSlice out, CompileContext context) {
+			try (CompileContext cc = new CompileContext(context)) {
+				rStmt.compile(context.writer, context);
+				rExpr.readCompile(out, context);
 			}
-		};
+		}
+
+		@Override
+		protected RALType writeTypeInner(int index) {
+			return rExpr.writeType(index);
+		}
+
+		@Override
+		protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+			try (CompileContext cc = new CompileContext(context)) {
+				rStmt.compile(context.writer, context);
+				rExpr.writeCompile(index, input, inputExactType, context);
+			}
+		}
 	}
 }

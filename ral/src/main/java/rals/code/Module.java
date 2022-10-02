@@ -102,6 +102,6 @@ public class Module {
 		RALStatement res = v.resolve(scope);
 		CodeWriter cw = new CodeWriter(outText);
 		cw.indent = ii;
-		res.compile(cw, new CompileContext(scr));
+		res.compile(cw, new CompileContext(scr, cw));
 	}
 }
