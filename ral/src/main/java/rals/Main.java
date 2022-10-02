@@ -7,18 +7,12 @@
 package rals;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import rals.code.Module;
-import rals.lex.Lexer;
-import rals.lex.SrcPos;
-import rals.parser.Parser;
-import rals.stmt.RALBlock;
-import rals.types.Classifier;
-import rals.types.ScriptIdentifier;
-import rals.types.TypeSystem;
+import rals.code.*;
+import rals.parser.*;
+import rals.types.*;
 
 /**
  * The RAL compiler.

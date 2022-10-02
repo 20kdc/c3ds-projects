@@ -6,9 +6,7 @@
  */
 package rals.expr;
 
-import java.io.StringWriter;
-
-import rals.code.ScopeContext;
+import rals.code.*;
 
 /**
  * Calls a macro, or something like that.

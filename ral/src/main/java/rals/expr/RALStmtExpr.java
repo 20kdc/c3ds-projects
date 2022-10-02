@@ -6,13 +6,9 @@
  */
 package rals.expr;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.lex.SrcPos;
-import rals.stmt.RALStatement;
-import rals.stmt.RALStatementUR;
-import rals.types.RALType;
+import rals.code.*;
+import rals.stmt.*;
+import rals.types.*;
 
 /**
  * Statement expression, used for fancy stuff.

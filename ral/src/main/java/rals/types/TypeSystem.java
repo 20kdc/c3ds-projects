@@ -11,9 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import rals.expr.RALConstant;
-import rals.expr.RALExprGroup;
-import rals.expr.RALExprUR;
+import rals.expr.*;
 import rals.types.RALType.AgentClassifier;
 import rals.types.RALType.Opaque;
 

@@ -8,9 +8,7 @@ package rals.code;
 
 import java.util.HashMap;
 
-import rals.expr.RALCallable;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
+import rals.expr.*;
 
 /**
  * A set of macro definitions.

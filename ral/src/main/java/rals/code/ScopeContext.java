@@ -7,16 +7,9 @@
 package rals.code;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
-import rals.expr.RALDiscard;
-import rals.expr.RALExpr;
-import rals.expr.RALStringVar;
-import rals.expr.RALTarg;
-import rals.expr.RALVAVar;
-import rals.expr.RALExpr.SpecialInline;
-import rals.expr.RALSIVar;
-import rals.types.RALType;
+import rals.expr.*;
+import rals.types.*;
 
 /**
  * Contains in-scope variables, and also frees them when closed.
@@ -35,7 +28,7 @@ public class ScopeContext {
 
 	public ScopeContext(ScriptContext parent) {
 		script = parent;
-		scopedVariables.put("ownr", new RALSIVar(SpecialInline.Ownr, parent.ownrType, true));
+		scopedVariables.put("ownr", new RALSIVar(RALExpr.SpecialInline.Ownr, parent.ownrType, true));
 		// Dynamic VMVars would be nice, but we need hard logic anyway for, say, ownrType
 		scopedVariables.put("from", new RALStringVar("from", parent.fromType, true));
 		scopedVariables.put("_it_", new RALStringVar("_it_", parent.typeSystem.gAgentNullable, true));

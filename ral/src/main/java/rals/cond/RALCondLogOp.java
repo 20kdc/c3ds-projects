@@ -6,15 +6,9 @@
  */
 package rals.cond;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.expr.RALConstant;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.expr.RALStringVar;
-import rals.types.RALType;
-import rals.types.TypeSystem;
+import rals.code.*;
+import rals.expr.*;
+import rals.types.*;
 
 /**
  * Binary logical operator.

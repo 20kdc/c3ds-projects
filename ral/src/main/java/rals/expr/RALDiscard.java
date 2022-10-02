@@ -6,12 +6,8 @@
  */
 package rals.expr;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.code.ScriptContext;
-import rals.types.RALType;
-import rals.types.TypeSystem;
+import rals.code.*;
+import rals.types.*;
 
 /**
  * Underscore, or the discard expression.

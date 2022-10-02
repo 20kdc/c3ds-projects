@@ -6,12 +6,8 @@
  */
 package rals.expr;
 
-import java.io.StringWriter;
-
-import rals.code.ScopeContext;
-import rals.types.Classifier;
-import rals.types.RALType;
-import rals.types.TypeSystem;
+import rals.code.*;
+import rals.types.*;
 
 /**
  * This appears in the expression tree when an ID hasn't been resolved to a specific meaning yet.

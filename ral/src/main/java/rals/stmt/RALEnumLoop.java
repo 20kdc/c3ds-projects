@@ -6,14 +6,10 @@
  */
 package rals.stmt;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.expr.RALCast;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.lex.SrcPos;
-import rals.types.RALType;
+import rals.code.*;
+import rals.expr.*;
+import rals.lex.*;
+import rals.types.*;
 
 public class RALEnumLoop extends RALStatementUR {
 	public final RALType targType;

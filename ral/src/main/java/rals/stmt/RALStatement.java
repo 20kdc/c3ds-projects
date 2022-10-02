@@ -6,12 +6,8 @@
  */
 package rals.stmt;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.lex.SrcPos;
+import rals.code.*;
+import rals.lex.*;
 
 /**
  * Represents a statement inside a RAL script.

@@ -9,26 +9,11 @@ package rals.parser;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import rals.cond.RALCondInvert;
-import rals.cond.RALCondLogOp;
-import rals.cond.RALCondSimple;
-import rals.expr.RALAmbiguousID;
-import rals.expr.RALCall;
-import rals.expr.RALCast;
-import rals.expr.RALConstant;
-import rals.expr.RALDiscard;
-import rals.expr.RALExpr;
-import rals.expr.RALExprGroup;
-import rals.expr.RALExprUR;
-import rals.expr.RALFieldAccess;
-import rals.expr.RALStmtExpr;
-import rals.expr.RALStringVar;
-import rals.lex.Lexer;
-import rals.lex.Token;
-import rals.stmt.RALBlock;
-import rals.stmt.RALStatementUR;
-import rals.types.RALType;
-import rals.types.TypeSystem;
+import rals.cond.*;
+import rals.expr.*;
+import rals.lex.*;
+import rals.stmt.*;
+import rals.types.*;
 
 /**
  * Expression parser.

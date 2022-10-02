@@ -6,15 +6,9 @@
  */
 package rals.expr;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.IEHHandle;
-import rals.code.IVAHandle;
-import rals.code.MacroArg;
-import rals.code.ScopeContext;
-import rals.stmt.RALStatement;
-import rals.stmt.RALStatementUR;
-import rals.types.RALType;
+import rals.code.*;
+import rals.stmt.*;
+import rals.types.*;
 
 /**
  * Same basic idea as RALStmtExpr, but done differently.

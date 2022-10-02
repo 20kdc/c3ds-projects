@@ -6,14 +6,10 @@
  */
 package rals.expr;
 
-import java.io.StringWriter;
 import java.util.LinkedList;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.code.ScriptContext;
-import rals.types.RALType;
+import rals.code.*;
+import rals.types.*;
 
 /**
  * Expression group - a list of expressions.

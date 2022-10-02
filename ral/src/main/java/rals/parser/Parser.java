@@ -11,22 +11,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 
-import rals.code.Macro;
-import rals.code.MacroArg;
-import rals.code.Module;
-import rals.cond.RALCondition;
-import rals.expr.RALConstant;
-import rals.expr.RALExprUR;
-import rals.expr.RALStmtExprInverted;
-import rals.lex.Lexer;
-import rals.lex.Token;
-import rals.stmt.RALStatementUR;
-import rals.types.AgentInterface;
-import rals.types.Classifier;
-import rals.types.RALType;
-import rals.types.TypeSystem;
-import rals.types.RALType.Agent;
-import rals.types.ScriptIdentifier;
+import rals.code.*;
+import rals.cond.*;
+import rals.expr.*;
+import rals.lex.*;
+import rals.stmt.*;
+import rals.types.*;
 
 /**
  * Parser, but also discards any hope of this being an AST...
@@ -248,8 +238,8 @@ public class Parser {
 				while (true) {
 					String other = lx.requireNextID();
 					RALType rt = ts.byName(other);
-					if (rt instanceof Agent) {
-						ag.addParent((Agent) rt);
+					if (rt instanceof RALType.Agent) {
+						ag.addParent((RALType.Agent) rt);
 					} else {
 						throw new RuntimeException("extends clause requires '" + other + "' to be some form of agent");
 					}

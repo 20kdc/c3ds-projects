@@ -8,27 +8,10 @@ package rals.parser;
 
 import java.util.LinkedList;
 
-import rals.expr.RALAmbiguousID;
-import rals.expr.RALCast;
-import rals.expr.RALConstant;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.expr.RALMessageIDGrabber;
-import rals.lex.Lexer;
-import rals.lex.Token;
-import rals.stmt.RALAliasStatement;
-import rals.stmt.RALAssignStatement;
-import rals.stmt.RALBlock;
-import rals.stmt.RALBreakFromLoop;
-import rals.stmt.RALBreakableLoop;
-import rals.stmt.RALEnumLoop;
-import rals.stmt.RALIfStatement;
-import rals.stmt.RALInlineStatement;
-import rals.stmt.RALLetStatement;
-import rals.stmt.RALStatement;
-import rals.stmt.RALStatementUR;
-import rals.types.RALType;
-import rals.types.TypeSystem;
+import rals.expr.*;
+import rals.lex.*;
+import rals.stmt.*;
+import rals.types.*;
 
 /**
  * Code parser.

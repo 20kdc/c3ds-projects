@@ -6,14 +6,10 @@
  */
 package rals.expr;
 
-import java.io.StringWriter;
 import java.util.function.Consumer;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.types.AgentInterface.OVar;
-import rals.types.RALType;
+import rals.code.*;
+import rals.types.*;
 
 /**
  * Field access.
@@ -31,7 +27,7 @@ public class RALFieldAccess implements RALExprUR {
 	public RALExpr resolve(ScopeContext scope) {
 		final RALExpr baseExpr = base.resolve(scope);
 		final RALType baseType = baseExpr.assertOutTypeSingleImpcast(scope.script.typeSystem.gAgent);
-		final OVar slot = baseType.lookupField(field);
+		final AgentInterface.OVar slot = baseType.lookupField(field);
 
 		return new RALExpr() {
 			@Override

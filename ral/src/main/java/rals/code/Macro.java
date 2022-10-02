@@ -6,15 +6,8 @@
  */
 package rals.code;
 
-import java.io.StringWriter;
-
-import rals.expr.RALCallable;
-import rals.expr.RALCast;
-import rals.expr.RALExpr;
-import rals.expr.RALExprUR;
-import rals.expr.RALStringVar;
-import rals.expr.RALVAVar;
-import rals.types.RALType;
+import rals.expr.*;
+import rals.types.*;
 
 /**
  * Macros are used to replicate functions because CAOS doesn't have a proper version of those.

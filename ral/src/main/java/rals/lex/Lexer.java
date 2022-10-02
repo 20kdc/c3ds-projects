@@ -9,8 +9,6 @@ package rals.lex;
 import java.io.IOException;
 import java.io.InputStream;
 
-import rals.lex.Token.Int;
-
 /**
  * Big monolith.
  */
