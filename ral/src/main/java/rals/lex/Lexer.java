@@ -237,7 +237,7 @@ public class Lexer {
 		Token tkn = requireNext();
 		if (tkn.isKeyword(kw))
 			return;
-		throw new RuntimeException("Expected " + kw);
+		throw new RuntimeException("Expected " + kw + ", got " + tkn);
 	}
 
 	public boolean optNextKw(String string) {
@@ -254,13 +254,13 @@ public class Lexer {
 		Token tkn = requireNext();
 		if (tkn instanceof Token.ID)
 			return ((Token.ID) tkn).text;
-		throw new RuntimeException("Expected ID");
+		throw new RuntimeException("Expected ID, got " + tkn);
 	}
 
 	public int requireNextInteger() {
 		Token tkn = requireNext();
 		if (tkn instanceof Token.Int)
 			return ((Token.Int) tkn).value;
-		throw new RuntimeException("Expected integer");
+		throw new RuntimeException("Expected integer, got " + tkn);
 	}
 }

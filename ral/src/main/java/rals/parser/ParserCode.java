@@ -129,43 +129,19 @@ public class ParserCode {
 					getMsgType = ParserExpr.parseExpr(ts, lx, true);
 				}
 				lx.requireNextKw("(");
-				RALExprUR[] params = ParserExpr.parseExpr(ts, lx, false).decomposite();
-				// work this out
-				RALExprUR p1;
-				RALExprUR p2;
-				if (params.length == 0) {
-					p1 = new RALConstant.Int(ts, 0);
-					p2 = new RALConstant.Int(ts, 0);
-				} else if (params.length == 1) {
-					p1 = params[0];
-					p2 = new RALConstant.Int(ts, 0);
-				} else if (params.length == 2) {
-					p1 = params[0];
-					p2 = params[1];
-				} else {
-					throw new RuntimeException("Abnormal amount of parameters to emit statement");
-				}
+				RALExprUR params = ParserExpr.parseExpr(ts, lx, false);
 				lx.requireNextKw(")");
-				RALExprUR after;
-				if (lx.optNextKw("after")) {
+				RALExprUR after = null;
+				if (lx.optNextKw("after"))
 					after = ParserExpr.parseExpr(ts, lx, true);
-				} else {
-					after = new RALConstant.Int(ts, 0);
-				}
 				lx.requireNextKw(";");
-				return new RALInlineStatement(tkn.lineNumber, new Object[] {
-					"mesg wrt+ ",
-					RALCast.of(target, ts.gAgent, true),
-					" ",
-					RALCast.of(getMsgType, ts.gInteger, true),
-					" ",
-					RALCast.of(p1, ts.gAny, true),
-					" ",
-					RALCast.of(p2, ts.gAny, true),
-					" ",
-					RALCast.of(after, ts.gInteger, true),
-					"\n"
-				});
+				RALCall call;
+				if (after == null) {
+					call = new RALCall("__ral_compiler_helper_emit_na", RALExprGroupUR.of(target, getMsgType, params));
+				} else {
+					call = new RALCall("__ral_compiler_helper_emit", RALExprGroupUR.of(target, getMsgType, after, params));
+				}
+				return new RALAssignStatement(tkn.lineNumber, null, call);
 			} else {
 				throw new RuntimeException("Saw expression at " + tkn + " but then was wrong about it.");
 			}

@@ -31,6 +31,7 @@ public class Main {
 		File[] searchPaths = new File[args.length - 2];
 		for (int i = 0; i < args.length - 2; i++)
 			searchPaths[i] = new File(args[i]);
+		Parser.parseFile(ts, m, searchPaths, "std/compiler_helpers.ral");
 		Parser.parseFile(ts, m, searchPaths, init);
 		StringBuilder outText = new StringBuilder();
 		m.compile(outText, ts);

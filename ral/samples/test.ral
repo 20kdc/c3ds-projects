@@ -163,10 +163,17 @@ field string Creature.someString 1;
 field Creature Creature.someRef 2;
 
 script Creature:windowResized {
-	// :)
-	ownr->exampleTypeSpecific(0, 0) after 0;
+	// emit
+	ownr->exampleTypeSpecific("A", "B") after 3;
+	ownr->exampleTypeSpecific("A") after 0;
+	ownr->exampleTypeSpecific() after 0;
+	ownr->exampleTypeSpecific("A", "B");
+	ownr->exampleTypeSpecific("A");
+	ownr->exampleTypeSpecific();
+	// fields
 	ownr.someString = "Wowzers";
 	ownr.someRef.someString = "Indirection!";
+	ownr->exampleTypeSpecific(ownr.someRef.someString);
 	// test this!
 	targ = ownr.someRef;
 	// test enum stuff

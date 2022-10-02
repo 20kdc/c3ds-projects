@@ -71,8 +71,11 @@ public class ParserExpr {
 		LinkedList<String> ops = new LinkedList<>();
 		atoms.add(firstAtom);
 		while (true) {
-			Token tkn = lx.requireNext();
-			if (!(tkn instanceof Token.Kw)) {
+			Token tkn = lx.next();
+			if (tkn == null) {
+				// nopers
+				break;
+			} else if (!(tkn instanceof Token.Kw)) {
 				// definitely not
 				lx.back();
 				break;
@@ -195,8 +198,11 @@ public class ParserExpr {
 
 	private static RALExprUR parseExprSuffix(RALExprUR base, TypeSystem ts, Lexer lx) {
 		while (true) {
-			Token tkn = lx.requireNext();
-			if (tkn.isKeyword("(")) {
+			Token tkn = lx.next();
+			if (tkn == null) {
+				// well, that ends that
+				return base;
+			} else if (tkn.isKeyword("(")) {
 				// Call.
 				RALExprUR group = ParserExpr.parseExpr(ts, lx, false);
 				lx.requireNextKw(")");

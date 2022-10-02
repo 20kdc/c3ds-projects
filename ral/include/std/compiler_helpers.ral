@@ -1,0 +1,42 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+// So this embarassing little file is for stuff where it's quicker to write little bits here than in Java.
+// Especially when accounting for all the plumbing to get to the resolved expressions level.
+// Tomorrow I shall move this to be included in the JAR.
+
+/*
+ * Emit
+ * So how this works is that the emit syntax generates a call statement.
+ * There's two variants, based on the presence or lack thereof of an "after" keyword.
+ * And then whatever parameters are placed inside the () are forwarded directly to the emit statement, leading to three sets of argument counts.
+ */
+
+macro __ral_compiler_helper_emit(inline Agent target, inline integer messageId, inline integer ticks, inline any param1, inline any param2) {
+	inline "mesg wrt+ " target " " messageId " " param1 " " param2 " " ticks;
+}
+
+macro __ral_compiler_helper_emit(inline Agent target, inline integer messageId, inline integer ticks, inline any param1) {
+	inline "mesg wrt+ " target " " messageId " " param1 " 0 " ticks;
+}
+
+macro __ral_compiler_helper_emit(inline Agent target, inline integer messageId, inline integer ticks) {
+	inline "mesg wrt+ " target " " messageId " 0 0 " ticks;
+}
+
+macro __ral_compiler_helper_emit_na(inline Agent target, inline integer messageId, inline any param1, inline any param2) {
+	inline "mesg wrt+ " target " " messageId " " param1 " " param2 " 0";
+}
+
+macro __ral_compiler_helper_emit_na(inline Agent target, inline integer messageId, inline any param1) {
+	inline "mesg wrt+ " target " " messageId " " param1 " 0 0";
+}
+
+macro __ral_compiler_helper_emit_na(inline Agent target, inline integer messageId) {
+	inline "mesg writ " target " " messageId;
+}
+
