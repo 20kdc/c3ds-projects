@@ -1,3 +1,5 @@
 dummy.so
 runtime.so
+*.pyc
+__pycache__
 

@@ -41,7 +41,7 @@ $(R)c3u2w32.tar: $(R)Creatures3_Update2.exe $(R)CREATURES_3.iso gadgets/c3u2-pat
 
 INTERMEDIATES += $(R)pkg_creatures3.tar
 
-$(R)pkg_creatures3.tar: gadgets/prep_creatures3.py $(R)c3u2w32.tar
+$(R)pkg_creatures3.tar: gadgets/prep_creatures3.py gadgets/preplib.py $(R)c3u2w32.tar
 	python3 gadgets/prep_creatures3.py $(R)c3u2w32.tar $(R)pkg_creatures3.tar_
 	mv $(R)pkg_creatures3.tar_ $(R)pkg_creatures3.tar
 

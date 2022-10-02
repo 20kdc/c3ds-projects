@@ -9,6 +9,8 @@
 import sys
 import os
 
+import preplib
+
 gadgets_base = sys.argv[1]
 
 # Get rid of engine stuff and the like
@@ -42,21 +44,15 @@ os.system("rm Catalogue/NetBabel*.catalogue")
 
 # - machine.cfg -
 
-# now then, machine.cfg C3 config, how do we deal with this?
-# answer: we let symlinks deal with it and set things up so you can do that.
-# seriously I'm not sure what the deal was with meticulously writing in the exact details of where C3 is into the config.
-aux_names_a = ["Backgrounds", "Body Data", "Bootstrap", "Catalogue", "Creature Database", "Exported Creatures", "Genetics", "Images", "Journal", "Main", "Overlay Data", "Resource Files", "Sounds", "Users", "Worlds"]
-aux_names_b = ["Backgrounds/", "Body Data/", "Bootstrap/", "Catalogue/", "Creature Galleries/", "My Creatures/", "Genetics/", "Images/", "Journal/", "", "Overlay Data/", "My Agents/", "Sounds/", "Users/", "My Worlds/"]
+machine_cfg_dm = preplib.DirectoryManager()
+machine_cfg_dm.add_kv("Game Name", "Docking Station")
+machine_cfg_dm.add_all_dirs("")
+machine_cfg_dm.add_dir("Catalogue", "../engine/Catalogue")
+machine_cfg_dm.add_all_dirs("../Creatures 3/")
 
-launcher_file = open("machine.cfg", "a")
-
-launcher_file.write("\n")
-# add C3 aux.
-for i in range(len(aux_names_a)):
-	launcher_file.write("\"Auxiliary 1 " + aux_names_a[i] + " Directory\" \"../Creatures 3/" + aux_names_b[i] + "\"\n")
-# add engine catalogue aux.
-launcher_file.write("\"Auxiliary 2 Catalogue Directory\" \"../engine/Catalogue/\"\n")
-launcher_file.close()
+machine_cfg = open("machine.cfg", "w")
+machine_cfg.write(machine_cfg_dm.content)
+machine_cfg.close()
 
 # - missing empty directories -
 

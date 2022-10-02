@@ -10,6 +10,7 @@ import tarfile
 import sys
 import io
 import time
+import preplib
 
 src = tarfile.TarFile(sys.argv[1], "r")
 dst = tarfile.TarFile(sys.argv[2], "w")
@@ -81,26 +82,27 @@ def add_dir(name):
 	dst.addfile(tarinfo)
 
 add_dir("./Creatures 3/Users")
-add_text_file("./Creatures 3/machine.cfg", 0o644, """
-"Game Name" "Creatures 3"
-"Backgrounds Directory" "Backgrounds"
-"Body Data Directory" "Body Data"
-"Bootstrap Directory" "Bootstrap"
-"Catalogue Directory" "Catalogue"
-"Creature Database Directory" "Creature Galleries"
-"Exported Creatures Directory" "My Creatures"
-"Genetics Directory" "Genetics"
-"Images Directory" "Images"
-"Journal Directory" "Journal"
-"Main Directory" "."
-"Overlay Data Directory" "Overlay Data"
-"Resource Files Directory" "My Agents"
-"Sounds Directory" "Sounds"
-"Users Directory" "Users"
-"Worlds Directory" "My Worlds"
 
-"Auxiliary 1 Catalogue Directory" "../engine/Catalogue"
+machine_cfg_dm = preplib.DirectoryManager()
+machine_cfg_dm.add_kv("Game Name", "Creatures 3")
+machine_cfg_dm.add_all_dirs("")
+machine_cfg_dm.add_dir("Catalogue", "../engine/Catalogue")
+
+add_text_file("./Creatures 3/machine.cfg", 0o644, machine_cfg_dm.content)
+
+# Yet another DS compatibility patch
+add_text_file("./Creatures 3/Catalogue/aaa_ds_engine_compat.catalogue", 0o644, """
+# added by prep_creatures3.py - support for DS engine
+# If we don't have this, agent files won't load, period...
+TAG "Pray System File Extensions"
+"creature"
+"agent"
+"agents"
+"blueprint"
+"family"
+"warp"
 """)
+
 add_text_file("./Creatures 3/user.cfg", 0o644, """
 "Default Background" "c3_splash"
 FullScreen 0

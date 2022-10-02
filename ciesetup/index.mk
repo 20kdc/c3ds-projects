@@ -11,9 +11,10 @@ rel: ciesetup/Makefile ciesetup/ds.mk ciesetup/c3.mk
 rel: ciesetup/README.md
 # Python scripts
 rel: ciesetup/gadgets/debz2.py
+rel: ciesetup/gadgets/preplib.py
 rel: ciesetup/gadgets/prep_dockingstation.py
 rel: ciesetup/gadgets/prep_creatures3.py
-rel: ciesetup/gadgets/prep_engine.py ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
+rel: ciesetup/gadgets/prep_engine.py
 # C3u2 patch marker
 rel: ciesetup/gadgets/c3u2-patch.catalogue
 # Acts as a placeholder file
@@ -21,6 +22,7 @@ rel: ciesetup/repo/.gitignore
 
 # - Shared objects -
 
+rel: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
 all: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
 
 ciesetup/gadgets/dummy.so: ciesetup/gadgets/dummy.c

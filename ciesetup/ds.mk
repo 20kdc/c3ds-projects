@@ -58,7 +58,7 @@ $(R)pkg_engine.tar: $(R)ds_195_64_dec.tar gadgets/prep_engine.py gadgets/dummy.s
 
 INTERMEDIATES += $(R)pkg_dockingstation.tar
 
-$(R)pkg_dockingstation.tar: $(R)ds_195_64_dec.tar gadgets/prep_dockingstation.py
+$(R)pkg_dockingstation.tar: $(R)ds_195_64_dec.tar gadgets/prep_dockingstation.py gadgets/preplib.py
 	# alright, so, this is where things get hairy, because BASICALLY,
 	#  their script assumes you want separate global/user directories
 	# we don't want this because it makes agent install act funny IIRC?
