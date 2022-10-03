@@ -72,18 +72,37 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	 */
 	public static enum MsgSendType {
 		// Chat/etc.
-		Temp(false, false),
-		// Norns, mail
-		Perm(false, true),
+		Temp(false, MsgSendFailBehaviour.Discard),
+		// mail
+		Perm(false, MsgSendFailBehaviour.Spool),
+		// Norns
+		PermReturnIfOffline(false, MsgSendFailBehaviour.Reject),
 		// Rejects
-		TempReject(true, false),
-		PermReject(true, true);
+		TempReject(true, MsgSendFailBehaviour.Discard),
+		PermReject(true, MsgSendFailBehaviour.Spool);
 
-		public final boolean isReject, shouldSpool;
+		public final boolean isReject;
+		public final MsgSendFailBehaviour failBehaviour;
 
-		MsgSendType(boolean ir, boolean ss) {
+		MsgSendType(boolean ir, MsgSendFailBehaviour ss) {
 			isReject = ir;
-			shouldSpool = ss;
+			failBehaviour = ss;
+		}
+	}
+
+	/**
+	 * Controls behaviour if we accepted the message but we can't actually send it.
+	 */
+	public static enum MsgSendFailBehaviour {
+		// delete
+		Discard(true),
+		// spool to disk
+		Spool(false),
+		// return to sender with shiny note
+		Reject(false);
+		public final boolean allowMessageLoss;
+		MsgSendFailBehaviour(boolean mlm) {
+			allowMessageLoss = mlm;
 		}
 	}
 }

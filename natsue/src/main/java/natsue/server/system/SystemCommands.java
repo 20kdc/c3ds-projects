@@ -20,7 +20,7 @@ import natsue.server.userdata.INatsueUserData;
  * Stuff them all here for now as part of refactor
  */
 public class SystemCommands {
-	public static final String VERSION = "03/10/22";
+	public static final String VERSION = "Natsue 03/10/22";
 	public static final BaseBotCommand[] commands = new BaseBotCommand[] {
 		new BaseBotCommand("version", "", Cat.Public) {
 			public void run(Context args) {

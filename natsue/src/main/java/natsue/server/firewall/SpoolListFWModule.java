@@ -25,13 +25,9 @@ import natsue.server.userdata.INatsueUserData;
  */
 public class SpoolListFWModule implements IFWModule {
 	public final IHubPrivilegedAPI hub;
-	public final HashSet<String> spoolableBlocks = new HashSet<>();
 
 	public SpoolListFWModule(IHubPrivilegedAPI h) {
 		hub = h;
-		// Blocks that imply spooling (this is so chat requests don't get spooled, which would be extremely dumb)
-		spoolableBlocks.add("MESG"); // Message centre
-		spoolableBlocks.add("warp"); // Warped creature
 	}
 
 	@Override
@@ -43,8 +39,14 @@ public class SpoolListFWModule implements IFWModule {
 		if (message instanceof PackedMessagePRAY) {
 			PackedMessagePRAY pray = (PackedMessagePRAY) message;
 			for (PRAYBlock block : pray.messageBlocks) {
-				if (spoolableBlocks.contains(block.getType())) {
+				String type = block.getType();
+				if (type.equals("MESG")) {
+					// message centre
 					hub.sendMessage(destUser, message, MsgSendType.Perm);
+					return true;
+				} else if (type.equals("warp")) {
+					// warped creature
+					hub.sendMessage(destUser, message, MsgSendType.PermReturnIfOffline);
 					return true;
 				}
 			}

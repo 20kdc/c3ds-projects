@@ -163,28 +163,46 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public void sendMessage(long destinationUIN, PackedMessage message, MsgSendType type) {
 		IHubClient ihc;
-		if (!type.shouldSpool) {
+		if (type.failBehaviour.allowMessageLoss) {
 			synchronized (this) {
 				ihc = users.connectedClients.get(destinationUIN);
 			}
-			if (ihc != null)
+			if (ihc != null) {
 				ihc.incomingMessage(message, null);
+			} else {
+				sendMessageFailed(destinationUIN, message, type, "Target offline");
+			}
 		} else {
 			// not temp, this message matters
 			synchronized (this) {
 				ihc = users.connectedClients.get(destinationUIN);
 				if (ihc == null) {
-					// They're not online, so do this here - otherwise they *could* go online while we're spooling the message (BAD!)
-					// If they go offline while we're SENDING the message, that's caught by the reject machinery
-					spoolMessage(destinationUIN, message, type.isReject);
-					return;
+					// They're not online, so do this here.
+					// Otherwise they *could* go online while we're spooling the message (BAD!)
+					// If they go offline while we're SENDING, that's caught by the reject machinery (see below)
+					sendMessageFailed(destinationUIN, message, type, "Target offline");
 				}
 			}
 			if (ihc != null) {
 				ihc.incomingMessage(message, () -> {
-					spoolMessage(destinationUIN, message, type.isReject);
+					// If this gets run, we apparently couldn't send the message after all...
+					sendMessageFailed(destinationUIN, message, type, "Target went offline during transmit");
 				});
 			}
+		}
+	}
+	private void sendMessageFailed(long destinationUIN, PackedMessage message, MsgSendType type, String reason) {
+		switch (type.failBehaviour) {
+		case Discard:
+			return;
+		case Spool:
+			spoolMessage(destinationUIN, message, type.isReject);
+			return;
+		case Reject:
+			rejectMessage(destinationUIN, message, reason);
+			return;
+		default:
+			rejectMessage(destinationUIN, message, "FIXME: unknown fail behaviour");
 		}
 	}
 
@@ -392,7 +410,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public synchronized String runSystemCheck() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Natsue Server " + SystemCommands.VERSION + "\n");
+		sb.append(SystemCommands.VERSION + "\n");
 		sb.append("Random Pool:");
 		for (long entry : users.randomPool)
 			sb.append(" " + UINUtils.toString(entry));
