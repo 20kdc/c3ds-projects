@@ -58,7 +58,7 @@ macro outs(str &text) {
 	// The & command is used to write & CAOS.
 	// Parameters given are converted into CAOS that returns their values.
 	// When possible, this CAOS can be used to write to the value.
-	& "outs " text "\n";
+	& 'outs {text}\n';
 	// It's worth mentioning that this style of macro is considered an expression.
 	// {} is valid in expressions, although it has different semantics to
 	//  when used as a statement.
@@ -75,7 +75,7 @@ macro addInplace(int &a, int &b) {
 	// However, you may assign multiple source values to multiple destinations.
 	// However, due to various design concerns, these assignments are not atomic.
 	// Therefore a,b = b,a; is not recommended.
-	& "addv " a " " b "\n";
+	& 'addv {a} {b}\n';
 }
 
 // And, of course, at the expense of a temporary variable...
@@ -83,7 +83,7 @@ macro addInplace(int &a, int &b) {
 
 macro add(int &a, int &b) {
 	let int c = a;
-	& "addv " c " " b "\n";
+	& 'addv {c} {b}\n';
 	return c;
 }
 
@@ -97,7 +97,7 @@ macro add(int &a, int &b) {
 // ? acts as syntactic sugar for allowing null in a type.
 
 macro (Agent? res) rtar(int &family, int &genus, int &species) {
-	& "rtar " family " " genus " " species "\n";
+	& 'rtar {family} {genus} {species}\n';
 	res = targ;
 }
 
@@ -105,12 +105,12 @@ macro (Agent? res) rtar(int &family, int &genus, int &species) {
 
 install {
 
-	& " * --outs/modu--\n";
+	& ' * --outs/modu--\n';
 
 	// Macro calls are relatively normal function if you're used to other languages.
 	outs("Your MODU says:"); outs(modu()); outs("\n");
 
-	& " * --defining counter--\n";
+	& ' * --defining counter--\n';
 
 	// Variables may be defined using the let keyword.
 	let number counter = 0;
@@ -118,10 +118,10 @@ install {
 	// They may be aliased using the alias keyword, and this also allows redeclaring their type.
 	alias counter = counter!int;
 
-	& " * --addInplace--\n";
+	& ' * --addInplace--\n';
 	addInplace(counter, 1);
 
-	& " * --add--\n";
+	& ' * --add--\n';
 	counter = add(counter, 1);
 
 	// bools are strictly speaking ints (and are castable to such).
@@ -150,17 +150,17 @@ install {
 
 script Creature 5 {
 	// Constant expressions can be written inline...
-	& "outv " aTrue "\n";
+	& 'outv {aTrue}\n';
 	// And constant expressions can cause code to be elided at compile-time
 	if aFalse {
-		& "outs \"Invisible\"\n";
+		& 'outs "Invisible"\n';
 	} else {
-		& "outs \"Visible\"\n";
+		& 'outs "Visible"\n';
 	}
 	// test of lexer
-	& "outv " -0.1;
-	& "outv " +0.1;
-	& "outv " -0;
+	& 'outv {-0.1}';
+	& 'outv {+0.1}';
+	& 'outv {-0}';
 }
 
 // ...or by message name.
@@ -218,6 +218,7 @@ remove {
 	let int testInt3 = 12;
 	let float testAllOps = test + test2 * test3 / test - (testInt | testInt2 & testInt3);
 	let float testAllOpsConst = 12.5 + 12.5 * 12.5 / 12.5 - (12 | 12 & 12);
-	&"outs " ("Hello, test float " + test + " and string concat!\n");
+	&'outs {"Hello, test float " + test + " and string concat!\n"}';
+	&' * silly commented scriptorium value test {Creature}';
 }
 

@@ -70,6 +70,8 @@ public class RALInlineStatement extends RALStatementUR {
 							String inlineRepr = vc.finishedOutput.getInlineCAOS(i, false, scope2);
 							if (inlineRepr == null)
 								throw new RuntimeException("VarCacher did not cache something it was told to");
+							if (i != 0)
+								interiorWriter.append(" ");
 							interiorWriter.append(inlineRepr);
 						}
 					} else {

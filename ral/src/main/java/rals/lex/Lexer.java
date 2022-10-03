@@ -13,16 +13,10 @@ import java.io.InputStream;
  * Big monolith.
  */
 public class Lexer {
-	private InputStream input;
-
-	// If not at byteHistory.length, the next byte to "read".
-	private int byteHistoryPtr = 3;
-	// this is in stream order, 
-	private int[] byteHistory = new int[3];
+	private ByteHistory byteHistory;
 
 	private boolean tokenSaved;
 	private Token lastToken;
-	private int lineNumber = 1;
 	private static final String LONERS = ";[]{}(),.";
 	private static final String NUM_START = "+-0123456789";
 	private static final String NUM_BODY = "0123456789.e";
@@ -38,30 +32,24 @@ public class Lexer {
 	 */
 	public String lastComment = null;
 
+	public int levelOfStringEmbedding = 0;
+	public int levelOfStringEmbeddingEscape = 0;
+
 	public Lexer(String fn, InputStream inp) {
-		input = inp;
+		byteHistory = new ByteHistory(inp);
 		fileName = fn;
 	}
 
+	public SrcPos genLN() {
+		return new SrcPos(fileName, byteHistory.lineNumber);
+	}
+
 	private int getNextByte() {
-		if (byteHistoryPtr < byteHistory.length)
-			return byteHistory[byteHistoryPtr++];
-		try {
-			int val = input.read();
-			if (val == 10)
-				lineNumber++;
-			// 
-			for (int i = 0; i < byteHistory.length - 1; i++)
-				byteHistory[i] = byteHistory[i + 1];
-			byteHistory[byteHistory.length - 1] = val;
-			return val;
-		} catch (IOException ioe) {
-			throw new RuntimeException(ioe);
-		}
+		return byteHistory.getNextByte();
 	}
 
 	private void backByte() {
-		byteHistoryPtr--;
+		byteHistory.backByte();
 	}
 
 	private boolean consumeWS() {
@@ -128,10 +116,6 @@ public class Lexer {
 		return didAnything;
 	}
 
-	public SrcPos genLN() {
-		return new SrcPos(fileName, lineNumber);
-	}
-
 	public Token next() {
 		if (tokenSaved) {
 			tokenSaved = false;
@@ -141,36 +125,16 @@ public class Lexer {
 		int c = getNextByte();
 		if (c == -1)
 			return null;
-		if ((c == '\"') || (c == '\'')) {
-			StringBuilder sb = new StringBuilder();
-			boolean escaping = false;
-			while (true) {
-				int c2 = getNextByte();
-				if (c2 == -1)
-					throw new RuntimeException("Unterminated string");
-				if (escaping) {
-					if (c2 == 'r')
-						c2 = '\r';
-					if (c2 == 't')
-						c2 = '\t';
-					if (c2 == 'n')
-						c2 = '\n';
-					if (c2 == '0')
-						c2 = 0;
-					sb.append((char) c2);
-					escaping = false;
-				} else {
-					if (c2 == c) {
-						break;
-					} else if (c2 == '\\') {
-						escaping = true;
-					} else {
-						sb.append((char) c2);
-					}
-				}
-			}
-			lastToken = new Token.Str(genLN(), sb.toString());
-			return lastToken;
+		if (c == '\"') {
+			// Regular ol' string
+			return finishReadingString(c, false, false);
+		} else if (c == '\'') {
+			// String w/ string embedding capabilities
+			return finishReadingString(c, false, true);
+		} else if ((c == '}') && (levelOfStringEmbedding > 0) && (levelOfStringEmbeddingEscape == 0)) {
+			// Leaving string embedding argument and entering the string part again
+			levelOfStringEmbedding--;
+			return finishReadingString('\'', true, true);
 		}
 		// This has to punch a gap in the nice little else-if chain.
 		// Why? Because it needs to fallthrough if stuff goes wrong...
@@ -220,6 +184,13 @@ public class Lexer {
 			}
 		}
 		if (LONERS.indexOf(c) != -1) {
+			if (levelOfStringEmbedding > 0) {
+				if (c == '{')
+					levelOfStringEmbeddingEscape++;
+				if (c == '}')
+					if (levelOfStringEmbeddingEscape > 0)
+						levelOfStringEmbeddingEscape--;
+			}
 			lastToken = new Token.Kw(genLN(), Character.toString((char) c));
 			return lastToken;
 		} else if (OPERATORS.indexOf(c) != -1) {
@@ -256,6 +227,46 @@ public class Lexer {
 				return lastToken;
 			}
 		}
+	}
+	private Token finishReadingString(int c, boolean startIsClusterEnd, boolean isEmbedding) {
+		StringBuilder sb = new StringBuilder();
+		boolean escaping = false;
+		boolean endIsClusterStart = false;
+		while (true) {
+			int c2 = getNextByte();
+			if (c2 == -1)
+				throw new RuntimeException("Unterminated string");
+			if (escaping) {
+				if (c2 == 'r')
+					c2 = '\r';
+				if (c2 == 't')
+					c2 = '\t';
+				if (c2 == 'n')
+					c2 = '\n';
+				if (c2 == '0')
+					c2 = 0;
+				sb.append((char) c2);
+				escaping = false;
+			} else {
+				if (c2 == c) {
+					break;
+				} else if (isEmbedding && (c2 == '{')) {
+					levelOfStringEmbedding++;
+					endIsClusterStart = true;
+					break;
+				} else if (c2 == '\\') {
+					escaping = true;
+				} else {
+					sb.append((char) c2);
+				}
+			}
+		}
+		if (isEmbedding) {
+			lastToken = new Token.StrEmb(genLN(), sb.toString(), startIsClusterEnd, endIsClusterStart);
+		} else {
+			lastToken = new Token.Str(genLN(), sb.toString());
+		}
+		return lastToken;
 	}
 
 	public void back() {

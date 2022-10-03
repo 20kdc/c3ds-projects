@@ -95,6 +95,21 @@ public class Token {
 			return "Str:" + lineNumber + ":" + text;
 		}
 	}
+	public static class StrEmb extends Token {
+		public String text;
+		public boolean startIsClusterEnd, endIsClusterStart;
+		public StrEmb(SrcPos ln, String tx, boolean ce, boolean cs) {
+			super(ln);
+			text = tx;
+			startIsClusterEnd = ce;
+			endIsClusterStart = cs;
+		}
+
+		@Override
+		public String toString() {
+			return "StrEmb:" + lineNumber + ":" + text;
+		}
+	}
 	public static class Int extends Token {
 		public int value;
 		public Int(SrcPos ln, int v) {

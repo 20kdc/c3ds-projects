@@ -10,6 +10,7 @@ import java.util.LinkedList;
 
 import rals.expr.*;
 import rals.lex.*;
+import rals.lex.Token.StrEmb;
 import rals.stmt.*;
 import rals.types.*;
 
@@ -33,13 +34,29 @@ public class ParserCode {
 			LinkedList<Object> obj = new LinkedList<>();
 			while (true) {
 				Token tkn2 = lx.requireNext();
-				if (tkn2.isKeyword(";")) {
+				if (tkn2 instanceof StrEmb) {
+					Token.StrEmb se = (Token.StrEmb) tkn2;
+					if (se.startIsClusterEnd)
+						throw new RuntimeException("Unexpected inline cluster end at " + tkn2.lineNumber);
+					// While inside the string embedding...
+					while (true) {
+						obj.add(se.text);
+						if (!se.endIsClusterStart)
+							break;
+						obj.add(ParserExpr.parseExpr(ts, lx, true));
+						tkn2 = lx.requireNext();
+						if (tkn2 instanceof StrEmb) {
+							se = (StrEmb) tkn2;
+							if (!se.startIsClusterEnd)
+								throw new RuntimeException("Expected inline cluster end at " + tkn2.lineNumber);
+						} else {
+							throw new RuntimeException("Unexpectedly lost in inline cluster at " + tkn2.lineNumber);
+						}
+					}
+				} else if (tkn2.isKeyword(";")) {
 					break;
-				} else if (tkn2 instanceof Token.Str) {
-					obj.add(((Token.Str) tkn2).text);
 				} else {
-					lx.back();
-					obj.add(ParserExpr.parseExpr(ts, lx, true));
+					throw new RuntimeException("String embedding or semicolon expected at " + tkn2.lineNumber);
 				}
 			}
 			return new RALInlineStatement(tkn.lineNumber, obj.toArray());
