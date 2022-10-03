@@ -7,6 +7,7 @@
 package rals.code;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 import rals.expr.RALCallable;
@@ -72,17 +73,24 @@ public class Scripts {
 			outText.append(" ");
 			outText.append(k.script);
 			outText.append("\n");
-			outText.append("scrp ");
-			outText.append(k.classifier.family);
-			outText.append(" ");
-			outText.append(k.classifier.genus);
-			outText.append(" ");
-			outText.append(k.classifier.species);
-			outText.append(" ");
-			outText.append(k.script);
+			outText.append(k.toScrpLine());
 			outText.append("\n");
 			compileEventContents(outText, ts, k);
 			outText.append("endm\n");
+		}
+	}
+
+	/**
+	 * Compiles the module's event scripts to a set of requests.
+	 */
+	public void compileEventsForInject(LinkedList<String> requests, TypeSystem ts) {
+		for (Map.Entry<ScriptIdentifier, RALStatementUR> eventScript : eventScripts.entrySet()) {
+			ScriptIdentifier k = eventScript.getKey();
+			StringBuilder outText = new StringBuilder();
+			outText.append(k.toScrpLine());
+			outText.append('\n');
+			compileEventContents(outText, ts, k);
+			requests.add(outText.toString());
 		}
 	}
 

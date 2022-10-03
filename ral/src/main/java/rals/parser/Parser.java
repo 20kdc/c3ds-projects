@@ -36,6 +36,15 @@ public class Parser {
 		}
 		return ic;
 	}
+	public static String runCPXConnTest() throws IOException {
+		IncludeParseContext ic = new IncludeParseContext();
+		File initParent = new File(".");
+		Parser.parseFile(ic, initParent, "(internal) compiler_helpers.ral", Main.class.getClassLoader().getResourceAsStream("compiler_helpers.ral"));
+		Parser.parseFile(ic, initParent, "(internal) cpx_connection_test.ral", Main.class.getClassLoader().getResourceAsStream("cpx_connection_test.ral"));
+		StringBuilder sb = new StringBuilder();
+		ic.module.compileInstall(sb, ic.typeSystem);
+		return sb.toString();
+	}
 
 	public static void parseFile(IncludeParseContext ctx, String inc) throws IOException {
 		if (ctx.included.contains(inc))

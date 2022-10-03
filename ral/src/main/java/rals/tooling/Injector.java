@@ -6,9 +6,64 @@
  */
 package rals.tooling;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+
 /**
  * CAOS into the game at maximum velocity!
+ * Note that the library here is particularly lacking in features. 
  */
 public class Injector {
-
+	public static String cpxRequest(String req) throws IOException {
+		byte[] data = req.getBytes(StandardCharsets.ISO_8859_1);
+		String host = System.getenv("CPX_HOST");
+		if ((host == null) || (host.equals("")))
+			host = "127.0.0.1";
+		String port = System.getenv("CPX_PORT");
+		if ((port == null) || (port.equals("")))
+			port = "19960";
+		try (Socket cpxSocket = new Socket(host, Integer.parseInt(port))) {
+			DataInputStream inp = new DataInputStream(cpxSocket.getInputStream());
+			OutputStream oup = cpxSocket.getOutputStream();
+			ByteBuffer tmp = ByteBuffer.allocate(48);
+			tmp.order(ByteOrder.LITTLE_ENDIAN);
+			tmp.putInt(0, data.length + 1);
+			try {
+				oup.write(tmp.array(), 0, 4);
+				oup.write(data);
+				oup.write(0);
+			} catch (Exception ex) {
+				// Deliberately ignore this and wait for the reads to fail.
+				// This can happen if we had the connection closed on us early.
+			}
+			// Now that the request is sent...
+			inp.readFully(tmp.array());
+			int resultCode = tmp.getInt(32);
+			int resultLen = tmp.getInt(36);
+			byte[] resultData = new byte[resultLen];
+			inp.readFully(resultData);
+			int cutPoint = resultData.length;
+			for (int i = 0; i < resultData.length; i++) {
+				if (resultData[i] == 0) {
+					cutPoint = i;
+					break;
+				}
+			}
+			String resultText = new String(resultData, 0, cutPoint, StandardCharsets.ISO_8859_1);
+			if (resultCode != 0)
+				throw new CPXException(resultText);
+			return resultText;
+		}
+	}
+	public static class CPXException extends RuntimeException {
+		public CPXException(String text) {
+			super(text);
+		}
+	}
 }

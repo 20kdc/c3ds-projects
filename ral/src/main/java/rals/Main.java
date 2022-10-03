@@ -10,8 +10,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.LinkedList;
 
 import rals.parser.*;
+import rals.tooling.Injector;
+import rals.types.ScriptIdentifier;
 
 /**
  * The RAL compiler.
@@ -46,24 +49,36 @@ public class Main {
 			for (char chr : outText.toString().toCharArray())
 				fos.write(chr);
 			fos.close();
-		} else if (args[0].equals("inject") || args[0].equals("injectRemove")) {
-			if (true)
-				throw new RuntimeException("NYI");
+		} else if (args[0].equals("inject") || args[0].equals("injectEvents") || args[0].equals("injectRemove")) {
 			if (args.length != 2) {
 				printHelp();
 				return;
 			}
-			File outFile = new File(args[2]);
 			IncludeParseContext ic = Parser.run(args[1]);
-			StringBuilder outText = new StringBuilder();
+			LinkedList<String> queuedRequests = new LinkedList<>();
 			if (args[0].equals("inject")) {
+				// events
+				ic.module.compileEventsForInject(queuedRequests, ic.typeSystem);
+				// install
+				StringBuilder outText = new StringBuilder();
+				outText.append("execute\n");
 				ic.module.compileInstall(outText, ic.typeSystem);
-				ic.module.compileEvents(outText, ic.typeSystem);
+				queuedRequests.add(outText.toString());
+			} else if (args[0].equals("injectEvents")) {
+				ic.module.compileEventsForInject(queuedRequests, ic.typeSystem);
 			} else if (args[0].equals("injectRemove")) {
+				StringBuilder outText = new StringBuilder();
+				outText.append("execute\n");
 				ic.module.compileRemove(outText, ic.typeSystem);
+				queuedRequests.add(outText.toString());
 			} else {
 				throw new RuntimeException("?");
 			}
+			for (String req : queuedRequests)
+				System.out.println(Injector.cpxRequest(req));
+		} else if (args[0].equals("cpxConnectionTest")) {
+			// be a little flashy with this
+			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest()));
 		} else {
 			printHelp();
 		}
@@ -75,6 +90,9 @@ public class Main {
 		System.out.println("compileInstall INPUT OUTPUT: Same as compile, but only the install script");
 		System.out.println("compileEvents INPUT OUTPUT: Same as compile, but only the event scripts");
 		System.out.println("compileRemove INPUT OUTPUT: Same as compile, but only the remove script (without rscr prefix!)");
-		System.out.println("inject/injectEvents/injectRemove: NOT YET IMPLEMENTED");
+		System.out.println("inject INPUT: Injects event scripts and install script");
+		System.out.println("injectEvents INPUT: Injects event scripts only");
+		System.out.println("injectRemove INPUT: Injects removal script");
+		System.out.println("cpxConnectionTest: Test CPX connection");
 	}
 }

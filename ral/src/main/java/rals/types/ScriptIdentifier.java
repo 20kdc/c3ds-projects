@@ -34,4 +34,8 @@ public final class ScriptIdentifier {
 		}
 		return false;
 	}
+
+	public String toScrpLine() {
+		return "scrp " + classifier.family + " " + classifier.genus + " " + classifier.species + " " + script;
+	}
 }
