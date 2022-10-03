@@ -4,8 +4,6 @@ RAL is a statically typed language that compiles to CAOS. *(While "AL" can be re
 
 The purpose of RAL is to allow for working on complex modding projects without having to worry about the typical problems that come with that in CAOS, such as keeping track of variable names by number.
 
-
-
 RAL is split into a compiler (itself written in Java) and a standard library (*doesn't yet exist*) covering Creatures 3 and Docking Station.
 
 As such, this manual is intended to be written in four distinct sections:
@@ -14,14 +12,8 @@ As such, this manual is intended to be written in four distinct sections:
 
 + The *Language Reference* covers RAL as a language, and constructs universal to the compiler.
 
++ The *Language Technical Details* cover scary technical bits of RAL - this may be important to look at if you're encountering something weird.
+
 + The *Library Reference* covers RAL's standard library.
 
 + The *Guides* cover instructional material on RAL's usage.
-
-
-
-
-
-
-
-

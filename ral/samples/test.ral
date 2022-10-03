@@ -25,6 +25,9 @@ aTrue = !aFalse;
 fileToIncludeFrom = "test-include.ral";
 include fileToIncludeFrom;
 
+// include search paths can be added
+// addSearchPath ".";
+
 // Interfaces represent shared APIs between agents.
 // They may also be declared as extending other interfaces (or classes).
 
