@@ -27,6 +27,7 @@ import natsue.server.firewall.IFWModule;
 import natsue.server.firewall.IRejector;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
+import natsue.server.system.SystemCommands;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
 import natsue.server.userdata.IHubUserDataCachePrivileged;
 import natsue.server.userdata.INatsueUserData;
@@ -386,5 +387,20 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public synchronized void considerRandomStatus(LongTerm user) {
 		users.considerRandomStatusInSync(user);
+	}
+
+	@Override
+	public synchronized String runSystemCheck() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Natsue Server " + SystemCommands.VERSION + "\n");
+		sb.append("Random Pool:");
+		for (long entry : users.randomPool)
+			sb.append(" " + UINUtils.toString(entry));
+		sb.append("\n");
+		userDataCache.runSystemCheck(sb);
+		sb.append("Connected:\n");
+		for (IHubClient entry : users.connectedClients.values())
+			sb.append(UINUtils.toString(entry.getUIN()) + ": " + entry.getNickname() + "\n");
+		return sb.toString();
 	}
 }

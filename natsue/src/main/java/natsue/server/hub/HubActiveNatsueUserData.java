@@ -49,6 +49,10 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 		logged = parent.config.logUserCacheManagement.getValue();
 	}
 
+	public int debugGetRefCount() {
+		return refCount.get();
+	}
+
 	@Override
 	public ILogProvider getLogParent() {
 		return parent.getLogParent();

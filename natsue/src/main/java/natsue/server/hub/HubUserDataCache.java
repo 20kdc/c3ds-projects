@@ -8,6 +8,7 @@
 package natsue.server.hub;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import natsue.config.ConfigAccounts;
@@ -205,6 +206,20 @@ public class HubUserDataCache implements IHubUserDataCacheBetweenCacheAndHub, IL
 			((HubActiveNatsueUserData) root).close();
 		} else {
 			throw new RuntimeException("Unhandled root type");
+		}
+	}
+
+	@Override
+	public synchronized void runSystemCheck(StringBuilder sb) {
+		sb.append("UDC Content:\n");
+		for (Map.Entry<Long, INatsueUserData.LongTermPrivileged> ent : cacheByUIN.entrySet()) {
+			INatsueUserData.LongTermPrivileged v = ent.getValue();
+			sb.append(UINUtils.toString(ent.getKey()) + ": " + v.getNickname() + ", ");
+			if (v instanceof Fixed) {
+				sb.append("FIXED\n");
+			} else if (v instanceof HubActiveNatsueUserData) {
+				sb.append(((HubActiveNatsueUserData) v).debugGetRefCount() + " refs\n");
+			}
 		}
 	}
 }

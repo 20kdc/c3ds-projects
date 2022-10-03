@@ -23,4 +23,9 @@ public interface IHubUserDataCacheBetweenCacheAndHub extends IHubUserDataCachePr
 	 * Closes off the held reference created during login.
 	 */
 	void hubLogout(INatsueUserData.Root root);
+
+	/**
+	 * UDC system check
+	 */
+	void runSystemCheck(StringBuilder sb);
 }

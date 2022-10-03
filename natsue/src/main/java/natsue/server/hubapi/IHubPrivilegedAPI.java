@@ -63,6 +63,11 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	void considerRandomStatus(INatsueUserData.LongTerm user);
 
 	/**
+	 * Attempst to find anything unusual.
+	 */
+	String runSystemCheck();
+
+	/**
 	 * Controls message behaviour.
 	 */
 	public static enum MsgSendType {

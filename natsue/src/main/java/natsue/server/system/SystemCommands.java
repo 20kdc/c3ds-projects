@@ -20,10 +20,12 @@ import natsue.server.userdata.INatsueUserData;
  * Stuff them all here for now as part of refactor
  */
 public class SystemCommands {
+	public static final String VERSION = "03/10/22";
 	public static final BaseBotCommand[] commands = new BaseBotCommand[] {
 		new BaseBotCommand("version", "", Cat.Public) {
 			public void run(Context args) {
-				args.response.append("01/10/22\n");
+				args.response.append(VERSION);
+				args.response.append("\n");
 			}
 		},
 		new WhoisBotCommand(),
@@ -121,6 +123,7 @@ public class SystemCommands {
 			}
 		},
 		new RemoteFlagControlBotCommand(),
+		new SystemCheckBotCommand(),
 		new BaseBotCommand("ahelp", "", Cat.Admin) {
 			public void run(Context args) {
 				args.response.append("admin commands:\n");
@@ -128,6 +131,7 @@ public class SystemCommands {
 				args.response.append("resetpw Someone\n");
 				args.response.append("flags Someone [+FLAG/-FLAG...] (adds/removes flags)\n");
 				args.response.append("flags (reference)\n");
+				args.response.append("systemcheck (performs sanity check)\n");
 				args.response.append("You can send a global system message by mail, subject \"SYSTEM MSG\".\n");
 			}
 		},
