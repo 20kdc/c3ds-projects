@@ -26,7 +26,7 @@ public class RALVarVA extends RALVarString {
 	}
 
 	@Override
-	public String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+	public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 		if (write && !isWritable)
 			return null;
 		Integer i = context.heldVAHandles.get(handle);
@@ -36,7 +36,7 @@ public class RALVarVA extends RALVarString {
 	}
 
 	@Override
-	protected RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 		return RALSpecialInline.VA;
 	}
 }

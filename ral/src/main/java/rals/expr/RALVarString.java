@@ -43,7 +43,7 @@ public class RALVarString extends RALVarBase {
 			set = "setv ";
 			break;
 		default:
-			throw new RuntimeException("Unknown major type of " + input + " (" + inputExactType + ")");
+			throw new RuntimeException("Unknown major type of " + input + " (" + inputExactType + ") - you will need to cast this value");
 		}
 		writer.writeCode(set + code + " " + input);
 	}
@@ -61,7 +61,7 @@ public class RALVarString extends RALVarBase {
 		}
 
 		@Override
-		public String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+		public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 			if (write && !isWritable)
 				return null;
 			return code;

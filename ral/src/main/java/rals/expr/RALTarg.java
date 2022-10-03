@@ -38,7 +38,7 @@ public class RALTarg extends RALVarBase implements RALExprUR {
 	}
 
 	@Override
-	protected RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 		return RALSpecialInline.Targ;
 	}
 }

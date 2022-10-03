@@ -151,12 +151,12 @@ public final class RALCast implements RALExprUR {
 		}
 
 		@Override
-		public String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+		public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 			return expr.getInlineCAOS(index, write, context);
 		}
 
 		@Override
-		public RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+		public RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 			return expr.getSpecialInline(index, context);
 		}
 	}

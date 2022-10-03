@@ -24,13 +24,12 @@ import rals.types.RALType.Major;
 public class RALChainOp implements RALExprUR {
 	public final RALExprUR[] elements;
 	public final Op op;
-	private RALChainOp(String s, RALExprUR[] elm) {
-		op = getOpByName(s);
+	public RALChainOp(Op o, RALExprUR[] elm) {
+		op = o;
 		elements = elm;
 	}
 
-	public static RALExprUR of(String string, RALExprUR l, RALExprUR r) {
-		Op thisOp = getOpByName(string);
+	public static RALExprUR of(RALExprUR l, Op thisOp, RALExprUR r) {
 		LinkedList<RALExprUR> total = new LinkedList<>();
 		boolean handledL = false;
 		if (l instanceof RALChainOp) {
@@ -44,7 +43,7 @@ public class RALChainOp implements RALExprUR {
 		if (!handledL)
 			total.add(l);
 		total.add(r);
-		return new RALChainOp(string, total.toArray(new RALExprUR[0]));
+		return new RALChainOp(thisOp, total.toArray(new RALExprUR[0]));
 	}
 
 	@Override
@@ -69,10 +68,12 @@ public class RALChainOp implements RALExprUR {
 		RALType typePipeline = null;
 		for (int i = 0; i < elements.length; i++) {
 			RALExprSlice slice = elements[i].resolve(scope);
+			RALType t = slice.assert1ReadType();
+			op.typeCheck(scope.script.typeSystem, t);
 			if (i == 0) {
-				typePipeline = slice.assert1ReadType();
+				typePipeline = op.startType(scope.script.typeSystem, t);
 			} else {
-				typePipeline = op.stepType(scope.script.typeSystem, typePipeline, slice.assert1ReadType());
+				typePipeline = op.stepType(scope.script.typeSystem, typePipeline, t);
 			}
 			allArgSlices[i] = slice;
 		}
@@ -104,6 +105,10 @@ public class RALChainOp implements RALExprUR {
 				// because the final type may not be anything like what went in!
 				RALType rt = allArgSlices[0].assert1ReadType();
 				allArgSlices[0].readCompile(RALCast.Resolved.of(out, rt, false), context);
+				// initial type transform
+				op.startCodegen(rt, outInlineW, context);
+				rt = op.startType(context.typeSystem, rt);
+				// alright, ready to go
 				RALVarString.Fixed tmpVA = null;
 				for (int i = 1; i < allArgSlices.length; i++) {
 					RALExprSlice other = allArgSlices[i];
@@ -118,18 +123,29 @@ public class RALChainOp implements RALExprUR {
 						otherInlineR = tmpVA.code;
 					}
 					RALType otherType = other.assert1ReadType();
-					op.codegen(rt, outInlineW, otherType, otherInlineR, context);
+					op.stepCodegen(rt, outInlineW, otherType, otherInlineR, context);
 					rt = op.stepType(context.typeSystem, rt, otherType);
 				}
 			}
 		};
 	}
 
-	private abstract static class Op {
-		abstract void codegen(RALType l, String lInline, RALType r, String rInline, CompileContext context);
-		// also typechecks
+	public abstract static class Op {
+		// These only matter for ADD_STR
+		void startCodegen(RALType rt, String outInlineW, CompileContext context) {
+		}
+		RALType startType(TypeSystem ts, RALType rt) {
+			return rt;
+		}
+		RALConstant startConst(TypeSystem ts, RALConstant l) {
+			return l;
+		}
+		// Regular
+		abstract void stepCodegen(RALType l, String lInline, RALType r, String rInline, CompileContext context);
 		abstract RALType stepType(TypeSystem ts, RALType l, RALType r);
 		abstract RALConstant stepConst(TypeSystem ts, RALConstant l, RALConstant r);
+		// Typecheck
+		abstract void typeCheck(TypeSystem ts, RALType rt);
 	}
 	private abstract static class BasicOp extends Op {
 		final String modifier;
@@ -137,8 +153,12 @@ public class RALChainOp implements RALExprUR {
 			modifier = m;
 		}
 		@Override
-		void codegen(RALType l, String lInline, RALType r, String rInline, CompileContext context) {
+		void stepCodegen(RALType l, String lInline, RALType r, String rInline, CompileContext context) {
 			context.writer.writeCode(modifier + " " + lInline + " " + rInline);
+		}
+		@Override
+		void typeCheck(TypeSystem ts, RALType rt) {
+			rt.assertImpCast(ts.gNumber);
 		}
 	}
 	private abstract static class BitNumberOp extends BasicOp {
@@ -146,9 +166,11 @@ public class RALChainOp implements RALExprUR {
 			super(m);
 		}
 		@Override
+		void typeCheck(TypeSystem ts, RALType rt) {
+			rt.assertImpCast(ts.gInteger);
+		}
+		@Override
 		RALType stepType(TypeSystem ts, RALType l, RALType r) {
-			l.assertImpCast(ts.gInteger);
-			r.assertImpCast(ts.gInteger);
 			return ts.gInteger;
 		}
 		final RALConstant stepConst(TypeSystem ts, RALConstant l, RALConstant r) {
@@ -163,8 +185,6 @@ public class RALChainOp implements RALExprUR {
 	 * So we can't just say everything's a float. And that's how Number became a compiler builtin.
 	 */
 	private static RALType workOutNumberType(TypeSystem ts, RALType l, RALType r) {
-		l.assertImpCast(ts.gNumber);
-		r.assertImpCast(ts.gNumber);
 		boolean lInt = l.canImplicitlyCast(ts.gInteger);
 		boolean lFloat = l.canImplicitlyCast(ts.gFloat);
 		boolean rInt = r.canImplicitlyCast(ts.gInteger);
@@ -195,37 +215,21 @@ public class RALChainOp implements RALExprUR {
 		abstract int stepConstI(int a, int b);
 	}
 
-	private static Op getOpByName(String name) {
-		if (name.equals("|"))
-			return OR;
-		if (name.equals("&"))
-			return AND;
-		if (name.equals("+"))
-			return ADD;
-		if (name.equals("-"))
-			return SUB;
-		if (name.equals("/"))
-			return DIV;
-		if (name.equals("*"))
-			return MUL;
-		throw new RuntimeException("how'd this get " + name + " anyway?");
-	}
-
-	private static final Op OR = new BitNumberOp("orrv") {
+	public static final Op OR = new BitNumberOp("orrv") {
 		@Override
 		int stepConst(int a, int b) {
 			return a | b;
 		}
 	};
 
-	private static final Op AND = new BitNumberOp("andv") {
+	public static final Op AND = new BitNumberOp("andv") {
 		@Override
 		int stepConst(int a, int b) {
 			return a & b;
 		}
 	};
 
-	private static final Op SUB = new CastNumberOp("subv") {
+	public static final Op SUB = new CastNumberOp("subv") {
 		@Override
 		float stepConstF(float a, float b) {
 			return a - b;
@@ -236,7 +240,7 @@ public class RALChainOp implements RALExprUR {
 		}
 	};
 
-	private static final Op DIV = new CastNumberOp("divv") {
+	public static final Op DIV = new CastNumberOp("divv") {
 		@Override
 		float stepConstF(float a, float b) {
 			return a / b;
@@ -247,7 +251,7 @@ public class RALChainOp implements RALExprUR {
 		}
 	};
 
-	private static final Op MUL = new CastNumberOp("mulv") {
+	public static final Op MUL = new CastNumberOp("mulv") {
 		@Override
 		float stepConstF(float a, float b) {
 			return a * b;
@@ -258,13 +262,55 @@ public class RALChainOp implements RALExprUR {
 		}
 	};
 
-	private static final Op ADD = new Op() {
-		void codegen(RALType l, String lInline, RALType r, String rInline, CompileContext context) {
+	public static final Op ADD = new AddOp(false);
+
+	// This is specifically for string embeddings
+	public static final Op ADD_STR = new AddOp(true);
+
+	private static class AddOp extends Op {
+		public final boolean strOnly;
+		AddOp(boolean stringsOnly) {
+			strOnly = stringsOnly;
+		}
+		@Override
+		void typeCheck(TypeSystem ts, RALType rt) {
+			boolean str = rt.canImplicitlyCast(ts.gString);
+			if (!str)
+				rt.assertImpCast(ts.gNumber);
+		}
+		@Override
+		void startCodegen(RALType rt, String outInlineW, CompileContext context) {
+			if (strOnly)
+				if (!rt.canImplicitlyCast(context.typeSystem.gString))
+					context.writer.writeCode("sets " + outInlineW + " vtos " + outInlineW);
+		}
+		@Override
+		RALType startType(TypeSystem ts, RALType rt) {
+			if (!strOnly)
+				return rt;
+			return ts.gString; 
+		}
+		@Override
+		RALConstant startConst(TypeSystem ts, RALConstant l) {
+			if (strOnly)
+				if (l instanceof RALConstant.Number)
+					return new RALConstant.Str(ts, l.toString());
+			return l;
+		}
+		@Override
+		void stepCodegen(RALType l, String lInline, RALType r, String rInline, CompileContext context) {
 			boolean lStr = l.canImplicitlyCast(context.typeSystem.gString);
 			boolean rStr = r.canImplicitlyCast(context.typeSystem.gString);
 			if ((!lStr) && (!rStr)) {
 				// NUM + NUM
-				context.writer.writeCode("addv " + lInline + " " + rInline);
+				if (strOnly) {
+					// This shouldn't actually happen, because the initial value step fixes this.
+					// Pretend we didn't notice that.
+					context.writer.writeCode("sets " + lInline + " vtos " + lInline);
+					context.writer.writeCode("adds " + lInline + " vtos " + rInline);
+				} else {
+					context.writer.writeCode("addv " + lInline + " " + rInline);
+				}
 			} else if ((!lStr) && (rStr)) {
 				// NUM + STR
 				context.writer.writeCode("sets " + lInline + " vtos " + lInline);
@@ -301,6 +347,8 @@ public class RALChainOp implements RALExprUR {
 			return null;
 		}
 		private RALConstant stepConstAddNumbers(TypeSystem ts, RALConstant.Number l, RALConstant.Number r) {
+			if (strOnly)
+				return new RALConstant.Str(ts, l.toString() + r.toString());
 			if ((l instanceof RALConstant.Int) && (r instanceof RALConstant.Int))
 				return new RALConstant.Int(ts, ((RALConstant.Int) l).value + ((RALConstant.Int) r).value);
 			return new RALConstant.Flo(ts, l.toFloat() + r.toFloat());
@@ -313,7 +361,7 @@ public class RALChainOp implements RALExprUR {
 				l.assertImpCast(ts.gNumber);
 			if (!rStr)
 				r.assertImpCast(ts.gNumber);
-			if (lStr || rStr)
+			if (strOnly || lStr || rStr)
 				return ts.gString;
 			// neither is string, so it's NUM + NUM, so use that logic
 			return workOutNumberType(ts, l, r);

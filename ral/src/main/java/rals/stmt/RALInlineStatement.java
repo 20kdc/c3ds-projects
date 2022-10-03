@@ -24,18 +24,7 @@ public class RALInlineStatement extends RALStatementUR {
 
 	@Override
 	public RALStatement resolveInner(ScopeContext csc) {
-		final Object[] parts2 = new Object[parts.length];
-		for (int i = 0; i < parts2.length; i++) {
-			Object o = parts[i];
-			if (o instanceof String) {
-				parts2[i] = o;
-			} else if (o instanceof RALExprUR) {
-				parts2[i] = ((RALExprUR) o).resolve(csc);
-			} else {
-				throw new RuntimeException("RALInlineStatement takes Strings and RALExprsURs.");
-			}
-		}
-		return new Resolved(lineNumber, parts2);
+		return new Resolved(lineNumber, resolveParts(parts, csc));
 	}
 
 	public static final class Resolved extends RALStatement {
@@ -55,31 +44,63 @@ public class RALInlineStatement extends RALStatementUR {
 		protected void compileInner(CodeWriter writer, CompileContext scope) {
 			// scope for all the temporary VAs we may make
 			try (CompileContext scope2 = new CompileContext(scope)) {
-				StringBuilder interiorWriter = new StringBuilder();
-				for (Object o : parts2) {
-					if (o instanceof String) {
-						interiorWriter.append(o);
-					} else if (o instanceof RALExprSlice) {
-						RALExprSlice re = (RALExprSlice) o;
-						boolean[] inline = new boolean[re.length];
-						for (int i = 0; i < re.length; i++)
-							inline[i] = re.getInlineCAOS(i, false, scope2) != null;
-						VarCacher vc = new VarCacher(re, inline, null);
-						vc.writeCacheCode(scope2);
-						for (int i = 0; i < vc.finishedOutput.length; i++) {
-							String inlineRepr = vc.finishedOutput.getInlineCAOS(i, false, scope2);
-							if (inlineRepr == null)
-								throw new RuntimeException("VarCacher did not cache something it was told to");
-							if (i != 0)
-								interiorWriter.append(" ");
-							interiorWriter.append(inlineRepr);
-						}
-					} else {
-						throw new RuntimeException("RALInlineStatement intern takes Strings and RALExprs.");
-					}
-				}
-				writer.writeCode(interiorWriter.toString());
+				scope.writer.writeCode(compileResolvedParts(parts2, scope2, false));
 			}
 		}
+	}
+
+	public static Object[] resolveParts(Object[] parts, ScopeContext csc) {
+		final Object[] parts2 = new Object[parts.length];
+		for (int i = 0; i < parts2.length; i++) {
+			Object o = parts[i];
+			if (o instanceof String) {
+				parts2[i] = o;
+			} else if (o instanceof RALExprUR) {
+				parts2[i] = ((RALExprUR) o).resolve(csc);
+			} else {
+				throw new RuntimeException("Inline sections take Strings and RALExprsURs.");
+			}
+		}
+		return parts2;
+	}
+
+	public static String compileResolvedParts(Object[] resolvedParts, CompileContextNW scope) {
+		return compileResolvedParts(resolvedParts, (CompileContext) scope, true);
+	}
+
+	public static String compileResolvedParts(Object[] resolvedParts, CompileContext scope) {
+		return compileResolvedParts(resolvedParts, scope, false);
+	}
+
+	private static String compileResolvedParts(Object[] resolvedParts, CompileContext scope, boolean inlineOnly) {
+		StringBuilder interiorWriter = new StringBuilder();
+		for (Object o : resolvedParts) {
+			if (o instanceof String) {
+				interiorWriter.append(o);
+			} else if (o instanceof RALExprSlice) {
+				RALExprSlice re = (RALExprSlice) o;
+				if (!inlineOnly) {
+					// Automatically cache vars that we need to.
+					// Note that if inlineOnly is set, we're not allowed to do this.
+					boolean[] inline = new boolean[re.length];
+					for (int i = 0; i < re.length; i++)
+						inline[i] = re.getInlineCAOS(i, false, scope) != null;
+					VarCacher vc = new VarCacher(re, inline, null);
+					vc.writeCacheCode(scope);
+					re = vc.finishedOutput;
+				}
+				for (int i = 0; i < re.length; i++) {
+					String inlineRepr = re.getInlineCAOS(i, false, scope);
+					if (inlineRepr == null)
+						return null;
+					if (i != 0)
+						interiorWriter.append(" ");
+					interiorWriter.append(inlineRepr);
+				}
+			} else {
+				throw new RuntimeException("RALInlineStatement intern takes Strings and RALExprs.");
+			}
+		}
+		return interiorWriter.toString();
 	}
 }

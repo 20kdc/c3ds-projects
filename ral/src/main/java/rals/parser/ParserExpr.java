@@ -11,6 +11,7 @@ import java.util.LinkedList;
 
 import rals.cond.*;
 import rals.expr.*;
+import rals.expr.RALConstant.Str;
 import rals.lex.*;
 import rals.stmt.*;
 import rals.types.*;
@@ -144,15 +145,18 @@ public class ParserExpr {
 			return new RALCondLogOp(l, RALCondLogOp.Op.And, r);
 		} else if (string.equals("||")) {
 			return new RALCondLogOp(l, RALCondLogOp.Op.Or, r);
-		} else if (
-				string.equals("+") ||
-				string.equals("-") ||
-				string.equals("/") ||
-				string.equals("*") ||
-				string.equals("&") ||
-				string.equals("|")
-			) {
-			return RALChainOp.of(string, l, r);
+		} else if (string.equals("+")) {
+			return RALChainOp.of(l, RALChainOp.ADD, r);
+		} else if (string.equals("-")) {
+			return RALChainOp.of(l, RALChainOp.SUB, r);
+		} else if (string.equals("/")) {
+			return RALChainOp.of(l, RALChainOp.DIV, r);
+		} else if (string.equals("*")) {
+			return RALChainOp.of(l, RALChainOp.MUL, r);
+		} else if (string.equals("&")) {
+			return RALChainOp.of(l, RALChainOp.AND, r);
+		} else if (string.equals("|")) {
+			return RALChainOp.of(l, RALChainOp.OR, r);
 		}
 		throw new RuntimeException("No handler for binop " + string);
 	}
@@ -174,11 +178,32 @@ public class ParserExpr {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
 			return new RALAmbiguousID(ts, ((Token.ID) tkn).text);
+		} else if (tkn instanceof Token.StrEmb) {
+			// So before we accept this, this could actually be a termination.
+			Token.StrEmb se = (Token.StrEmb) tkn;
+			// Either way we go back a token due to passing off parsing to the inliner stuff.
+			// String embed syntax was first tested on inline statements, you see.
+			lx.back();
+			if (se.startIsClusterEnd)
+				return null;
+			// Ok, it's not. Use the same string embed parser as inline expressions use to start with.
+			Object[] objs = ParserCode.parseStringEmbed(ts, lx, true);
+			// Then convert the strings to constants.
+			RALExprUR[] total = new RALExprUR[objs.length];
+			for (int i = 0; i < total.length; i++) {
+				Object o = objs[i];
+				if (o instanceof String) {
+					total[i] = new RALConstant.Str(ts, (String) o);
+				} else if (o instanceof RALExprUR) {
+					total[i] = (RALExprUR) o;
+				} else {
+					throw new RuntimeException("String embed parser isn't supposed to output this: " + o);
+				}
+			}
+			// Because we ran into the string embed in the first place, this will have at least one value.
+			return new RALChainOp(RALChainOp.ADD_STR, total);
 		} else if (tkn.isKeyword("&")) {
-			Token strTkn = lx.requireNext();
-			if (!(strTkn instanceof Token.Str))
-				throw new RuntimeException("Inline CAOS expression can only be exactly one constant string token");
-			return new RALVarString.Fixed(((Token.Str) strTkn).text, ts.gAny, true);
+			return new RALInlineExpr(ParserCode.parseStringEmbed(ts, lx, true));
 		} else if (tkn.isKeyword("{")) {
 			// Oh, this gets weird...
 			RALBlock stmt = new RALBlock(tkn.lineNumber, false);

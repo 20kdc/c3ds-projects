@@ -36,7 +36,7 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		}
 
 		@Override
-		public String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+		public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 			if (write)
 				return null;
 			return toString();

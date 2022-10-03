@@ -35,6 +35,11 @@ public class RALDiscard extends RALExprSlice implements RALExprUR {
 	}
 
 	@Override
+	protected RALType writeTypeInner(int index) {
+		return any;
+	}
+
+	@Override
 	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
 		// We need to discard this safely, soooo
 		try (CompileContext ccr = new CompileContext(context)) {

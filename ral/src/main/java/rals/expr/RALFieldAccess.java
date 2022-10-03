@@ -98,7 +98,7 @@ public class RALFieldAccess implements RALExprUR {
 			}
 
 			@Override
-			public String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+			public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 				// We can't trust that targ won't be messed with unless we ensure it personally.
 				// That in mind, only translate this for OWNR.
 				if (baseExpr.getSpecialInline(0, context) == RALSpecialInline.Ownr)

@@ -31,35 +31,7 @@ public class ParserCode {
 			}
 			return rb;
 		} else if (tkn.isKeyword("&")) {
-			LinkedList<Object> obj = new LinkedList<>();
-			while (true) {
-				Token tkn2 = lx.requireNext();
-				if (tkn2 instanceof StrEmb) {
-					Token.StrEmb se = (Token.StrEmb) tkn2;
-					if (se.startIsClusterEnd)
-						throw new RuntimeException("Unexpected inline cluster end at " + tkn2.lineNumber);
-					// While inside the string embedding...
-					while (true) {
-						obj.add(se.text);
-						if (!se.endIsClusterStart)
-							break;
-						obj.add(ParserExpr.parseExpr(ts, lx, true));
-						tkn2 = lx.requireNext();
-						if (tkn2 instanceof StrEmb) {
-							se = (StrEmb) tkn2;
-							if (!se.startIsClusterEnd)
-								throw new RuntimeException("Expected inline cluster end at " + tkn2.lineNumber);
-						} else {
-							throw new RuntimeException("Unexpectedly lost in inline cluster at " + tkn2.lineNumber);
-						}
-					}
-				} else if (tkn2.isKeyword(";")) {
-					break;
-				} else {
-					throw new RuntimeException("String embedding or semicolon expected at " + tkn2.lineNumber);
-				}
-			}
-			return new RALInlineStatement(tkn.lineNumber, obj.toArray());
+			return new RALInlineStatement(tkn.lineNumber, parseStringEmbed(ts, lx, false));
 		} else if (tkn.isKeyword("let")) {
 			LinkedList<String> names = new LinkedList<>();
 			LinkedList<RALType> types = new LinkedList<>();
@@ -163,5 +135,45 @@ public class ParserCode {
 				throw new RuntimeException("Saw expression at " + tkn + " but then was wrong about it, got " + sp);
 			}
 		}
+	}
+
+	public static Object[] parseStringEmbed(TypeSystem ts, Lexer lx, boolean expr) {
+		LinkedList<Object> obj = new LinkedList<>();
+		while (true) {
+			Token tkn2 = lx.requireNext();
+			if (tkn2 instanceof StrEmb) {
+				Token.StrEmb se = (Token.StrEmb) tkn2;
+				if (se.startIsClusterEnd)
+					throw new RuntimeException("Unexpected inline cluster end at " + tkn2.lineNumber);
+				// While inside the string embedding...
+				while (true) {
+					obj.add(se.text);
+					if (!se.endIsClusterStart)
+						break;
+					obj.add(ParserExpr.parseExpr(ts, lx, true));
+					tkn2 = lx.requireNext();
+					if (tkn2 instanceof StrEmb) {
+						se = (StrEmb) tkn2;
+						if (!se.startIsClusterEnd)
+							throw new RuntimeException("Expected inline cluster end at " + tkn2.lineNumber);
+					} else {
+						throw new RuntimeException("Unexpectedly lost in inline cluster at " + tkn2.lineNumber);
+					}
+				}
+			} else {
+				// expression inline statements don't use this!
+				if (!expr) {
+					if (tkn2.isKeyword(";"))
+						break;
+					throw new RuntimeException("String embedding or semicolon expected at " + tkn2.lineNumber);
+				} else {
+					throw new RuntimeException("String embedding expected at " + tkn2.lineNumber);
+				}
+			}
+			// expression inline statements only last for a single embedding
+			if (expr)
+				break;
+		}
+		return obj.toArray();
 	}
 }

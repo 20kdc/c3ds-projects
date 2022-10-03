@@ -6,8 +6,8 @@
  */
 package rals.expr;
 
-import rals.code.CompileContext;
-import rals.types.RALType;
+import rals.code.*;
+import rals.types.*;
 
 /**
  * Like RALStringVar but even more picky.
@@ -21,7 +21,7 @@ public class RALVarSI extends RALVarString.Fixed {
 	}
 
 	@Override
-	protected RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 		return specialInline;
 	}
 }

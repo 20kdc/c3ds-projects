@@ -39,7 +39,7 @@ public class RALVarEH extends RALExprSlice {
 		return type;
 	}
 
-	public RALExprSlice getUnderlying(CompileContext cc) {
+	public RALExprSlice getUnderlying(CompileContextNW cc) {
 		RALExprSlice ex = cc.heldExprHandles.get(handle);
 		if (ex == null)
 			throw new RuntimeException("Missing: " + this);
@@ -57,12 +57,12 @@ public class RALVarEH extends RALExprSlice {
 	}
 
 	@Override
-	protected String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+	protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 		return getUnderlying(context).getInlineCAOS(index, write, context);
 	}
 
 	@Override
-	protected RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 		return getUnderlying(context).getSpecialInlineInner(index, context);
 	}
 }

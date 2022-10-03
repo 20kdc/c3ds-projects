@@ -168,7 +168,7 @@ public abstract class RALExprSlice {
 	 * This acts as a "fast-path" to avoid temporary variables.
 	 * It's also critical to how inline statements let you modify variables, hence the name.
 	 */
-	public final String getInlineCAOS(int index, boolean write, CompileContext context) {
+	public final String getInlineCAOS(int index, boolean write, CompileContextNW context) {
 		checkSlot(index);
 		return getInlineCAOSInner(index, write, context);
 	}
@@ -179,7 +179,7 @@ public abstract class RALExprSlice {
 	 * This acts as a "fast-path" to avoid temporary variables.
 	 * It's also critical to how inline statements let you modify variables, hence the name.
 	 */
-	protected String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+	protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 		RALSpecialInline si = getSpecialInline(index, context);
 		if (write && !si.inlineWritable)
 			return null;
@@ -189,7 +189,7 @@ public abstract class RALExprSlice {
 	/**
 	 * Like getInlineCAOS but better.
 	 */
-	public final RALSpecialInline getSpecialInline(int index, CompileContext context) {
+	public final RALSpecialInline getSpecialInline(int index, CompileContextNW context) {
 		checkSlot(index);
 		return getSpecialInlineInner(index, context);
 	}
@@ -197,7 +197,7 @@ public abstract class RALExprSlice {
 	/**
 	 * Like getInlineCAOS but better.
 	 */
-	protected RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 		return RALSpecialInline.None;
 	}
 
@@ -262,7 +262,7 @@ public abstract class RALExprSlice {
 		}
 
 		@Override
-		protected String getInlineCAOSInner(int index, boolean write, CompileContext context) {
+		protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 			if (index < a.length) {
 				return a.getInlineCAOSInner(index, write, context);
 			} else {
@@ -271,7 +271,7 @@ public abstract class RALExprSlice {
 		}
 
 		@Override
-		protected RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+		protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 			if (index < a.length) {
 				return a.getSpecialInlineInner(index, context);
 			} else {

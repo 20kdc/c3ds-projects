@@ -65,7 +65,7 @@ macro outs(str &text) {
 	// In particular, it may have a return statement at the end.
 }
 
-macro modu() & "modu"!str;
+macro modu() &'modu'!str;
 
 // In any case, inline parameters can alter values.
 // So it comes down to desired style.
@@ -104,6 +104,10 @@ macro (Agent? res) rtar(int &family, int &genus, int &species) {
 // The install script is simply install followed by a statement block.
 
 install {
+	& ' * --quick test of inline expr--\n';
+
+	let str bloopgloop = "bloopgloop";
+	_ = &'game {bloopgloop}'!str;
 
 	& ' * --outs/modu--\n';
 
@@ -220,5 +224,6 @@ remove {
 	let float testAllOpsConst = 12.5 + 12.5 * 12.5 / 12.5 - (12 | 12 & 12);
 	&'outs {"Hello, test float " + test + " and string concat!\n"}';
 	&' * silly commented scriptorium value test {Creature}';
+	&'outs {'Hello, string embed future! float {test} and string concat!\n'}';
 }
 
