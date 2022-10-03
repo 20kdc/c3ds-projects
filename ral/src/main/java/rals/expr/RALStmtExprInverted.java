@@ -24,7 +24,7 @@ public class RALStmtExprInverted implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext scope) {
+	public RALExprSlice resolveInner(ScopeContext scope) {
 		// Notably, we don't need to do too much for this, just manipulate the context a bit.
 		// However, we don't have our outputs yet, so we're going to need to fudge things.
 		// Besides, it's healthy! Permissions checks and all that...

@@ -24,7 +24,7 @@ public class RALFieldAccess implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext scope) {
+	public RALExprSlice resolveInner(ScopeContext scope) {
 		final RALExprSlice baseExpr = base.resolve(scope);
 		final RALType baseType = baseExpr.assert1ReadType().assertImpCast(scope.script.typeSystem.gAgent);
 		final AgentInterface.OVar slot = baseType.lookupField(field);

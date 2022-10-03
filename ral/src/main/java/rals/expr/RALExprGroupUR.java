@@ -36,7 +36,7 @@ public class RALExprGroupUR implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext context) {
+	public RALExprSlice resolveInner(ScopeContext context) {
 		RALExprSlice res = RALExprSlice.EMPTY;
 		for (int i = 0; i < contents.length; i++)
 			res = RALExprSlice.concat(res, contents[i].resolve(context));

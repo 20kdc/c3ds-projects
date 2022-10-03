@@ -29,7 +29,7 @@ public class ParserCode {
 				rb.content.add(parseStatement(ts, lx));
 			}
 			return rb;
-		} else if (tkn.isKeyword("inline")) {
+		} else if (tkn.isKeyword("&")) {
 			LinkedList<Object> obj = new LinkedList<>();
 			while (true) {
 				Token tkn2 = lx.requireNext();

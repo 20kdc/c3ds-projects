@@ -24,7 +24,7 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext context) {
+	public RALExprSlice resolveInner(ScopeContext context) {
 		return this;
 	}
 

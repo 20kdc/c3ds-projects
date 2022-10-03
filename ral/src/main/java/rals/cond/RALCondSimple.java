@@ -41,7 +41,7 @@ public class RALCondSimple implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext scope) {
+	public RALExprSlice resolveInner(ScopeContext scope) {
 		final RALExprSlice lR = left.resolve(scope);
 		final RALExprSlice rR = right.resolve(scope);
 		return Resolved.of(scope.script.typeSystem, centre, lR, rR);

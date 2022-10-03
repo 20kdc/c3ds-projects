@@ -174,7 +174,7 @@ public class ParserExpr {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
 			return new RALAmbiguousID(ts, ((Token.ID) tkn).text);
-		} else if (tkn.isKeyword("inline")) {
+		} else if (tkn.isKeyword("&")) {
 			Token strTkn = lx.requireNext();
 			if (!(strTkn instanceof Token.Str))
 				throw new RuntimeException("Inline CAOS expression can only be exactly one constant string token");

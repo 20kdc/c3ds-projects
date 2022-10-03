@@ -235,14 +235,14 @@ public class Parser {
 		lx.back();
 		LinkedList<MacroArg> args = new LinkedList<>();
 		while (true) {
+			RALType typ = ParserType.parseType(ts, lx);
 			boolean isInline = false;
 			first = lx.requireNext();
-			if (first.isKeyword("inline")) {
+			if (first.isKeyword("&")) {
 				isInline = true;
 			} else {
 				lx.back();
 			}
-			RALType typ = ParserType.parseType(ts, lx);
 			String name = lx.requireNextID();
 			args.add(new MacroArg(typ, isInline, name));
 			first = lx.requireNext();

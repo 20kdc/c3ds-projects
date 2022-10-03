@@ -23,7 +23,7 @@ public class RALStmtExpr implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext scope) {
+	public RALExprSlice resolveInner(ScopeContext scope) {
 		ScopeContext sc = new ScopeContext(scope);
 		final RALStatement rStmt = statement.resolve(sc);
 		final RALExprSlice rExpr = expr.resolve(sc); 

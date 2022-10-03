@@ -60,7 +60,7 @@ public final class RALCast implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext context) {
+	public RALExprSlice resolveInner(ScopeContext context) {
 		return Resolved.of(base.resolve(context), target, doImplicitCheck);
 	}
 
@@ -72,8 +72,8 @@ public final class RALCast implements RALExprUR {
 		}
 
 		@Override
-		public RALExprSlice resolve(ScopeContext context) {
-			RALExprSlice r = base.resolve(context);
+		public RALExprSlice resolveInner(ScopeContext context) {
+			RALExprSlice r = base.resolveInner(context);
 			RALType nn = r.assert1ReadType();
 			// System.out.println(nn);
 			nn = context.script.typeSystem.byNonNullable(nn);

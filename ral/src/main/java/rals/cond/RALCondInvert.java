@@ -28,7 +28,7 @@ public class RALCondInvert implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext scope) {
+	public RALExprSlice resolveInner(ScopeContext scope) {
 		RALCondition resolved = RALCondition.coerceToCondition(inside.resolve(scope), scope.script.typeSystem);
 		return new RALCondition(scope.script.typeSystem) {
 			@Override

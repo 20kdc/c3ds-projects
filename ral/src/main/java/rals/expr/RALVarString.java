@@ -68,7 +68,7 @@ public class RALVarString extends RALVarBase {
 		}
 
 		@Override
-		public RALExprSlice resolve(ScopeContext scope) {
+		public RALExprSlice resolveInner(ScopeContext scope) {
 			return this;
 		}
 	}

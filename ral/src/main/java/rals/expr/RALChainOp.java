@@ -64,7 +64,7 @@ public class RALChainOp implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext scope) {
+	public RALExprSlice resolveInner(ScopeContext scope) {
 		RALExprSlice[] allArgSlices = new RALExprSlice[elements.length];
 		RALType typePipeline = null;
 		for (int i = 0; i < elements.length; i++) {

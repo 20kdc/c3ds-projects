@@ -30,7 +30,6 @@ public class Token {
 		keywords.add("messageHook");
 		// code declarations
 		keywords.add("macro");
-		keywords.add("inline");
 		keywords.add("script");
 		keywords.add("install");
 		keywords.add("remove");

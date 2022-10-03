@@ -35,7 +35,7 @@ public class RALAmbiguousID implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext context) {
+	public RALExprSlice resolveInner(ScopeContext context) {
 		// Constants go first for consistency with the const resolver.
 		RALConstant rc = typeSystem.namedConstants.get(text);
 		if (rc != null)

@@ -21,7 +21,7 @@ public class RALCall implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext context) {
+	public RALExprSlice resolveInner(ScopeContext context) {
 		RALExprSlice paramR = params.resolve(context);
 		RALCallable rc = context.script.module.callable.get(name);
 		if (rc == null)

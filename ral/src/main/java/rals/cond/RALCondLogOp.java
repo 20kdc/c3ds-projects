@@ -50,7 +50,7 @@ public class RALCondLogOp implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext scope) {
+	public RALExprSlice resolveInner(ScopeContext scope) {
 		final RALExprSlice lE = left.resolve(scope);
 		final RALExprSlice rE = right.resolve(scope);
 		final RALCondition lC = RALCondition.coerceToCondition(lE, scope.script.typeSystem);

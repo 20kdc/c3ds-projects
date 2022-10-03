@@ -25,7 +25,21 @@ public interface RALExprUR {
 	 * Will fill ScopeContext with stuff that might be important for the target expression to be runnable.
 	 * Note that this doesn't generate code - it just gets all the variables into place.
 	 */
-	RALExprSlice resolve(ScopeContext scope);
+	default RALExprSlice resolve(ScopeContext scope) {
+		RALConstant rc = resolveConst(scope.script.typeSystem);
+		if (rc != null)
+			return rc;
+		return resolveInner(scope);
+	}
+
+	/**
+	 * Must resolve.
+	 * Will fill ScopeContext with stuff that might be important for the target expression to be runnable.
+	 * Note that this doesn't generate code - it just gets all the variables into place.
+	 * NOTE: Because RALExprUR is an interface, I can't stop this from being called, so just please don't?
+	 * Only resolve is meant to call this.
+	 */
+	RALExprSlice resolveInner(ScopeContext scope);
 
 	/**
 	 * Decomposites expression groups.

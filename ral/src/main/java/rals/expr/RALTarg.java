@@ -18,7 +18,7 @@ public class RALTarg extends RALVarBase implements RALExprUR {
 	}
 
 	@Override
-	public RALExprSlice resolve(ScopeContext scope) {
+	public RALExprSlice resolveInner(ScopeContext scope) {
 		return this;
 	}
 

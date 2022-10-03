@@ -15,27 +15,27 @@
  * And then whatever parameters are placed inside the () are forwarded directly to the emit statement, leading to three sets of argument counts.
  */
 
-macro __ral_compiler_helper_emit(inline Agent target, inline int messageId, inline int ticks, inline any param1, inline any param2) {
-	inline "mesg wrt+ " target " " messageId " " param1 " " param2 " " ticks;
+macro __ral_compiler_helper_emit(Agent &target, int &messageId, int &ticks, any &param1, any &param2) {
+	& "mesg wrt+ " target " " messageId " " param1 " " param2 " " ticks;
 }
 
-macro __ral_compiler_helper_emit(inline Agent target, inline int messageId, inline int ticks, inline any param1) {
-	inline "mesg wrt+ " target " " messageId " " param1 " 0 " ticks;
+macro __ral_compiler_helper_emit(Agent &target, int &messageId, int &ticks, any &param1) {
+	& "mesg wrt+ " target " " messageId " " param1 " 0 " ticks;
 }
 
-macro __ral_compiler_helper_emit(inline Agent target, inline int messageId, inline int ticks) {
-	inline "mesg wrt+ " target " " messageId " 0 0 " ticks;
+macro __ral_compiler_helper_emit(Agent &target, int &messageId, int &ticks) {
+	& "mesg wrt+ " target " " messageId " 0 0 " ticks;
 }
 
-macro __ral_compiler_helper_emit_na(inline Agent target, inline int messageId, inline any param1, inline any param2) {
-	inline "mesg wrt+ " target " " messageId " " param1 " " param2 " 0";
+macro __ral_compiler_helper_emit_na(Agent &target, int &messageId, any &param1, any &param2) {
+	& "mesg wrt+ " target " " messageId " " param1 " " param2 " 0";
 }
 
-macro __ral_compiler_helper_emit_na(inline Agent target, inline int messageId, inline any param1) {
-	inline "mesg wrt+ " target " " messageId " " param1 " 0 0";
+macro __ral_compiler_helper_emit_na(Agent &target, int &messageId, any &param1) {
+	& "mesg wrt+ " target " " messageId " " param1 " 0 0";
 }
 
-macro __ral_compiler_helper_emit_na(inline Agent target, inline int messageId) {
-	inline "mesg writ " target " " messageId;
+macro __ral_compiler_helper_emit_na(Agent &target, int &messageId) {
+	& "mesg writ " target " " messageId;
 }
 
