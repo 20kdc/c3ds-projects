@@ -35,40 +35,49 @@ public class RALInlineStatement extends RALStatementUR {
 				throw new RuntimeException("RALInlineStatement takes Strings and RALExprsURs.");
 			}
 		}
-		return new RALStatement(lineNumber) {
-			@Override
-			public String toString() {
-				return "inline (...);";
-			}
+		return new Resolved(lineNumber, parts2);
+	}
 
-			@Override
-			protected void compileInner(CodeWriter writer, CompileContext scope) {
-				// scope for all the temporary VAs we may make
-				try (CompileContext scope2 = new CompileContext(scope)) {
-					StringBuilder interiorWriter = new StringBuilder();
-					for (Object o : parts2) {
-						if (o instanceof String) {
-							interiorWriter.append(o);
-						} else if (o instanceof RALExprSlice) {
-							RALExprSlice re = (RALExprSlice) o;
-							boolean[] inline = new boolean[re.length];
-							for (int i = 0; i < re.length; i++)
-								inline[i] = re.getInlineCAOS(i, false, scope2) != null;
-							VarCacher vc = new VarCacher(re, inline, null);
-							vc.writeCacheCode(scope2);
-							for (int i = 0; i < vc.finishedOutput.length; i++) {
-								String inlineRepr = vc.finishedOutput.getInlineCAOS(i, false, scope2);
-								if (inlineRepr == null)
-									throw new RuntimeException("VarCacher did not cache something it was told to");
-								interiorWriter.append(inlineRepr);
-							}
-						} else {
-							throw new RuntimeException("RALInlineStatement intern takes Strings and RALExprs.");
+	public static final class Resolved extends RALStatement {
+		private final Object[] parts2;
+
+		public Resolved(SrcPos ln, Object[] parts2) {
+			super(ln);
+			this.parts2 = parts2;
+		}
+
+		@Override
+		public String toString() {
+			return "inline (...);";
+		}
+
+		@Override
+		protected void compileInner(CodeWriter writer, CompileContext scope) {
+			// scope for all the temporary VAs we may make
+			try (CompileContext scope2 = new CompileContext(scope)) {
+				StringBuilder interiorWriter = new StringBuilder();
+				for (Object o : parts2) {
+					if (o instanceof String) {
+						interiorWriter.append(o);
+					} else if (o instanceof RALExprSlice) {
+						RALExprSlice re = (RALExprSlice) o;
+						boolean[] inline = new boolean[re.length];
+						for (int i = 0; i < re.length; i++)
+							inline[i] = re.getInlineCAOS(i, false, scope2) != null;
+						VarCacher vc = new VarCacher(re, inline, null);
+						vc.writeCacheCode(scope2);
+						for (int i = 0; i < vc.finishedOutput.length; i++) {
+							String inlineRepr = vc.finishedOutput.getInlineCAOS(i, false, scope2);
+							if (inlineRepr == null)
+								throw new RuntimeException("VarCacher did not cache something it was told to");
+							interiorWriter.append(inlineRepr);
 						}
+					} else {
+						throw new RuntimeException("RALInlineStatement intern takes Strings and RALExprs.");
 					}
-					writer.writeCode(interiorWriter.toString());
 				}
+				writer.writeCode(interiorWriter.toString());
 			}
-		};
+		}
 	}
 }

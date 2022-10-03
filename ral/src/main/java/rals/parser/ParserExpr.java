@@ -27,7 +27,7 @@ public class ParserExpr {
 		{"==", "!=", "<=", ">=", "<", ">"},
 		{"+", "-"},
 		{"/", "*"},
-		{"|", "&", "^"}
+		{"|", "&"}
 	};
 	public static final HashSet<String> allOps = new HashSet<>();
 	static {
@@ -102,7 +102,15 @@ public class ParserExpr {
 		if (opCount == 0)
 			return atomArr[aBase];
 		for (String[] pCl : operatorPrecedenceGroups) {
-			for (int i = aBase; i < aBase + opCount; i++) {
+			// Scanning must be done in reverse, or else the chains will be right-heavy.
+			// This turns 1 - 1 - 1 - 1 into 1 - (1 - (1 - 1)), which is 0.
+			// It is expected to be (((1 - 1) - 1) - 1), which is -2.
+			// This is also what RALChainOp expects.
+			boolean reverse = true;
+			int start = reverse ? (aBase + opCount - 1) : (aBase);
+			int limit = reverse ? (aBase - 1) : (aBase + opCount);
+			int dir = reverse ? -1 : 1;
+			for (int i = start; i != limit; i += dir) {
 				for (String op : pCl) {
 					if (op.equals(opArr[i])) {
 						// if i == aBase then opCount needs to be 0 (LHS is just the atom directly left)
@@ -136,6 +144,15 @@ public class ParserExpr {
 			return new RALCondLogOp(l, RALCondLogOp.Op.And, r);
 		} else if (string.equals("||")) {
 			return new RALCondLogOp(l, RALCondLogOp.Op.Or, r);
+		} else if (
+				string.equals("+") ||
+				string.equals("-") ||
+				string.equals("/") ||
+				string.equals("*") ||
+				string.equals("&") ||
+				string.equals("|")
+			) {
+			return RALChainOp.of(string, l, r);
 		}
 		throw new RuntimeException("No handler for binop " + string);
 	}

@@ -64,6 +64,8 @@ public class Main {
 			} else {
 				throw new RuntimeException("?");
 			}
+		} else {
+			printHelp();
 		}
 	}
 

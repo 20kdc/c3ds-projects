@@ -34,4 +34,9 @@ public class RALVarVA extends RALVarString {
 			throw new RuntimeException("VA handle " + handle + " escaped containment");
 		return CompileContext.vaToString(i);
 	}
+
+	@Override
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContext context) {
+		return RALSpecialInline.VA;
+	}
 }

@@ -108,7 +108,15 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		}
 	}
 
-	public static class Int extends Single {
+	public static abstract class Number extends Single {
+		public Number(RALType r) {
+			super(r);
+		}
+
+		protected abstract float toFloat();
+	}
+
+	public static class Int extends Number {
 		public final int value;
 		public Int(TypeSystem ts, int v) {
 			super(ts.gInteger);
@@ -117,6 +125,11 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		public Int(RALType t, int v) {
 			super(t);
 			value = v;
+		}
+
+		@Override
+		protected float toFloat() {
+			return value;
 		}
 
 		@Override
@@ -145,7 +158,7 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		}
 	}
 
-	public static class Flo extends Single {
+	public static class Flo extends Number {
 		public final float value;
 		public Flo(TypeSystem ts, float f) {
 			super(ts.gFloat);
@@ -154,6 +167,11 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		public Flo(RALType t, float f) {
 			super(t);
 			value = f;
+		}
+
+		@Override
+		protected float toFloat() {
+			return value;
 		}
 
 		@Override

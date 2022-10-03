@@ -22,13 +22,14 @@ import rals.types.RALType.Opaque;
 public class TypeSystem {
 	public final Opaque gAny = new RALType.Any();
 	public final Opaque gString = new Opaque(RALType.Major.String, "string");
-	public final Opaque gInteger = new Opaque(RALType.Major.Value, "integer");
-	public final Opaque gBoolean = new Opaque(RALType.Major.Value, "boolean");
+	public final Opaque gInteger = new Opaque(RALType.Major.Value, "int");
+	public final Opaque gBoolean = new Opaque(RALType.Major.Value, "bool");
 	public final Opaque gFloat = new Opaque(RALType.Major.Value, "float");
 	public final Opaque gNull = new Opaque(RALType.Major.Agent, "null");
 	public final Opaque gVoid = new Opaque(RALType.Major.Unknown, "void");
 	public final RALType.AgentClassifier gAgent = new RALType.AgentClassifier(this, new Classifier(0, 0, 0), null);
 	public final RALType gAgentNullable;
+	public final RALType gNumber;
 
 	/**
 	 * All agent types by classifier.
@@ -66,9 +67,9 @@ public class TypeSystem {
 
 	public TypeSystem() {
 		namedTypes.put("any", gAny);
-		namedTypes.put("string", gString);
-		namedTypes.put("integer", gInteger);
-		namedTypes.put("boolean", gBoolean);
+		namedTypes.put("str", gString);
+		namedTypes.put("int", gInteger);
+		namedTypes.put("bool", gBoolean);
 		namedTypes.put("float", gFloat);
 		namedTypes.put("null", gNull);
 		// setup Agent type
@@ -76,6 +77,8 @@ public class TypeSystem {
 		gAgent.typeName = "Agent";
 		namedTypes.put("Agent", gAgent);
 		gAgentNullable = byNullable(gAgent);
+		gNumber = byUnion(Arrays.asList(gFloat, gInteger));
+		namedTypes.put("num", gNumber);
 	}
 
 	/**

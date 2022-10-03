@@ -164,6 +164,7 @@ public abstract class RALExprSlice {
 
 	/**
 	 * Gets the inline CAOS for this expression, or null if that's not possible.
+	 * NOTE: This mustn't throw because a write was requested. Always return null for impossible operations.
 	 * This acts as a "fast-path" to avoid temporary variables.
 	 * It's also critical to how inline statements let you modify variables, hence the name.
 	 */
@@ -174,6 +175,7 @@ public abstract class RALExprSlice {
 
 	/**
 	 * Gets the inline CAOS for this expression, or null if that's not possible.
+	 * NOTE: This mustn't throw because a write was requested. Always return null for impossible operations.
 	 * This acts as a "fast-path" to avoid temporary variables.
 	 * It's also critical to how inline statements let you modify variables, hence the name.
 	 */

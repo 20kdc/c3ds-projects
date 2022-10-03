@@ -42,7 +42,7 @@ class Creature creatureGenus 0 0 extends SomethingCreaturesHave;
 
 // Typedefs and TypeScript-style union types exist.
 
-typedef number integer|float;
+typedef number int|float;
 
 // Messages may be defined on interfaces.
 // Message numbers so defined are available as constants.
@@ -54,7 +54,7 @@ message Agent:windowResized 123;
 // These parameters are re-evaluated on each use.
 // Macro parameters not so marked will be copied into local variables.
 
-macro outs(inline string text) {
+macro outs(inline str text) {
 	// The inline command is used to write inline CAOS.
 	// Parameters given are converted into CAOS that returns their values.
 	// When possible, this CAOS can be used to write to the value.
@@ -65,12 +65,12 @@ macro outs(inline string text) {
 	// In particular, it may have a return statement at the end.
 }
 
-macro modu() inline "modu"!string;
+macro modu() inline "modu"!str;
 
 // In any case, inline parameters can alter values.
 // So it comes down to desired style.
 
-macro addInplace(inline integer a, inline integer b) {
+macro addInplace(inline int a, inline int b) {
 	// Assignment works as in most languages, more or less.
 	// However, you may assign multiple source values to multiple destinations.
 	// However, due to various design concerns, these assignments are not atomic.
@@ -81,8 +81,8 @@ macro addInplace(inline integer a, inline integer b) {
 // And, of course, at the expense of a temporary variable...
 // It is possible to do things the simple way.
 
-macro add(inline integer a, inline integer b) {
-	let integer c = a;
+macro add(inline int a, inline int b) {
+	let int c = a;
 	inline "addv " c " " b "\n";
 	return c;
 }
@@ -96,7 +96,7 @@ macro add(inline integer a, inline integer b) {
 // Null is considered a separate type.
 // ? acts as syntactic sugar for allowing null in a type.
 
-macro (Agent? res) rtar(inline integer family, inline integer genus, inline integer species) {
+macro (Agent? res) rtar(inline int family, inline int genus, inline int species) {
 	inline "rtar " family " " genus " " species "\n";
 	res = targ;
 }
@@ -116,7 +116,7 @@ install {
 	let number counter = 0;
 
 	// They may be aliased using the alias keyword, and this also allows redeclaring their type.
-	alias counter = counter!integer;
+	alias counter = counter!int;
 
 	inline " * --addInplace--\n";
 	addInplace(counter, 1);
@@ -124,9 +124,9 @@ install {
 	inline " * --add--\n";
 	counter = add(counter, 1);
 
-	// Booleans are strictly speaking integers (and are castable to such).
+	// bools are strictly speaking ints (and are castable to such).
 	// But they're useful nonetheless.
-	let boolean testBool = counter == 2 && counter < 4 || counter > 3;
+	let bool testBool = counter == 2 && counter < 4 || counter > 3;
 	// And of course they can be used in conditionals.
 	if testBool && counter == 1 {
 		outs("Moo!");
@@ -166,7 +166,7 @@ script Creature 5 {
 // ...or by message name.
 
 message Creature:exampleTypeSpecific 8000;
-field string Creature.someString 1;
+field str Creature.someString 1;
 field Creature Creature.someRef 2;
 
 script Creature:windowResized {
@@ -210,5 +210,13 @@ script Creature:windowResized {
 // The remove script is handled similarly to the install script.
 
 remove {
+	let float test = 12.5;
+	let float test2 = 12.5;
+	let float test3 = 12.5;
+	let int testInt = 12;
+	let int testInt2 = 12;
+	let int testInt3 = 12;
+	let float testAllOps = test + test2 * test3 / test - (testInt | testInt2 & testInt3);
+	inline "outs " ("Hello, test float " + test + " and string concat!\n");
 }
 
