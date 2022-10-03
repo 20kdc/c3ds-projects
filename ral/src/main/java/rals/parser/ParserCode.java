@@ -143,7 +143,7 @@ public class ParserCode {
 				}
 				return new RALAssignStatement(tkn.lineNumber, null, call);
 			} else {
-				throw new RuntimeException("Saw expression at " + tkn + " but then was wrong about it.");
+				throw new RuntimeException("Saw expression at " + tkn + " but then was wrong about it, got " + sp);
 			}
 		}
 	}

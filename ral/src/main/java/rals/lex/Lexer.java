@@ -24,6 +24,8 @@ public class Lexer {
 	private Token lastToken;
 	private int lineNumber = 1;
 	private static final String LONERS = ";[]{}(),.";
+	private static final String NUM_START = "+-0123456789";
+	private static final String NUM_BODY = "0123456789.e";
 	private static final String OPERATORS_BREAKING = "<>=?!/*-+:&|^%";
 	private static final String OPERATORS_UNBREAKING = "";
 	private static final String OPERATORS = OPERATORS_BREAKING + OPERATORS_UNBREAKING;
@@ -169,7 +171,55 @@ public class Lexer {
 			}
 			lastToken = new Token.Str(genLN(), sb.toString());
 			return lastToken;
-		} else if (LONERS.indexOf(c) != -1) {
+		}
+		// This has to punch a gap in the nice little else-if chain.
+		// Why? Because it needs to fallthrough if stuff goes wrong...
+		if (NUM_START.indexOf(c) != -1) {
+			boolean confirmed = false;
+			StringBuilder sb = new StringBuilder();
+			sb.append((char) c);
+			if (NUM_BODY.indexOf(c) == -1) {
+				// this isn't a NUM_BODY so check next char
+				int c2 = getNextByte();
+				sb.append((char) c2);
+				if ((c2 == -1) || (NUM_BODY.indexOf(c2) == -1)) {
+					// nope
+					// Note that because we fallthrough to other token types, 'c' is still in play
+					// Hence only go back one byte
+					backByte();
+				} else {
+					confirmed = true;
+				}
+			} else {
+				confirmed = true;
+			}
+			if (confirmed) {
+				// alright, we have a number
+				while (true) {
+					c = getNextByte();
+					if ((c == -1) || (NUM_BODY.indexOf(c) == -1)) {
+						backByte();
+						break;
+					}
+					sb.append((char) c);
+				}
+				String str = sb.toString();
+				try {
+					lastToken = new Token.Int(genLN(), Integer.parseInt(str));
+					return lastToken;
+				} catch (Exception ex) {
+					// nope
+				}
+				try {
+					lastToken = new Token.Flo(genLN(), Float.parseFloat(str));
+					return lastToken;
+				} catch (Exception ex) {
+					// nope
+				}
+				throw new RuntimeException("number-like not number at " + genLN());
+			}
+		}
+		if (LONERS.indexOf(c) != -1) {
 			lastToken = new Token.Kw(genLN(), Character.toString((char) c));
 			return lastToken;
 		} else if (OPERATORS.indexOf(c) != -1) {
@@ -202,18 +252,6 @@ public class Lexer {
 				lastToken = new Token.Kw(genLN(), str);
 				return lastToken;
 			} else {
-				try {
-					lastToken = new Token.Int(genLN(), Integer.parseInt(str));
-					return lastToken;
-				} catch (Exception ex) {
-					// nope
-				}
-				try {
-					lastToken = new Token.Flo(genLN(), Float.parseFloat(str));
-					return lastToken;
-				} catch (Exception ex) {
-					// nope
-				}
 				lastToken = new Token.ID(genLN(), str);
 				return lastToken;
 			}

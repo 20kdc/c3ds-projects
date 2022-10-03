@@ -154,6 +154,10 @@ script Creature 5 {
 	} else {
 		inline "outs \"Visible\"\n";
 	}
+	// test of lexer
+	inline "outv " -0.1;
+	inline "outv " +0.1;
+	inline "outv " -0;
 }
 
 // ...or by message name.
