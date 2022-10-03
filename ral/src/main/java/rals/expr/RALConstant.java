@@ -178,7 +178,51 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 
 		@Override
 		public String toString() {
-			return Float.toString(value);
+			return toCAOSFloat(value);
+		}
+
+		/**
+		 * Converts a float in a CAOS-compatible way.
+		 */
+		public static String toCAOSFloat(float f) {
+			if (!Float.isFinite(f))
+				throw new RuntimeException("Cannot represent non-finite float " + f + " in CAOS");
+			// THE FOLLOWING CODE IS HIGHLY DEPENDENT ON FOLLOWING THE JAVA PLATFORM SE 7 DEFINITION OF Float.toString(float)!
+			// Which, to be clear, is fine, since breaking compatibility on this would be bad, but still.
+			String s = Float.toString(f);
+			// We only need to do any recovery if scientific notation was used.
+			int botchedLoc = s.indexOf('E');
+			if (botchedLoc == -1)
+				return s;
+			String sanePart = s.substring(0, botchedLoc);
+			int adjustment = Integer.valueOf(s.substring(botchedLoc + 1));
+			int sanePartDotLoc = s.indexOf('.');
+			String left = sanePart.substring(0, sanePartDotLoc);
+			String right = sanePart.substring(sanePartDotLoc + 1);
+			String sign = "";
+			if (left.startsWith("-")) {
+				sign = "-";
+				left = left.substring(1);
+			}
+			while (adjustment < 0) {
+				// transfer from left to right
+				right = left.substring(left.length() - 1) + right;
+				left = left.substring(0, left.length() - 1);
+				if (left.equals(""))
+					left = "0";
+				adjustment++;
+			}
+			while (adjustment > 0) {
+				// transfer from right to left
+				left = left + right.substring(0, 1);
+				right = right.substring(1, right.length());
+				if (right.equals(""))
+					right = "0";
+				adjustment--;
+			}
+			while ((right.length() > 1) && right.endsWith("0"))
+				right = right.substring(0, right.length() - 1);
+			return sign + left + "." + right;
 		}
 	}
 }
