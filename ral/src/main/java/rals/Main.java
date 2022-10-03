@@ -7,12 +7,11 @@
 package rals;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import rals.code.*;
 import rals.parser.*;
-import rals.types.*;
 
 /**
  * The RAL compiler.
@@ -20,24 +19,60 @@ import rals.types.*;
  */
 public class Main {
 	public static void main(String[] args) throws IOException {
-		if (args.length < 2) {
-			System.err.println("PATHS... INITIAL OUTFILE");
+		if (args.length < 1) {
+			printHelp();
 			return;
 		}
-		TypeSystem ts = new TypeSystem();
-		Scripts m = new Scripts();
-		String init = args[args.length - 2];
-		String outFile = args[args.length - 1];
-		File[] searchPaths = new File[args.length - 2];
-		for (int i = 0; i < args.length - 2; i++)
-			searchPaths[i] = new File(args[i]);
-		Parser.parseFile(ts, m, searchPaths, "(internal) compiler_helpers.ral", Main.class.getClassLoader().getResourceAsStream("compiler_helpers.ral"));
-		Parser.parseFile(ts, m, searchPaths, init);
-		StringBuilder outText = new StringBuilder();
-		m.compile(outText, ts);
-		FileOutputStream fos = new FileOutputStream(outFile);
-		for (char chr : outText.toString().toCharArray())
-			fos.write(chr);
-		fos.close();
+		if (args[0].equals("compile") || args[0].equals("compileInstall") || args[0].equals("compileEvents") || args[0].equals("compileRemove")) {
+			if (args.length != 3) {
+				printHelp();
+				return;
+			}
+			File outFile = new File(args[2]);
+			IncludeParseContext ic = Parser.run(args[1]);
+			StringBuilder outText = new StringBuilder();
+			if (args[0].equals("compile")) {
+				ic.module.compile(outText, ic.typeSystem);
+			} else if (args[0].equals("compileInstall")) {
+				ic.module.compileInstall(outText, ic.typeSystem);
+			} else if (args[0].equals("compileEvents")) {
+				ic.module.compileEvents(outText, ic.typeSystem);
+			} else if (args[0].equals("compileRemove")) {
+				ic.module.compileRemove(outText, ic.typeSystem);
+			} else {
+				throw new RuntimeException("?");
+			}
+			FileOutputStream fos = new FileOutputStream(outFile);
+			for (char chr : outText.toString().toCharArray())
+				fos.write(chr);
+			fos.close();
+		} else if (args[0].equals("inject") || args[0].equals("injectRemove")) {
+			if (true)
+				throw new RuntimeException("NYI");
+			if (args.length != 2) {
+				printHelp();
+				return;
+			}
+			File outFile = new File(args[2]);
+			IncludeParseContext ic = Parser.run(args[1]);
+			StringBuilder outText = new StringBuilder();
+			if (args[0].equals("inject")) {
+				ic.module.compileInstall(outText, ic.typeSystem);
+				ic.module.compileEvents(outText, ic.typeSystem);
+			} else if (args[0].equals("injectRemove")) {
+				ic.module.compileRemove(outText, ic.typeSystem);
+			} else {
+				throw new RuntimeException("?");
+			}
+		}
+	}
+
+	private static void printHelp() {
+		System.out.println("RAL Compiler");
+		System.out.println("compile INPUT OUTPUT: Compiles INPUT and writes CAOS to OUTPUT");
+		System.out.println("compileInstall INPUT OUTPUT: Same as compile, but only the install script");
+		System.out.println("compileEvents INPUT OUTPUT: Same as compile, but only the event scripts");
+		System.out.println("compileRemove INPUT OUTPUT: Same as compile, but only the remove script (without rscr prefix!)");
+		System.out.println("inject/injectEvents/injectRemove: NOT YET IMPLEMENTED");
 	}
 }

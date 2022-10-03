@@ -16,6 +16,7 @@ public class Token {
 	static {
 		// meta
 		keywords.add("include");
+		keywords.add("addSearchPath");
 		// type system declarations
 		keywords.add("class");
 		keywords.add("interface");

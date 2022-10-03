@@ -8,10 +8,12 @@ package rals.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 
+import rals.Main;
 import rals.code.*;
 import rals.cond.*;
 import rals.expr.*;
@@ -23,35 +25,55 @@ import rals.types.*;
  * Parser, but also discards any hope of this being an AST...
  */
 public class Parser {
-	public static void parseFile(TypeSystem ts, Scripts m, File[] searchPaths, String inc) throws IOException {
-		for (File sp : searchPaths) {
+	public static IncludeParseContext run(String path) throws IOException {
+		File init = new File(path);
+		File initParent = init.getParentFile();
+		IncludeParseContext ic = new IncludeParseContext();
+		ic.searchPaths.add(initParent);
+		Parser.parseFile(ic, initParent, "(internal) compiler_helpers.ral", Main.class.getClassLoader().getResourceAsStream("compiler_helpers.ral"));
+		try (FileInputStream fis = new FileInputStream(init)) {
+			Parser.parseFile(ic, initParent, init.getPath(), fis);
+		}
+		return ic;
+	}
+
+	public static void parseFile(IncludeParseContext ctx, String inc) throws IOException {
+		if (ctx.included.contains(inc))
+			return;
+		ctx.included.add(inc);
+		// ok, continue
+		for (File sp : ctx.searchPaths) {
 			File f = new File(sp, inc);
 			if (!f.exists())
 				continue;
 			try (FileInputStream fis = new FileInputStream(f)) {
-				parseFile(ts, m, searchPaths, f.getPath(), fis);
+				parseFile(ctx, f.getParentFile(), f.getPath(), fis);
 			}
 			return;
 		}
 		throw new RuntimeException("Ran out of search paths trying to find " + inc);
 	}
-	public static void parseFile(TypeSystem ts, Scripts m, File[] searchPaths, String path, InputStream fis) throws IOException {
-		Lexer lx = new Lexer(path, fis);
+	public static void parseFile(IncludeParseContext ctx, File hereParent, String name, InputStream fis) throws IOException {
+		Lexer lx = new Lexer(name, fis);
 		while (true) {
 			Token tkn = lx.next();
 			if (tkn == null)
 				break;
 			if (tkn.isKeyword("include")) {
-				String str = ParserExpr.parseConstString(ts, lx);
+				String str = ParserExpr.parseConstString(ctx.typeSystem, lx);
 				lx.requireNextKw(";");
 				try {
-					parseFile(ts, m, searchPaths, str);
+					parseFile(ctx, str);
 				} catch (Exception ex) {
 					throw new RuntimeException("in included file " + str, ex);
 				}
+			} else if (tkn.isKeyword("addSearchPath")) {
+				String str = ParserExpr.parseConstString(ctx.typeSystem, lx);
+				lx.requireNextKw(";");
+				ctx.searchPaths.add(new File(hereParent, str));
 			} else {
 				try {
-					parseDeclaration(ts, m, tkn, lx);
+					parseDeclaration(ctx.typeSystem, ctx.module, tkn, lx);
 				} catch (Exception ex) {
 					throw new RuntimeException("declaration of " + tkn + " at line " + tkn.lineNumber, ex);
 				}
@@ -159,9 +181,9 @@ public class Parser {
 				ac.declareMS(msgName, scriptId, true);
 			}
 		} else if (tkn.isKeyword("install")) {
-			m.installScript = ParserCode.parseStatement(ts, lx);
+			m.addInstall(ParserCode.parseStatement(ts, lx));
 		} else if (tkn.isKeyword("remove")) {
-			m.removeScript = ParserCode.parseStatement(ts, lx);
+			m.addRemove(ParserCode.parseStatement(ts, lx));
 		} else if (tkn.isKeyword("macro")) {
 			boolean isStmtMacro = lx.requireNext().isKeyword("(");
 			lx.back();

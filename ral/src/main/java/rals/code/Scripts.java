@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import rals.expr.RALCallable;
+import rals.stmt.RALBlock;
 import rals.stmt.RALStatement;
 import rals.stmt.RALStatementUR;
 import rals.types.RALType;
@@ -22,9 +23,9 @@ import rals.types.TypeSystem;
  * If you took away the TypeSystem, nothing would make sense (and things like constants would be missing).
  */
 public class Scripts {
-	public RALStatementUR installScript;
+	public RALBlock installScript;
 	public HashMap<ScriptIdentifier, RALStatementUR> eventScripts = new HashMap<>();
-	public RALStatementUR removeScript;
+	public RALBlock removeScript;
 
 	public HashMap<String, MacroDefSet> macroDefs = new HashMap<>();
 	public HashMap<String, RALCallable> callable = new HashMap<>();
@@ -45,17 +46,21 @@ public class Scripts {
 	}
 
 	/**
-	 * Compiles the module.
+	 * Compiles the module's install script.
 	 */
-	public void compile(StringBuilder outText, TypeSystem ts) {
+	public void compileInstall(StringBuilder outText, TypeSystem ts) {
 		if (installScript != null) {
 			ScriptContext scr = new ScriptContext(ts, this, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
 			compile(outText, ts, scr, installScript, 0);
 		}
+	}
 
+	/**
+	 * Compiles the module's event scripts.
+	 */
+	public void compileEvents(StringBuilder outText, TypeSystem ts) {
 		for (Map.Entry<ScriptIdentifier, RALStatementUR> eventScript : eventScripts.entrySet()) {
 			ScriptIdentifier k = eventScript.getKey();
-			RALStatementUR v = eventScript.getValue();
 			outText.append(" * ");
 			RALType.AgentClassifier type = ts.byClassifier(k.classifier);
 			outText.append(type.typeName);
@@ -76,25 +81,48 @@ public class Scripts {
 			outText.append(" ");
 			outText.append(k.script);
 			outText.append("\n");
-			RALType oOwnr = ts.byClassifier(k.classifier);
-			RALType oFrom = ts.gAny;
-			RALType oP1 = ts.gAny;
-			RALType oP2 = ts.gAny;
-			RALType override = ts.overrideOwnr.get(k.script);
-			if (override != null) {
-				oOwnr = override;
-				oFrom = oOwnr;
-			}
-			ScriptContext scr = new ScriptContext(ts, this, oOwnr, oFrom, oP1, oP2);
-			compile(outText, ts, scr, v, 1);
+			compileEventContents(outText, ts, k);
 			outText.append("endm\n");
 		}
+	}
 
+	/**
+	 * Compiles the content of an event script.
+	 */
+	public void compileEventContents(StringBuilder outText, TypeSystem ts, ScriptIdentifier k) {
+		RALStatementUR v = eventScripts.get(k);
+		RALType oOwnr = ts.byClassifier(k.classifier);
+		RALType oFrom = ts.gAny;
+		RALType oP1 = ts.gAny;
+		RALType oP2 = ts.gAny;
+		RALType override = ts.overrideOwnr.get(k.script);
+		if (override != null) {
+			oOwnr = override;
+			oFrom = oOwnr;
+		}
+		ScriptContext scr = new ScriptContext(ts, this, oOwnr, oFrom, oP1, oP2);
+		compile(outText, ts, scr, v, 1);
+	}
+
+	/**
+	 * Compiles the module's install script.
+	 */
+	public void compileRemove(StringBuilder outText, TypeSystem ts) {
 		if (removeScript != null) {
-			outText.append("rscr\n");
 			ScriptContext scr = new ScriptContext(ts, this, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
 			compile(outText, ts, scr, removeScript, 1);
 		}
+	}
+
+	/**
+	 * Compiles the module.
+	 */
+	public void compile(StringBuilder outText, TypeSystem ts) {
+		compileInstall(outText, ts);
+		compileEvents(outText, ts);
+		if (removeScript != null)
+			outText.append("rscr\n");
+		compileRemove(outText, ts);
 	}
 
 	private void compile(StringBuilder outText, TypeSystem ts, ScriptContext scr, RALStatementUR v, int ii) {
@@ -103,5 +131,17 @@ public class Scripts {
 		CodeWriter cw = new CodeWriter(outText);
 		cw.indent = ii;
 		res.compile(cw, new CompileContext(scr, cw));
+	}
+
+	public void addInstall(RALStatementUR parseStatement) {
+		if (installScript == null)
+			installScript = new RALBlock(parseStatement.lineNumber, false);
+		installScript.content.add(parseStatement);
+	}
+
+	public void addRemove(RALStatementUR parseStatement) {
+		if (removeScript == null)
+			removeScript = new RALBlock(parseStatement.lineNumber, false);
+		removeScript.content.add(parseStatement);
 	}
 }
