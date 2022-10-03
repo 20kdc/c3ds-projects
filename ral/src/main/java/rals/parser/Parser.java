@@ -25,22 +25,23 @@ import rals.types.*;
  * Parser, but also discards any hope of this being an AST...
  */
 public class Parser {
-	public static IncludeParseContext run(String path) throws IOException {
+	public static IncludeParseContext run(File stdlib, String path) throws IOException {
 		File init = new File(path);
 		File initParent = init.getParentFile();
 		IncludeParseContext ic = new IncludeParseContext();
 		ic.searchPaths.add(initParent);
-		Parser.parseFile(ic, initParent, "(internal) compiler_helpers.ral", Main.class.getClassLoader().getResourceAsStream("compiler_helpers.ral"));
+		ic.searchPaths.add(stdlib);
+		Parser.parseFile(ic, "std/compiler_helpers.ral");
 		try (FileInputStream fis = new FileInputStream(init)) {
 			Parser.parseFile(ic, initParent, init.getPath(), fis);
 		}
 		return ic;
 	}
-	public static String runCPXConnTest() throws IOException {
+	public static String runCPXConnTest(File stdlib) throws IOException {
 		IncludeParseContext ic = new IncludeParseContext();
-		File initParent = new File(".");
-		Parser.parseFile(ic, initParent, "(internal) compiler_helpers.ral", Main.class.getClassLoader().getResourceAsStream("compiler_helpers.ral"));
-		Parser.parseFile(ic, initParent, "(internal) cpx_connection_test.ral", Main.class.getClassLoader().getResourceAsStream("cpx_connection_test.ral"));
+		ic.searchPaths.add(stdlib);
+		Parser.parseFile(ic, "std/compiler_helpers.ral");
+		Parser.parseFile(ic, "std/cpx_connection_test.ral");
 		StringBuilder sb = new StringBuilder();
 		ic.module.compileInstall(sb, ic.typeSystem);
 		return sb.toString();

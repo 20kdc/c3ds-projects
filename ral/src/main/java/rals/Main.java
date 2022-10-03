@@ -7,21 +7,52 @@
 package rals;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.LinkedList;
 
 import rals.parser.*;
 import rals.tooling.Injector;
-import rals.types.ScriptIdentifier;
 
 /**
  * The RAL compiler.
  * Date of arguably being a compiler: Middle of the night between 29th and 30th of September, 2022.
+ * Date of actually running any code in-game: 3rd October, 2022.
  */
 public class Main {
 	public static void main(String[] args) throws IOException {
+		System.out.println("RAL Compiler");
+		String override = System.getenv("RAL_STDLIB_PATH");
+		if ((override != null) && (override.equals("")))
+			override = null;
+		// Attempt to find the RAL standard library.
+		File ralStandardLibrary = new File("include");
+		if (override != null) {
+			ralStandardLibrary = new File(override);
+		} else {
+			try {
+				URL myURL = Main.class.getClassLoader().getResource("rals/Main.class");
+				String f = myURL.getFile();
+				int splitIdx = f.indexOf('!');
+				if (splitIdx != -1)
+					f = f.substring(0, splitIdx);
+				URL myURL2 = new URL(f);
+				File ralJarDir = new File(myURL2.getPath()).getParentFile();
+				ralStandardLibrary = new File(ralJarDir, "include");
+				// target dir.
+				if (!ralStandardLibrary.isDirectory())
+					ralStandardLibrary = new File(ralJarDir.getParentFile(), "include");
+			} catch (Exception ex) {
+				// that's fine
+			}
+		}
+		System.out.println("Standard Library Directory: " + ralStandardLibrary);
+		if (!ralStandardLibrary.isDirectory()) {
+			System.out.println("Warning! Directory is missing. A directory called 'include' should be at or near the RAL jar file.");
+			System.out.println("Failing this, specify RAL_STDLIB_PATH in your environment.");
+		}
+		// the rest!
 		if (args.length < 1) {
 			printHelp();
 			return;
@@ -32,7 +63,7 @@ public class Main {
 				return;
 			}
 			File outFile = new File(args[2]);
-			IncludeParseContext ic = Parser.run(args[1]);
+			IncludeParseContext ic = Parser.run(ralStandardLibrary, args[1]);
 			StringBuilder outText = new StringBuilder();
 			if (args[0].equals("compile")) {
 				ic.module.compile(outText, ic.typeSystem);
@@ -49,12 +80,13 @@ public class Main {
 			for (char chr : outText.toString().toCharArray())
 				fos.write(chr);
 			fos.close();
+			System.out.println("Compile completed");
 		} else if (args[0].equals("inject") || args[0].equals("injectEvents") || args[0].equals("injectRemove")) {
 			if (args.length != 2) {
 				printHelp();
 				return;
 			}
-			IncludeParseContext ic = Parser.run(args[1]);
+			IncludeParseContext ic = Parser.run(ralStandardLibrary, args[1]);
 			LinkedList<String> queuedRequests = new LinkedList<>();
 			if (args[0].equals("inject")) {
 				// events
@@ -78,14 +110,13 @@ public class Main {
 				System.out.println(Injector.cpxRequest(req));
 		} else if (args[0].equals("cpxConnectionTest")) {
 			// be a little flashy with this
-			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest()));
+			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest(ralStandardLibrary)));
 		} else {
 			printHelp();
 		}
 	}
 
 	private static void printHelp() {
-		System.out.println("RAL Compiler");
 		System.out.println("compile INPUT OUTPUT: Compiles INPUT and writes CAOS to OUTPUT");
 		System.out.println("compileInstall INPUT OUTPUT: Same as compile, but only the install script");
 		System.out.println("compileEvents INPUT OUTPUT: Same as compile, but only the event scripts");
