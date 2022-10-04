@@ -390,6 +390,10 @@ It also works nicely as a teaching mechanism for the "odd" parts of RAL macros..
 
 **TODO everything**
 
+### with
+
+**TODO everything**
+
 ### Expression Statements and Assignment Statements
 
 Assignment statements assign some expressions to some other expressions.
@@ -419,6 +423,14 @@ The available types of constant in RAL are numbers and strings. You might be tem
 ### String Embedding
 
 **TODO 'the astounding world of {hand}'**
+
+### instanceof
+
+### Message IDs
+
+### Field Accesses
+
+### Macro Calls
 
 ### Inline Expressions
 

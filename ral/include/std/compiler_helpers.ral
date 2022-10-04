@@ -39,3 +39,83 @@ macro __ral_compiler_helper_emit_na(Agent &target, int &messageId) {
 	&'mesg writ {target, messageId}';
 }
 
+/*
+ * Instanceof
+ * We need to be careful so targ is consistent when the result write occurs.
+ */
+macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family, int &genus, int &species) {
+	let Agent? tmpTarg = targ;
+	targ = target;
+	if (family == &'fmly'!int) && (genus == &'gnus'!int) && (species == &'spcs'!int) {
+		targ = tmpTarg;
+		result = 1!bool;
+	} else {
+		targ = tmpTarg;
+		result = 0!bool;
+	}
+}
+macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family, int &genus) {
+	let Agent? tmpTarg = targ;
+	targ = target;
+	if (family == &'fmly'!int) && (genus == &'gnus'!int) {
+		targ = tmpTarg;
+		result = 1!bool;
+	} else {
+		targ = tmpTarg;
+		result = 0!bool;
+	}
+}
+macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family) {
+	let Agent? tmpTarg = targ;
+	targ = target;
+	if (family == &'fmly'!int) {
+		targ = tmpTarg;
+		result = 1!bool;
+	} else {
+		targ = tmpTarg;
+		result = 0!bool;
+	}
+}
+macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, int &family, int &genus, int &species) {
+	let Agent? tmpTarg = targ;
+	targ = target;
+	if (targ == null) {
+		targ = tmpTarg;
+		result = 0!bool;
+	} else if (family == &'fmly'!int) && (genus == &'gnus'!int) && (species == &'spcs'!int) {
+		targ = tmpTarg;
+		result = 1!bool;
+	} else {
+		targ = tmpTarg;
+		result = 0!bool;
+	}
+}
+macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, int &family, int &genus) {
+	let Agent? tmpTarg = targ;
+	targ = target;
+	if (targ == null) {
+		targ = tmpTarg;
+		result = 0!bool;
+	} else if (family == &'fmly'!int) && (genus == &'gnus'!int) {
+		targ = tmpTarg;
+		result = 1!bool;
+	} else {
+		targ = tmpTarg;
+		result = 0!bool;
+	}
+}
+macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, int &family) {
+	let Agent? tmpTarg = targ;
+	targ = target;
+	if (targ == null) {
+		targ = tmpTarg;
+		result = 0!bool;
+	} else if (family == &'fmly'!int) {
+		targ = tmpTarg;
+		result = 1!bool;
+	} else {
+		targ = tmpTarg;
+		result = 0!bool;
+	}
+}
+

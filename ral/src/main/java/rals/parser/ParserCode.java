@@ -98,6 +98,25 @@ public class ParserCode {
 			lx.requireNextKw(")");
 			RALStatementUR body = ParserCode.parseStatement(ts, lx);
 			return new RALEnumLoop(tkn.lineNumber, iterOver, subType, econAgent, body);
+		} else if (tkn.isKeyword("with")) {
+			RALType type = ParserType.parseType(ts, lx);
+			if (!(type instanceof RALType.AgentClassifier))
+				throw new RuntimeException("Can only 'with' on classes");
+			Classifier cl = ((RALType.AgentClassifier) type).classifier;
+			String varName = lx.requireNextID();
+			RALExprUR var = new RALAmbiguousID(ts, varName);
+			RALStatementUR body = ParserCode.parseStatement(ts, lx);
+			RALStatementUR elseBranch = null;
+			Token chk = lx.requireNext();
+			if (chk.isKeyword("else")) {
+				elseBranch = ParserCode.parseStatement(ts, lx);
+			} else {
+				lx.back();
+			}
+			RALBlock bodyOuter = new RALBlock(tkn.lineNumber, true);
+			bodyOuter.content.add(new RALAliasStatement(tkn.lineNumber, varName, RALCast.of(var, type)));
+			bodyOuter.content.add(body);
+			return new RALIfStatement(tkn.lineNumber, new RALInstanceof(cl, var), body, elseBranch, false);
 		} else {
 			lx.back();
 			// System.out.println("entered expr parser with " + tkn);

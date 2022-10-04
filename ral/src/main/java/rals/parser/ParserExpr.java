@@ -244,6 +244,11 @@ public class ParserExpr {
 			if (tkn == null) {
 				// well, that ends that
 				return base;
+			} else if (tkn.isKeyword("instanceof")) {
+				RALType rt = ParserType.parseType(ts, lx);
+				if (!(rt instanceof RALType.AgentClassifier))
+					throw new RuntimeException("instanceof requires class not " + rt);
+				base = new RALInstanceof(((RALType.AgentClassifier) rt).classifier, base);
 			} else if (tkn.isKeyword("(")) {
 				// Call.
 				RALExprUR group = ParserExpr.parseExpr(ts, lx, false);

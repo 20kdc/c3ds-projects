@@ -41,7 +41,8 @@ public class Token {
 		keywords.add("break");
 		keywords.add("alias");
 		keywords.add("return");
-		keywords.add("assertType");
+		keywords.add("instanceof");
+		keywords.add("with");
 		keywords.add("after");
 		keywords.add("foreach");
 		keywords.add("in");

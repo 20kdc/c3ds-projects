@@ -40,6 +40,8 @@ class SystemAgent 1 0 0;
 class WorldAgent 2 0 0;
 class Creature creatureGenus 0 0 extends SomethingCreaturesHave;
 
+class VerySpecificAgent 1 2 3;
+
 // Typedefs and TypeScript-style union types exist.
 
 typedef number int|float;
@@ -227,5 +229,18 @@ remove {
 	&'outs {'Hello, string embed future! float {test} and string concat!\n'}';
 	// bleh
 	&'outv {Creature->windowResized}';
+
+	// instanceof testing
+	let Agent somehowAnAgent;
+	if (somehowAnAgent instanceof VerySpecificAgent) {
+		&'outs {"test"}';
+	}
+	alias somehowAnAgent = somehowAnAgent!Agent?;
+	if (somehowAnAgent instanceof VerySpecificAgent) {
+		&'outs {"test"}';
+	}
+	with VerySpecificAgent somehowAnAgent {
+		&'outs {"test"}';
+	}
 }
 
