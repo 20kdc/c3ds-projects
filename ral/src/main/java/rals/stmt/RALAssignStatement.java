@@ -25,6 +25,8 @@ public class RALAssignStatement extends RALStatementUR {
 
 	@Override
 	public RALStatement resolveInner(ScopeContext scope) {
+		// Break scope here so we don't leak temporaries.
+		scope = new ScopeContext(scope);
 		final RALExprSlice targetsR = targets == null ? null : targets.resolve(scope);
 		final RALExprSlice sourceR = source.resolve(scope);
 		if (targets != null) {
@@ -37,17 +39,20 @@ public class RALAssignStatement extends RALStatementUR {
 		return new RALStatement(lineNumber) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext cc) {
-				if (targets == null) {
-					// Assign everything to discard
-					sourceR.readCompile(new RALDiscard(cc.typeSystem, sourceR.length), cc);
-				} else {
-					sourceR.readCompile(targetsR, cc);
+				// Break scope here so we don't leak temporaries.
+				try (CompileContext c2 = new CompileContext(cc)) {
+					if (targetsR == null) {
+						// Assign everything to discard
+						sourceR.readCompile(new RALDiscard(c2.typeSystem, sourceR.length), c2);
+					} else {
+						sourceR.readCompile(targetsR, c2);
+					}
 				}
 			}
 
 			@Override
 			public String toString() {
-				return "(...) = " + sourceR;
+				return targetsR + " = " + sourceR;
 			}
 		};
 	}

@@ -65,6 +65,8 @@ public class TypeSystem {
 	 */
 	public final HashMap<Integer, RALType> overrideOwnr = new HashMap<Integer, RALType>();
 
+	private int randomVariableNameNumber = 0;
+
 	public TypeSystem() {
 		namedTypes.put("any", gAny);
 		namedTypes.put("str", gString);
@@ -79,6 +81,14 @@ public class TypeSystem {
 		gAgentNullable = byNullable(gAgent);
 		gNumber = byUnion(Arrays.asList(gFloat, gInteger));
 		namedTypes.put("num", gNumber);
+	}
+
+	/**
+	 * Used for parser-generated variable names.
+	 * These names are impossible to write as they start with : (not allowed in IDs).
+	 */
+	public String newParserVariableName() {
+		return ":" + (randomVariableNameNumber++);
 	}
 
 	/**

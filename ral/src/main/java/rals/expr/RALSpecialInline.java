@@ -11,14 +11,17 @@ package rals.expr;
  * Basically, if the logic would *otherwise* involve doing string operations on getInlineCAOS, use this instead.
  */
 public enum RALSpecialInline {
-	None(null, false),
-	Ownr("ownr", true),
-	Targ("targ", false),
-	VA(null, true);
+	None(null, false, true),
+	Ownr("ownr", true, false),
+	Targ("targ", false, false),
+	VA(null, true, false),
+	Discard(null, true, false);
 	public final String code;
 	public final boolean inlineWritable;
-	RALSpecialInline(String s, boolean iw) {
+	public final boolean readCouldHaveSideEffects;
+	RALSpecialInline(String s, boolean iw, boolean rse) {
 		code = s;
 		inlineWritable = iw;
+		readCouldHaveSideEffects = rse;
 	}
 }

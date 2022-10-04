@@ -242,5 +242,12 @@ remove {
 	with VerySpecificAgent somehowAnAgent {
 		&'outs {"test"}';
 	}
+	for int i = 0; i < 8; i += 1; {
+		--i;
+		i--;
+		++i;
+		i++;
+		&'outs {"test"}';
+	}
 }
 

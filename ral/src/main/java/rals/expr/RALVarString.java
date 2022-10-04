@@ -45,6 +45,11 @@ public class RALVarString extends RALVarBase {
 		default:
 			throw new RuntimeException("Unknown major type of " + input + " (" + inputExactType + ") - you will need to cast this value");
 		}
+		// Peephole optimization: if code and input are exactly equal, skip the set.
+		// There is no conceivable reason the compiler would want to do a dummy set like this.
+		// If a user wants to use seta/sets/setv as an assertion they can use an inline statement.
+		if (code.equals(input))
+			return;
 		writer.writeCode(set + code + " " + input);
 	}
 

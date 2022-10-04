@@ -11,6 +11,7 @@ import java.util.LinkedList;
 
 import rals.cond.*;
 import rals.expr.*;
+import rals.expr.RALConstant.Int;
 import rals.expr.RALConstant.Str;
 import rals.lex.*;
 import rals.stmt.*;
@@ -202,6 +203,11 @@ public class ParserExpr {
 			}
 			// Because we ran into the string embed in the first place, this will have at least one value.
 			return new RALChainOp(RALChainOp.ADD_STR, total);
+		} else if (tkn.isKeyword("++") || tkn.isKeyword("--")) {
+			RALExprUR inner = parseExprAtomOrNull(ts, lx);
+			if (inner == null)
+				throw new RuntimeException("Looked like the setup for a pre-inc/dec, but was not :" + tkn);
+			return makeIncDec(tkn.lineNumber, ts, inner, true, tkn.isKeyword("++"));
 		} else if (tkn.isKeyword("&")) {
 			return new RALInlineExpr(ParserCode.parseStringEmbed(ts, lx, true));
 		} else if (tkn.isKeyword("{")) {
@@ -238,6 +244,24 @@ public class ParserExpr {
 		}
 	}
 
+	private static RALExprUR makeIncDec(SrcPos ln, TypeSystem ts, RALExprUR inner, boolean pre, boolean inc) {
+		RALChainOp.Op op = inc ? RALChainOp.ADD : RALChainOp.SUB;
+		RALStatementUR mod = new RALAssignStatement(ln, inner, RALChainOp.of(inner, op, new RALConstant.Int(ts, 1)));
+		if (pre) {
+			// return value is after the adjustment
+			// so perform the operation on the initial value, then return what we got in the first place
+			return new RALStmtExpr(mod, inner);
+		} else {
+			String idStr = ts.newParserVariableName();
+			RALAmbiguousID id = new RALAmbiguousID(ts, idStr);
+			// return value is before the adjustment
+			// so store a temporary before the operation
+			RALBlock blk = new RALBlock(ln, false);
+			blk.content.add(new RALLetStatement(ln, new String[] {idStr}, new RALType[] {null}, inner));
+			blk.content.add(mod);
+			return new RALStmtExpr(blk, id);
+		}
+	}
 	private static RALExprUR parseExprSuffix(RALExprUR base, TypeSystem ts, Lexer lx) {
 		while (true) {
 			Token tkn = lx.next();
@@ -249,6 +273,9 @@ public class ParserExpr {
 				if (!(rt instanceof RALType.AgentClassifier))
 					throw new RuntimeException("instanceof requires class not " + rt);
 				base = new RALInstanceof(((RALType.AgentClassifier) rt).classifier, base);
+			} else if (tkn.isKeyword("++") || tkn.isKeyword("--")) {
+				// post-inc/dec
+				base = makeIncDec(tkn.lineNumber, ts, base, false, tkn.isKeyword("++"));
 			} else if (tkn.isKeyword("(")) {
 				// Call.
 				RALExprUR group = ParserExpr.parseExpr(ts, lx, false);

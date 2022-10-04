@@ -394,6 +394,10 @@ It also works nicely as a teaching mechanism for the "odd" parts of RAL macros..
 
 **TODO everything**
 
+### Modify-Assignment Expressions
+
+**TODO everything**
+
 ### Expression Statements and Assignment Statements
 
 Assignment statements assign some expressions to some other expressions.
@@ -419,6 +423,12 @@ Constants are the simplest kind of expression.
 The available types of constant in RAL are numbers and strings. You might be tempted to count `null`, but that's internally an alias.
 
 **TODO example**
+
+### Maths Expressions
+
+### Increment/Decrement Expressions
+
+
 
 ### String Embedding
 

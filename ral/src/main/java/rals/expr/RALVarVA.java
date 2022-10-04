@@ -26,6 +26,16 @@ public class RALVarVA extends RALVarString {
 	}
 
 	@Override
+	protected void readCompileInner(RALExprSlice out, CompileContext context) {
+		// OPT: As a VA, we do not have side effects on reads.
+		// So if we're going to be writing to Discard, drop the matter immediately.
+		if (out.getSpecialInline(0, context) == RALSpecialInline.Discard)
+			return;
+		// Continue with normal procedure.
+		super.readCompileInner(out, context);
+	}
+
+	@Override
 	public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 		if (write && !isWritable)
 			return null;

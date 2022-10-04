@@ -47,4 +47,9 @@ public class RALDiscard extends RALExprSlice implements RALExprUR {
 			rsv.writeCompile(0, input, inputExactType, context);
 		}
 	}
+
+	@Override
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
+		return RALSpecialInline.Discard;
+	}
 }

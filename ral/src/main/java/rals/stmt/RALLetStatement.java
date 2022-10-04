@@ -14,6 +14,7 @@ import rals.types.*;
 /**
  * Let statement.
  * Introduces new locals or shadows existing locals.
+ * Note that null can be given in the types array, which means "auto".
  */
 public class RALLetStatement extends RALStatementUR {
 	public final String[] names;
@@ -30,17 +31,29 @@ public class RALLetStatement extends RALStatementUR {
 	@Override
 	public RALStatement resolveInner(ScopeContext scope) {
 		RALExprSlice initRes = null;
+		RALType[] finalTypes = new RALType[types.length];
+		System.arraycopy(types, 0, finalTypes, 0, types.length);
 		if (init != null) {
 			initRes = init.resolve(scope);
 			// Type-check
 			if (initRes.length != names.length)
 				throw new RuntimeException("Expression return values don't match amount of defined variables");
+			for (int i = 0; i < names.length; i++) {
+				RALType rt = initRes.readType(i);
+				if (finalTypes[i] != null) {
+					rt.assertImpCast(finalTypes[i]);
+				} else {
+					finalTypes[i] = rt;
+				}
+			}
+		} else {
 			for (int i = 0; i < names.length; i++)
-				initRes.readType(i).assertImpCast(types[i]);
+				if (finalTypes[i] == null)
+					throw new RuntimeException("Variable " + names[i] + " auto but no assignment statement");
 		}
 		RALVarVA[] vars = new RALVarVA[names.length];
 		for (int i = 0; i < names.length; i++) {
-			RALVarVA rvv = scope.newLocal(names[i], types[i]);
+			RALVarVA rvv = scope.newLocal(names[i], finalTypes[i]);
 			vars[i] = rvv;
 		}
 		return new Resolved(lineNumber, vars, initRes);
@@ -62,7 +75,7 @@ public class RALLetStatement extends RALStatementUR {
 			// In particular we want to be able to use local definitions as a cast.
 			for (int i = 0; i < vars.length; i++) {
 				scope.allocVA(vars[i].handle);
-				writer.writeComment(vars[i].getInlineCAOS(0, false, scope) + ": " + types[i] + " " + names[i]);
+				writer.writeComment(vars[i].getInlineCAOS(0, false, scope) + ": " + vars[i].type + " " + names[i]);
 			}
 
 			if (init != null) {

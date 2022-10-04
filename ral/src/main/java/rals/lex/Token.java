@@ -44,6 +44,7 @@ public class Token {
 		keywords.add("instanceof");
 		keywords.add("with");
 		keywords.add("after");
+		keywords.add("for");
 		keywords.add("foreach");
 		keywords.add("in");
 	}
