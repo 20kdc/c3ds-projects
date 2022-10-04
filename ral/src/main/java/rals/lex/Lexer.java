@@ -15,8 +15,9 @@ import java.io.InputStream;
 public class Lexer {
 	private ByteHistory byteHistory;
 
-	private boolean tokenSaved;
-	private Token lastToken;
+	private int tokenHistoryPtr = 3;
+	private Token[] tokenHistory = new Token[3];
+
 	private static final String LONERS = ";[]{}(),.";
 	private static final String NUM_START = "+-0123456789";
 	private static final String NUM_BODY = "0123456789.e";
@@ -117,10 +118,16 @@ public class Lexer {
 	}
 
 	public Token next() {
-		if (tokenSaved) {
-			tokenSaved = false;
-			return lastToken;
-		}
+		if (tokenHistoryPtr < tokenHistory.length)
+			return tokenHistory[tokenHistoryPtr++];
+		Token tkn = nextInner();
+		for (int i = 0; i < tokenHistory.length - 1; i++)
+			tokenHistory[i] = tokenHistory[i + 1];
+		tokenHistory[tokenHistory.length - 1] = tkn;
+		return tkn;
+	}
+
+	private Token nextInner() {
 		consumeWS();
 		int c = getNextByte();
 		if (c == -1)
@@ -169,14 +176,12 @@ public class Lexer {
 				}
 				String str = sb.toString();
 				try {
-					lastToken = new Token.Int(genLN(), Integer.parseInt(str));
-					return lastToken;
+					return new Token.Int(genLN(), Integer.parseInt(str));
 				} catch (Exception ex) {
 					// nope
 				}
 				try {
-					lastToken = new Token.Flo(genLN(), Float.parseFloat(str));
-					return lastToken;
+					return new Token.Flo(genLN(), Float.parseFloat(str));
 				} catch (Exception ex) {
 					// nope
 				}
@@ -191,8 +196,7 @@ public class Lexer {
 					if (levelOfStringEmbeddingEscape > 0)
 						levelOfStringEmbeddingEscape--;
 			}
-			lastToken = new Token.Kw(genLN(), Character.toString((char) c));
-			return lastToken;
+			return new Token.Kw(genLN(), Character.toString((char) c));
 		} else if (OPERATORS.indexOf(c) != -1) {
 			StringBuilder sb = new StringBuilder();
 			sb.append((char) c);
@@ -205,8 +209,7 @@ public class Lexer {
 				sb.append((char) c);
 			}
 			String str = sb.toString();
-			lastToken = new Token.Kw(genLN(), str);
-			return lastToken;
+			return new Token.Kw(genLN(), str);
 		} else {
 			StringBuilder sb = new StringBuilder();
 			sb.append((char) c);
@@ -220,11 +223,9 @@ public class Lexer {
 			}
 			String str = sb.toString();
 			if (Token.keywords.contains(str)) {
-				lastToken = new Token.Kw(genLN(), str);
-				return lastToken;
+				return new Token.Kw(genLN(), str);
 			} else {
-				lastToken = new Token.ID(genLN(), str);
-				return lastToken;
+				return new Token.ID(genLN(), str);
 			}
 		}
 	}
@@ -262,17 +263,14 @@ public class Lexer {
 			}
 		}
 		if (isEmbedding) {
-			lastToken = new Token.StrEmb(genLN(), sb.toString(), startIsClusterEnd, endIsClusterStart);
+			return new Token.StrEmb(genLN(), sb.toString(), startIsClusterEnd, endIsClusterStart);
 		} else {
-			lastToken = new Token.Str(genLN(), sb.toString());
+			return new Token.Str(genLN(), sb.toString());
 		}
-		return lastToken;
 	}
 
 	public void back() {
-		if (tokenSaved)
-			throw new RuntimeException("Can't go back more than a single token");
-		tokenSaved = true;
+		tokenHistoryPtr--;
 	}
 
 	public Token requireNext() {

@@ -253,14 +253,26 @@ public class ParserExpr {
 				} else {
 					throw new RuntimeException("You can't put a call on anything but an ambiguous ID, and certainly not " + base);
 				}
-			} else if (tkn.isKeyword(":")) {
+			} else if (tkn.isKeyword(":") || tkn.isKeyword("->")) {
+				boolean isScript = tkn.isKeyword(":");
 				String msgName = lx.requireNextID();
+				// Determine if we might be intervening in an emit expression and cancel if so
+				if (lx.optNextKw("(")) {
+					// We *are* intervening in an emit expression, get out of here
+					lx.back(); // (
+					lx.back(); // ID
+					lx.back(); // : / ->
+					return base;
+				}
 				if (base instanceof RALAmbiguousID) {
 					String typeName = ((RALAmbiguousID) base).text;
 					RALType rt = ts.byName(typeName);
-					Integer msgId = rt.lookupMSID(msgName, false);
-					if (msgId == null)
-						throw new RuntimeException("No such message " + typeName + ":" + msgName);
+					Integer msgId = rt.lookupMSID(msgName, isScript);
+					if (msgId == null) {
+						String lTp = isScript ? "script" : "message";
+						String lOp = isScript ? ":" : "->";
+						throw new RuntimeException("No such " + lTp + " " + typeName + lOp + msgName);
+					}
 					base = new RALConstant.Int(ts, msgId);
 				} else {
 					throw new RuntimeException("You can't get the message ID of anything but an ambiguous ID, and certainly not " + base);

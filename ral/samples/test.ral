@@ -225,5 +225,7 @@ remove {
 	&'outs {"Hello, test float " + test + " and string concat!\n"}';
 	&' * silly commented scriptorium value test {Creature}';
 	&'outs {'Hello, string embed future! float {test} and string concat!\n'}';
+	// bleh
+	&'outv {Creature->windowResized}';
 }
 

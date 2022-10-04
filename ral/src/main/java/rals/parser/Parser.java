@@ -136,7 +136,9 @@ public class Parser {
 			String name = lx.requireNextID();
 			RALType rt = ts.byName(name);
 			if (rt instanceof RALType.Agent) {
-				lx.requireNextKw(":");
+				// allow -> or :
+				if (!lx.optNextKw("->"))
+					lx.requireNextKw(":");
 				String msgName = lx.requireNextID();
 				int msgId = lx.requireNextInteger();
 				((RALType.Agent) rt).declareMS(msgName, msgId, false);
@@ -154,12 +156,14 @@ public class Parser {
 			// script A:B {}
 			// script A 1 {}
 			// script A:B 1;
+			// : may also be ->
 			// Express which form is being used by 3 variables.
 			int scriptId;
 			String msgName = null;
 			RALStatementUR stmt = null;
 			// ...
-			if (!lx.requireNext().isKeyword(":")) {
+			Token possibleDivider = lx.requireNext();
+			if (!(possibleDivider.isKeyword(":") || possibleDivider.isKeyword("->"))) {
 				// Not providing a name so not declaring a message ID.
 				lx.back();
 				scriptId = ParserExpr.parseConstInteger(ts, lx);
@@ -177,7 +181,7 @@ public class Parser {
 				} else {
 					Integer msgId = ac.lookupMSID(msgName, true);
 					if (msgId == null)
-						throw new RuntimeException("No such message ID: " + name + ":" + msgName);
+						throw new RuntimeException("No such script ID: " + name + ":" + msgName);
 					scriptId = msgId;
 					stmt = ParserCode.parseStatement(ts, lx);
 				}

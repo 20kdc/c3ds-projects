@@ -100,6 +100,7 @@ public class ParserCode {
 			return new RALEnumLoop(tkn.lineNumber, iterOver, subType, econAgent, body);
 		} else {
 			lx.back();
+			// System.out.println("entered expr parser with " + tkn);
 			RALExprUR target = ParserExpr.parseExpr(ts, lx, false);
 			Token sp = lx.requireNext();
 			if (sp.isKeyword(";")) {

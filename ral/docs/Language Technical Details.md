@@ -6,7 +6,7 @@ Expressions are represented as slices (`RALExprSlice`). Slices are made up of sl
 
 Slots may be subdivided, but if you do this then parts of the expression may be outright dropped, *including side-effects.*
 
-This is necessary so that things like in
+This mechanism is necessary for feature like macros returning multiple values, and so forth.
 
 *The answer in regards to how this interacts with macros, statement expressions and side-effects is that if you try to push it, you can probably find cases where a void macro will be sliced off, or an expression has to be executed twice to fulfill a particularly hare-brained request.*
 

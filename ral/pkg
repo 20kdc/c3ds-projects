@@ -1,0 +1,6 @@
+#!/bin/sh
+# RAL test build packaging script
+mvn package
+rm -f ral.zip
+zip ral.zip -r target/cdsp-ral-0.666-SNAPSHOT.jar docs include
+
