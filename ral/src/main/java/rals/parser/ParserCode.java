@@ -193,7 +193,7 @@ public class ParserCode {
 		boolean hasAnyAuto = false;
 		while (true) {
 			// work out if this is auto-typed
-			Token tmp1 = lx.requireNext();
+			lx.requireNext();
 			Token tmp2 = lx.requireNext();
 			// Note we don't allow auto-typed variables to even parse if there's no assignment
 			boolean isAuto = tmp2.isKeyword("=") || tmp2.isKeyword(",");
