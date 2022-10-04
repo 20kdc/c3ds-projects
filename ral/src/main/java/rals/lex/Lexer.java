@@ -276,7 +276,7 @@ public class Lexer {
 	public Token requireNext() {
 		Token tkn = next();
 		if (tkn == null)
-			throw new RuntimeException("Expected token, got EOF");
+			throw new RuntimeException("Expected token, got EOF at " + genLN());
 		return tkn;
 	}
 

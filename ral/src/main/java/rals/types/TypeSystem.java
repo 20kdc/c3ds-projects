@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import rals.expr.*;
+import rals.lex.SrcPos;
 import rals.types.RALType.AgentClassifier;
 import rals.types.RALType.Opaque;
 
@@ -54,6 +55,11 @@ public class TypeSystem {
 	 * Named constants!
 	 */
 	public final HashMap<String, RALConstant> namedConstants = new HashMap<>();
+
+	/**
+	 * Named constants definition points
+	 */
+	public final HashMap<String, SrcPos> namedConstantsDefPoints = new HashMap<>();
 
 	/**
 	 * If these message numbers have special behaviour, add here.
@@ -219,10 +225,15 @@ public class TypeSystem {
 			throw new RuntimeException("Interface conflict: " + name);
 	}
 
-	public void declareConst(String name, RALConstant cst) {
-		if (namedConstants.containsKey(name))
-			throw new RuntimeException("Constant conflict: " + name);
+	public void declareConst(String name, SrcPos sp, RALConstant cst) {
+		if (namedConstants.containsKey(name)) {
+			SrcPos sp2 = namedConstantsDefPoints.get(name);
+			if (sp2 != null)
+				throw new RuntimeException("Constant conflict: " + name + " @ " + sp + ", last definition " + sp2);
+			throw new RuntimeException("Constant conflict: " + name + " @ " + sp);
+		}
 		namedConstants.put(name, cst);
+		namedConstantsDefPoints.put(name, sp);
 	}
 
 	public AgentClassifier tryGetAsClassifier(String text) {

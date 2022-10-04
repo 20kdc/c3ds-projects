@@ -51,6 +51,7 @@ public class Parser {
 		if (ctx.included.contains(inc))
 			return;
 		ctx.included.add(inc);
+		System.out.println("include: " + inc);
 		// ok, continue
 		for (File sp : ctx.searchPaths) {
 			File f = new File(sp, inc);
@@ -233,7 +234,7 @@ public class Parser {
 			if (!tx.isKeyword("="))
 				throw new RuntimeException("unknown declaration " + tkn);
 			RALConstant cst = ParserExpr.parseConst(ts, lx);
-			ts.declareConst(name, cst);
+			ts.declareConst(name, tkn.lineNumber, cst);
 			if (!lx.requireNext().isKeyword(";"))
 				throw new RuntimeException("constant termination weirdness");
 		} else {
