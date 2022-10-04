@@ -12,8 +12,8 @@ import rals.types.*;
 /**
  * INTENSIFYING SIGHING
  */
-public class RALTarg extends RALVarBase implements RALExprUR {
-	public RALTarg(RALType ot) {
+public class RALVarPart extends RALVarBase implements RALExprUR {
+	public RALVarPart(RALType ot) {
 		super(ot, true);
 	}
 
@@ -24,21 +24,23 @@ public class RALTarg extends RALVarBase implements RALExprUR {
 
 	@Override
 	public String toString() {
-		return "targ";
+		return "part";
 	}
 
 	@Override
 	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
-		context.writer.writeCode("targ " + input);
+		context.writer.writeCode("part " + input);
 	}
 
 	@Override
 	protected void readCompileInner(RALExprSlice out, CompileContext context) {
-		out.writeCompile(0, "targ", type, context);
+		out.writeCompile(0, "part", type, context);
 	}
 
 	@Override
-	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
-		return RALSpecialInline.Targ;
+	protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
+		if (write)
+			return null;
+		return "part";
 	}
 }

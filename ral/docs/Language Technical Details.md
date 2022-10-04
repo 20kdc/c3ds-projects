@@ -29,7 +29,7 @@ There's a current rule in the compiler about writing single slots at a time, but
 
 ## Lexer
 
-The RAL lexer has 5 distinct token categories:
+The RAL lexer has 6 distinct token categories:
 
 - ID
 
@@ -37,17 +37,21 @@ The RAL lexer has 5 distinct token categories:
 
 - String
 
+- String Embedding (that is, string concatenation with *style*).
+
 - Float
 
 - Integer
 
-However, in practice, there are only 4:
+However, in practice, there are only 5:
 
 - ID/Keyword
 
 - Operator (considered a keyword)
 
-- String - starts with `"` or `'`
+- String - starts with `"`
+
+- String Embedding - starts with `'`, `{}` inside surrounds expressions (which are 'outside' of the string - it's complicated)
 
 - Float/Integer - must start with a digit, `+`, or `-`,  and must contain at least one digit, `.`, or `e`.
   
@@ -55,7 +59,3 @@ However, in practice, there are only 4:
     If the number parses as an integer, then that is what you get.
     Otherwise, if the number parses as a float, that's what you get.
     Otherwise, a compiler error is given.
-
-
-
-

@@ -28,15 +28,15 @@ public class ScopeContext {
 
 	public ScopeContext(ScriptContext parent) {
 		script = parent;
-		scopedVariables.put("ownr", new RALVarSI(RALSpecialInline.Ownr, parent.ownrType, true));
+		scopedVariables.put("ownr", new RALVarSI(RALSpecialInline.Ownr, parent.ownrType, false));
 		// Dynamic VMVars would be nice, but we need hard logic anyway for, say, ownrType
-		scopedVariables.put("from", new RALVarString.Fixed("from", parent.fromType, true));
-		scopedVariables.put("_it_", new RALVarString.Fixed("_it_", parent.typeSystem.gAgentNullable, true));
-		scopedVariables.put("part", new RALVarString.Fixed("part", parent.typeSystem.gInteger, false));
-		scopedVariables.put("_p1_", new RALVarString.Fixed("_p1_", parent.p1Type, true));
-		scopedVariables.put("_p2_", new RALVarString.Fixed("_p2_", parent.p2Type, true));
-		scopedVariables.put("null", new RALVarString.Fixed("null", parent.typeSystem.gNull, true));
-		scopedVariables.put("targ", new RALTarg(parent.typeSystem.gAgentNullable));
+		scopedVariables.put("from", new RALVarString.Fixed("from", parent.fromType, false));
+		scopedVariables.put("_it_", new RALVarString.Fixed("_it_", parent.typeSystem.gAgentNullable, false));
+		scopedVariables.put("part", new RALVarPart(parent.typeSystem.gInteger));
+		scopedVariables.put("_p1_", new RALVarString.Fixed("_p1_", parent.p1Type, false));
+		scopedVariables.put("_p2_", new RALVarString.Fixed("_p2_", parent.p2Type, false));
+		scopedVariables.put("null", new RALVarString.Fixed("null", parent.typeSystem.gNull, false));
+		scopedVariables.put("targ", new RALVarTarg(parent.typeSystem.gAgentNullable));
 		scopedVariables.put("_", new RALDiscard(parent.typeSystem, 1));
 	}
 
