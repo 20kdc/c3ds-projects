@@ -1,0 +1,172 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * C2E engine message/script definitions
+ * File originally written by Tomeno, modified/split & imported into project with permission by 20kdc.
+ */
+
+// Messages, script ID overlap
+// Define message hooks first
+messageHook 0;
+messageHook 1;
+messageHook 2;
+messageHook 3;
+messageHook 4;
+messageHook 5;
+messageHook 12;
+messageHook 13;
+messageHook 14;
+message Agent:msgAct1 0;
+message Agent:msgAct2 1;
+message Agent:msgDeact 2;
+message Agent:msgHit 3;
+message Agent:msgPickup 4;
+message Agent:msgDrop 5;
+message Agent:msgEat 12;
+message Agent:msgHandHold 13;
+message Agent:msgHandStop 14;
+
+/*
+    Engine Script IDs
+*/
+
+// Scripts 0-5, message ID overlap
+script Agent:deact 0;
+script Agent:act1 1;
+script Agent:act2 2;
+script Agent:hit 3;
+script Agent:pickedup 4;
+script Agent:dropped 5;
+// Scripts 6-10
+script Agent:collide 6;
+script Agent:bump 7;
+script Agent:impact 8;
+script Agent:timer 9;
+script Agent:init 10;
+// Scripts 12-14, message ID overlap
+script Agent:eaten 12;
+script Agent:handHeld 13;
+script Agent:handStopped 14;
+
+// Creature scripts targetting agents
+script Agent:cDecisionWatchAgnt 16;
+script Agent:cDecisionAct1Agnt 17;
+script Agent:cDecisionAct2Agnt 18;
+script Agent:cDecisionDeactAgnt 19;
+script Agent:cDecisionApproachAgnt 20;
+script Agent:cDecisionRetreatAgnt 21;
+script Agent:cDecisionPickupAgnt 22;
+script Agent:cDecisionDropAgnt 23;
+script Agent:cDecisionNeedAgnt 24;
+script Agent:cDecisionRestAgnt 25;
+script Agent:cDecisionWestAgnt 26;
+script Agent:cDecisionEastAgnt 27;
+script Agent:cDecisionEatAgnt 28;
+script Agent:cDecisionHitAgnt 29;
+
+// Creature scripts targetting creatures
+script Agent:cDecisionWatchCrea 32;
+script Agent:cDecisionAct1Crea 33;
+script Agent:cDecisionAct2Crea 34;
+script Agent:cDecisionDeactCrea 35;
+script Agent:cDecisionApproachCrea 36;
+script Agent:cDecisionRetreatCrea 37;
+script Agent:cDecisionPickupCrea 38;
+script Agent:cDecisionDropCrea 39;
+script Agent:cDecisionNeedCrea 40;
+script Agent:cDecisionRestCrea 41;
+script Agent:cDecisionWestCrea 42;
+script Agent:cDecisionEastCrea 43;
+script Agent:cDecisionEatCrea 44;
+script Agent:cDecisionHitCrea 45;
+
+// Creature involuntary actions
+script Agent:cFlinch 64;
+script Agent:cLayEgg 65;
+script Agent:cSneeze 66;
+script Agent:cCough 67;
+script Agent:cShiver 68;
+script Agent:cSleep 69;
+script Agent:cFaint 70;
+script Agent:cDie 72;
+
+// Raw input events
+script Agent:rawKeyDown 73;
+script Agent:rawKeyUp 74;
+script Agent:rawMouseMove 75;
+script Agent:rawMouseDown 76;
+script Agent:rawMouseUp 77;
+script Agent:rawMouseWheel 78;
+script Agent:rawTranslatedChar 79;
+// Mouse down on agent
+script Agent:mouseDown 92;
+
+// Pointer scripts
+// OWNR/FROM overrides
+script Agent:ptrAct1 101;
+script Agent:ptrAct2 102;
+script Agent:ptrDeact 103;
+script Agent:ptrPickup 104;
+script Agent:ptrDrop 105;
+overrideOwnr 101 Pointer;
+overrideOwnr 102 Pointer;
+overrideOwnr 103 Pointer;
+overrideOwnr 104 Pointer;
+overrideOwnr 105 Pointer;
+// Port operations on pointer
+script Agent:ptrPortSelect 110;
+script Agent:ptrPortConnect 111;
+script Agent:ptrPortDisconnect 112;
+script Agent:ptrPortCancel 113;
+script Agent:ptrPortError 114;
+overrideOwnr 110 Pointer;
+overrideOwnr 111 Pointer;
+overrideOwnr 112 Pointer;
+overrideOwnr 113 Pointer;
+overrideOwnr 114 Pointer;
+
+// Pointer scripts
+script Agent:ptrClickedBg 116;
+script Agent:ptrActionDispatch 117;
+// Port connection broke
+script Agent:connBroke 118;
+
+// Misc
+script Agent:selectionChanged 120;
+script Agent:vehiclePickup 121;
+script Agent:vehicleDrop 122;
+script Agent:windowResized 123;
+
+// Pickup/drop callback scripts
+script Agent:pickedupAgnt 124;
+script Agent:droppedAgnt 125;
+
+// Misc
+script Agent:speechBubble 126;
+script Agent:lifeEvent 127;
+script Agent:worldLoaded 128;
+
+// Network scripts
+script Agent:netOnline 135;
+script Agent:netOffline 136;
+script Agent:wantedOnline 137;
+script Agent:wantedOffline 138;
+
+// CRAG non-skeletal creature navigation scripts
+script Agent:cragNavTarget 150;
+script Agent:cragNavOutside 151;
+script Agent:cragNavNeighbour 152;
+script Agent:cragNavLink 153;
+script Agent:cragNavBest 154;
+
+// Additional creature scripts
+script Agent:cAge 160;
+
+// Exception handler script
+script Agent:exception 255;
+

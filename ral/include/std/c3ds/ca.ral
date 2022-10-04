@@ -1,0 +1,58 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * C3DS CA constants
+ * File originally written by Tomeno, modified/split & imported into project with permission by 20kdc.
+ */
+
+include "std/engine/consts.ral";
+
+// CA/Scent IDs
+CA_CA0 = 0;
+CA_LIGHT = 1;
+CA_HEAT = 2;
+CA_RAIN = 3;
+CA_NUTRIENT = 4;
+CA_WATER = 5;
+CA_PROTEIN = 6;
+CA_CARB = 7;
+CA_FAT = 8;
+CA_CA9 = 9;
+CA_MACHINE = 10;
+CA_EGG = 11;
+CA_NORN = 12;
+CA_GRENDEL = 13;
+CA_ETTIN = 14;
+CA_NORN_HOME = 15;
+CA_GRENDEL_HOME = 16;
+CA_ETTIN_HOME = 17;
+CA_GADGET = 18;
+CA_CA19 = 19;
+
+// Peaked CA smell stimuli
+// STIM_CA_CA0 = STIM_CA_CA0;
+STIM_CA_LIGHT = STIM_CA_CA1;
+STIM_CA_HEAT = STIM_CA_CA2;
+STIM_CA_RAIN = STIM_CA_CA3;
+STIM_CA_NUTRIENT = STIM_CA_CA4;
+STIM_CA_WATER = STIM_CA_CA5;
+STIM_CA_PROTEIN = STIM_CA_CA6;
+STIM_CA_CARB = STIM_CA_CA7;
+STIM_CA_FAT = STIM_CA_CA8;
+// STIM_CA_CA9 = STIM_CA_CA9;
+STIM_CA_MACHINE = STIM_CA_CA10;
+STIM_CA_EGG = STIM_CA_CA11;
+STIM_CA_NORN = STIM_CA_CA12;
+STIM_CA_GRENDEL = STIM_CA_CA13;
+STIM_CA_ETTIN = STIM_CA_CA14;
+STIM_CA_NORN_HOME = STIM_CA_CA15;
+STIM_CA_GRENDEL_HOME = STIM_CA_CA16;
+STIM_CA_ETTIN_HOME = STIM_CA_CA17;
+STIM_CA_GADGET = STIM_CA_CA18;
+// STIM_CA_CA19 = STIM_CA_CA19;
+

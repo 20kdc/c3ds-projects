@@ -5,8 +5,12 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-// Include common
-include "std/c3ds.ral";
+// Define pointer (which engine needs)
+class Pointer 2 1 1;
 
-// Include C3 headers
+// Include engine
+include "std/engine.ral";
+
+// Include c3ds common headers
+include "std/c3ds/ca.ral";
 
