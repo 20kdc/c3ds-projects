@@ -68,7 +68,7 @@ public class RALEnumLoop extends RALStatementUR {
 						cc.breakLabel = endJumpLabel;
 						cc.breakBool = breakBool;
 						// if break bool is still 0, run body
-						writer.writeCode("doif " + breakBool + " == 0");
+						writer.writeCode("doif " + breakBool + " eq 0");
 					}
 					loopBodyR.compileInner(writer, cc);
 					if (isAdjustingLoopBodyForBreak) {
