@@ -38,7 +38,7 @@ public class CompileContextNW implements AutoCloseable, IVAAllocator {
 	 */
 	public String breakLabel, breakBool;
 
-	public CompileContextNW(ScriptContext sc) {
+	protected CompileContextNW(ScriptContext sc) {
 		typeSystem = sc.typeSystem;
 		module = sc.module;
 		labelAllocator = new AtomicInteger();
@@ -48,7 +48,7 @@ public class CompileContextNW implements AutoCloseable, IVAAllocator {
 		alloc.ensureFree(100);
 	}
 
-	public CompileContextNW(CompileContextNW sc) {
+	protected CompileContextNW(CompileContextNW sc) {
 		typeSystem = sc.typeSystem;
 		module = sc.module;
 		labelAllocator = sc.labelAllocator;

@@ -49,17 +49,17 @@ public class Scripts {
 	/**
 	 * Compiles the module's install script.
 	 */
-	public void compileInstall(StringBuilder outText, TypeSystem ts) {
+	public void compileInstall(StringBuilder outText, TypeSystem ts, boolean dbg) {
 		if (installScript != null) {
 			ScriptContext scr = new ScriptContext(ts, this, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
-			compile(outText, ts, scr, installScript, 0);
+			compile(outText, ts, scr, installScript, 0, dbg);
 		}
 	}
 
 	/**
 	 * Compiles the module's event scripts.
 	 */
-	public void compileEvents(StringBuilder outText, TypeSystem ts) {
+	public void compileEvents(StringBuilder outText, TypeSystem ts, boolean dbg) {
 		for (Map.Entry<ScriptIdentifier, RALStatementUR> eventScript : eventScripts.entrySet()) {
 			ScriptIdentifier k = eventScript.getKey();
 			outText.append(" * ");
@@ -75,7 +75,7 @@ public class Scripts {
 			outText.append("\n");
 			outText.append(k.toScrpLine());
 			outText.append("\n");
-			compileEventContents(outText, ts, k);
+			compileEventContents(outText, ts, k, dbg);
 			outText.append("endm\n");
 		}
 	}
@@ -89,7 +89,7 @@ public class Scripts {
 			StringBuilder outText = new StringBuilder();
 			outText.append(k.toScrpLine());
 			outText.append('\n');
-			compileEventContents(outText, ts, k);
+			compileEventContents(outText, ts, k, false);
 			requests.add(outText.toString());
 		}
 	}
@@ -97,7 +97,7 @@ public class Scripts {
 	/**
 	 * Compiles the content of an event script.
 	 */
-	public void compileEventContents(StringBuilder outText, TypeSystem ts, ScriptIdentifier k) {
+	public void compileEventContents(StringBuilder outText, TypeSystem ts, ScriptIdentifier k, boolean dbg) {
 		RALStatementUR v = eventScripts.get(k);
 		RALType oOwnr = ts.byClassifier(k.classifier);
 		RALType oFrom = ts.gAny;
@@ -109,34 +109,34 @@ public class Scripts {
 			oFrom = oOwnr;
 		}
 		ScriptContext scr = new ScriptContext(ts, this, oOwnr, oFrom, oP1, oP2);
-		compile(outText, ts, scr, v, 1);
+		compile(outText, ts, scr, v, 1, dbg);
 	}
 
 	/**
 	 * Compiles the module's install script.
 	 */
-	public void compileRemove(StringBuilder outText, TypeSystem ts) {
+	public void compileRemove(StringBuilder outText, TypeSystem ts, boolean dbg) {
 		if (removeScript != null) {
 			ScriptContext scr = new ScriptContext(ts, this, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
-			compile(outText, ts, scr, removeScript, 1);
+			compile(outText, ts, scr, removeScript, 1, dbg);
 		}
 	}
 
 	/**
 	 * Compiles the module.
 	 */
-	public void compile(StringBuilder outText, TypeSystem ts) {
-		compileInstall(outText, ts);
-		compileEvents(outText, ts);
+	public void compile(StringBuilder outText, TypeSystem ts, boolean dbg) {
+		compileInstall(outText, ts, dbg);
+		compileEvents(outText, ts, dbg);
 		if (removeScript != null)
 			outText.append("rscr\n");
-		compileRemove(outText, ts);
+		compileRemove(outText, ts, dbg);
 	}
 
-	private void compile(StringBuilder outText, TypeSystem ts, ScriptContext scr, RALStatementUR v, int ii) {
+	private void compile(StringBuilder outText, TypeSystem ts, ScriptContext scr, RALStatementUR v, int ii, boolean dbg) {
 		ScopeContext scope = new ScopeContext(scr);
 		RALStatement res = v.resolve(scope);
-		CodeWriter cw = new CodeWriter(outText);
+		CodeWriter cw = new CodeWriter(outText, dbg);
 		cw.indent = ii;
 		res.compile(cw, new CompileContext(scr, cw));
 	}

@@ -43,7 +43,7 @@ public class Parser {
 		Parser.parseFile(ic, "std/compiler_helpers.ral");
 		Parser.parseFile(ic, "std/cpx_connection_test.ral");
 		StringBuilder sb = new StringBuilder();
-		ic.module.compileInstall(sb, ic.typeSystem);
+		ic.module.compileInstall(sb, ic.typeSystem, false);
 		return sb.toString();
 	}
 

@@ -13,9 +13,11 @@ public class CodeWriter {
 	private StringBuilder writer;
 	public int indent;
 	public String queuedCommentForNextLine = null;
+	public final boolean shouldWriteStatementDetails;
 
-	public CodeWriter(StringBuilder outText) {
+	public CodeWriter(StringBuilder outText, boolean dbg) {
 		writer = outText;
+		shouldWriteStatementDetails = dbg;
 	}
 
 	private void writeIndent() {

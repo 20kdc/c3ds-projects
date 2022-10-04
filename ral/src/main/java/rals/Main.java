@@ -57,7 +57,11 @@ public class Main {
 			printHelp();
 			return;
 		}
-		if (args[0].equals("compile") || args[0].equals("compileInstall") || args[0].equals("compileEvents") || args[0].equals("compileRemove")) {
+		if (args[0].equals("compile") ||
+				args[0].equals("compileDebug") ||
+				args[0].equals("compileInstall") ||
+				args[0].equals("compileEvents") ||
+				args[0].equals("compileRemove")) {
 			if (args.length != 3) {
 				printHelp();
 				return;
@@ -66,13 +70,15 @@ public class Main {
 			IncludeParseContext ic = Parser.run(ralStandardLibrary, args[1]);
 			StringBuilder outText = new StringBuilder();
 			if (args[0].equals("compile")) {
-				ic.module.compile(outText, ic.typeSystem);
+				ic.module.compile(outText, ic.typeSystem, false);
+			} else if (args[0].equals("compileDebug")) {
+				ic.module.compile(outText, ic.typeSystem, true);
 			} else if (args[0].equals("compileInstall")) {
-				ic.module.compileInstall(outText, ic.typeSystem);
+				ic.module.compileInstall(outText, ic.typeSystem, false);
 			} else if (args[0].equals("compileEvents")) {
-				ic.module.compileEvents(outText, ic.typeSystem);
+				ic.module.compileEvents(outText, ic.typeSystem, false);
 			} else if (args[0].equals("compileRemove")) {
-				ic.module.compileRemove(outText, ic.typeSystem);
+				ic.module.compileRemove(outText, ic.typeSystem, false);
 			} else {
 				throw new RuntimeException("?");
 			}
@@ -94,14 +100,14 @@ public class Main {
 				// install
 				StringBuilder outText = new StringBuilder();
 				outText.append("execute\n");
-				ic.module.compileInstall(outText, ic.typeSystem);
+				ic.module.compileInstall(outText, ic.typeSystem, false);
 				queuedRequests.add(outText.toString());
 			} else if (args[0].equals("injectEvents")) {
 				ic.module.compileEventsForInject(queuedRequests, ic.typeSystem);
 			} else if (args[0].equals("injectRemove")) {
 				StringBuilder outText = new StringBuilder();
 				outText.append("execute\n");
-				ic.module.compileRemove(outText, ic.typeSystem);
+				ic.module.compileRemove(outText, ic.typeSystem, false);
 				queuedRequests.add(outText.toString());
 			} else {
 				throw new RuntimeException("?");
@@ -118,6 +124,7 @@ public class Main {
 
 	private static void printHelp() {
 		System.out.println("compile INPUT OUTPUT: Compiles INPUT and writes CAOS to OUTPUT");
+		System.out.println("compileDebug INPUT OUTPUT: Same as compile, but with added compiler debug information");
 		System.out.println("compileInstall INPUT OUTPUT: Same as compile, but only the install script");
 		System.out.println("compileEvents INPUT OUTPUT: Same as compile, but only the event scripts");
 		System.out.println("compileRemove INPUT OUTPUT: Same as compile, but only the remove script (without rscr prefix!)");

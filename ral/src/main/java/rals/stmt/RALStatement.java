@@ -19,7 +19,13 @@ public abstract class RALStatement {
 	}
 
 	public final void compile(CodeWriter writer, CompileContext context) {
-		writer.queuedCommentForNextLine = "@ " + lineNumber + " " + this;
+		if (writer.queuedCommentForNextLine == null) {
+			if (writer.shouldWriteStatementDetails) {
+				writer.queuedCommentForNextLine = "@ " + lineNumber + " " + this;
+			} else {
+				writer.queuedCommentForNextLine = "@ " + lineNumber;
+			}
+		}
 		try {
 			compileInner(writer, context);
 		} catch (Exception ex) {
