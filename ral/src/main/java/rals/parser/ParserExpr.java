@@ -234,10 +234,19 @@ public class ParserExpr {
 			return interior;
 		} else if (tkn.isKeyword("!")) {
 			// logical NOT
-			RALExprUR interior = parseExprAtomOrNull(ts, lx);
+			// so the reason this uses parseExprFullAtomOrNull?
+			// "if !ownr.cubeOccupied {"
+			// the field access is a suffix, so...
+			RALExprUR interior = parseExprFullAtomOrNull(ts, lx);
 			if (interior == null)
 				throw new RuntimeException("Logical NOT with no expression at " + tkn.lineNumber);
 			return new RALCondInvert(interior);
+		} else if (tkn.isKeyword("~")) {
+			// bitwise NOT
+			RALExprUR interior = parseExprFullAtomOrNull(ts, lx);
+			if (interior == null)
+				throw new RuntimeException("Bitwise NOT with no expression at " + tkn.lineNumber);
+			return new RALBitInvert(interior);
 		} else {
 			lx.back();
 			return null;

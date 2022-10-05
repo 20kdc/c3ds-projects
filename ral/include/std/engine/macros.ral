@@ -1,0 +1,103 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * C2E command macros
+ */
+
+macro read(str &tag, int &index) &'read {tag} {index}'!str;
+
+macro () inst() &'inst';
+
+macro () scrx(int &family, int &genus, int &species, int &scr) &'scrx {family, genus, species, scr}';
+
+
+macro () kill(Agent &value) &'kill {value}';
+
+macro () mesgWrit(Agent &value, int &msgId) &'mesg writ {value} {msgId}';
+
+macro () mvsf(num &x, num &y) &'mvsf {x, y}';
+macro () frel(Agent? &dst) &'frel {dst}';
+macro () flto(num &x, num &y) &'flto {x, y}';
+
+// new family
+macro () newSimple(int &family, int &genus, int &species, str &gallery, int &count, int &first, int &plane) &'new: simp {family, genus, species, gallery, count, first, plane}';
+
+// various
+macro histName(str &moniker) &'hist name {moniker}'!str;
+macro histGend(str &moniker) &'hist gend {moniker}'!int;
+macro () histWipe(str &moniker) &'hist wipe {moniker}';
+
+macro ooww(str &moniker) &'ooww {moniker}'!int;
+
+macro () geneKill(Agent &victim, int &slot) &'gene kill {victim, slot}';
+macro () geneClon(Agent &dst, int &dstSlot, Agent &src, int &srcSlot) &'gene clon {dst, dstSlot, src, srcSlot}';
+macro () geneMove(Agent &dst, int &dstSlot, Agent &src, int &srcSlot) &'gene move {dst, dstSlot, src, srcSlot}';
+
+macro gtos(int &slot) &'gtos {slot}'!str;
+macro subs(str &text, int &start, int &len) &'subs {text, start, len}'!str;
+
+// rtar/star/ttar family
+macro () rtar(int &family, int &genus, int &species) &'rtar {family, genus, species}';
+macro () star(int &family, int &genus, int &species) &'star {family, genus, species}';
+macro () ttar(int &family, int &genus, int &species) &'ttar {family, genus, species}';
+
+// POSE
+macro pose() &'pose'!int;
+macro () pose(int &value) &'pose {value}';
+
+// BASE
+macro base() &'base'!int;
+macro () base(int &value) &'base {value}';
+
+// ATTR
+macro attr() &'attr'!int;
+macro () attr(int &value) &'attr {value}';
+
+// BHVR
+macro bhvr() &'bhvr'!int;
+macro () bhvr(int &value) &'bhvr {value}';
+
+// type
+macro type(any &value) &'type {value}'!int;
+
+// physics props
+macro elas() &'elas'!int;
+macro () elas(int &value) &'elas {value}';
+macro accg() &'accg'!float;
+macro () accg(float &value) &'accg {value}';
+macro aero() &'aero'!int;
+macro () aero(int &value) &'aero {value}';
+macro fric() &'fric'!int;
+macro () fric(int &value) &'fric {value}';
+macro perm() &'perm'!int;
+macro () perm(int &value) &'perm {value}';
+
+// Position getters
+// Top-left
+macro posl() &'posl'!float;
+macro post() &'post'!float;
+// Bottom-right
+macro posr() &'posr'!float;
+macro posb() &'posb'!float;
+// Centre
+macro posx() &'posx'!float;
+macro posy() &'posy'!float;
+
+// Game variable accessor basis
+
+macro gameInt(str &key) &'game {key}'!int;
+macro eameInt(str &key) &'eame {key}'!int;
+macro gameNum(str &key) &'game {key}'!num;
+macro eameNum(str &key) &'eame {key}'!num;
+macro gameFloat(str &key) &'game {key}'!float;
+macro eameFloat(str &key) &'eame {key}'!float;
+macro gameStr(str &key) &'game {key}'!str;
+macro eameStr(str &key) &'eame {key}'!str;
+macro gameAgent(str &key) &'game {key}'!Agent;
+macro eameAgent(str &key) &'eame {key}'!Agent;
+

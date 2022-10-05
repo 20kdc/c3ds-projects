@@ -37,10 +37,19 @@ public class ParserCode {
 			return parseLetStatement(tkn.lineNumber, ts, lx);
 		} else if (tkn.isKeyword("alias")) {
 			String id = lx.requireNextID();
-			lx.requireNextKw("=");
-			RALExprUR res = ParserExpr.parseExpr(ts, lx, true);
-			lx.requireNextKw(";");
-			return new RALAliasStatement(tkn.lineNumber, id, res);
+			if (lx.optNextKw("=")) {
+				// alias x = y;
+				RALExprUR res = ParserExpr.parseExpr(ts, lx, true);
+				lx.requireNextKw(";");
+				return new RALAliasStatement(tkn.lineNumber, id, res);
+			} else if (lx.optNextKw("!")) {
+				// alias x!Y;
+				RALType rt = ParserType.parseType(ts, lx);
+				lx.requireNextKw(";");
+				return new RALAliasStatement(tkn.lineNumber, id, RALCast.of(new RALAmbiguousID(ts, id), rt));
+			} else {
+				throw new RuntimeException("Did not understand alias form at: " + tkn);
+			}
 		} else if (tkn.isKeyword("if")) {
 			RALExprUR cond = ParserExpr.parseExpr(ts, lx, true);
 			RALStatementUR body = ParserCode.parseStatement(ts, lx);
@@ -121,7 +130,16 @@ public class ParserCode {
 			RALBlock bodyOuter = new RALBlock(tkn.lineNumber, true);
 			bodyOuter.content.add(new RALAliasStatement(tkn.lineNumber, varName, RALCast.of(var, type)));
 			bodyOuter.content.add(body);
-			return new RALIfStatement(tkn.lineNumber, new RALInstanceof(cl, var), body, elseBranch, false);
+			return new RALIfStatement(tkn.lineNumber, new RALInstanceof(cl, var), bodyOuter, elseBranch, false);
+		} else if (tkn.isKeyword("call")) {
+			// CALL
+			RALExprUR getMsgType = parseRelativeMessageID(new RALAmbiguousID(ts, "ownr"), ts, lx);
+			lx.requireNextKw("(");
+			RALExprUR params = ParserExpr.parseExpr(ts, lx, false);
+			lx.requireNextKw(")");
+			lx.requireNextKw(";");
+			RALCall call = new RALCall("__ral_compiler_helper_call", RALExprGroupUR.of(getMsgType, params));
+			return new RALAssignStatement(tkn.lineNumber, null, call);
 		} else {
 			lx.back();
 			// System.out.println("entered expr parser with " + tkn);
@@ -147,14 +165,7 @@ public class ParserCode {
 				return parseModAssign(tkn.lineNumber, ts, lx, target, RALChainOp.AND);
 			} else if (sp.isKeyword("->")) {
 				// MESG WRT+
-				Token messageId = lx.requireNext();
-				RALExprUR getMsgType;
-				if (messageId instanceof Token.ID) {
-					getMsgType = new RALMessageIDGrabber(target, ((Token.ID) messageId).text);
-				} else {
-					lx.back();
-					getMsgType = ParserExpr.parseExpr(ts, lx, true);
-				}
+				RALExprUR getMsgType = parseRelativeMessageID(target, ts, lx);
 				lx.requireNextKw("(");
 				RALExprUR params = ParserExpr.parseExpr(ts, lx, false);
 				lx.requireNextKw(")");
@@ -173,6 +184,18 @@ public class ParserCode {
 				throw new RuntimeException("Saw expression at " + tkn + " but then was wrong about it, got " + sp);
 			}
 		}
+	}
+
+	private static RALExprUR parseRelativeMessageID(RALExprUR target, TypeSystem ts, Lexer lx) {
+		Token messageId = lx.requireNext();
+		RALExprUR getMsgType;
+		if (messageId instanceof Token.ID) {
+			getMsgType = new RALMessageIDGrabber(target, ((Token.ID) messageId).text);
+		} else {
+			lx.back();
+			getMsgType = ParserExpr.parseExpr(ts, lx, true);
+		}
+		return getMsgType;
 	}
 
 	private static RALStatementUR parseModAssign(SrcPos lineNumber, TypeSystem ts, Lexer lx, RALExprUR target, Op add) {

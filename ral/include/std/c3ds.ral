@@ -5,8 +5,8 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-// Define pointer (which engine needs)
-class Pointer 2 1 1;
+// Define classes, including Pointer (engine needs this).
+include "std/c3ds/classes.ral";
 
 // Include engine
 include "std/engine.ral";

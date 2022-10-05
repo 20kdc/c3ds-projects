@@ -47,6 +47,7 @@ public class Token {
 		keywords.add("for");
 		keywords.add("foreach");
 		keywords.add("in");
+		keywords.add("call");
 	}
 
 	public final SrcPos lineNumber;

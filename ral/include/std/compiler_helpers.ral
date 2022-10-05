@@ -8,6 +8,11 @@
 // So this embarassing little file is for stuff where it's quicker to write little bits here than in Java.
 // Especially when accounting for all the plumbing to get to the resolved expressions level.
 
+// Consts
+
+true = 1!bool;
+false = 0!bool;
+
 /*
  * Emit
  * So how this works is that the emit syntax generates a call statement.
@@ -37,6 +42,21 @@ macro __ral_compiler_helper_emit_na(Agent &target, int &messageId, any &param1) 
 
 macro __ral_compiler_helper_emit_na(Agent &target, int &messageId) {
 	&'mesg writ {target, messageId}';
+}
+
+/*
+ * Call
+ */
+macro __ral_compiler_helper_call(int &messageId, any &param1, any &param2) {
+	&'call {messageId, param1, param2}';
+}
+
+macro __ral_compiler_helper_call(int &messageId, any &param1) {
+	&'call {messageId, param1, 0}';
+}
+
+macro __ral_compiler_helper_call(int &messageId) {
+	&'call {messageId, 0, 0}';
 }
 
 /*

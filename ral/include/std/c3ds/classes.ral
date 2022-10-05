@@ -5,9 +5,24 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-// Include engine headers
+/*
+ * C3DS classes.
+ * This is specifically a listing of classes, messages and fields common between Creatures 3 and Docking Station.
+ */
 
-include "std/engine/consts.ral";
-include "std/engine/scripts.ral";
-include "std/engine/macros.ral";
+// Agent fields
+
+// In theory, this is C3-only, but in practice if you're writing a C3/DS agent you should know this is a Thing.
+field int Agent.recyclerEnergy 61;
+
+// Family 1
+class SpeechBubbleFactory 1 2 10;
+
+// Family 2
+class Pointer 2 1 1;
+
+// Family 3
+
+// Family 4
+class Creature 4 0 0;
 
