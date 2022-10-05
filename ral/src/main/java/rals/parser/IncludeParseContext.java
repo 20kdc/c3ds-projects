@@ -18,7 +18,7 @@ import rals.types.TypeSystem;
  */
 public class IncludeParseContext {
 	public final LinkedList<File> searchPaths = new LinkedList<>();
-	public final HashSet<String> included = new HashSet<>();
+	public final HashSet<File> included = new HashSet<>();
 	public final TypeSystem typeSystem = new TypeSystem();
 	public final Scripts module = new Scripts();
 }

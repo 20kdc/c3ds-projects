@@ -27,68 +27,93 @@ import rals.types.*;
 public class Parser {
 	public static IncludeParseContext run(File stdlib, String path) throws IOException {
 		File init = new File(path);
-		File initParent = init.getParentFile();
 		IncludeParseContext ic = new IncludeParseContext();
-		ic.searchPaths.add(initParent);
 		ic.searchPaths.add(stdlib);
-		Parser.parseFile(ic, "std/compiler_helpers.ral");
-		try (FileInputStream fis = new FileInputStream(init)) {
-			Parser.parseFile(ic, initParent, init.getPath(), fis);
-		}
+		findParseFile(ic, null, "std/compiler_helpers.ral");
+		parseFileAt(ic, init, path);
 		return ic;
 	}
 	public static String runCPXConnTest(File stdlib) throws IOException {
 		IncludeParseContext ic = new IncludeParseContext();
 		ic.searchPaths.add(stdlib);
-		Parser.parseFile(ic, "std/compiler_helpers.ral");
-		Parser.parseFile(ic, "std/cpx_connection_test.ral");
+		findParseFile(ic, null, "std/compiler_helpers.ral");
+		findParseFile(ic, null, "std/cpx_connection_test.ral");
 		StringBuilder sb = new StringBuilder();
 		ic.module.compileInstall(sb, ic.typeSystem, false);
 		return sb.toString();
 	}
 
-	public static void parseFile(IncludeParseContext ctx, String inc) throws IOException {
-		if (ctx.included.contains(inc))
-			return;
-		ctx.included.add(inc);
-		System.out.println("include: " + inc);
-		// ok, continue
+	/**
+	 * Finds and parses a file.
+	 * Does do the include sanity check.
+	 */
+	public static void findParseFile(IncludeParseContext ctx, File relTo, String inc) throws IOException {
+		LinkedList<File> attempts = new LinkedList<>();
+		// relative path
+		if (relTo != null) {
+			File f = new File(relTo, inc);
+			attempts.add(f);
+		}
+		// search paths
 		for (File sp : ctx.searchPaths) {
 			File f = new File(sp, inc);
+			attempts.add(f);
+		}
+		// now attempt them all
+		for (File f : attempts) {
 			if (!f.exists())
 				continue;
-			try (FileInputStream fis = new FileInputStream(f)) {
-				parseFile(ctx, f.getParentFile(), f.getPath(), fis);
-			}
+			parseFileAt(ctx, f, inc);
 			return;
 		}
-		throw new RuntimeException("Ran out of search paths trying to find " + inc);
+		throw new RuntimeException("Ran out of search paths trying to find " + inc + " from " + relTo + ", tried: " + attempts);
 	}
-	public static void parseFile(IncludeParseContext ctx, File hereParent, String name, InputStream fis) throws IOException {
-		Lexer lx = new Lexer(name, fis);
-		while (true) {
-			Token tkn = lx.next();
-			if (tkn == null)
-				break;
-			if (tkn.isKeyword("include")) {
-				String str = ParserExpr.parseConstString(ctx.typeSystem, lx);
-				lx.requireNextKw(";");
-				try {
-					parseFile(ctx, str);
-				} catch (Exception ex) {
-					throw new RuntimeException("in included file " + str, ex);
-				}
-			} else if (tkn.isKeyword("addSearchPath")) {
-				String str = ParserExpr.parseConstString(ctx.typeSystem, lx);
-				lx.requireNextKw(";");
-				ctx.searchPaths.add(new File(hereParent, str));
-			} else {
-				try {
-					parseDeclaration(ctx.typeSystem, ctx.module, tkn, lx);
-				} catch (Exception ex) {
-					throw new RuntimeException("declaration of " + tkn + " at line " + tkn.lineNumber, ex);
+
+	/**
+	 * Parses a file.
+	 * Does do the include sanity check.
+	 */
+	public static void parseFileAt(IncludeParseContext ctx, File here, String name) throws IOException {
+		// It's critically important we do this because otherwise getParentFile returns null.
+		here = here.getAbsoluteFile();
+		if (ctx.included.contains(here))
+			return;
+		ctx.included.add(here);
+		System.out.println("include: " + name);
+		try (FileInputStream fis = new FileInputStream(here)) {
+			parseFileInnards(ctx, here.getParentFile(), name, fis);
+		}
+	}
+
+	/**
+	 * Parses a file given it's parent (for includes), name (for errors), and input stream.
+	 * Does NOT do the include sanity check.
+	 */
+	public static void parseFileInnards(IncludeParseContext ctx, File hereParent, String name, InputStream fis) throws IOException {
+		try {
+			Lexer lx = new Lexer(name, fis);
+			while (true) {
+				Token tkn = lx.next();
+				if (tkn == null)
+					break;
+				if (tkn.isKeyword("include")) {
+					String str = ParserExpr.parseConstString(ctx.typeSystem, lx);
+					lx.requireNextKw(";");
+					findParseFile(ctx, hereParent, str);
+				} else if (tkn.isKeyword("addSearchPath")) {
+					String str = ParserExpr.parseConstString(ctx.typeSystem, lx);
+					lx.requireNextKw(";");
+					ctx.searchPaths.add(new File(hereParent, str));
+				} else {
+					try {
+						parseDeclaration(ctx.typeSystem, ctx.module, tkn, lx);
+					} catch (Exception ex) {
+						throw new RuntimeException("declaration of " + tkn + " at line " + tkn.lineNumber, ex);
+					}
 				}
 			}
+		} catch (Exception ex) {
+			throw new RuntimeException("in file " + name, ex);
 		}
 	}
 
