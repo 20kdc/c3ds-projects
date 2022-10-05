@@ -92,6 +92,8 @@ macro posy() &'posy'!float;
 
 macro gameInt(str &key) &'game {key}'!int;
 macro eameInt(str &key) &'eame {key}'!int;
+macro gameBool(str &key) &'game {key}'!bool;
+macro eameBool(str &key) &'eame {key}'!bool;
 macro gameNum(str &key) &'game {key}'!num;
 macro eameNum(str &key) &'eame {key}'!num;
 macro gameFloat(str &key) &'game {key}'!float;
