@@ -1,70 +1,15 @@
-# RAL Manual: Language Reference
-
-## Language Structure
-
-A RAL file is made up of *declarations*.
-
-Declarations in turn contain expressions and statements (statements containing more expressions and more statements).
-
-In particular, macros and scripts contain code, while other declarations focus more on type structure or "meta" concerns such as includes.
-
-## Type System
-
-RAL is designed with a relatively "modern" type system, though it lacks features such as generics (it can generally be assumed they'd be impractical anyway in a CAOS environment).
-
-The main inspiration for RAL's type system is TypeScript, due to the similarities in requirements (i.e. translating to another language that is not necessarily as strict with types).
-
-This includes the presence of union types that may be any one of a given set of types, and nullability based on this (for example, `Agent?` may not be directly accessed, but the `!` null-cast operator converts it to `Agent`, which may).
-
-The built-in types are as follows:
-
-+ `any` - This type is hard to work with due to the limitations of CAOS `set*` commands. In particular, an `any` value cannot be directly stored, as the major type (agent/string/value) cannot be determined. Nevertheless, it exists.
-  
-  + It is impossible to implicitly cast `any` to any value except itself.
-    It is not even possible to implicitly cast `any` to a union that includes `any`, because such a union automatically collapses as all of it's other types implicitly cast to `any`.
-
-+ `str` - String. Strings in CAOS are a list of bytes in the Windows-1252 codepage (likely different for localized versions).
-
-+ `int` - 32-bit integer.
-  
-  + Note that this should *not* be directly cast to `float`, as CAOS has distinct behaviour for float/float division.
-    As such, implicitly casting this to `float` is not allowed (`num` however is perfectly fine).
-    If you need to perform such a cast, perform `1.0 * i` as the floating-point multiplication coerces the integer into a float.
-
-+ `bool` - Bool. This may be implicitly cast to `int`, but not vice versa.
-
-+ `float` - 32-bit floating-point number.
-
-+ `null` - Null. This type is distinct from agent types in order to support strict nullability.
-
-+ `Agent` - Agent. This is the root class that lives at `0 0 0` in the Scriptorium. Any agent may be cast to this.
-
-+ `num` - Number. Equal to `int|float`, and so may be cast from either.
-
-The tools with which the user may construct types are as follows:
-
-+ Interfaces - Interfaces represent the APIs of Agents, the messages that they can receive and the fields that can be read or modified.
-
-+ Classes - Classes are declared points in the Scriptorium's Family/Genus/Species hierarchy. There's no way to get a class that isn't named, though how the classifier of a named class is selected is up to how much the constant evaluator will let you get away with.
-  Classes are based on Interfaces, both in theory and in implementation, though their distinction is simply 'having a classifier'.
-
-+ Unions - Written as `A | B`, unions are not the most useful of tools, as there's no good way to get a value out of them except via an explicit cast.
-  
-  + A very specific type of union suffix, `| null`, can be written as the shortened form `?`.
-    As such, `Agent?` is internally exactly equal to `Agent | null`, and thus such can and will appear in error messages.
-
-## Declarations
+# RAL Language Reference: Declarations
 
 Declarations are the basic element of a RAL source file.
 Everything else is defined inside declarations.
 
-### Includes/etc.
+## Includes/etc.
 
 #### include
 
-`include` includes a file, found in the set of search paths.
+`include` includes a file, found either relative to the current file, or in the set of search paths.
 
-The only search path by default is the parent directory of the initial file. More can be added with `addSearchPath`.
+By default, the only search path is the Standard Library - more can be added with `addSearchPath`.
 
 If a file is included more than once, the second and onward includes are ignored.
 
@@ -85,7 +30,7 @@ addSearchPath "/media/modus/ralStandardLibrary/";
 include "std/c3.ral";
 ```
 
-### Type System
+## Type System
 
 #### typedef
 
@@ -224,7 +169,7 @@ if alwaysFalse {
 }
 ```
 
-### Code
+## Code
 
 #### script (statement form)
 
@@ -284,7 +229,7 @@ The syntax of an expression macro is simply `macro NAME(PARAM...) EXPRESSION`.
 
 It is polite to append a semicolon after an expression macro that is not a *statement expression*.
 
-Parameters are separated by `,` and take the form of `TYPE NAME` or  `TYPE &NAME`. The presence of the `&` character, declaring the parameter as inline, is invalid (and redundant) for the return values of a statement macro, but for regular (non-return) parameters it's always valid.
+Parameters are separated by `,` and take the form of `TYPE NAME` or `TYPE &NAME`. The presence of the `&` character, declaring the parameter as inline, is invalid (and redundant) for the return values of a statement macro, but for regular (non-return) parameters it's always valid.
 
 Essentially, the difference is that an inline parameter is declared as if an `alias` had occurred in a scope immediately surrounding the call, while a non-inline parameter is declared as if a `let` had occurred in that same scope.
 
@@ -322,170 +267,3 @@ test1(textWithSideEffects());
 test2(textWithSideEffects());
 }
 ```
-
-## Statements
-
-Statements are the unit of sequenced, non-value-returning code in RAL.
-
-### Blocks
-
-Blocks are one of the most basic kinds of statement. A block separates scopes, and allows multiple statements to be written in any place a single statement can be written.
-
-Example:
-
-```
-{
-    let int counter = 0;
-}
-// counter = 1; // would error, counter doesn't exist here
-```
-
-### Inline Statements
-
-Inline statements, or `&`, are used to reasonably-directly write CAOS into the output.
-
-These statements start with `&`, followed by string-embeds containing the CAOS code, and finally ending with a semicolon (`;`).
-
-Example:
-
-```
-// Inline statements may contain expressions.
-let int number = 0;
-&'outv {number + 1}';
-// Inline statements may be written over multiple string-embeds.
-&'outs "Now is the time\n"\n'
- 'outs "For all good Norns\n"\n'
- 'outs "To respect the buzzing of the airlock\n"';
-```
-
-### let
-
-`let` is used to introduce variables.
-
-**TODO: Everything you ever wanted to know about let**
-
-### alias
-
-`alias` is used to retype variables, provide different names for them, or outright treat complex expressions as simple variables (re-run on every use, mind).
-
-It also works nicely as a teaching mechanism for the "odd" parts of RAL macros...
-
-**TODO: The Identity Theft Of `targ`**
-
-### if
-
-`if` is a conditional branch statement.
-
-**TODO: To If Or Not To If**
-
-### while
-
-**TODO everything**
-
-### break
-
-**TODO everything**
-
-### foreach
-
-**TODO everything**
-
-### with
-
-**TODO everything**
-
-### Modify-Assignment Expressions
-
-**TODO everything**
-
-### Expression Statements and Assignment Statements
-
-Assignment statements assign some expressions to some other expressions.
-
-Expression statements are like assignment statements, but no assignment has been specified, so the necessary amount of discard variables are created and the expression is "assigned" to these variables.
-
-**TODO examples**
-
-### Message Emitting Statements
-
-**TODO everything**
-
-## Expressions
-
-Expressions are how values to be read or written are expressed.
-
-RAL uses tuples as expressions for versatility, though it does not have a tuple type.
-
-### Constants
-
-Constants are the simplest kind of expression.
-
-The available types of constant in RAL are numbers and strings. You might be tempted to count `null`, but that's internally an alias.
-
-**TODO example**
-
-### Maths Expressions
-
-### Increment/Decrement Expressions
-
-
-
-### String Embedding
-
-**TODO 'the astounding world of {hand}'**
-
-### instanceof
-
-### Message IDs
-
-### Field Accesses
-
-### Macro Calls
-
-### Inline Expressions
-
-**TODO**
-
-### Statement Expressions
-
-Statement expressions are expressions of statements.
-
-Like blocks, their syntax is to surround the statements with `{}`.
-
-However, unlike blocks, at their very end a `return ...;` statement may be provided containing the expressions to return to the caller.
-
-Macros typically use these and don't show it.
-
-**TODO: Examples**
-
-### Regular Ol' Brackets
-
-**TODO: ...**
-
-### Explicit Casts
-
-**TODO: Cast McCasty And The Runtime Error Skull**
-
-### Variable IDs
-
-Variable IDs represent variables or expressions declared or aliased by `let` and `alias`, among other causes.
-
-#### Initial Scope
-
-The initial scope is the set of variables available in every script.
-
-Note that these variables may be retyped with `alias` and casting.
-
-+ `ownr` - Type is usually derived from the classifier of this script, except where `overrideOwnr` intervenes.
-
-+ `from` - Type is assumed to be `any`, usually, except `overrideOwnr` changes that.
-
-+ `part` - Type is `int`.
-
-+ `_p1_` - Type is `any`.
-
-+ `_p2_` - Type is `any`.
-
-+ `null` - Type is `null`.
-
-+ `targ` - Type is `Agent?`.

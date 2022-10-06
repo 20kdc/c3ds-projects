@@ -14,6 +14,11 @@ macro read(str &tag, int &index) &'read {tag} {index}'!str;
 macro () inst() &'inst';
 macro () stop() &'stop';
 
+macro () outv(num &value) &'outv {value}';
+macro () outs(str &value) &'outs {value}';
+
+macro () hand() &'hand'!str;
+
 macro () scrx(int &family, int &genus, int &species, int &scr) &'scrx {family, genus, species, scr}';
 
 macro () scam(Agent? &agent, int &part) &'scam {agent, part}';
