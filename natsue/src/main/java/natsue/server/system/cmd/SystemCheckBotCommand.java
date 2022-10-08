@@ -11,7 +11,11 @@ package natsue.server.system.cmd;
  */
 public class SystemCheckBotCommand extends BaseBotCommand {
 	public SystemCheckBotCommand() {
-		super("systemcheck", "", Cat.Admin);
+		super("systemcheck", "",
+				"Debugging",
+				"Performs a system check on the Natsue server internals.",
+				"",
+				Cat.Admin);
 	}
 
 	@Override

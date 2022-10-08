@@ -17,7 +17,11 @@ import natsue.server.userdata.INatsueUserData;
  */
 public class ResetPWBotCommand extends BaseBotCommand {
 	public ResetPWBotCommand() {
-		super("resetpw", "<user>", Cat.Admin);
+		super("resetpw", "<user>",
+				"Reset password",
+				"Resets the password of a user, and reports it to you (so you can then tell them).",
+				"Bubblespone",
+				Cat.Admin);
 	}
 
 	@Override

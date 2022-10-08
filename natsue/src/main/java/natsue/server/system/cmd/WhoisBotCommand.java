@@ -17,7 +17,11 @@ import natsue.server.userdata.INatsueUserData;
  */
 public class WhoisBotCommand extends BaseBotCommand {
 	public WhoisBotCommand() {
-		super("whois", "<users...>", Cat.Public);
+		super("whois", "<users...>",
+				"Show user info",
+				"Shows information on users.",
+				"Someone",
+				Cat.Public);
 	}
 
 	@Override

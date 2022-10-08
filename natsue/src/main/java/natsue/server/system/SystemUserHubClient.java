@@ -45,6 +45,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	public static final INatsueUserData.Root IDENTITY = new INatsueUserData.Fixed(new BabelShortUserData("", "", "!System", UIN), FLAG_RECEIVE_NB_NORNS | FLAG_NO_RANDOM);
 	public final int maxDecompressedPRAYSize;
 	public final HashMap<String, BaseBotCommand> botCommands = new HashMap<>();
+	public final LinkedList<BaseBotCommand> botCommandsHelp;
 
 	// Synchronized by the following lock
 	public final HashSet<Long> peopleInGroupChat = new HashSet<>();
@@ -54,10 +55,10 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		hub = h;
 		logParent = log;
 		maxDecompressedPRAYSize = config.maxDecompressedPRAYSize.getValue();
-		for (BaseBotCommand command : SystemCommands.commands)
-			addBotCommand(command);
-		// these commands in particular care about our hub client
-		addBotCommand(new BaseBotCommand("globalchat", "", BaseBotCommand.Cat.Public) {
+		botCommandsHelp = new LinkedList<>();
+		// globalchat goes first
+		addBotCommand(new BaseBotCommand("globalchat", "",
+				"Connect to global chat", "Connects you to the global chat.", "", BaseBotCommand.Cat.Public) {
 			@Override
 			public void run(Context args) {
 				if (args.remaining()) {
@@ -77,10 +78,14 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				}
 			}
 		});
+		// regular commands
+		for (BaseBotCommand command : SystemCommands.commands)
+			addBotCommand(command);
 	}
 
 	private void addBotCommand(BaseBotCommand command) {
 		botCommands.put(command.name, command);
+		botCommandsHelp.add(command);
 	}
 
 	@Override
@@ -218,7 +223,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				addToGlobalChat(nud);
 			}
 		} else {
-			BaseBotCommand.Context ctx = new BaseBotCommand.Context(hub, senderUIN, text, this);
+			BaseBotCommand.Context ctx = new BaseBotCommand.Context(hub, senderUIN, text, this, botCommandsHelp);
 			handleCommand(ctx);
 			sendChatMessage(senderUIN, chatID, ctx.response.toString());
 		}

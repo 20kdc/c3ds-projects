@@ -17,8 +17,12 @@ public class FlagControlBotCommand extends BaseBotCommand {
 	public final int targetAnd;
 	public final int targetXor;
 
-	public FlagControlBotCommand(String cmd, String help, Cat category, int flag, boolean on, String success) {
-		super(cmd, help, category);
+	public FlagControlBotCommand(String cmd, String hs, String help, Cat category, int flag, boolean on, String success) {
+		super(cmd, "",
+				hs,
+				help,
+				"",
+				category);
 		successMsg = success;
 		targetAnd = ~flag;
 		targetXor = on ? flag : 0;

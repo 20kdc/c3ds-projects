@@ -7,9 +7,10 @@
 
 package natsue.server.system.cmd;
 
+import java.util.List;
+
 import natsue.data.babel.UINUtils;
 import natsue.data.hli.ChatColours;
-import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
 import natsue.server.userdata.INatsueUserData;
@@ -18,10 +19,15 @@ import natsue.server.userdata.INatsueUserData;
  * The base for all System commands.
  */
 public abstract class BaseBotCommand {
-	public final String name;
+	public final String name, helpArgs, helpSummary, helpText, helpExample;
 	public final Cat category;
-	public BaseBotCommand(String n, String hf, Cat ao) {
+
+	public BaseBotCommand(String n, String ha, String hs, String ht, String he, Cat ao) {
 		name = n;
+		helpArgs = ha;
+		helpSummary = hs;
+		helpText = ht;
+		helpExample = he;
 		category = ao;
 	}
 	public abstract void run(Context args);
@@ -63,11 +69,17 @@ public abstract class BaseBotCommand {
 		 */
 		public final ILogSource log;
 
-		public Context(IHubPrivilegedClientAPI h, long s, String tex, ILogSource lSrc) {
+		/**
+		 * Information for the help command.
+		 */
+		public final List<BaseBotCommand> helpInfo;
+
+		public Context(IHubPrivilegedClientAPI h, long s, String tex, ILogSource lSrc, List<BaseBotCommand> hi) {
 			log = lSrc;
 			response.append(ChatColours.CHAT);
 			hub = h;
 			senderUIN = s;
+			helpInfo = hi;
 			// strip initial tint
 			if (tex.contains(">"))
 				tex = tex.substring(tex.indexOf('>') + 1);

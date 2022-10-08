@@ -20,16 +20,20 @@ import natsue.server.userdata.INatsueUserData;
  * Stuff them all here for now as part of refactor
  */
 public class SystemCommands {
-	public static final String VERSION = "Natsue 03/10/22";
+	public static final String VERSION = "Natsue 08/10/22";
 	public static final BaseBotCommand[] commands = new BaseBotCommand[] {
-		new BaseBotCommand("version", "", Cat.Public) {
+		new HelpSetBotCommand(false),
+		new HelpSetBotCommand(true),
+		new BaseBotCommand("version", "",
+				"Server version", "Shows the Natsue server software version.", "", Cat.Public) {
 			public void run(Context args) {
 				args.response.append(VERSION);
 				args.response.append("\n");
 			}
 		},
 		new WhoisBotCommand(),
-		new BaseBotCommand("contact", "<users...>", Cat.Public) {
+		new BaseBotCommand("contact", "<users...>",
+				"Add contacts", "Adds users to your contact list.", "Someone", Cat.Public) {
 			public void run(Context args) {
 				while (args.remaining()) {
 					String user = args.nextArg();
@@ -47,7 +51,8 @@ public class SystemCommands {
 				}
 			}
 		},
-		new BaseBotCommand("kick", "<user>", Cat.Admin) {
+		new BaseBotCommand("kick", "<user>",
+				"Kicks a user", "Kicks (i.e. forcibly disconnects) a user from the server.", "kick JeremyRandomTroll", Cat.Admin) {
 			public void run(Context args) {
 				if (!args.remaining()) {
 					args.response.append("Kick who?\n");
@@ -68,7 +73,8 @@ public class SystemCommands {
 			}
 		},
 		new ResetPWBotCommand(),
-		new BaseBotCommand("setpw", "<password>", Cat.Public) {
+		new BaseBotCommand("setpw", "<password>",
+				"Change password", "Updates your password.\nBe aware that this won't update your client's copy of the password, so you'll need to update it on next login.", "FirePoker123", Cat.Public) {
 			public void run(Context args) {
 				if (!args.remaining()) {
 					args.response.append("New password cannot be empty.\n");
@@ -84,7 +90,8 @@ public class SystemCommands {
 				}
 			}
 		},
-		new BaseBotCommand("who", "", Cat.Public) {
+		new BaseBotCommand("who", "",
+				"List users", "Lists all users connected to the server.", "", Cat.Public) {
 			public void run(Context args) {
 				if (args.remaining()) {
 					args.response.append("No parameters, please.\n");
@@ -103,19 +110,21 @@ public class SystemCommands {
 				args.response.append("\n");
 			}
 		},
-		new FlagControlBotCommand("allownbnorns", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_NB_NORNS, true, "NB norn receipt enabled\n"),
-		new FlagControlBotCommand("denynbnorns", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_NB_NORNS, false, "NB norn receipt disabled\n"),
-		new FlagControlBotCommand("allowgeats", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_GEATS, true, "Geat receipt enabled\n"),
-		new FlagControlBotCommand("denygeats", "", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_GEATS, false, "Geat receipt disabled\n"),
+		new FlagControlBotCommand("allownbnorns", "Allow NB norns", "Allows receipt of NB norns. May subject you to crashes if your world is not properly patched.", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_NB_NORNS, true, "NB norn receipt enabled\n"),
+		new FlagControlBotCommand("denynbnorns", "No NB norns", "Prevents receipt of NB norns.", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_NB_NORNS, false, "NB norn receipt disabled\n"),
+		new FlagControlBotCommand("allowgeats", "Allow geats", "Allows receipt of geats. May subject you to the Wasteland Glitch if your world is not properly patched.", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_GEATS, true, "Geat receipt enabled\n"),
+		new FlagControlBotCommand("denygeats", "No geats", "Prevents receipt of geats.", Cat.Public, INatsueUserFlags.FLAG_RECEIVE_GEATS, false, "Geat receipt disabled\n"),
 		// note the inverse in the test for DB compat.
-		new FlagControlBotCommand("allowrandom", "", Cat.Public, INatsueUserFlags.FLAG_NO_RANDOM, false, "Random selection enabled\n"),
-		new FlagControlBotCommand("denyrandom", "", Cat.Public, INatsueUserFlags.FLAG_NO_RANDOM, true, "Random selection disabled\n"),
-		new BaseBotCommand("kickme", "", Cat.Public) {
+		new FlagControlBotCommand("allowrandom", "Allow random Norns", "Allows you to be targeted by the 'any on-line user' setting.", Cat.Public, INatsueUserFlags.FLAG_NO_RANDOM, false, "Random selection enabled\n"),
+		new FlagControlBotCommand("denyrandom", "No random Norns", "Prevents being targeted by the 'any on-line user' setting.", Cat.Public, INatsueUserFlags.FLAG_NO_RANDOM, true, "Random selection disabled\n"),
+		new BaseBotCommand("kickme", "",
+				"Kicks you", "Kicks you.", "", Cat.Admin) {
 			public void run(Context args) {
 				args.hub.forceDisconnectUIN(args.senderUIN, false);
 			}
 		},
-		new BaseBotCommand("whoami", "", Cat.Secret) {
+		new BaseBotCommand("whoami", "",
+				"funny", "Funny joke command", "", Cat.Secret) {
 			public void run(Context args) {
 				args.response.append("A philosophical question.\n");
 				args.response.append("To me? You are " + UINUtils.toString(args.senderUIN) + ".\n");
@@ -123,31 +132,6 @@ public class SystemCommands {
 			}
 		},
 		new RemoteFlagControlBotCommand(),
-		new SystemCheckBotCommand(),
-		new BaseBotCommand("ahelp", "", Cat.Admin) {
-			public void run(Context args) {
-				args.response.append("admin commands:\n");
-				args.response.append("kick Someone\n");
-				args.response.append("resetpw Someone\n");
-				args.response.append("flags Someone [+FLAG/-FLAG...] (adds/removes flags)\n");
-				args.response.append("flags (reference)\n");
-				args.response.append("systemcheck (performs sanity check)\n");
-				args.response.append("You can send a global system message by mail, subject \"SYSTEM MSG\".\n");
-			}
-		},
-		new BaseBotCommand("help", "", Cat.Public) {
-			public void run(Context args) {
-				args.response.append("whois !System\n");
-				args.response.append("contact !System\n");
-				args.response.append("who (show who's online)\n");
-				args.response.append("(allow/deny)nbnorns (WARNING: Crashes you if unmodded!)\n");
-				args.response.append("(allow/deny)geats (WARNING: wasteland glitch!)\n");
-				args.response.append("(allow/deny)random\n");
-				args.response.append("setpw 1234 (sets your password)\n");
-				args.response.append("globalchat\n");
-				if (args.hub.isUINAdmin(args.senderUIN))
-					args.response.append("For admin tasks try: ahelp\n");
-			}
-		}
+		new SystemCheckBotCommand()
 	};
 }

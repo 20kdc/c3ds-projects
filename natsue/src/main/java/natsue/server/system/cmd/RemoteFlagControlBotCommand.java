@@ -16,7 +16,14 @@ import natsue.server.userdata.INatsueUserData;
  */
 public class RemoteFlagControlBotCommand extends BaseBotCommand {
 	public RemoteFlagControlBotCommand() {
-		super("flags", "[USER [+FLAG/-FLAG]...]", Cat.Admin);
+		super("flags", "[USER [+FLAG/-FLAG]...]",
+				"Alter flags",
+				"If no parameters are provided, shows a reference of all flags and their meanings.\n" +
+				"If a user is provided, shows/updates their flags.\n" +
+				"'+' prefixed entries add that flag, '-' prefixed entries remove it.\n" +
+				"+FROZEN is best paired with the kick command for maximum effect.",
+				"BadUser +FROZEN",
+				Cat.Admin);
 	}
 
 	@Override
