@@ -2,20 +2,68 @@
 
 Statements are the unit of sequenced, non-value-returning code in RAL.
 
-## Blocks
+## Scoping
 
-Blocks are one of the most basic kinds of statement. A block separates scopes, and allows multiple statements to be written in any place a single statement can be written.
+### Blocks
+
+Blocks are one of the most basic kinds of statement, made up of `{}` surrounding other statements. Blocks separate scopes, and allow multiple statements to be written in any place a single statement can be written.
 
 Example:
 
 ```
 {
-    let int counter = 0;
+let int counter = 0;
 }
 // counter = 1; // would error, counter doesn't exist here
 ```
 
-## Inline Statements
+### let
+
+`let` is used to introduce variables in the current scope.
+
+A `let` statement is made up of individual variable declarations, followed optionally by an assignment.
+
+Each variable declaration is an ID with a type possibly preceding it, for example `Agent? stinger` or `stinger`.
+
+These are separated by commas `,` and are terminated with the semicolon `;` or the assignment `=`.
+
+If a variable declaration does not have a type, the type is the type of what is being assigned to it.
+
+Example:
+
+```
+let int counterA = 0;
+let counterB = 0; // type is automatically int
+let counterC = 0.0; // type is automatically float
+// let int counterD = 0.0; // error, implicit casts float to int
+let Agent? a, Agent? b = null, null; // multiple definition
+```
+
+### alias
+
+`alias` is used to retype variables, provide different names for them, or outright treat complex expressions as simple variables (re-run on every use, mind).
+
+It also works nicely as a teaching mechanism for the "odd" parts of RAL macros.
+
+`alias` comes in two forms: A "normal" variant and a "cast" variant.
+
+The normal variant is of the form `alias variable = source;` and aliases an ID to an arbitrary expression. This can be considered like a "mini-macro". For typing and scope purposes the expression is resolved at the point of the `alias`, but the values of variables are those at the point where the ID is used.
+
+The cast variant is of the form `alias variable!Type;` and aliases a variable to itself cast to a given type, equivalent to `alias variable = variable!Type;`.
+
+The most useful application of `alias` is when you need to update the type of `targ` (i.e. because of `rtar`)
+
+Example:
+
+```
+let num a = 0;
+alias b = a; // normal variant
+alias a!float; // cast variant - alter 
+```
+
+## Actions
+
+### Inline Statements
 
 Inline statements, or `&`, are used to reasonably-directly write CAOS into the output.
 
@@ -28,59 +76,158 @@ Example:
 let int number = 0;
 &'outv {number + 1}';
 // Inline statements may be written over multiple string-embeds.
-&'outs "Now is the time\n"\n'
- 'outs "For all good Norns\n"\n'
- 'outs "To respect the buzzing of the airlock\n"';
+&'outs {"Now is the time\n"}\n'
+ 'outs {"For all good Norns\n"}\n'
+ 'outs {"To respect the buzzing of the airlock\n"}';
 ```
 
-## let
-
-`let` is used to introduce variables.
-
-**TODO: Everything you ever wanted to know about let**
-
-## alias
-
-`alias` is used to retype variables, provide different names for them, or outright treat complex expressions as simple variables (re-run on every use, mind).
-
-It also works nicely as a teaching mechanism for the "odd" parts of RAL macros...
-
-**TODO: The Identity Theft Of `targ`**
-
-## if
-
-`if` is a conditional branch statement.
-
-**TODO: To If Or Not To If**
-
-## while
-
-**TODO everything**
-
-## break
-
-**TODO everything**
-
-## foreach
-
-**TODO everything**
-
-## with
-
-**TODO everything**
-
-## Modify-Assignment Expressions
-
-**TODO everything**
-
-## Expression Statements and Assignment Statements
+### Expression Statements and Assignment Statements
 
 Assignment statements assign some expressions to some other expressions.
 
 Expression statements are like assignment statements, but no assignment has been specified, so the necessary amount of discard variables are created and the expression is "assigned" to these variables.
 
-**TODO examples**
+Example:
 
-## Message Emitting Statements
+```
+1 + 1; // Expression statement, runs the calculation but discards the result
+a(); // Expression statement for macro call
+counter = 5; // Assignment statement
+counter = counter + 4;
+xPos = posx(); // Assignment statement with macro call
+xPos, yPos = getRandomXY(); // Assignment statement with multiple return values
+```
 
-**TODO everything***
+### Modify-Assignment Statements
+
+Modify-assignment expressions are a shorthand for certain assignment expressions.
+
+They cover: `+=`, `-=`, `*=`, `/=`, `|=`, `&=`
+
+These represent the relevant operators.
+
+Example:
+
+```
+let counter = 1;
+counter += 1; // counter is now 2
+```
+
+### Emit Statements
+
+Emit statements are of the form `receiver->messageName([arg1[, arg2]])[ after ticks];`, where `receiver`, `messageName`, `arg1`, `arg2`, and `ticks` are changed as appropriate. This becomes a `MESG WRIT` or `MESG WRT+` as appropriate.
+
+Remember that emit statements send messages that are queued.
+
+Example:
+
+```
+alias targ!Boopable; // for messages
+targ->receivedBoop();
+```
+
+### call
+
+`call` represents a `CALL` rather than a `MESG WRIT`, occurring on the owner and deferring the current script - it is otherwise like an emit statement.
+
+Example:
+
+```
+call makeBoopNoises();
+```
+
+## Flow Control
+
+### if
+
+`if` is a conditional branch statement. It is of the form `if cond... { code } [else { code }]`.
+
+Like in C, the `else` branch of an `if` is a single statement, and that statement may therefore be an `if` without an enclosing block.
+
+Example:
+
+```
+if a == 1 {
+    
+}
+
+if a == 1 {
+    
+} else if b == 2 {
+    
+} else {
+    
+}
+```
+
+### while
+
+`while` is a (breakable) loop. Given a condition, the condition is checked on every iteration (except the first), and if false, the loop is returned from.
+
+Example:
+
+```
+let a = 0;
+while a < 5 {
+outs("Meow!");
+a++;
+}
+```
+
+### break
+
+A `while`, `for` or `foreach` block may be escaped with `break`. (In `foreach`'s case this does not actually terminate the loop but prevents the contents from executing until the loop completes, which is effectively the same thing but less efficient.)
+
+Example:
+
+```
+while true {
+if calculateImportantCondition() {
+break;
+} else {
+handleStuff();
+}
+}
+```
+
+### foreach
+
+`foreach` blocks handle the different types of agent iteration.
+
+The `foreach` block details are surrounded by `()`.
+
+In most cases, the supplied type (such as `Agent`) is used to supply the enumerator, while with `econ` a supplied agent is used.
+
+```
+foreach (Agent ag in enum) {
+}
+foreach (Agent ag in epas) {
+}
+foreach (Agent ag in esee) {
+}
+foreach (Agent ag in etch) {
+}
+foreach (Agent ag in econ targ) {
+}
+```
+
+### with
+
+A `with` block checks if a given variable (or something like a variable, such as `targ`) is of a given type (where said type must be a class) and if so, runs the code within. Otherwise, said code is not run.
+
+This is of the form `with (TYPE VAR) STATEMENT` - though `with TYPE VAR STATEMENT` is allowed.
+
+The code within has the variable automatically alias-casted to the target type.
+
+As this is in effect an `if` statement, it supports `else`.
+
+Example:
+
+```
+with (Bramboo targ) {
+// Bramboo. Do stuff with it!
+doStuffWithBramboo(targ);
+} else {
+// Not bramboo!
+}
+```

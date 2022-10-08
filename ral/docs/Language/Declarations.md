@@ -88,9 +88,9 @@ field string Canary.tweetText 1;
 
 It consists of a message-ID-of expression (i.e. `Agent:someMessage`) followed by the message number.
 
-At some point explicit type declarations for parameters may become a thing, but not presently.**
+*At some point explicit type declarations for parameters may become a thing, but not presently.*
 
-**Example:
+Example:
 
 ```
 message Canary:tweet 1000;

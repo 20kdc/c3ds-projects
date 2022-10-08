@@ -94,7 +94,7 @@ public class ParserCode {
 			lx.requireNextKw(";");
 			return new RALBreakFromLoop(tkn.lineNumber);
 		} else if (tkn.isKeyword("foreach")) {
-			boolean paren = lx.optNextKw("(");
+			lx.requireNextKw("("); // for flexibility in syntax
 			RALType iterOver = ParserType.parseType(ts, lx);
 			lx.requireNextKw("in");
 			String subType = lx.requireNextID();
@@ -108,17 +108,19 @@ public class ParserCode {
 			} else {
 				throw new RuntimeException("Unrecognized subtype");
 			}
-			if (paren)
-				lx.requireNextKw(")");
+			lx.requireNextKw(")");
 			RALStatementUR body = ParserCode.parseStatement(ts, lx);
 			return new RALEnumLoop(tkn.lineNumber, iterOver, subType, econAgent, body);
 		} else if (tkn.isKeyword("with")) {
+			boolean paren = lx.optNextKw("(");
 			RALType type = ParserType.parseType(ts, lx);
 			if (!(type instanceof RALType.AgentClassifier))
 				throw new RuntimeException("Can only 'with' on classes");
 			Classifier cl = ((RALType.AgentClassifier) type).classifier;
 			String varName = lx.requireNextID();
 			RALExprUR var = new RALAmbiguousID(ts, varName);
+			if (paren)
+				lx.requireNextKw(")");
 			RALStatementUR body = ParserCode.parseStatement(ts, lx);
 			RALStatementUR elseBranch = null;
 			Token chk = lx.requireNext();
