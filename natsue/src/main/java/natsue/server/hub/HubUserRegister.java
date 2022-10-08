@@ -67,10 +67,10 @@ public class HubUserRegister {
 	public void considerRandomStatusInSync(INatsueUserData.LongTerm user) {
 		Long uin = user.getUIN(); 
 		if (user.isNoRandom()) {
-			System.out.println("no random");
+			// System.out.println("no random");
 			randomPool.remove(uin);
 		} else {
-			System.out.println("ya random");
+			// System.out.println("ya random");
 			if (connectedClients.containsKey(uin))
 				randomPool.add(uin);
 		}

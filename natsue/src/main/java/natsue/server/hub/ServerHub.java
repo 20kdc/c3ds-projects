@@ -7,9 +7,6 @@
 
 package natsue.server.hub;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -118,6 +115,19 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		long result = 0;
 		Long wiObj = whoIsnt == 0 ? null : whoIsnt;
 		synchronized (this) {
+			// sanity check
+			LinkedList<Long> notSupposedToBeThere = new LinkedList<>(users.randomPool);
+			notSupposedToBeThere.removeIf((l) -> users.connectedClients.containsKey(l));
+			if (notSupposedToBeThere.size() > 0) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("INCONSISTENCY IN RANDOM POOL:");
+				for (Long l : notSupposedToBeThere) {
+					sb.append(' ');
+					sb.append(UINUtils.toString(l));
+				}
+				log(sb.toString());
+				users.randomPool.removeAll(notSupposedToBeThere);
+			}
 			// It's easier to remove and re-add the object than to rebuild the pool, even if it is dumb.
 			boolean needsReadd = false;
 			if (wiObj != null)
@@ -219,6 +229,16 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			ihc.forceDisconnect(sync); // X.X
 	}
 
+	private void wwrNotifyRun(boolean state, IHubClient cc, LinkedList<IWWRListener> wwrNotify) {
+		for (IWWRListener ihc : wwrNotify) {
+			try {
+				ihc.wwrNotify(state, cc);
+			} catch (Exception ex) {
+				log(ex);
+			}
+		}
+	}
+
 	/**
 	 * Note: For reliability reasons, this catches and logs exceptions internally.
 	 * By this point, you see, the login has already been confirmed.
@@ -226,13 +246,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	 */
 	private void lateClientLogin(IHubClient cc, LinkedList<IWWRListener> wwrNotify) {
 		long uin = cc.getUIN();
-		for (IWWRListener ihc : wwrNotify) {
-			try {
-				ihc.wwrNotify(true, cc);
-			} catch (Exception ex) {
-				log(ex);
-			}
-		}
+		wwrNotifyRun(true, cc, wwrNotify);
 		try {
 			if (UINUtils.isRegularUser(uin)) {
 				int uid = UINUtils.uid(uin);
@@ -337,8 +351,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		}
 		// It's very important that this happens BEFORE we officially logout.
 		// Otherwise, race condition, See the wwrNotify function's definition.
-		for (IWWRListener ihc : wwrNotify)
-			ihc.wwrNotify(false, cc);
+		wwrNotifyRun(false, cc, wwrNotify);
 		synchronized (this) {
 			users.earlyClientLogoutInSync(cc);
 		}
