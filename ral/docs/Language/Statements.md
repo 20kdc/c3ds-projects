@@ -246,7 +246,9 @@ BreakStatement -- start --> cl["break"] --> Semicolon[";"] --> End[" "]
 
 ### for
 
-For loops consist of initial variables (as in a `let` statement), a condition, and an adjustment statement.
+`for` loops consist of initial variables (as in a `let` statement), a condition, an adjustment statement, and finally a loop body.
+
+They're essentially fancy syntax for a `while` loop with some rearranging.
 
 ```
 for a = 1; a <= 10; a++ {
