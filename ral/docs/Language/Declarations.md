@@ -13,21 +13,27 @@ By default, the only search path is the Standard Library - more can be added wit
 
 If a file is included more than once, the second and onward includes are ignored.
 
-Example:
-
 ```
 include "std/c3.ral";
+```
+
+```mermaid
+flowchart LR;
+IncludeDeclaration -- start --> include --> ConstantString --> Semicolon[";"] --> End[" "];
 ```
 
 #### addSearchPath
 
 Adds a search path for `include`. If the search path is relative, then it is relative to the current source file.
 
-Example:
-
 ```
-addSearchPath "/media/modus/ralStandardLibrary/";
-include "std/c3.ral";
+addSearchPath "../evilcorpCoreLibraries";
+include "eccl/elo.ral";
+```
+
+```mermaid
+flowchart LR;
+AddSearchPathDeclaration -- start --> addSearchPath --> ConstantString --> Semicolon[";"] --> End[" "];
 ```
 
 ## Type System
@@ -38,10 +44,13 @@ include "std/c3.ral";
 
 This is usually useful to name unions.
 
-Example:
-
 ```
 typedef number integer|float;
+```
+
+```mermaid
+flowchart LR;
+TypedefDeclaration -- start --> typedef --> ID --> Type --> Semicolon[";"] --> End[" "];
 ```
 
 #### class
@@ -56,16 +65,30 @@ In addition, `extends InterfaceName` may be added an arbitrary amount of times, 
 class Canary 2 13 3987 extends Bird;
 ```
 
+```mermaid
+flowchart LR;
+ClassDeclaration -- start --> cl["class"] --> ID --> family["ConstantInt"] --> genus["ConstantInt"] --> species["ConstantInt"] --> Semicolon[";"] --> End[" "];
+ID --> extends;
+species --> extends --> xID["ID"] --> extends;
+xID --> Semicolon;
+```
+
 #### interface
 
 `interface` defines an interface, a set of message/script numbers and fields that may be attached to a `class`.
 
 In addition, `extends InterfaceName` may be added an arbitrary amount of times, to indicate that supporting this interface implies supporting some other interfaces, or that this interface implies extending a class (this has it's uses, as interfaces are types).
 
-Example:
-
 ```
 interface Bird extends GoodBug;
+```
+
+```mermaid
+flowchart LR;
+InterfaceDeclaration -- start --> cl["interface"] --> ID --> Semicolon[";"] --> End[" "];
+ID --> extends;
+extends --> xID["ID"] --> extends;
+xID --> Semicolon;
 ```
 
 #### field
@@ -82,18 +105,27 @@ Example:
 field string Canary.tweetText 1;
 ```
 
+```mermaid
+flowchart LR;
+FieldDeclaration -- start --> cl["field"] --> Type --> ID --> Dot["."] --> id2["ID"] --> ConstantInt --> Semicolon[";"] --> End[" "];
+```
+
 #### message
 
 `message` declares a message on a class or interface.
 
-It consists of a message-ID-of expression (i.e. `Agent:someMessage`) followed by the message number.
+It consists of a message-ID-of expression (i.e. `Agent->someMessage` or `Agent:someMessage`) followed by the message number.
 
 *At some point explicit type declarations for parameters may become a thing, but not presently.*
 
-Example:
-
 ```
 message Canary:tweet 1000;
+```
+
+```mermaid
+flowchart LR;
+MessageDeclaration -- start --> cl["message"] --> ID --> Choice["->"] --> id2["ID"] --> ConstantInt --> Semicolon[";"] --> End[" "];
+ID --> ChoiceB[":"] --> id2;
 ```
 
 #### script (declaration form)
@@ -102,13 +134,17 @@ message Canary:tweet 1000;
 
 As such, see `message` for syntax. You should only see this in the standard library.
 
+```mermaid
+flowchart LR;
+ScriptProtoDeclaration -- start --> cl["script"] --> ID --> Choice["->"] --> id2["ID"] --> ConstantInt --> Semicolon[";"] --> End[" "];
+ID --> ChoiceB[":"] --> id2;
+```
+
 #### overrideOwnr
 
 This is used in the standard library to mark specific script numbers that the engine misuses in colourful ways, in particular 101 through 105.
 
 In this event, what would usually be `ownr`'s type is moved to `from`, and `ownr`'s type is set to the one given.
-
-Example:
 
 ```
 overrideOwnr 101 Pointer;
@@ -119,18 +155,26 @@ let Canary myself = from;
 }
 ```
 
+```mermaid
+flowchart LR;
+OverrideOwnrDeclaration -- start --> cl["overrideOwnr"] --> ConstantInt --> Type --> Semicolon[";"] --> End[" "];
+```
+
 #### messageHook
 
 This is used in the standard library to mark those message numbers which the engine does not treat as equivalent to script numbers.
 
 This causes RAL to not automatically create script definitions for message definitions and vice versa.
 
-Example:
-
 ```
 messageHook 0;
 script Agent:scrDeactivated 0;
 message Agent:msgActivate1 0;
+```
+
+```mermaid
+flowchart LR;
+MessageHookDeclaration -- start --> cl["messageHook"] --> ConstantInt --> Semicolon[";"] --> End[" "];
 ```
 
 #### assertConst
@@ -141,11 +185,14 @@ This assertion occurs at compile-time and thus is very limited in what it will a
 
 This is mainly useful as a debugging tool.
 
-Example:
-
 ```
 assertConst 1; // valid
 assertConst 0; // error
+```
+
+```mermaid
+flowchart LR;
+AssertConstDeclaration -- start --> cl["assertConst"] --> ConstantInt --> Semicolon[";"] --> End[" "];
 ```
 
 #### Constants
@@ -156,8 +203,6 @@ The expression must be evaluatable at compile-time at the point of declaration -
 
 *Be aware that constants overrule in-scope variable declarations. This is to ensure consistency, as the parser and evaluator do not have access to information about scope.*
 
-Example:
-
 ```
 myConst = 1;
 alwaysFalse = 0;
@@ -167,6 +212,11 @@ if alwaysFalse {
     &'outs "This code will never be run!"';
 }
 }
+```
+
+```mermaid
+flowchart LR;
+ConstantDeclaration -- start --> ID --> eq["="] --> Constant --> Semicolon[";"] --> End[" "];
 ```
 
 ## Code
@@ -187,6 +237,13 @@ script Canary:eaten {
 }
 ```
 
+```mermaid
+flowchart LR;
+ScriptCodeDeclaration -- start --> cl["script"] --> ID --> Choice["->"] --> id2["ID"] --> Statement --> End[" "];
+ID --> ChoiceB[":"] --> id2;
+ID --> ConstantInt --> Statement;
+```
+
 #### install
 
 `install` declares the install script of an agent, used to place it in the world.
@@ -199,18 +256,26 @@ newSimple(Canary, "canary.c16", 1, 0, 3000);
 }
 ```
 
+```mermaid
+flowchart LR;
+InstallDeclaration -- start --> cl["install"] --> Statement --> End[" "];
+```
+
 #### remove
 
 Like `install`, `remove` declares a global script - however, the remove script is intended to clean up the agent's Scriptorium presence, along with the agent itself.
 
 The keyword, `remove`, is simply followed by a statement/block. *If multiple remove sections are declared, the contents of each are merged into one big remove section in the order of their declaration.*
 
-Example:
-
 ```
 remove {
 scrx(Canary, Canary:tweet);
 }
+```
+
+```mermaid
+flowchart LR;
+RemoveDeclaration -- start --> cl["remove"] --> Statement --> End[" "];
 ```
 
 #### macro
@@ -236,8 +301,6 @@ Essentially, the difference is that an inline parameter is declared as if an `al
 The syntax of a statement macro is `macro (RET...) NAME(PARAM...) STATEMENT`, where `RET` is of the same format as `PARAM` but without inlining being allowed (as it's redundant - all return values are inline).
 
 It is allowed to declare multiple macros with the same name if and only if they have a different number of parameters.
-
-Example:
 
 ```
 macro textWithSideEffects() {
@@ -266,4 +329,13 @@ install {
 test1(textWithSideEffects());
 test2(textWithSideEffects());
 }
+```
+
+```mermaid
+flowchart LR;
+MacroDeclaration -- start --> cl["macro"] --> retArgs["ArgList"] --> ID --> mainArgs["ArgList"] --> Statement --> End[" "];
+cl --> expID["ID"] --> mainArgsE["ArgList"] --> Expression --> End;
+ArgList -- start --> argsOpen["("] --> Type --> inline["&"] --> argID --> argsClose[")"] --> End2[" "];
+Type --> argID["ID"];
+argID --> argComma[","] --> Type;
 ```

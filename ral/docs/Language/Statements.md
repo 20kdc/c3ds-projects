@@ -8,13 +8,17 @@ Statements are the unit of sequenced, non-value-returning code in RAL.
 
 Blocks are one of the most basic kinds of statement, made up of `{}` surrounding other statements. Blocks separate scopes, and allow multiple statements to be written in any place a single statement can be written.
 
-Example:
-
 ```
 {
 let int counter = 0;
 }
 // counter = 1; // would error, counter doesn't exist here
+```
+
+```mermaid
+flowchart LR
+BlockStatement -- start --> x["{"] --> Statement --> x2["}"] --> End[" "]
+Statement --> Statement
 ```
 
 ### let
@@ -29,14 +33,26 @@ These are separated by commas `,` and are terminated with the semicolon `;` or t
 
 If a variable declaration does not have a type, the type is the type of what is being assigned to it.
 
-Example:
-
 ```
 let int counterA = 0;
 let counterB = 0; // type is automatically int
 let counterC = 0.0; // type is automatically float
 // let int counterD = 0.0; // error, implicit casts float to int
 let Agent? a, Agent? b = null, null; // multiple definition
+```
+
+```mermaid
+flowchart LR
+LetStatement -- start --> cl["let"] --> x[LetStatementBody] --> sc[";"] --> End[" "]
+LetStatementBody -- start --> tmp[" "] --> Type
+Type --> ID1 --> asn["="] --> Expression --> End2[" "]
+ID1 --> comma --> Type
+comma[","] --> ID2
+tmp --> ID2[ID]
+ID1[ID] --> End2
+ID2 --> asn
+ID2 --> comma
+
 ```
 
 ### alias
@@ -53,12 +69,18 @@ The cast variant is of the form `alias variable!Type;` and aliases a variable to
 
 The most useful application of `alias` is when you need to update the type of `targ` (i.e. because of `rtar`)
 
-Example:
-
 ```
 let num a = 0;
 alias b = a; // normal variant
 alias a!float; // cast variant - alter 
+```
+
+```mermaid
+flowchart LR
+AliasStatement -- start --> cl["alias"]
+cl --> ID --> asn["="] --> Expression --> sc[";"] --> End[" "]
+ID --> nope["!"] --> Type --> sc
+
 ```
 
 ## Actions
@@ -68,8 +90,6 @@ alias a!float; // cast variant - alter
 Inline statements, or `&`, are used to reasonably-directly write CAOS into the output.
 
 These statements start with `&`, followed by string-embeds containing the CAOS code, and finally ending with a semicolon (`;`).
-
-Example:
 
 ```
 // Inline statements may contain expressions.
@@ -81,13 +101,16 @@ let int number = 0;
  'outs {"To respect the buzzing of the airlock\n"}';
 ```
 
+```mermaid
+flowchart LR
+InlineStatement -- start --> StringEmbed --> StringEmbed --> sc[";"] --> End[" "]
+```
+
 ### Expression Statements and Assignment Statements
 
 Assignment statements assign some expressions to some other expressions.
 
 Expression statements are like assignment statements, but no assignment has been specified, so the necessary amount of discard variables are created and the expression is "assigned" to these variables.
-
-Example:
 
 ```
 1 + 1; // Expression statement, runs the calculation but discards the result
@@ -98,7 +121,12 @@ xPos = posx(); // Assignment statement with macro call
 xPos, yPos = getRandomXY(); // Assignment statement with multiple return values
 ```
 
-### Modify-Assignment Statements
+```mermaid
+flowchart LR
+AssignStatement -- start --> Expression --> opA["="] --> e2["Expression"] --> sc[";"] --> End[" "]
+ExpressionStatement -- start --> e2
+
+```
 
 Modify-assignment expressions are a shorthand for certain assignment expressions.
 
@@ -106,11 +134,19 @@ They cover: `+=` (add), `-=` (subtract), `*=` (multiply), `/=` (divide), `|=` (o
 
 These represent the relevant operators.
 
-Example:
-
 ```
 let counter = 1;
 counter += 1; // counter is now 2
+```
+
+```mermaid
+flowchart LR
+ModifyStatement -- start --> Expression --> opA["+="] --> e2["Expression"] --> sc[";"] --> End[" "]
+Expression --> opB["-="] --> e2
+Expression --> opC["*="] --> e2
+Expression --> opD["/="] --> e2
+Expression --> opE["|="] --> e2
+Expression --> opF["&="] --> e2
 ```
 
 ### Emit Statements
@@ -119,21 +155,28 @@ Emit statements are of the form `receiver->messageName([arg1[, arg2]])[ after ti
 
 Remember that emit statements send messages that are queued.
 
-Example:
-
 ```
 alias targ!Boopable; // for messages
 targ->receivedBoop();
+```
+
+```mermaid
+flowchart LR
+EmitStatement -- start --> e2["Expression"] --> op["->"] --> ID --> x["("] --> Expression --> x2[")"] --> sc[";"] --> End[" "]
+x2 --> after --> e3["Expression"] --> sc
 ```
 
 ### call
 
 `call` represents a `CALL` rather than a `MESG WRIT`, occurring on the owner and deferring the current script - it is otherwise like an emit statement.
 
-Example:
-
 ```
 call makeBoopNoises();
+```
+
+```mermaid
+flowchart LR
+CallStatement -- start --> cl["call"] --> ID --> x["("] --> Expression --> x2[")"] --> sc[";"] --> End[" "]
 ```
 
 ## Flow Control
@@ -143,8 +186,6 @@ call makeBoopNoises();
 `if` is a conditional branch statement. It is of the form `if cond... { code } [else { code }]`.
 
 Like in C, the `else` branch of an `if` is a single statement, and that statement may therefore be an `if` without an enclosing block.
-
-Example:
 
 ```
 if a == 1 {
@@ -160,11 +201,15 @@ if a == 1 {
 }
 ```
 
+```mermaid
+flowchart LR
+IfStatement -- start --> cl["if"] --> Expression --> Statement --> else --> s2["Statement"] --> End[" "]
+Statement --> End
+```
+
 ### while
 
 `while` is a (breakable) loop. Given a condition, the condition is checked on every iteration (except the first), and if false, the loop is returned from.
-
-Example:
 
 ```
 let a = 0;
@@ -174,11 +219,15 @@ a++;
 }
 ```
 
+```mermaid
+flowchart LR
+WhileStatement -- start --> cl["while"] --> Expression --> Statement --> End[" "]
+
+```
+
 ### break
 
 A `while`, `for` or `foreach` block may be escaped with `break`. (In `foreach`'s case this does not actually terminate the loop but prevents the contents from executing until the loop completes, which is effectively the same thing but less efficient.)
-
-Example:
 
 ```
 while true {
@@ -188,6 +237,26 @@ break;
 handleStuff();
 }
 }
+```
+
+```mermaid
+flowchart LR
+BreakStatement -- start --> cl["break"] --> Semicolon[";"] --> End[" "]
+```
+
+### for
+
+For loops consist of initial variables (as in a `let` statement), a condition, and an adjustment statement.
+
+```
+for a = 1; a <= 10; a++ {
+// some code here
+}
+```
+
+```mermaid
+flowchart LR
+ForStatement -- start --> cl["for"] --> LetStatementBody --> sc[";"] --> Expression --> sc2[";"] --> Statement --> s2[Statement] --> End[" "]
 ```
 
 ### foreach
@@ -214,6 +283,11 @@ foreach (Agent in econ targ) {
 }
 ```
 
+```mermaid
+flowchart LR
+ForeachStatement -- start --> cl["foreach"] --> x["("] --> Type --> in --> ID --> Expression --> y[")"] --> s2["Statement"] --> End[" "]
+```
+
 ### with
 
 A `with` block checks if a given variable (or something like a variable, such as `targ`) is of a given type (where said type must be a class) and if so, runs the code within. Otherwise, said code is not run.
@@ -224,8 +298,6 @@ The code within has the variable automatically alias-casted to the target type.
 
 As this is in effect an `if` statement, it supports `else`.
 
-Example:
-
 ```
 with (Bramboo targ) {
 // Bramboo. Do stuff with it!
@@ -233,4 +305,11 @@ doStuffWithBramboo(targ);
 } else {
 // Not bramboo!
 }
+```
+
+```mermaid
+flowchart LR
+WithStatement -- start --> cl["with"] --> x["("] --> Type --> ID --> x2[")"] --> Statement --> else --> s2["Statement"] --> End[" "]
+Statement --> End
+cl --> t2["Type"] --> i2["ID"] --> Statement;
 ```

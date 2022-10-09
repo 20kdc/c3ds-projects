@@ -152,7 +152,7 @@ public class Parser {
 			if (rt instanceof RALType.Agent) {
 				lx.requireNextKw(".");
 				String fieldName = lx.requireNextID();
-				int ovSlot = lx.requireNextInteger();
+				int ovSlot = ParserExpr.parseConstInteger(ts, lx);
 				((RALType.Agent) rt).declareField(fieldName, fieldType, ovSlot);
 				lx.requireNextKw(";");
 			} else {
@@ -166,7 +166,7 @@ public class Parser {
 				if (!lx.optNextKw("->"))
 					lx.requireNextKw(":");
 				String msgName = lx.requireNextID();
-				int msgId = lx.requireNextInteger();
+				int msgId = ParserExpr.parseConstInteger(ts, lx);
 				((RALType.Agent) rt).declareMS(msgName, msgId, false);
 				lx.requireNextKw(";");
 			} else {

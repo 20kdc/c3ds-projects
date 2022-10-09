@@ -53,4 +53,13 @@ The tools with which the user may construct types are as follows:
   + A very specific type of union suffix, `| null`, can be written as the shortened form `?`.
     As such, `Agent?` is internally exactly equal to `Agent | null`, and thus such can and will appear in error messages.
 
-# 
+The type syntax is summarized by this diagram:
+
+```mermaid
+flowchart LR
+Type -- start --> ID --> BarA["|"] --> ID2["Type"]
+ID --> Nullable["?"]
+ID --> TerminatorA[" "]
+Nullable --> TerminatorB[" "]
+Nullable --> BarA
+```
