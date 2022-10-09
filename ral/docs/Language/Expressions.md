@@ -16,6 +16,17 @@ The available types of constant in RAL are numbers and strings. You might be tem
 1234.56; // float
 ```
 
+## Variable IDs
+
+Variable IDs represent variables or expressions declared or aliased by `let` and `alias`, alongside declared constants.
+
+If a conflict occurs between a declared constant and a local variable, the declared constant wins.
+
+```
+let meh = 12;
+let result = meh + 8;
+```
+
 ## Operators
 
 Operators are used to perform simple operations on values such as numbers and strings.
@@ -35,6 +46,12 @@ The comparison operators are `>=` (above or equal), `<=` (below or equal), `>` (
 `,` is an operator which merges expressions together into a group. This is what creates the tuples, and how macros have more than one parameter.
 
 ## Increment/Decrement Expressions
+
+Appending or prepending `++` or `--` to a variable (or something writable in general) causes an increment or decrement to the value.
+
+If the increment/decrement is appended, then the returned value is that from before the change occurred.
+
+If it is prepended, then the returned value is from after the change occurred.
 
 ## String Embedding
 
@@ -76,18 +93,28 @@ kitten.meowing = true;
 
 ## Macro Calls
 
-Macro calls look into the set of defined macros and call one.
+Macro calls act as static function calls might in another language.
 
-**TODO**
+Macro calls may return multiple values, or may return a single value, or may return no values at all.
+
+They may also be passed a varying amount of values, but this is dependent on the specific macro's requirements. See details on macro declarations for more information.
+
+```
+myMacro();
+let a, b = myOtherMacro(c, d);
+```
 
 ## Inline Expressions
 
 Inline expressions are `&` followed by the syntax for a string embedding.
 However, rather than this being a real string embedding, variables are instead replaced with their CAOS variants.
 
-Somethihng of a hiccup is that the type is `any` - explicit casts are particularly useful for this.
+Something of a hiccup is that the type is `any` - explicit casts are particularly useful for this.
 
-**TODO**
+```
+let var = "important"; // doesn't need to be this convoluted, but makes a good example
+let important = &'game {var}'!float;
+```
 
 ## Statement Expressions
 
@@ -99,11 +126,17 @@ However, unlike blocks, at their very end a `return ...;` statement may be provi
 
 Macros typically use these and don't show it.
 
-**TODO: Examples**
+```
+let result = {let a = 1; let b = 2; return a + b;};
+```
 
 ## Regular Ol' Brackets
 
 While to some this may seem obvious, any expression may be surrounded by `()` in order to isolate it from other expressions structurally.
+
+```
+let result = (1 + 2) * (3 + 4);
+```
 
 ## Explicit Casts
 
@@ -115,10 +148,6 @@ This is particularly important for working with inline statements and expression
 ```
 let modu = &'modu'!str;
 ```
-
-## Variable IDs
-
-Variable IDs represent variables or expressions declared or aliased by `let` and `alias`, among other causes.
 
 ### Initial Scope
 

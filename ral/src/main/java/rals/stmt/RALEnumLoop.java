@@ -14,35 +14,50 @@ import rals.types.*;
 public class RALEnumLoop extends RALStatementUR {
 	public final RALType targType;
 	public final String enumToken;
-	public final RALExprUR agent;
+	public final RALExprUR params;
 	public final RALStatementUR loopBody;
 
-	public RALEnumLoop(SrcPos lineNumber, RALType iterOver, String subType, RALExprUR econAgent, RALStatementUR body) {
+	public RALEnumLoop(SrcPos lineNumber, RALType iterOver, String subType, RALExprUR p, RALStatementUR body) {
 		super(lineNumber);
 		targType = iterOver;
 		enumToken = subType;
-		agent = econAgent;
+		params = p;
 		loopBody = body;
 	}
 
 	@Override
 	protected RALStatement resolveInner(ScopeContext scope) {
 		scope = new ScopeContext(scope);
+		RALExprSlice paramsR = params.resolve(scope);
 		final RALStatement loopStarter;
-		if (agent != null) {
-			loopStarter = new RALInlineStatement(lineNumber, new Object[] {
+		if (enumToken.equals("econ")) {
+			paramsR.assert1ReadType().assertImpCast(scope.script.typeSystem.gAgent);
+			loopStarter = new RALInlineStatement.Resolved(lineNumber, new Object[] {
 				enumToken + " ",
-				RALCast.of(agent, scope.script.typeSystem.gAgent),
-				"\n"
-			}).resolve(scope);
+				paramsR
+			});
+		} else if (enumToken.equals("enum") || enumToken.equals("epas") || enumToken.equals("esee") || enumToken.equals("etch")) {
+			if (paramsR.length == 0) {
+				if (!(targType instanceof RALType.AgentClassifier))
+					throw new RuntimeException("Can't " + enumToken + " over " + targType + " as it's not an AgentClassifier");
+				RALType.AgentClassifier ac = (RALType.AgentClassifier) targType;
+				String code = enumToken + " " + ac.classifier.family + " " + ac.classifier.genus + " " + ac.classifier.species;
+				loopStarter = new RALInlineStatement.Resolved(lineNumber, new Object[] {
+					code
+				});
+			} else if (paramsR.length == 3) {
+				paramsR.readType(0).assertImpCast(scope.script.typeSystem.gInteger);
+				paramsR.readType(1).assertImpCast(scope.script.typeSystem.gInteger);
+				paramsR.readType(2).assertImpCast(scope.script.typeSystem.gInteger);
+				loopStarter = new RALInlineStatement.Resolved(lineNumber, new Object[] {
+					enumToken + " ",
+					paramsR
+				});
+			} else {
+				throw new RuntimeException(enumToken + " can either have no parameters (classifier from targ-cast) or 3 (classifier from values)");
+			}
 		} else {
-			if (!(targType instanceof RALType.AgentClassifier))
-				throw new RuntimeException("Can't " + enumToken + " over " + targType + " as it's not an AgentClassifier");
-			RALType.AgentClassifier ac = (RALType.AgentClassifier) targType;
-			String code = enumToken + " " + ac.classifier.family + " " + ac.classifier.genus + " " + ac.classifier.species + "\n";
-			loopStarter = new RALInlineStatement(lineNumber, new Object[] {
-				code
-			}).resolve(scope);
+			throw new RuntimeException("Unrecognized subtype " + enumToken);
 		}
 		scope.scopedVariables.put("targ", RALCast.Resolved.of(scope.scopedVariables.get("targ"), targType, false));
 		final boolean isAdjustingLoopBodyForBreak = true;

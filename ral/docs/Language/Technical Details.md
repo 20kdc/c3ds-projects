@@ -27,6 +27,8 @@ Note, however, no guarantees are made about when the compiler *will not* compile
 
 There's a current rule in the compiler about writing single slots at a time, but this rule is potentially up for negotiation, which is why it's not included in the guarantees.
 
+In addition, statement expressions have some interesting slicing rules meant to try and reduce the amount of nonsense that goes on around macros.
+
 ## Lexer
 
 The RAL lexer has 6 distinct token categories:

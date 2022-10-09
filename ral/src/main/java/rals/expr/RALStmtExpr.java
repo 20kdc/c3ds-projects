@@ -46,6 +46,17 @@ public class RALStmtExpr implements RALExprUR {
 		}
 
 		@Override
+		protected RALExprSlice tryConcatWithInner(RALExprSlice b) {
+			if (b instanceof Resolved) {
+				if (((Resolved) b).rStmt == rStmt) {
+					// same source, try to connect things
+					return new Resolved(rStmt, RALExprSlice.concat(rExpr, ((Resolved) b).rExpr));
+				}
+			}
+			return super.tryConcatWithInner(b);
+		}
+
+		@Override
 		protected RALType readTypeInner(int index) {
 			return rExpr.readType(index);
 		}

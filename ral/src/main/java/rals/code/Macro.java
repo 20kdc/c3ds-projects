@@ -48,33 +48,62 @@ public class Macro implements RALCallable {
 		if (vc.copies.length == 0)
 			return innards;
 
-		return new RALExprSlice(innards.length) {
-			@Override
-			public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
-				vc.writeCacheCode(context);
-				innards.writeCompile(index, input, inputExactType, context);
-			}
+		return new Resolved(vc, innards, name);
+	}
 
-			@Override
-			protected RALType writeTypeInner(int index) {
-				return innards.writeType(index);
-			}
+	public static final class Resolved extends RALExprSlice {
+		private final String macroName;
+		private final VarCacher vc;
+		private final RALExprSlice innards;
 
-			@Override
-			public void readCompileInner(RALExprSlice out, CompileContext context) {
-				vc.writeCacheCode(context);
-				innards.readCompile(out, context);
-			}
+		public Resolved(VarCacher vc, RALExprSlice innards, String mn) {
+			super(innards.length);
+			this.vc = vc;
+			this.innards = innards;
+			macroName = mn;
+		}
 
-			@Override
-			protected RALType readTypeInner(int index) {
-				return innards.readType(index);
-			}
+		@Override
+		protected RALExprSlice sliceInner(int tB, int tL) {
+			return new Resolved(vc, innards.slice(tB, tL), macroName);
+		}
 
-			@Override
-			public String toString() {
-				return "macro arg copier of " + name;
+		@Override
+		protected RALExprSlice tryConcatWithInner(RALExprSlice b) {
+			if (b instanceof Resolved) {
+				if (((Resolved) b).vc == vc) {
+					// this is the same instance, so share!
+					return new Resolved(vc, RALExprSlice.concat(innards, ((Resolved) b).innards), macroName);
+				}
 			}
-		};
+			return super.tryConcatWithInner(b);
+		}
+
+		@Override
+		public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+			vc.writeCacheCode(context);
+			innards.writeCompile(index, input, inputExactType, context);
+		}
+
+		@Override
+		protected RALType writeTypeInner(int index) {
+			return innards.writeType(index);
+		}
+
+		@Override
+		public void readCompileInner(RALExprSlice out, CompileContext context) {
+			vc.writeCacheCode(context);
+			innards.readCompile(out, context);
+		}
+
+		@Override
+		protected RALType readTypeInner(int index) {
+			return innards.readType(index);
+		}
+
+		@Override
+		public String toString() {
+			return "macro arg copier of " + macroName;
+		}
 	}
 }

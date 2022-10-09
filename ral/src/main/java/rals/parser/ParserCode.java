@@ -98,19 +98,10 @@ public class ParserCode {
 			RALType iterOver = ParserType.parseType(ts, lx);
 			lx.requireNextKw("in");
 			String subType = lx.requireNextID();
-			RALExprUR econAgent = null;
-			if (subType.equals("econ")) {
-				econAgent = ParserExpr.parseExpr(ts, lx, true);
-			} else if (subType.equals("enum")) {
-			} else if (subType.equals("epas")) {
-			} else if (subType.equals("esee")) {
-			} else if (subType.equals("etch")) {
-			} else {
-				throw new RuntimeException("Unrecognized subtype");
-			}
+			RALExprUR params = ParserExpr.parseExpr(ts, lx, false);
 			lx.requireNextKw(")");
 			RALStatementUR body = ParserCode.parseStatement(ts, lx);
-			return new RALEnumLoop(tkn.lineNumber, iterOver, subType, econAgent, body);
+			return new RALEnumLoop(tkn.lineNumber, iterOver, subType, params, body);
 		} else if (tkn.isKeyword("with")) {
 			boolean paren = lx.optNextKw("(");
 			RALType type = ParserType.parseType(ts, lx);

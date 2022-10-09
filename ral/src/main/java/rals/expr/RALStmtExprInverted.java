@@ -44,28 +44,40 @@ public class RALStmtExprInverted implements RALExprUR {
 			scope.scopedVariables.put(ret.name, new RALVarEH(handle, ret.type));
 		}
 		final RALStatement innards = code.resolve(scope);
-		return new RALExprSlice(types.length) {
-			@Override
-			public String toString() {
-				return "resolved StmtExprInverted";
-			}
-
-			@Override
-			protected void readCompileInner(RALExprSlice out, CompileContext context) {
-				// alright, now we're here, just need to wire this up
-				try (CompileContext cci = new CompileContext(context)) {
-					// These handles wire everything up nicely
-					for (int i = 0; i < out.length; i++)
-						cci.heldExprHandles.put(handles[i], out.slice(i, 1));
-					innards.compile(context.writer, cci);
-				}
-			}
-
-			@Override
-			protected RALType readTypeInner(int index) {
-				return types[index];
-			}
-		};
+		return new Resolved(types, innards, handles);
 	}
 
+	public static final class Resolved extends RALExprSlice {
+		private final RALType[] types;
+		private final RALStatement innards;
+		private final IEHHandle[] handles;
+
+		public Resolved(RALType[] types, RALStatement innards, IEHHandle[] handles) {
+			super(types.length);
+			this.types = types;
+			this.innards = innards;
+			this.handles = handles;
+		}
+
+		@Override
+		public String toString() {
+			return "resolved StmtExprInverted";
+		}
+
+		@Override
+		protected void readCompileInner(RALExprSlice out, CompileContext context) {
+			// alright, now we're here, just need to wire this up
+			try (CompileContext cci = new CompileContext(context)) {
+				// These handles wire everything up nicely
+				for (int i = 0; i < out.length; i++)
+					cci.heldExprHandles.put(handles[i], out.slice(i, 1));
+				innards.compile(context.writer, cci);
+			}
+		}
+
+		@Override
+		protected RALType readTypeInner(int index) {
+			return types[index];
+		}
+	}
 }

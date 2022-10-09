@@ -211,6 +211,8 @@ public class TypeSystem {
 		checkConflictType(name);
 		checkConflictInterface(name);
 		RALType.Agent ag = new RALType.Agent(this, name);
+		// Add Agent as a default parent, otherwise an interface can't be cast to Agent
+		ag.addParent(gAgent);
 		namedTypes.put(name, ag);
 		namedInterfaces.put(name, ag.inherent);
 		return ag;

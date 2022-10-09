@@ -102,7 +102,7 @@ xPos, yPos = getRandomXY(); // Assignment statement with multiple return values
 
 Modify-assignment expressions are a shorthand for certain assignment expressions.
 
-They cover: `+=`, `-=`, `*=`, `/=`, `|=`, `&=`
+They cover: `+=` (add), `-=` (subtract), `*=` (multiply), `/=` (divide), `|=` (or), `&=` (and).
 
 These represent the relevant operators.
 
@@ -148,15 +148,15 @@ Example:
 
 ```
 if a == 1 {
-    
+
 }
 
 if a == 1 {
-    
+
 } else if b == 2 {
-    
+
 } else {
-    
+
 }
 ```
 
@@ -196,18 +196,21 @@ handleStuff();
 
 The `foreach` block details are surrounded by `()`.
 
-In most cases, the supplied type (such as `Agent`) is used to supply the enumerator, while with `econ` a supplied agent is used.
+In most cases, the supplied type (such as `Agent`) is used to supply the classifier, though one may be explicitly supplied.
+
+With `econ` a supplied agent is used (as that's how `econ` works).
+
+Within the `foreach` block, `targ` is initially set to the current agent, and is retyped to the supplied type.
 
 ```
-foreach (Agent ag in enum) {
+// enum/epas/esee/etch
+foreach (Agent in enum) {
 }
-foreach (Agent ag in epas) {
+// enum/epas/esee/etch with explicit classifier
+foreach (Agent in enum 0, 0, 0) {
 }
-foreach (Agent ag in esee) {
-}
-foreach (Agent ag in etch) {
-}
-foreach (Agent ag in econ targ) {
+// econ
+foreach (Agent in econ targ) {
 }
 ```
 

@@ -45,6 +45,19 @@ public abstract class RALExprSlice {
 	 * Attempts to join together a pair of slices.
 	 */
 	public static RALExprSlice concat(RALExprSlice a, RALExprSlice b) {
+		// try the most obvious
+		RALExprSlice res = a.tryConcatWithInner(b);
+		if (res != null)
+			return res;
+		// concatenate lists are right-deep to make this easier to handle
+		if (b instanceof Concatenate) {
+			RALExprSlice aba = a.tryConcatWithInner(((Concatenate) b).a);
+			if (aba != null) {
+				// Note we recurse in case there's more we can do here.
+				return concat(aba, ((Concatenate) b).b);
+			}
+		}
+		// before actually using a full concatenate, handle the blatant cases
 		if (a.length == 0)
 			return b;
 		if (b.length == 0)
@@ -74,7 +87,14 @@ public abstract class RALExprSlice {
 	 * Implementation of slicing this expression slice.
 	 */
 	protected RALExprSlice sliceInner(int base, int length) {
-		throw new RuntimeException("Can't slice: " + this);
+		return new QuasiSlice(this, base, length);
+	}
+
+	/**
+	 * Implementation of custom concatenation logic.
+	 */
+	protected RALExprSlice tryConcatWithInner(RALExprSlice b) {
+		return null;
 	}
 
 	protected final void checkSlot(int index) {
@@ -216,14 +236,22 @@ public abstract class RALExprSlice {
 
 	/**
 	 * Private as you still shouldn't instanceof this.
+	 * Note that these are forced to be right-deep.
 	 */
 	private static final class Concatenate extends RALExprSlice {
 		final RALExprSlice a, b;
 
 		Concatenate(RALExprSlice ra, RALExprSlice rb) {
 			super(ra.length + rb.length);
-			a = ra;
-			b = rb;
+			if (ra instanceof Concatenate) {
+				RALExprSlice raA = ((Concatenate) ra).a;
+				RALExprSlice raB = ((Concatenate) ra).b;
+				a = raA;
+				b = new Concatenate(raB, rb);
+			} else {
+				a = ra;
+				b = rb;
+			}
 		}
 
 		@Override
@@ -295,6 +323,45 @@ public abstract class RALExprSlice {
 			int bAmount = length - aAmount;
 			// And concatenate as so.
 			return concat(a.slice(base, aAmount), b.slice(0, bAmount));
+		}
+	}
+
+	/**
+	 * Private as you still shouldn't instanceof this.
+	 * This is used for impossible slices.
+	 * Note that the assumption is that bigger slices are more possible than smaller slices.
+	 */
+	private static final class QuasiSlice extends RALExprSlice {
+		final RALExprSlice source;
+		final int sliceBase, sliceLen;
+		public QuasiSlice(RALExprSlice src, int base, int length) {
+			super(length);
+			source = src;
+			sliceBase = base;
+			sliceLen = length;
+		}
+
+		@Override
+		protected RALExprSlice sliceInner(int base, int length) {
+			return source.slice(sliceBase + base, length);
+		}
+
+		@Override
+		protected RALExprSlice tryConcatWithInner(RALExprSlice b) {
+			if (b instanceof QuasiSlice) {
+				QuasiSlice qs = (QuasiSlice) b;
+				if (qs.source == source) {
+					// see if this attaches
+					if (qs.sliceBase == sliceBase + sliceLen)
+						return source.slice(sliceBase, sliceLen + qs.sliceLen);
+				}
+			}
+			return super.tryConcatWithInner(b);
+		}
+
+		@Override
+		public String toString() {
+			return "impossible slice [" + sliceBase + " len " + sliceLen + "]: " + source;
 		}
 	}
 }
