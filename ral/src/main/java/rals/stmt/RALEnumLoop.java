@@ -41,9 +41,8 @@ public class RALEnumLoop extends RALStatementUR {
 				if (!(targType instanceof RALType.AgentClassifier))
 					throw new RuntimeException("Can't " + enumToken + " over " + targType + " as it's not an AgentClassifier");
 				RALType.AgentClassifier ac = (RALType.AgentClassifier) targType;
-				String code = enumToken + " " + ac.classifier.family + " " + ac.classifier.genus + " " + ac.classifier.species;
 				loopStarter = new RALInlineStatement.Resolved(lineNumber, new Object[] {
-					code
+					enumToken + " " + ac.classifier.family + " " + ac.classifier.genus + " " + ac.classifier.species
 				});
 			} else if (paramsR.length == 3) {
 				paramsR.readType(0).assertImpCast(scope.script.typeSystem.gInteger);

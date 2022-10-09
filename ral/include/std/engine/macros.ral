@@ -17,7 +17,7 @@ macro () stop() &'stop';
 macro () outv(num &value) &'outv {value}';
 macro () outs(str &value) &'outs {value}';
 
-macro () hand() &'hand'!str;
+macro hand() &'hand'!str;
 
 macro () scrx(int &family, int &genus, int &species, int &scr) &'scrx {family, genus, species, scr}';
 
