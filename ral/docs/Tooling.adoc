@@ -1,12 +1,12 @@
-# RAL Tooling Reference
+## RAL Tooling Reference
 
 The RAL compiler is a Java command-line application, and therefore is run via `java -jar cdsp-ral-0.666-SNAPSHOT.jar`.
 
 It is designed for use in simple build systems, and injection (for rapid iteration similar to CAOS Tool)
 
-## Subcommands
+### Subcommands
 
-### compile
+#### compile
 
 The `compile` subcommand, and it's friends `compileDebug`, `compileInstall`, `compileEvents`, and `compileRemove`, make up the principal method of writing RAL scripts.
 
@@ -18,7 +18,7 @@ The `compileInstall` variant only compiles the install script, the `compileEvent
 
 `compileDebug` is `compile` but it writes additional metadata.
 
-### inject
+#### inject
 
 The `inject` subcommand, and it's friends `injectEvents` and `injectRemove`, perform a CAOS injection over CPX (which requires having `caosprox` running).
 
@@ -26,11 +26,11 @@ The sole parameter is the RAL file to inject.
 
 `inject` injects the event scripts and the install script, while `injectEvents` and `injectRemove` inject only the event scripts and the remove script respectively.
 
-### cpxConnectionTest
+#### cpxConnectionTest
 
 The `cpxConnectionTest` subcommand is used to test injection.
 
-## Standard Library Location
+### Standard Library Location
 
 In JAR form, the RAL compiler expects the `include` directory to be nearby (either in the same directory as the JAR file or in the immediate parent directory).
 

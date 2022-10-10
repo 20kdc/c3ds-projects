@@ -1,7 +1,27 @@
+:doctype: book
+
 include::README.adoc[]
+
+<<<
+
 include::Tooling.adoc[]
+
+<<<
+
 include::Language/Overview.adoc[]
+
+<<<
+
 include::Language/Declarations.adoc[]
+
+<<<
+
 include::Language/Expressions.adoc[]
+
+<<<
+
 include::Language/Statements.adoc[]
+
+<<<
+
 include::Language/TechnicalDetails.adoc[]

@@ -1,10 +1,10 @@
-# RAL Language Reference: Statements
+## RAL Language Reference: Statements
 
 Statements are the unit of sequenced, non-value-returning code in RAL.
 
-## Scoping
+### Scoping
 
-### Blocks
+#### Blocks
 
 Blocks are one of the most basic kinds of statement, made up of `{}` surrounding other statements. Blocks separate scopes, and allow multiple statements to be written in any place a single statement can be written.
 
@@ -22,7 +22,7 @@ BlockStatement -- start --> x["{"] --> Statement --> x2["}"] --> End[" "]
 Statement --> Statement
 --
 
-### let
+#### let
 
 `let` is used to introduce variables in the current scope.
 
@@ -56,7 +56,7 @@ ID2 --> asn
 ID2 --> comma
 --
 
-### alias
+#### alias
 
 `alias` is used to retype variables, provide different names for them, or outright treat complex expressions as simple variables (re-run on every use, mind).
 
@@ -84,9 +84,9 @@ cl --> ID --> asn["="] --> Expression --> sc[";"] --> End[" "]
 ID --> nope["!"] --> Type --> sc
 --
 
-## Actions
+### Actions
 
-### Inline Statements
+#### Inline Statements
 
 Inline statements, or `&`, are used to reasonably-directly write CAOS into the output.
 
@@ -108,7 +108,7 @@ flowchart LR
 InlineStatement -- start --> StringEmbed --> StringEmbed --> sc[";"] --> End[" "]
 --
 
-### Expression Statements and Assignment Statements
+#### Expression Statements and Assignment Statements
 
 Assignment statements assign some expressions to some other expressions.
 
@@ -152,7 +152,7 @@ Expression --> opE["|="] --> e2
 Expression --> opF["&="] --> e2
 --
 
-### Emit Statements
+#### Emit Statements
 
 Emit statements are of the form `receiver->messageName([arg1[, arg2]])[ after ticks];`, where `receiver`, `messageName`, `arg1`, `arg2`, and `ticks` are changed as appropriate. This becomes a `MESG WRIT` or `MESG WRT+` as appropriate.
 
@@ -170,7 +170,7 @@ EmitStatement -- start --> e2["Expression"] --> op["->"] --> ID --> x["("] --> E
 x2 --> after --> e3["Expression"] --> sc
 --
 
-### call
+#### call
 
 `call` represents a `CALL` rather than a `MESG WRIT`, occurring on the owner and deferring the current script - it is otherwise like an emit statement.
 
@@ -184,9 +184,9 @@ flowchart LR
 CallStatement -- start --> cl["call"] --> ID --> x["("] --> Expression --> x2[")"] --> sc[";"] --> End[" "]
 --
 
-## Flow Control
+### Flow Control
 
-### if
+#### if
 
 `if` is a conditional branch statement. It is of the form `if cond... { code } [else { code }]`.
 
@@ -213,7 +213,7 @@ IfStatement -- start --> cl["if"] --> Expression --> Statement --> else --> s2["
 Statement --> End
 --
 
-### while
+#### while
 
 `while` is a (breakable) loop. Given a condition, the condition is checked on every iteration (except the first), and if false, the loop is returned from.
 
@@ -231,7 +231,7 @@ flowchart LR
 WhileStatement -- start --> cl["while"] --> Expression --> Statement --> End[" "]
 --
 
-### break
+#### break
 
 A `while`, `for` or `foreach` block may be escaped with `break`. (In `foreach`'s case this does not actually terminate the loop but prevents the contents from executing until the loop completes, which is effectively the same thing but less efficient.)
 
@@ -251,7 +251,7 @@ flowchart LR
 BreakStatement -- start --> cl["break"] --> Semicolon[";"] --> End[" "]
 --
 
-### for
+#### for
 
 `for` loops consist of initial variables (as in a `let` statement), a condition, an adjustment statement, and finally a loop body.
 
@@ -269,7 +269,7 @@ flowchart LR
 ForStatement -- start --> cl["for"] --> LetStatementBody --> sc[";"] --> Expression --> sc2[";"] --> Statement --> s2[Statement] --> End[" "]
 --
 
-### foreach
+#### foreach
 
 `foreach` blocks handle the different types of agent iteration.
 
@@ -299,7 +299,7 @@ flowchart LR
 ForeachStatement -- start --> cl["foreach"] --> x["("] --> Type --> in --> ID --> Expression --> y[")"] --> s2["Statement"] --> End[" "]
 --
 
-### with
+#### with
 
 A `with` block checks if a given variable (or something like a variable, such as `targ`) is of a given type (where said type must be a class) and if so, runs the code within. Otherwise, said code is not run.
 

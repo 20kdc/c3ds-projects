@@ -1,6 +1,6 @@
-# RAL Language Technical Details
+## RAL Language Technical Details
 
-## Expressions
+### Expressions
 
 Expressions are represented as slices (`RALExprSlice`). Slices are made up of slots.
 
@@ -29,7 +29,7 @@ There's a current rule in the compiler about writing single slots at a time, but
 
 In addition, statement expressions have some interesting slicing rules meant to try and reduce the amount of nonsense that goes on around macros.
 
-## Lexer
+### Lexer
 
 The RAL lexer has 6 distinct token categories:
 

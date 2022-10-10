@@ -1,9 +1,9 @@
-# RAL Language Reference: Declarations
+## RAL Language Reference: Declarations
 
 Declarations are the basic element of a RAL source file.
 Everything else is defined inside declarations.
 
-## Includes/etc.
+### Includes/etc.
 
 #### include
 
@@ -38,7 +38,7 @@ flowchart LR
 AddSearchPathDeclaration -- start --> addSearchPath --> ConstantString --> Semicolon[";"] --> End[" "];
 --
 
-## Type System
+### Type System
 
 #### typedef
 
@@ -231,7 +231,7 @@ flowchart LR
 ConstantDeclaration -- start --> ID --> eq["="] --> Constant --> Semicolon[";"] --> End[" "];
 --
 
-## Code
+### Code
 
 #### script (statement form)
 
