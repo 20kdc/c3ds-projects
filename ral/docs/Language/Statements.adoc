@@ -2,6 +2,8 @@
 
 Statements are the unit of sequenced, non-value-returning code in RAL.
 
+image::diagram/Stmt.png[]
+
 ### Scoping
 
 #### Blocks
@@ -15,12 +17,7 @@ let int counter = 0;
 // counter = 1; // would error, counter doesn't exist here
 ```
 
-[mermaid]
---
-flowchart LR
-BlockStatement -- start --> x["{"] --> Statement --> x2["}"] --> End[" "]
-Statement --> Statement
---
+image::diagram/BlockStmt.png[]
 
 #### let
 
@@ -42,19 +39,11 @@ let counterC = 0.0; // type is automatically float
 let Agent? a, Agent? b = null, null; // multiple definition
 ```
 
-[mermaid]
---
-flowchart LR
-LetStatement -- start --> cl["let"] --> x[LetStatementBody] --> sc[";"] --> End[" "]
-LetStatementBody -- start --> tmp[" "] --> Type
-Type --> ID1 --> asn["="] --> Expression --> End2[" "]
-ID1 --> comma --> Type
-comma[","] --> ID2
-tmp --> ID2[ID]
-ID1[ID] --> End2
-ID2 --> asn
-ID2 --> comma
---
+image::diagram/LetStmt.png[]
+
+__LetStmtBody__:
+
+image::diagram/LetStmtBody.png[]
 
 #### alias
 
@@ -76,13 +65,7 @@ alias b = a; // normal variant
 alias a!float; // cast variant - alter 
 ```
 
-[mermaid]
---
-flowchart LR
-AliasStatement -- start --> cl["alias"]
-cl --> ID --> asn["="] --> Expression --> sc[";"] --> End[" "]
-ID --> nope["!"] --> Type --> sc
---
+image::diagram/AliasStmt.png[]
 
 ### Actions
 
@@ -102,11 +85,7 @@ let int number = 0;
  'outs {"To respect the buzzing of the airlock\n"}';
 ```
 
-[mermaid]
---
-flowchart LR
-InlineStatement -- start --> StringEmbed --> StringEmbed --> sc[";"] --> End[" "]
---
+image::diagram/InlineStmt.png[]
 
 #### Expression Statements and Assignment Statements
 
@@ -123,14 +102,11 @@ xPos = posx(); // Assignment statement with macro call
 xPos, yPos = getRandomXY(); // Assignment statement with multiple return values
 ```
 
-[mermaid]
---
-flowchart LR
-AssignStatement -- start --> Expression --> opA["="] --> e2["Expression"] --> sc[";"] --> End[" "]
-ExpressionStatement -- start --> e2
---
+image::diagram/AssignStmt.png[]
 
-Modify-assignment expressions are a shorthand for certain assignment expressions.
+#### Modify-Assignment Statements
+
+Modify-assignment statements are a shorthand for certain assignment statements.
 
 They cover: `+=` (add), `-=` (subtract), `*=` (multiply), `/=` (divide), `|=` (or), `&=` (and).
 
@@ -141,16 +117,7 @@ let counter = 1;
 counter += 1; // counter is now 2
 ```
 
-[mermaid]
---
-flowchart LR
-ModifyStatement -- start --> Expression --> opA["+="] --> e2["Expression"] --> sc[";"] --> End[" "]
-Expression --> opB["-="] --> e2
-Expression --> opC["*="] --> e2
-Expression --> opD["/="] --> e2
-Expression --> opE["|="] --> e2
-Expression --> opF["&="] --> e2
---
+image::diagram/ModifyStmt.png[]
 
 #### Emit Statements
 
@@ -163,12 +130,7 @@ alias targ!Boopable; // for messages
 targ->receivedBoop();
 ```
 
-[mermaid]
---
-flowchart LR
-EmitStatement -- start --> e2["Expression"] --> op["->"] --> ID --> x["("] --> Expression --> x2[")"] --> sc[";"] --> End[" "]
-x2 --> after --> e3["Expression"] --> sc
---
+image::diagram/EmitStmt.png[]
 
 #### call
 
@@ -178,11 +140,7 @@ x2 --> after --> e3["Expression"] --> sc
 call makeBoopNoises();
 ```
 
-[mermaid]
---
-flowchart LR
-CallStatement -- start --> cl["call"] --> ID --> x["("] --> Expression --> x2[")"] --> sc[";"] --> End[" "]
---
+image::diagram/CallStmt.png[]
 
 ### Flow Control
 
@@ -206,12 +164,7 @@ if a == 1 {
 }
 ```
 
-[mermaid]
---
-flowchart LR
-IfStatement -- start --> cl["if"] --> Expression --> Statement --> else --> s2["Statement"] --> End[" "]
-Statement --> End
---
+image::diagram/IfStmt.png[]
 
 #### while
 
@@ -225,11 +178,7 @@ a++;
 }
 ```
 
-[mermaid]
---
-flowchart LR
-WhileStatement -- start --> cl["while"] --> Expression --> Statement --> End[" "]
---
+image::diagram/WhileStmt.png[]
 
 #### break
 
@@ -245,11 +194,7 @@ handleStuff();
 }
 ```
 
-[mermaid]
---
-flowchart LR
-BreakStatement -- start --> cl["break"] --> Semicolon[";"] --> End[" "]
---
+image::diagram/BreakStmt.png[]
 
 #### for
 
@@ -263,11 +208,7 @@ for a = 1; a <= 10; a++ {
 }
 ```
 
-[mermaid]
---
-flowchart LR
-ForStatement -- start --> cl["for"] --> LetStatementBody --> sc[";"] --> Expression --> sc2[";"] --> Statement --> s2[Statement] --> End[" "]
---
+image::diagram/ForStmt.png[]
 
 #### foreach
 
@@ -293,21 +234,20 @@ foreach (Agent in econ targ) {
 }
 ```
 
-[mermaid]
---
-flowchart LR
-ForeachStatement -- start --> cl["foreach"] --> x["("] --> Type --> in --> ID --> Expression --> y[")"] --> s2["Statement"] --> End[" "]
---
+image::diagram/ForeachStmt.png[]
 
 #### with
 
 A `with` block checks if a given variable (or something like a variable, such as `targ`) is of a given type (where said type must be a class) and if so, runs the code within. Otherwise, said code is not run.
+
+Notably, `null` is not considered to be of the type.
 
 This is of the form `with (TYPE VAR) STATEMENT` - though `with TYPE VAR STATEMENT` is allowed.
 
 The code within has the variable automatically alias-casted to the target type.
 
 As this is in effect an `if` statement, it supports `else`.
+It is in fact equivalent to `if (VAR instanceof TYPE) { alias VAR!TYPE; STATEMENT } else STATEMENT`.
 
 ```
 with (Bramboo targ) {
@@ -318,10 +258,4 @@ doStuffWithBramboo(targ);
 }
 ```
 
-[mermaid]
---
-flowchart LR
-WithStatement -- start --> cl["with"] --> x["("] --> Type --> ID --> x2[")"] --> Statement --> else --> s2["Statement"] --> End[" "]
-Statement --> End
-cl --> t2["Type"] --> i2["ID"] --> Statement;
---
+image::diagram/WithStmt.png[]

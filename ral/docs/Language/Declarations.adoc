@@ -3,6 +3,8 @@
 Declarations are the basic element of a RAL source file.
 Everything else is defined inside declarations.
 
+image::diagram/Decl.png[]
+
 ### Includes/etc.
 
 #### include
@@ -17,11 +19,7 @@ If a file is included more than once, the second and onward includes are ignored
 include "std/c3.ral";
 ```
 
-[mermaid]
---
-flowchart LR
-IncludeDeclaration -- start --> include --> ConstantString --> Semicolon[";"] --> End[" "];
---
+image::diagram/IncludeDecl.png[]
 
 #### addSearchPath
 
@@ -32,11 +30,7 @@ addSearchPath "../evilcorpCoreLibraries";
 include "eccl/elo.ral";
 ```
 
-[mermaid]
---
-flowchart LR
-AddSearchPathDeclaration -- start --> addSearchPath --> ConstantString --> Semicolon[";"] --> End[" "];
---
+image::diagram/AddSearchPathDecl.png[]
 
 ### Type System
 
@@ -50,11 +44,7 @@ This is usually useful to name unions.
 typedef number integer|float;
 ```
 
-[mermaid]
---
-flowchart LR
-TypedefDeclaration -- start --> typedef --> ID --> Type --> Semicolon[";"] --> End[" "];
---
+image::diagram/TypedefDecl.png[]
 
 #### class
 
@@ -68,14 +58,7 @@ In addition, `extends InterfaceName` may be added an arbitrary amount of times, 
 class Canary 2 13 3987 extends Bird;
 ```
 
-[mermaid]
---
-flowchart LR;
-ClassDeclaration -- start --> cl["class"] --> ID --> family["ConstantInt"] --> genus["ConstantInt"] --> species["ConstantInt"] --> Semicolon[";"] --> End[" "];
-ID --> extends;
-species --> extends --> xID["ID"] --> extends;
-xID --> Semicolon;
---
+image::diagram/ClassDecl.png[]
 
 #### interface
 
@@ -87,14 +70,7 @@ In addition, `extends InterfaceName` may be added an arbitrary amount of times, 
 interface Bird extends GoodBug;
 ```
 
-[mermaid]
---
-flowchart LR
-InterfaceDeclaration -- start --> cl["interface"] --> ID --> Semicolon[";"] --> End[" "];
-ID --> extends;
-extends --> xID["ID"] --> extends;
-xID --> Semicolon;
---
+image::diagram/InterfaceDecl.png[]
 
 #### field
 
@@ -110,11 +86,7 @@ Example:
 field string Canary.tweetText 1;
 ```
 
-[mermaid]
---
-flowchart LR
-FieldDeclaration -- start --> cl["field"] --> Type --> ID --> Dot["."] --> id2["ID"] --> ConstantInt --> Semicolon[";"] --> End[" "];
---
+image::diagram/FieldDecl.png[]
 
 #### message
 
@@ -128,12 +100,7 @@ It consists of a message-ID-of expression (i.e. `Agent->someMessage` or `Agent:s
 message Canary:tweet 1000;
 ```
 
-[mermaid]
---
-flowchart LR
-MessageDeclaration -- start --> cl["message"] --> ID --> Choice["->"] --> id2["ID"] --> ConstantInt --> Semicolon[";"] --> End[" "];
-ID --> ChoiceB[":"] --> id2;
---
+image::diagram/MessageDecl.png[]
 
 #### script (declaration form)
 
@@ -141,12 +108,7 @@ ID --> ChoiceB[":"] --> id2;
 
 As such, see `message` for syntax. You should only see this in the standard library.
 
-[mermaid]
---
-flowchart LR
-ScriptProtoDeclaration -- start --> cl["script"] --> ID --> Choice["->"] --> id2["ID"] --> ConstantInt --> Semicolon[";"] --> End[" "];
-ID --> ChoiceB[":"] --> id2;
---
+image::diagram/ScriptProtoDecl.png[]
 
 #### overrideOwnr
 
@@ -154,20 +116,7 @@ This is used in the standard library to mark specific script numbers that the en
 
 In this event, what would usually be `ownr`'s type is moved to `from`, and `ownr`'s type is set to the one given.
 
-```
-overrideOwnr 101 Pointer;
-script Canary 101 {
-// These would normally be a type error.
-let Pointer pointer = ownr;
-let Canary myself = from;
-}
-```
-
-[mermaid]
---
-flowchart LR
-OverrideOwnrDeclaration -- start --> cl["overrideOwnr"] --> ConstantInt --> Type --> Semicolon[";"] --> End[" "];
---
+image::diagram/OverrideOwnrDecl.png[]
 
 #### messageHook
 
@@ -181,11 +130,7 @@ script Agent:scrDeactivated 0;
 message Agent:msgActivate1 0;
 ```
 
-[mermaid]
---
-flowchart LR
-MessageHookDeclaration -- start --> cl["messageHook"] --> ConstantInt --> Semicolon[";"] --> End[" "];
---
+image::diagram/MessageHookDecl.png[]
 
 #### assertConst
 
@@ -200,11 +145,7 @@ assertConst 1; // valid
 assertConst 0; // error
 ```
 
-[mermaid]
---
-flowchart LR
-AssertConstDeclaration -- start --> cl["assertConst"] --> ConstantInt --> Semicolon[";"] --> End[" "];
---
+image::diagram/AssertConstDecl.png[]
 
 #### Constants
 
@@ -225,11 +166,7 @@ if alwaysFalse {
 }
 ```
 
-[mermaid]
---
-flowchart LR
-ConstantDeclaration -- start --> ID --> eq["="] --> Constant --> Semicolon[";"] --> End[" "];
---
+image::diagram/ConstantDecl.png[]
 
 ### Code
 
@@ -249,13 +186,7 @@ script Canary:eaten {
 }
 ```
 
-[mermaid]
---
-flowchart LR
-ScriptCodeDeclaration -- start --> cl["script"] --> ID --> Choice["->"] --> id2["ID"] --> Statement --> End[" "];
-ID --> ChoiceB[":"] --> id2;
-ID --> ConstantInt --> Statement;
---
+image::diagram/ScriptCodeDecl.png[]
 
 #### install
 
@@ -269,11 +200,7 @@ newSimple(Canary, "canary.c16", 1, 0, 3000);
 }
 ```
 
-[mermaid]
---
-flowchart LR
-InstallDeclaration -- start --> cl["install"] --> Statement --> End[" "];
---
+image::diagram/InstallDecl.png[]
 
 #### remove
 
@@ -287,11 +214,7 @@ scrx(Canary, Canary:tweet);
 }
 ```
 
-[mermaid]
---
-flowchart LR
-RemoveDeclaration -- start --> cl["remove"] --> Statement --> End[" "];
---
+image::diagram/RemoveDecl.png[]
 
 #### macro
 
@@ -346,12 +269,12 @@ test2(textWithSideEffects());
 }
 ```
 
-[mermaid]
---
-flowchart LR;
-MacroDeclaration -- start --> cl["macro"] --> retArgs["ArgList"] --> ID --> mainArgs["ArgList"] --> Statement --> End[" "];
-cl --> expID["ID"] --> mainArgsE["ArgList"] --> Expression --> End;
-ArgList -- start --> argsOpen["("] --> Type --> inline["&"] --> argID --> argsClose[")"] --> End2[" "];
-Type --> argID["ID"];
-argID --> argComma[","] --> Type;
---
+image::diagram/MacroDecl.png[]
+
+__ArgList__:
+
+image::diagram/MacroArgList.png[]
+
+__MacroArg__:
+
+image::diagram/MacroArg.png[]

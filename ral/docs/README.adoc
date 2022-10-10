@@ -14,3 +14,4 @@ As such, this manual is intended to be written in distinct sections:
 * The *Library Reference* covers RAL's standard library.
 * The *Guides* cover instructional material on RAL's usage.
 
+Parsing diagrams are created using https://github.com/GuntherRademacher/rr - PNG versions of the diagrams are stored in this repository for online browsing.

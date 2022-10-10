@@ -1,0 +1,88 @@
+// ovrv
+
+Type ::= ID "?"? ("|" ID "?"?)*
+
+// decl
+
+Decl ::=
+	IncludeDecl |
+	AddSearchPathDecl |
+
+	TypedefDecl |
+	ClassDecl |
+	InterfaceDecl |
+	FieldDecl |
+	MessageDecl |
+	ScriptProtoDecl |
+	OverrideOwnrDecl |
+	MessageHookDecl |
+	AssertConstDecl |
+	ConstantDecl |
+
+	ScriptCodeDecl |
+	InstallDecl |
+	RemoveDecl |
+	MacroDecl
+
+IncludeDecl ::= "include" ConstantString ";"
+AddSearchPathDecl ::= "addSearchPath" ConstantString ";"
+
+TypedefDecl ::= "typedef" ID Type ";"
+ClassDecl ::= "class" ID (ConstantInt ConstantInt ConstantInt)? ("extends" ID)* ";"
+InterfaceDecl ::= "interface" ID ("extends" ID)* ";"
+FieldDecl ::= "field" Type ID "." ID ConstantInt ";"
+MessageDecl ::= "message" ID ("->" | ":") ID ConstantInt ";"
+ScriptProtoDecl ::= "script" ID ("->" | ":") ID ConstantInt ";"
+OverrideOwnrDecl ::= "overrideOwnr" ConstantInt Type ";"
+MessageHookDecl ::= "messageHook" ConstantInt ";"
+AssertConstDecl ::= "assertConst" ConstantInt ";"
+ConstantDecl ::= ID "=" Constant ";"
+
+ScriptCodeDecl ::= "script" ID (("->" | ":") ID | ConstantInt) Stmt
+InstallDecl ::= "install" Stmt
+RemoveDecl ::= "remove" Stmt
+MacroDecl ::= "macro" (ArgList ID ArgList Stmt | ID ArgList Expr)
+MacroArgList ::= "(" MacroArg ("," MacroArg)* ")"
+MacroArg ::= Type "&"? ID
+
+// stmt
+
+Stmt ::=
+	BlockStmt |
+	LetStmt |
+	AliasStmt |
+
+	InlineStmt |
+	AssignStmt |
+	ModifyStmt |
+	EmitStmt |
+	CallStmt |
+
+	IfStmt |
+	WhileStmt |
+	BreakStmt |
+	ForStmt |
+	ForeachStmt |
+	WithStmt
+
+BlockStmt ::= "{" Stmt* "}"
+LetStmt ::= "let" LetStmtBody ";"
+LetStmtBody ::= Type? ID ("," Type? ID)* ("=" Expr)? ";"
+AliasStmt ::= "alias" ID ("=" Expr | "!" Type) ";"
+
+InlineStmt ::= "&" StringEmbed+ ";"
+AssignStmt ::= (Expr "=")? Expr ";"
+ModifyStmt ::= Expr ("+=" | "-=" | "*=" | "/=" | "|=" | "&=") Expr ";"
+EmitStmt ::= Expr "->" ID "(" Expr ")" ("after" Expr)? ";"
+CallStmt ::= "call" ID "(" Expr ")" ";"
+
+IfStmt ::= "if" Expr Stmt ("else" Stmt)?
+WhileStmt ::= "while" Expr Stmt
+BreakStmt ::= "break" ";"
+ForStmt ::= "for" LetStmtBody ";" Expr ";" Stmt Stmt
+ForeachStmt ::= "foreach" "(" Type "in" ID Expr? ")" Stmt
+WithStmt ::= "with" ("(" Type ID ")" | Type ID) Stmt ("else" Stmt)?
+
+// expr
+
+

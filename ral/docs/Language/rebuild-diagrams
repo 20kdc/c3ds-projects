@@ -1,0 +1,6 @@
+#!/bin/sh
+java -jar /media/modus/External2/rr/rr.war -png -out:tmp.zip diagrams.ebnf
+rm diagram/*.png
+unzip -o tmp.zip
+rm tmp.zip index.html diagram/Railroad-Diagram-Generator.png diagram/rr-*.png
+

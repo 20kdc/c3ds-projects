@@ -43,12 +43,4 @@ The tools with which the user may construct types are as follows:
 
 The type syntax is summarized by this diagram:
 
-[mermaid]
---
-flowchart LR
-Type -- start --> ID --> BarA["|"] --> ID2["Type"]
-ID --> Nullable["?"]
-ID --> TerminatorA[" "]
-Nullable --> TerminatorB[" "]
-Nullable --> BarA
---
+image::diagram/Type.png[]
