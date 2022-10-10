@@ -1,6 +1,0 @@
-Content-Type: text/x-zim-wiki
-Wiki-Format: zim 0.6
-Creation-Date: 2022-09-15T21:09:09+01:00
-
-====== NetDirectLink ======
-

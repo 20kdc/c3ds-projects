@@ -1,7 +1,0 @@
-Content-Type: text/x-zim-wiki
-Wiki-Format: zim 0.6
-Creation-Date: 2022-09-14T23:14:31+01:00
-
-====== std string ======
-
-seems to be 16 bytes, and oh do I hate it already...
