@@ -17,10 +17,11 @@ If a file is included more than once, the second and onward includes are ignored
 include "std/c3.ral";
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 IncludeDeclaration -- start --> include --> ConstantString --> Semicolon[";"] --> End[" "];
-```
+--
 
 #### addSearchPath
 
@@ -31,10 +32,11 @@ addSearchPath "../evilcorpCoreLibraries";
 include "eccl/elo.ral";
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 AddSearchPathDeclaration -- start --> addSearchPath --> ConstantString --> Semicolon[";"] --> End[" "];
-```
+--
 
 ## Type System
 
@@ -48,10 +50,11 @@ This is usually useful to name unions.
 typedef number integer|float;
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 TypedefDeclaration -- start --> typedef --> ID --> Type --> Semicolon[";"] --> End[" "];
-```
+--
 
 #### class
 
@@ -65,13 +68,14 @@ In addition, `extends InterfaceName` may be added an arbitrary amount of times, 
 class Canary 2 13 3987 extends Bird;
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR;
 ClassDeclaration -- start --> cl["class"] --> ID --> family["ConstantInt"] --> genus["ConstantInt"] --> species["ConstantInt"] --> Semicolon[";"] --> End[" "];
 ID --> extends;
 species --> extends --> xID["ID"] --> extends;
 xID --> Semicolon;
-```
+--
 
 #### interface
 
@@ -83,13 +87,14 @@ In addition, `extends InterfaceName` may be added an arbitrary amount of times, 
 interface Bird extends GoodBug;
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 InterfaceDeclaration -- start --> cl["interface"] --> ID --> Semicolon[";"] --> End[" "];
 ID --> extends;
 extends --> xID["ID"] --> extends;
 xID --> Semicolon;
-```
+--
 
 #### field
 
@@ -105,10 +110,11 @@ Example:
 field string Canary.tweetText 1;
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 FieldDeclaration -- start --> cl["field"] --> Type --> ID --> Dot["."] --> id2["ID"] --> ConstantInt --> Semicolon[";"] --> End[" "];
-```
+--
 
 #### message
 
@@ -122,11 +128,12 @@ It consists of a message-ID-of expression (i.e. `Agent->someMessage` or `Agent:s
 message Canary:tweet 1000;
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 MessageDeclaration -- start --> cl["message"] --> ID --> Choice["->"] --> id2["ID"] --> ConstantInt --> Semicolon[";"] --> End[" "];
 ID --> ChoiceB[":"] --> id2;
-```
+--
 
 #### script (declaration form)
 
@@ -134,11 +141,12 @@ ID --> ChoiceB[":"] --> id2;
 
 As such, see `message` for syntax. You should only see this in the standard library.
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 ScriptProtoDeclaration -- start --> cl["script"] --> ID --> Choice["->"] --> id2["ID"] --> ConstantInt --> Semicolon[";"] --> End[" "];
 ID --> ChoiceB[":"] --> id2;
-```
+--
 
 #### overrideOwnr
 
@@ -155,10 +163,11 @@ let Canary myself = from;
 }
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 OverrideOwnrDeclaration -- start --> cl["overrideOwnr"] --> ConstantInt --> Type --> Semicolon[";"] --> End[" "];
-```
+--
 
 #### messageHook
 
@@ -172,10 +181,11 @@ script Agent:scrDeactivated 0;
 message Agent:msgActivate1 0;
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 MessageHookDeclaration -- start --> cl["messageHook"] --> ConstantInt --> Semicolon[";"] --> End[" "];
-```
+--
 
 #### assertConst
 
@@ -190,10 +200,11 @@ assertConst 1; // valid
 assertConst 0; // error
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 AssertConstDeclaration -- start --> cl["assertConst"] --> ConstantInt --> Semicolon[";"] --> End[" "];
-```
+--
 
 #### Constants
 
@@ -214,10 +225,11 @@ if alwaysFalse {
 }
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 ConstantDeclaration -- start --> ID --> eq["="] --> Constant --> Semicolon[";"] --> End[" "];
-```
+--
 
 ## Code
 
@@ -237,12 +249,13 @@ script Canary:eaten {
 }
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 ScriptCodeDeclaration -- start --> cl["script"] --> ID --> Choice["->"] --> id2["ID"] --> Statement --> End[" "];
 ID --> ChoiceB[":"] --> id2;
 ID --> ConstantInt --> Statement;
-```
+--
 
 #### install
 
@@ -256,10 +269,11 @@ newSimple(Canary, "canary.c16", 1, 0, 3000);
 }
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 InstallDeclaration -- start --> cl["install"] --> Statement --> End[" "];
-```
+--
 
 #### remove
 
@@ -273,10 +287,11 @@ scrx(Canary, Canary:tweet);
 }
 ```
 
-```mermaid
-flowchart LR;
+[mermaid]
+--
+flowchart LR
 RemoveDeclaration -- start --> cl["remove"] --> Statement --> End[" "];
-```
+--
 
 #### macro
 
@@ -331,11 +346,12 @@ test2(textWithSideEffects());
 }
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR;
 MacroDeclaration -- start --> cl["macro"] --> retArgs["ArgList"] --> ID --> mainArgs["ArgList"] --> Statement --> End[" "];
 cl --> expID["ID"] --> mainArgsE["ArgList"] --> Expression --> End;
 ArgList -- start --> argsOpen["("] --> Type --> inline["&"] --> argID --> argsClose[")"] --> End2[" "];
 Type --> argID["ID"];
 argID --> argComma[","] --> Type;
-```
+--

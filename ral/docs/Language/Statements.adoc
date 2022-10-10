@@ -15,11 +15,12 @@ let int counter = 0;
 // counter = 1; // would error, counter doesn't exist here
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 BlockStatement -- start --> x["{"] --> Statement --> x2["}"] --> End[" "]
 Statement --> Statement
-```
+--
 
 ### let
 
@@ -41,7 +42,8 @@ let counterC = 0.0; // type is automatically float
 let Agent? a, Agent? b = null, null; // multiple definition
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 LetStatement -- start --> cl["let"] --> x[LetStatementBody] --> sc[";"] --> End[" "]
 LetStatementBody -- start --> tmp[" "] --> Type
@@ -52,8 +54,7 @@ tmp --> ID2[ID]
 ID1[ID] --> End2
 ID2 --> asn
 ID2 --> comma
-
-```
+--
 
 ### alias
 
@@ -75,13 +76,13 @@ alias b = a; // normal variant
 alias a!float; // cast variant - alter 
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 AliasStatement -- start --> cl["alias"]
 cl --> ID --> asn["="] --> Expression --> sc[";"] --> End[" "]
 ID --> nope["!"] --> Type --> sc
-
-```
+--
 
 ## Actions
 
@@ -101,10 +102,11 @@ let int number = 0;
  'outs {"To respect the buzzing of the airlock\n"}';
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 InlineStatement -- start --> StringEmbed --> StringEmbed --> sc[";"] --> End[" "]
-```
+--
 
 ### Expression Statements and Assignment Statements
 
@@ -121,12 +123,12 @@ xPos = posx(); // Assignment statement with macro call
 xPos, yPos = getRandomXY(); // Assignment statement with multiple return values
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 AssignStatement -- start --> Expression --> opA["="] --> e2["Expression"] --> sc[";"] --> End[" "]
 ExpressionStatement -- start --> e2
-
-```
+--
 
 Modify-assignment expressions are a shorthand for certain assignment expressions.
 
@@ -139,7 +141,8 @@ let counter = 1;
 counter += 1; // counter is now 2
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 ModifyStatement -- start --> Expression --> opA["+="] --> e2["Expression"] --> sc[";"] --> End[" "]
 Expression --> opB["-="] --> e2
@@ -147,7 +150,7 @@ Expression --> opC["*="] --> e2
 Expression --> opD["/="] --> e2
 Expression --> opE["|="] --> e2
 Expression --> opF["&="] --> e2
-```
+--
 
 ### Emit Statements
 
@@ -160,11 +163,12 @@ alias targ!Boopable; // for messages
 targ->receivedBoop();
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 EmitStatement -- start --> e2["Expression"] --> op["->"] --> ID --> x["("] --> Expression --> x2[")"] --> sc[";"] --> End[" "]
 x2 --> after --> e3["Expression"] --> sc
-```
+--
 
 ### call
 
@@ -174,10 +178,11 @@ x2 --> after --> e3["Expression"] --> sc
 call makeBoopNoises();
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 CallStatement -- start --> cl["call"] --> ID --> x["("] --> Expression --> x2[")"] --> sc[";"] --> End[" "]
-```
+--
 
 ## Flow Control
 
@@ -201,11 +206,12 @@ if a == 1 {
 }
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 IfStatement -- start --> cl["if"] --> Expression --> Statement --> else --> s2["Statement"] --> End[" "]
 Statement --> End
-```
+--
 
 ### while
 
@@ -219,11 +225,11 @@ a++;
 }
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 WhileStatement -- start --> cl["while"] --> Expression --> Statement --> End[" "]
-
-```
+--
 
 ### break
 
@@ -239,10 +245,11 @@ handleStuff();
 }
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 BreakStatement -- start --> cl["break"] --> Semicolon[";"] --> End[" "]
-```
+--
 
 ### for
 
@@ -256,10 +263,11 @@ for a = 1; a <= 10; a++ {
 }
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 ForStatement -- start --> cl["for"] --> LetStatementBody --> sc[";"] --> Expression --> sc2[";"] --> Statement --> s2[Statement] --> End[" "]
-```
+--
 
 ### foreach
 
@@ -285,10 +293,11 @@ foreach (Agent in econ targ) {
 }
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 ForeachStatement -- start --> cl["foreach"] --> x["("] --> Type --> in --> ID --> Expression --> y[")"] --> s2["Statement"] --> End[" "]
-```
+--
 
 ### with
 
@@ -309,9 +318,10 @@ doStuffWithBramboo(targ);
 }
 ```
 
-```mermaid
+[mermaid]
+--
 flowchart LR
 WithStatement -- start --> cl["with"] --> x["("] --> Type --> ID --> x2[")"] --> Statement --> else --> s2["Statement"] --> End[" "]
 Statement --> End
 cl --> t2["Type"] --> i2["ID"] --> Statement;
-```
+--
