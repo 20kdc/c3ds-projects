@@ -10,7 +10,7 @@ This mechanism is necessary for feature like macros returning multiple values, a
 
 *The answer in regards to how this interacts with macros, statement expressions and side-effects is that if you try to push it, you can probably find cases where a void macro will be sliced off, or an expression has to be executed twice to fulfill a particularly hare-brained request.*
 
-*The following are <u>compiler guarantees</u>, so if the compiler violates these, it's a bug:*
+*The following are [underline]##compiler guarantees##, so if the compiler violates these, it's a bug:*
 
 1. An assignment statement will *always* compile a read of the *root of the right-hand-side* expression.
 

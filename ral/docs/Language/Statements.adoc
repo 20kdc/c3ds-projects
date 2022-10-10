@@ -123,7 +123,7 @@ image::diagram/ModifyStmt.png[]
 
 Emit statements are of the form `receiver->messageName([arg1[, arg2]])[ after ticks];`, where `receiver`, `messageName`, `arg1`, `arg2`, and `ticks` are changed as appropriate. This becomes a `MESG WRIT` or `MESG WRT+` as appropriate.
 
-Remember that emit statements send messages that are queued.
+Remember that emit statements send messages that are queued, and are not executed immediately.
 
 ```
 alias targ!Boopable; // for messages
@@ -134,7 +134,7 @@ image::diagram/EmitStmt.png[]
 
 #### call
 
-`call` represents a `CALL` rather than a `MESG WRIT`, occurring on the owner and deferring the current script - it is otherwise like an emit statement.
+`call` represents a `CALL` rather than a `MESG WRIT`, occurring on the owner and suspending the current script until completion - it is otherwise like an emit statement.
 
 ```
 call makeBoopNoises();
