@@ -170,6 +170,10 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 	}
 
 	private void handleHTTPConnection(int firstByte) throws IOException {
+		// Can just make this immediately stop
+		if (!config.httpRequestsEnabled.getValue())
+			return;
+		// Ok, take it seriously
 		byte[] request = HTTPRequest.readRequestHeader(socket, this, this, firstByte, config.httpRequestMaxLength.getValue(), config.httpRequestTime.getValue());
 		if (request != null) {
 			String requestStr = new String(request, 0, request.length, StandardCharsets.UTF_8);

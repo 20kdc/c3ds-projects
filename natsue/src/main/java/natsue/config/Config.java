@@ -120,6 +120,12 @@ public class Config extends BaseConfig.Group {
 	/**
 	 * Request abuse prevention
 	 */
+	public final Bool httpRequestsEnabled = new Bool("httpRequestsEnabled", true)
+			.describe("Allows disabling the whole HTTP business in the event of an emergency.");
+
+	/**
+	 * Request abuse prevention
+	 */
 	public final Int httpRequestTime = new Int("httpRequestTime", 30)
 			.describe("During an HTTP request, amount of seconds the request may go on for before we decide we're being trolled.");
 
