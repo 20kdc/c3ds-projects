@@ -183,4 +183,14 @@ public class PacketReader {
 		}
 		return new CTOSUnknown(0, 0, false);
 	}
+
+	/**
+	 * Because setSoLinger is broken in production (browser might want you to read the *whole* request?), fake it
+	 */
+	public static void linger(Socket socket, int asClampedMs) {
+		try {
+			Thread.sleep(asClampedMs);
+		} catch (Exception ex) {
+		}
+	}
 }

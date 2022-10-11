@@ -169,12 +169,6 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 	}
 
 	private void handleHTTPConnection(int firstByte) throws IOException {
-		try {
-			socket.setSoLinger(true, config.httpRequestLingerTime.getValue());
-		} catch (Exception ex2) {
-			log("SCARY WARNING CAN'T SET LINGER");
-			log(ex2);
-		}
 		byte[] requestBuffer = new byte[256];
 		int keepAlive = config.httpRequestNoDataShutdownTime.getAsClampedMs();
 		int len = 1;
@@ -188,6 +182,25 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 				if ((requestBuffer[len] == (byte) '\r') || (requestBuffer[len] == (byte) '\n')) {
 					try {
 						String line = new String(requestBuffer, 0, len, StandardCharsets.UTF_8);
+						// now that's over, try to find the r/n/r/n
+						requestBuffer[0] = 'X';
+						requestBuffer[1] = 'X';
+						requestBuffer[2] = 'X';
+						requestBuffer[3] = '\r';
+						while (true) {
+							if (PacketReader.readWithTimeout(socket, keepAlive, requestBuffer, 4, 1) <= 0) {
+								httpResponse("400 Bad Request", false, "The request did not contain a body separator.");
+								return;
+							}
+							for (int i = 0; i < 4; i++)
+								requestBuffer[i] = requestBuffer[i + 1];
+							// found it?
+							if (requestBuffer[0] == '\r')
+								if (requestBuffer[1] == '\n')
+									if (requestBuffer[2] == '\r')
+										if (requestBuffer[3] == '\n')
+											break;
+						}
 						log("HTTP request: " + line);
 						initialHandler.handleHTTP(line, this);
 						return;
@@ -222,7 +235,8 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 		socketOutput.write(sb.toString().getBytes(StandardCharsets.UTF_8));
 		if (!head) {
 			socketOutput.write(body);
-			socketOutput.flush();
 		}
+		socketOutput.flush();
+		PacketReader.linger(socket, config.httpRequestFakeLingerTime.getAsClampedMs());
 	}
 }

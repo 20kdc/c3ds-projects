@@ -126,7 +126,7 @@ public class Config extends BaseConfig.Group {
 	/**
 	 * Request abuse prevention
 	 */
-	public final Int httpRequestLingerTime = new Int("httpRequestLingerTime", 30)
+	public final Int httpRequestFakeLingerTime = new Int("httpRequestFakeLingerTime", 10)
 			.describe("During an HTTP request, the linger time for transmitting data back to the client.");
 
 	/**
