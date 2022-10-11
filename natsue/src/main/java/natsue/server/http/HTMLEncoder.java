@@ -66,4 +66,8 @@ public class HTMLEncoder {
 			throw new RuntimeException(ex);
 		}
 	}
+
+	public static String hrefEncode(String nickname) {
+		return urlEncode(nickname);
+	}
 }

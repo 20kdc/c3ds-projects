@@ -128,6 +128,16 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
+	public LinkedList<String> getCreaturesInWorld(String worldID, int limit, int offset) {
+		synchronized (this) {
+			txns.getCreaturesInWorld.worldID = worldID;
+			txns.getCreaturesInWorld.limit = limit;
+			txns.getCreaturesInWorld.offset = offset;
+			return txns.getCreaturesInWorld.executeOuter(txnHost);
+		}
+	}
+
+	@Override
 	public boolean ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int lifeStage, String param1, String param2, String worldName, String worldID, String userID) {
 		synchronized (this) {
 			txns.addCreatureEvent.senderUID = senderUID;

@@ -7,8 +7,18 @@
 
 package natsue.server.http;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import natsue.data.babel.UINUtils;
 import natsue.server.database.INatsueDatabase;
@@ -32,27 +42,33 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 
 	@Override
 	public void handleHTTPGet(String url, boolean head, Client r) throws IOException {
+		int qsIndex = url.indexOf('?');
+		String[] qs = new String[] {""};
+		if (qsIndex != -1) {
+			qs = url.substring(qsIndex + 1).split("\\&");
+			url = url.substring(0, qsIndex);
+		}
 		if (url.equals("/")) {
 			StringBuilder rsp = new StringBuilder();
-			rsp.append("<h1>" + SystemCommands.VERSION + "</h1>\n");
-			rsp.append("<marquee>Welcome to Natsue Server!</marquee>\n");
-			rsp.append("Current online users:<ul>\n");
+			rsp.append("<ul>\n");
 			for (INatsueUserData nud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
 				rsp.append("<li>");
-				rsp.append("<a href=\"user?" + HTMLEncoder.urlEncode(nud.getNickname()) + "\">");
-				HTMLEncoder.htmlEncode(rsp, nud.getNickname());
-				rsp.append("</a>");
+				userReference(rsp, nud);
 				rsp.append("</li>\n");
 			}
 			rsp.append("</ul>\n");
-			r.httpOk(head, "text/html", rsp.toString());
-		} else if (url.startsWith("/creature?")) {
+			kisspopUI(r, head, "Current Online Users", rsp.toString());
+		} else if (url.equals("/creature")) {
+			if (qs.length < 1) {
+				failInvalidRequestFormat(r, head);
+				return;
+			}
+			HashMap<String, String> creatureNameCache = new HashMap<>();
 			StringBuilder rsp = new StringBuilder();
-			String fragment = HTMLEncoder.urlDecode(url.substring(10));
-			rsp.append("<h1>" + SystemCommands.VERSION + "</h1>\n");
-			rsp.append("<h2>Creature ");
-			HTMLEncoder.htmlEncode(rsp, fragment);
-			rsp.append("</h2>\n");
+			String fragment = HTMLEncoder.urlDecode(qs[0]);
+			StringBuilder ttl = new StringBuilder();
+			ttl.append("Creature ");
+			HTMLEncoder.htmlEncode(ttl, fragment);
 			NatsueDBCreatureInfo ci = database.getCreatureInfo(fragment);
 			if (ci != null) {
 				rsp.append("General Information:<ul>\n");
@@ -62,8 +78,8 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				rsp.append("<li>User Text: ");
 				HTMLEncoder.htmlEncode(rsp, ci.userText);
 				rsp.append("</li>");
-				rsp.append("<li>First Seen At UID: ");
-				rsp.append(ci.senderUID);
+				rsp.append("<li>First Seen By: ");
+				userReference(rsp, UINUtils.make(ci.senderUID, UINUtils.HID_USER));
 				rsp.append("</li>");
 				rsp.append("<li>CH0: ");
 				rsp.append(ci.ch0);
@@ -86,81 +102,157 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			}
 			LinkedList<NatsueDBCreatureEvent> ll = database.getCreatureEvents(fragment);
 			if (ll != null) {
-				rsp.append("Events:<table border=1>\n");
-				rsp.append("<tr><td>Sender UID</td><td>Index</td><td>Type</td><td>World Time</td><td>Age</td>\n");
-				rsp.append("<td>Unix Time</td><td>Life Stage</td><td>Param 1</td><td>Param 2</td><td>World Name</td>\n");
-				rsp.append("<td>World ID</td><td>User ID</td></tr>\n");
+				rsp.append("Events:<br/><br/><table border=1>\n");
+				rsp.append("<tr><td>Index</td><td>World Time</td><td>Age</td>\n");
+				rsp.append("<td>Date/Time (dd/mm/yyyy)</td><td>Life Stage</td><td>Detail</td><td>World</td>\n");
+				rsp.append("<td>Owner</td></tr>\n");
 				for (NatsueDBCreatureEvent ev : ll) {
 					rsp.append("<tr>");
-					//
-					rsp.append("<td>");
-					rsp.append(ev.senderUID);
-					rsp.append("</td>");
+					long senderUIN = UINUtils.make(ev.senderUID, UINUtils.HID_USER);
 					//
 					rsp.append("<td>");
 					rsp.append(ev.eventIndex);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					rsp.append(ev.eventType);
+					writeTicks(rsp, ev.worldTime);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					rsp.append(ev.worldTime);
+					writeTicks(rsp, ev.ageTicks);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					rsp.append(ev.ageTicks);
+					SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z", Locale.ENGLISH);
+					df.setTimeZone(TimeZone.getTimeZone("UTC"));
+					rsp.append(df.format(new Date(ev.unixTime * 1000L)));
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					rsp.append(ev.unixTime);
+					writeLifeStage(rsp, ev.lifeStage);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					rsp.append(ev.lifeStage);
+					writeEventDetails(rsp, ev, creatureNameCache);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					HTMLEncoder.htmlEncode(rsp, ev.param1);
-					rsp.append("</td>");
-					//
-					rsp.append("<td>");
-					HTMLEncoder.htmlEncode(rsp, ev.param2);
-					rsp.append("</td>");
-					//
-					rsp.append("<td>");
+					rsp.append("<a href=\"world?" + HTMLEncoder.hrefEncode(ev.worldID) + "\">");
 					HTMLEncoder.htmlEncode(rsp, ev.worldName);
+					rsp.append("</a>");
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					HTMLEncoder.htmlEncode(rsp, ev.worldID);
-					rsp.append("</td>");
-					//
-					rsp.append("<td>");
-					HTMLEncoder.htmlEncode(rsp, ev.userID);
+					long atUIN = UINUtils.valueOf(ev.userID);
+					userReference(rsp, atUIN);
+					if (senderUIN != atUIN) {
+						rsp.append("<br/>Sent By:<br/>");
+						userReference(rsp, senderUIN);
+					}
 					rsp.append("</td>");
 					//
 					rsp.append("</tr>\n");
 				}
 				rsp.append("</table>\n");
 			}
-			r.httpOk(head, "text/html", rsp.toString());
-		} else if (url.startsWith("/user?")) {
+			kisspopUI(r, head, ttl.toString(), rsp.toString());
+		} else if (url.equals("/world")) {
+			if (qs.length < 1) {
+				failInvalidRequestFormat(r, head);
+				return;
+			}
+			HashMap<String, String> creatureNameCache = new HashMap<>();
+
+			int limit = 50;
+			int offset = 0;
+			String worldID = HTMLEncoder.urlDecode(qs[0]);
+			if (qs.length >= 2)
+				offset = Integer.parseInt(qs[1]);
+
+			StringBuilder header = new StringBuilder();
 			StringBuilder rsp = new StringBuilder();
-			String fragment = HTMLEncoder.urlDecode(url.substring(6));
+
+			String worldName = null;
+
+			rsp.append("Known creatures (showing " + limit + " at " + offset + "):<ul>\n");
+			LinkedList<String> m = database.getCreaturesInWorld(worldID, limit, offset);
+			boolean shouldHaveNext = false;
+			if (m != null) {
+				shouldHaveNext = m.size() == limit;
+				for (String moniker : m) {
+					rsp.append("<li>");
+					writeCreatureReference(rsp, moniker, creatureNameCache);
+					if (worldName == null) {
+						LinkedList<NatsueDBCreatureEvent> evl = database.getCreatureEvents(moniker);
+						if (evl != null) {
+							for (NatsueDBCreatureEvent ev : evl) {
+								if (ev.worldID.equals(worldID)) {
+									worldName = ev.worldName;
+									header.append("Owner: ");
+									userReference(header, UINUtils.valueOf(ev.userID));
+									header.append("<br/>");
+									break;
+								}
+							}
+						}
+					}
+					rsp.append("</li>\n");
+				}
+			}
+			rsp.append("</ul>\n");
+
+			int prevOfs = offset - limit;
+			if (prevOfs >= 0) {
+				rsp.append("<a href=\"world?");
+				rsp.append(worldID);
+				rsp.append("&");
+				rsp.append(prevOfs);
+				rsp.append("\">prev</a>");
+				if (shouldHaveNext)
+					rsp.append(" ");
+			}
+			if (shouldHaveNext) {
+				rsp.append("<a href=\"world?");
+				rsp.append(worldID);
+				rsp.append("&");
+				rsp.append(offset + limit);
+				rsp.append("\">next</a>");
+			}
+			rsp.append("\n");
+
+			StringBuilder ttl = new StringBuilder();
+			ttl.append("World ");
+			if (worldName != null) {
+				HTMLEncoder.htmlEncode(ttl, worldName);
+				ttl.append(" (");
+				HTMLEncoder.htmlEncode(ttl, worldID);
+				ttl.append(")");
+			} else {
+				HTMLEncoder.htmlEncode(ttl, worldID);
+			}
+
+			kisspopUI(r, head, ttl.toString(), header + rsp.toString());
+		} else if (url.equals("/user")) {
+			if (qs.length < 1) {
+				failInvalidRequestFormat(r, head);
+				return;
+			}
+			StringBuilder rsp = new StringBuilder();
+			String fragment = HTMLEncoder.urlDecode(qs[0]);
 			INatsueUserData data = hub.getUserDataByNickname(fragment);
 			if (data == null)
 				data = hub.getUserDataByUIN(UINUtils.valueOf(fragment));
+			String title;
 			if (data == null) {
-				rsp.append("<i>No such user.</i>");
+				title = "No such user";
 			} else {
-				rsp.append("<h1>" + SystemCommands.VERSION + "</h1>\n");
-				rsp.append("<h2>User ");
-				HTMLEncoder.htmlEncode(rsp, data.getNickname());
-				rsp.append(" (");
-				rsp.append(data.getUINString());
-				rsp.append(")</h2>\n");
+				StringBuilder ttl = new StringBuilder();
+				ttl.append("User ");
+				HTMLEncoder.htmlEncode(ttl, data.getNickname());
+				ttl.append(" (");
+				HTMLEncoder.htmlEncode(ttl, data.getUINString());
+				ttl.append(")");
+				title = ttl.toString();
 				if (hub.isUINOnline(data.getUIN())) {
 					rsp.append("Online<br/>");
 				} else {
@@ -168,9 +260,178 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				}
 				rsp.append("Flags: " + INatsueUserFlags.Flag.showFlags(data.getFlags()) + "<br/>");
 			}
-			r.httpOk(head, "text/html", rsp.toString());
+			kisspopUI(r, head, title, rsp.toString());
 		} else {
-			r.httpResponse("404 Not Found", head, "No such file");
+			kisspopUI(r, head, "404 Not Found", "No such file...", "");
 		}
+	}
+
+	private void failInvalidRequestFormat(Client r, boolean head) throws IOException {
+		kisspopUI(r, head, "Invalid Request Format", "Some component of the request was wrong.");
+	}
+
+	private void kisspopUI(Client r, boolean head, String title, String text) throws IOException {
+		kisspopUI(r, head, "200 OK", title, text);
+	}
+
+	private void kisspopUI(Client r, boolean head, String status, String title, String text) throws IOException {
+		StringBuilder finale = new StringBuilder();
+		try (FileInputStream fis = new FileInputStream("kisspopui.html")) {
+			InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+			while (true) {
+				int ch = isr.read();
+				if (ch == -1)
+					break;
+				finale.append((char) ch);
+			}
+		} catch (Exception ex) {
+			// :(
+		}
+		String sts = finale.toString();
+
+		// What do you mean it wasn't supposed to be literal?
+		if (!sts.contains("$SHIT_GOES_HERE"))
+			sts += "$PAGE_TITLE<hr/>$SHIT_GOES_HERE<hr/><i>Server Version: $NATSUE_VERSION</i><hr/>kisspopui.html invalid or missing $SHIT_GOES_HERE";
+		sts = sts.replaceFirst("\\$NATSUE_VERSION", "<a href=\"" + SystemCommands.VERSION_URL + "\">" + SystemCommands.VERSION + "</a>");
+		sts = sts.replaceAll("\\$PAGE_TITLE", title);
+		// MUST BE LAST!
+		sts = sts.replaceFirst("\\$SHIT_GOES_HERE", text);
+		r.httpResponse(status, head, "text/html", sts);
+	}
+
+	private void writeEventDetails(StringBuilder rsp, NatsueDBCreatureEvent ev, HashMap<String, String> creatureNameCache) {
+		if (ev.eventType == 0) {
+			rsp.append("Conceived: ");
+			writeCreatureReference(rsp, ev.param1, creatureNameCache);
+			rsp.append(" x ");
+			writeCreatureReference(rsp, ev.param2, creatureNameCache);
+		} else if (ev.eventType == 1) {
+			rsp.append("Spliced: ");
+			writeCreatureReference(rsp, ev.param1, creatureNameCache);
+			rsp.append(" x ");
+			writeCreatureReference(rsp, ev.param2, creatureNameCache);
+		} else if (ev.eventType == 2) {
+			rsp.append("Synthesized: ");
+			HTMLEncoder.htmlEncode(rsp, ev.param2);
+		} else if (ev.eventType == 3) {
+			rsp.append("Born");
+		} else if (ev.eventType == 4) {
+			rsp.append("Aged");
+		} else if (ev.eventType == 5) {
+			rsp.append("Exported");
+		} else if (ev.eventType == 6) {
+			rsp.append("Imported");
+		} else if (ev.eventType == 7) {
+			rsp.append("Died");
+		} else if (ev.eventType == 8) {
+			rsp.append("Pregnant w/ ");
+			writeCreatureReference(rsp, ev.param1, creatureNameCache);
+			rsp.append(" due to ");
+			writeCreatureReference(rsp, ev.param2, creatureNameCache);
+		} else if (ev.eventType == 9) {
+			rsp.append("Impregnated ");
+			writeCreatureReference(rsp, ev.param2, creatureNameCache);
+			rsp.append(" with ");
+			writeCreatureReference(rsp, ev.param1, creatureNameCache);
+		} else if (ev.eventType == 14) {
+			rsp.append("Clone of: ");
+			writeCreatureReference(rsp, ev.param1, creatureNameCache);
+		} else if (ev.eventType == 15) {
+			rsp.append("Cloned to ");
+			writeCreatureReference(rsp, ev.param1, creatureNameCache);
+		} else if (ev.eventType == 16) {
+			rsp.append("Warped out");
+		} else if (ev.eventType == 17) {
+			rsp.append("Warped in");
+		} else {
+			rsp.append("<table><tr><td>");
+			rsp.append(ev.eventType);
+			rsp.append("</td><td>");
+			writeCreatureReference(rsp, ev.param1, creatureNameCache);
+			rsp.append("</td><td>");
+			writeCreatureReference(rsp, ev.param2, creatureNameCache);
+			rsp.append("</td></tr></table>");
+		}
+	}
+
+	private void writeCreatureReference(StringBuilder rsp, String src, HashMap<String, String> creatureNameCache) {
+		String name = creatureNameCache.get(src);
+		if (name == null) {
+			NatsueDBCreatureInfo ci = database.getCreatureInfo(src);
+			if ((ci != null) && (!ci.name.equals(""))) {
+				int hasPfx = src.indexOf('-');
+				if (hasPfx == -1) {
+					name = "?-" + ci.name;
+				} else {
+					name = src.substring(0, hasPfx + 1) + ci.name;
+				}
+			} else {
+				name = src;
+			}
+			creatureNameCache.put(src, name);
+		}
+		rsp.append("<a href=\"creature?" + HTMLEncoder.hrefEncode(src) + "\">");
+		HTMLEncoder.htmlEncode(rsp, name);
+		rsp.append("</a>");
+	}
+
+	private void writeLifeStage(StringBuilder rsp, int lifeStage) {
+		if (lifeStage == -1) {
+			rsp.append("Egg");
+		} else if (lifeStage == 0) {
+			rsp.append("Baby");
+		} else if (lifeStage == 1) {
+			rsp.append("Child");
+		} else if (lifeStage == 2) {
+			rsp.append("Adolescent");
+		} else if (lifeStage == 3) {
+			rsp.append("Youth");
+		} else if (lifeStage == 4) {
+			rsp.append("Adult");
+		} else if (lifeStage == 5) {
+			rsp.append("Old");
+		} else if (lifeStage == 6) {
+			rsp.append("Ancient");
+		} else if (lifeStage == 7) {
+			rsp.append("Dead");
+		} else {
+			rsp.append(lifeStage);
+		}
+	}
+
+	private void writeTicks(StringBuilder rsp, int ageTicks) {
+		int sec = ageTicks / 20;
+		int min = sec / 60;
+		sec %= 60;
+		int hrs = min / 60;
+		min %= 60;
+		if (hrs > 0) {
+			rsp.append(hrs);
+			rsp.append("h");
+		}
+		if (min > 0) {
+			rsp.append(min);
+			rsp.append("m");
+		}
+		rsp.append(sec);
+		rsp.append("s");
+	}
+
+	private void userReference(StringBuilder rsp, long uin) {
+		INatsueUserData nud = hub.getUserDataByUIN(uin);
+		if (nud == null) {
+			String ts = UINUtils.toString(uin);
+			userReference(rsp, uin, ts, ts + "?");
+		} else {
+			userReference(rsp, nud);
+		}
+	}
+	private void userReference(StringBuilder rsp, INatsueUserData nud) {
+		userReference(rsp, nud.getUIN(), nud.getNicknameFolded(), nud.getNickname());
+	}
+	private void userReference(StringBuilder rsp, long uin, String nf, String nn) {
+		rsp.append("<a href=\"user?" + HTMLEncoder.hrefEncode(nf) + "\">");
+		HTMLEncoder.htmlEncode(rsp, nn);
+		rsp.append("</a>");
 	}
 }

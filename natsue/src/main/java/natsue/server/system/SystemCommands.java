@@ -20,7 +20,9 @@ import natsue.server.userdata.INatsueUserData;
  * Stuff them all here for now as part of refactor
  */
 public class SystemCommands {
-	public static final String VERSION = "Natsue 11/10/22 p3";
+	public static final String VERSION = "Natsue 11/10/22 p4";
+	public static final String VERSION_URL = "https://github.com/20kdc/c3ds-projects/tree/main/natsue";
+
 	public static final BaseBotCommand[] commands = new BaseBotCommand[] {
 		new HelpSetBotCommand(false),
 		new HelpSetBotCommand(true),

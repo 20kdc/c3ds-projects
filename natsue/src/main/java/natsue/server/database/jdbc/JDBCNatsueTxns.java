@@ -28,6 +28,7 @@ public class JDBCNatsueTxns {
 	public final GetCreatureInfo getCreatureInfo = new GetCreatureInfo();
 	public final GetCreatureEvents getCreatureEvents = new GetCreatureEvents();
 	public final AddCreatureEvent addCreatureEvent = new AddCreatureEvent();
+	public final GetCreaturesInWorld getCreaturesInWorld = new GetCreaturesInWorld();
 	public final CreateUser createUser = new CreateUser();
 	public final UpdateUserAuth updateUserAuth = new UpdateUserAuth();
 
@@ -186,6 +187,23 @@ public class JDBCNatsueTxns {
 		@Override
 		protected void parameterize(PreparedStatement ps) throws SQLException {
 			ps.setString(1, moniker);
+		}
+	}
+
+	public static class GetCreaturesInWorld extends ILDBTxnGet<LinkedList<String>> {
+		public String worldID;
+		public int limit, offset;
+
+		public GetCreaturesInWorld() {
+			super(StringRSC.INSTANCE_LIST,
+				"SELECT DISTINCT moniker FROM natsue_history_events WHERE world_id=? ORDER BY moniker LIMIT ? OFFSET ?");
+		}
+
+		@Override
+		protected void parameterize(PreparedStatement ps) throws SQLException {
+			ps.setString(1, worldID);
+			ps.setInt(2, limit);
+			ps.setInt(3, offset);
 		}
 	}
 
