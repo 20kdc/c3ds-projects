@@ -114,15 +114,20 @@ public class Config extends BaseConfig.Group {
 	/**
 	 * Request abuse prevention
 	 */
+	public final Int initialNoDataShutdownTime = new Int("initialNoDataShutdownTime", 30)
+			.describe("For an initial connection, amount of seconds to go without receiving a byte from the client before we decide we're being trolled.");
+
+	/**
+	 * Request abuse prevention
+	 */
 	public final Int httpRequestNoDataShutdownTime = new Int("httpRequestNoDataShutdownTime", 30)
 			.describe("During an HTTP request, amount of seconds to go without receiving a byte from the client before we decide we're being trolled.");
 
 	/**
-	 * Socket linger time
+	 * Request abuse prevention
 	 */
-	public final Int lingerTime = new Int("lingerTime", 30)
-			.describe("Linger setting. Amount of seconds after closing the socket to keep it around to ensure data finishes transferring.\n" +
-					"Very important so that HTTP works properly.");
+	public final Int httpRequestLingerTime = new Int("httpRequestLingerTime", 30)
+			.describe("During an HTTP request, the linger time for transmitting data back to the client.");
 
 	/**
 	 * Allow creature history.

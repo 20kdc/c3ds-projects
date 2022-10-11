@@ -103,26 +103,6 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 		}
 	}
 
-	private int getKeepAliveTime() {
-		int keepAlive = config.manualKeepAliveTime.getValue();
-		if (keepAlive <= 0) {
-			keepAlive = 0;
-		} else {
-			keepAlive *= 1000;
-		}
-		return keepAlive;
-	}
-
-	private int getHTTPByteTime() {
-		int keepAlive = config.httpRequestNoDataShutdownTime.getValue();
-		if (keepAlive <= 0) {
-			keepAlive = 0;
-		} else {
-			keepAlive *= 1000;
-		}
-		return keepAlive;
-	}
-
 	@Override
 	public void run() {
 		try {
@@ -130,16 +110,13 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 			socketInput = socket.getInputStream();
 			socketOutput = socket.getOutputStream();
 			socket.setKeepAlive(true);
-			int linger = config.lingerTime.getValue();
-			socket.setSoLinger(true, linger);
 			setName("Natsue-" + socket.getRemoteSocketAddress());
 			if (config.logAllConnections.getValue())
 				log("Accepted");
 			// Get first byte (as HTTP connection check)
 			int firstByte = -1;
-			int keepAlive = getKeepAliveTime();
 			byte[] tmpHttpChk = new byte[1];
-			if (PacketReader.readWithTimeout(socket, keepAlive, tmpHttpChk, 0, 1) != 1) {
+			if (PacketReader.readWithTimeout(socket, config.initialNoDataShutdownTime.getAsClampedMs(), tmpHttpChk, 0, 1) != 1) {
 				// fine then, be that way
 				return;
 			}
@@ -153,6 +130,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 			// Confirmed to be a Babel connection.
 			sessionState = initialSessionStateBuilder.apply(this);
 			// This is the main loop!
+			int keepAlive = config.manualKeepAliveTime.getAsClampedMs();
 			while (sessionState != null) {
 				byte[] header = null;
 				try {
@@ -191,8 +169,14 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 	}
 
 	private void handleHTTPConnection(int firstByte) throws IOException {
+		try {
+			socket.setSoLinger(true, config.httpRequestLingerTime.getValue());
+		} catch (Exception ex2) {
+			log("SCARY WARNING CAN'T SET LINGER");
+			log(ex2);
+		}
 		byte[] requestBuffer = new byte[256];
-		int keepAlive = getHTTPByteTime();
+		int keepAlive = config.httpRequestNoDataShutdownTime.getAsClampedMs();
 		int len = 1;
 		requestBuffer[0] = (byte) firstByte;
 		while (len < 256) {
@@ -204,6 +188,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 				if ((requestBuffer[len] == (byte) '\r') || (requestBuffer[len] == (byte) '\n')) {
 					try {
 						String line = new String(requestBuffer, 0, len, StandardCharsets.UTF_8);
+						log("HTTP request: " + line);
 						initialHandler.handleHTTP(line, this);
 						return;
 					} catch (Exception ex) {
@@ -234,8 +219,10 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 		sb.append("\r\nContent-Length: ");
 		sb.append(body.length);
 		sb.append("\r\nConnection: close\r\n\r\n");
-		socket.getOutputStream().write(sb.toString().getBytes(StandardCharsets.UTF_8));
-		if (!head)
-			socket.getOutputStream().write(body);
+		socketOutput.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+		if (!head) {
+			socketOutput.write(body);
+			socketOutput.flush();
+		}
 	}
 }

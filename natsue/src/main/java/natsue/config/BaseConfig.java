@@ -117,6 +117,16 @@ public abstract class BaseConfig {
 			return this;
 		}
 
+		public int getAsClampedMs() {
+			int keepAlive = getValue();
+			if (keepAlive <= 0) {
+				keepAlive = 0;
+			} else {
+				keepAlive *= 1000;
+			}
+			return keepAlive;
+		}
+
 		@Override
 		protected Integer valueFromString(String str) {
 			return Integer.valueOf(str);
