@@ -76,15 +76,21 @@ public interface INatsueDatabase {
 	LinkedList<NatsueDBCreatureEvent> getCreatureEvents(String moniker);
 
 	/**
+	 * Registers a creature life event in the database if it does not already exist
+	 */
+	boolean ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int lifeStage, String param1, String param2, String worldName, String worldID, String userID);
+
+	/**
 	 * Returns creatures in world.
 	 * Returns null for none.
 	 */
 	LinkedList<String> getCreaturesInWorld(String worldID, int limit, int offset);
 
 	/**
-	 * Registers a creature life event in the database if it does not already exist
+	 * Returns creatures in world.
+	 * Returns null for none.
 	 */
-	boolean ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int lifeStage, String param1, String param2, String worldName, String worldID, String userID);
+	LinkedList<NatsueDBWorldInfo> getWorldsInUser(int uid, int limit, int offset);
 
 	/**
 	 * Tries to create a user with the given details.

@@ -14,9 +14,11 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 
 import natsue.data.Snowflake;
+import natsue.data.babel.UINUtils;
 import natsue.server.database.NatsueDBCreatureEvent;
 import natsue.server.database.NatsueDBCreatureInfo;
 import natsue.server.database.NatsueDBUserInfo;
+import natsue.server.database.NatsueDBWorldInfo;
 
 public class JDBCNatsueTxns {
 	public final UserByUID userByUID = new UserByUID();
@@ -29,6 +31,7 @@ public class JDBCNatsueTxns {
 	public final GetCreatureEvents getCreatureEvents = new GetCreatureEvents();
 	public final AddCreatureEvent addCreatureEvent = new AddCreatureEvent();
 	public final GetCreaturesInWorld getCreaturesInWorld = new GetCreaturesInWorld();
+	public final GetWorldsInUser getWorldsInUser = new GetWorldsInUser();
 	public final CreateUser createUser = new CreateUser();
 	public final UpdateUserAuth updateUserAuth = new UpdateUserAuth();
 
@@ -190,23 +193,6 @@ public class JDBCNatsueTxns {
 		}
 	}
 
-	public static class GetCreaturesInWorld extends ILDBTxnGet<LinkedList<String>> {
-		public String worldID;
-		public int limit, offset;
-
-		public GetCreaturesInWorld() {
-			super(StringRSC.INSTANCE_LIST,
-				"SELECT DISTINCT moniker FROM natsue_history_events WHERE world_id=? ORDER BY moniker LIMIT ? OFFSET ?");
-		}
-
-		@Override
-		protected void parameterize(PreparedStatement ps) throws SQLException {
-			ps.setString(1, worldID);
-			ps.setInt(2, limit);
-			ps.setInt(3, offset);
-		}
-	}
-
 	public static class AddCreatureEvent extends ILDBTxn<Boolean> {
 		public int senderUID;
 		public String moniker;
@@ -246,6 +232,54 @@ public class JDBCNatsueTxns {
 			}
 		}
 	}
+
+	public static class GetCreaturesInWorld extends ILDBTxnGet<LinkedList<String>> {
+		public String worldID;
+		public int limit, offset;
+
+		public GetCreaturesInWorld() {
+			super(StringRSC.INSTANCE_LIST,
+				"SELECT DISTINCT moniker FROM natsue_history_events WHERE world_id=? ORDER BY moniker LIMIT ? OFFSET ?");
+		}
+
+		@Override
+		protected void parameterize(PreparedStatement ps) throws SQLException {
+			ps.setString(1, worldID);
+			ps.setInt(2, limit);
+			ps.setInt(3, offset);
+		}
+	}
+
+	public static class GetWorldsInUser extends ILDBTxnGet<LinkedList<NatsueDBWorldInfo>> {
+		public int uid;
+		public int limit, offset;
+
+		public GetWorldsInUser() {
+			super(new ILListRSC<>(new WRSC()),
+				"SELECT DISTINCT world_id, sender_uid, world_name FROM natsue_history_events " +
+				"WHERE sender_uid=? AND user_id=? ORDER BY world_name LIMIT ? OFFSET ?");
+		}
+
+		@Override
+		protected void parameterize(PreparedStatement ps) throws SQLException {
+			ps.setInt(1, uid);
+			ps.setString(2, UINUtils.toString(UINUtils.make(uid, UINUtils.HID_USER)));
+			ps.setInt(3, limit);
+			ps.setInt(4, offset);
+		}
+		private static class WRSC implements ILResultSetConverter<NatsueDBWorldInfo> {
+			@Override
+			public NatsueDBWorldInfo fromResultSet(ResultSet rs) throws SQLException {
+				return new NatsueDBWorldInfo(
+					// beware the order swap
+					rs.getInt(2),
+					rs.getString(1),
+					rs.getString(3)
+				);
+			}
+		}
+	}
+
 	public static class CreateUser extends ILDBTxn<Boolean> {
 		public NatsueDBUserInfo userInfo;
 

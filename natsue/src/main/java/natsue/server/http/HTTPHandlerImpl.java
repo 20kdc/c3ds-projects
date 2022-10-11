@@ -25,6 +25,7 @@ import natsue.server.database.INatsueDatabase;
 import natsue.server.database.INatsueUserFlags;
 import natsue.server.database.NatsueDBCreatureEvent;
 import natsue.server.database.NatsueDBCreatureInfo;
+import natsue.server.database.NatsueDBWorldInfo;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.system.SystemCommands;
 import natsue.server.userdata.INatsueUserData;
@@ -137,9 +138,7 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					rsp.append("<a href=\"world?" + HTMLEncoder.hrefEncode(ev.worldID) + "\">");
-					HTMLEncoder.htmlEncode(rsp, ev.worldName);
-					rsp.append("</a>");
+					writeWorldReference(rsp, ev.worldID, ev.worldName);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
@@ -201,24 +200,7 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			}
 			rsp.append("</ul>\n");
 
-			int prevOfs = offset - limit;
-			if (prevOfs >= 0) {
-				rsp.append("<a href=\"world?");
-				rsp.append(worldID);
-				rsp.append("&");
-				rsp.append(prevOfs);
-				rsp.append("\">prev</a>");
-				if (shouldHaveNext)
-					rsp.append(" ");
-			}
-			if (shouldHaveNext) {
-				rsp.append("<a href=\"world?");
-				rsp.append(worldID);
-				rsp.append("&");
-				rsp.append(offset + limit);
-				rsp.append("\">next</a>");
-			}
-			rsp.append("\n");
+			writePager(rsp, offset, limit, shouldHaveNext, "world?" + HTMLEncoder.hrefEncode(worldID));
 
 			StringBuilder ttl = new StringBuilder();
 			ttl.append("World ");
@@ -237,8 +219,14 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				failInvalidRequestFormat(r, head);
 				return;
 			}
+			int limit = 50;
+			int offset = 0;
+			String userRef = HTMLEncoder.urlDecode(qs[0]);
+			if (qs.length >= 2)
+				offset = Integer.parseInt(qs[1]);
+
 			StringBuilder rsp = new StringBuilder();
-			String fragment = HTMLEncoder.urlDecode(qs[0]);
+			String fragment = HTMLEncoder.urlDecode(userRef);
 			INatsueUserData data = hub.getUserDataByNickname(fragment);
 			if (data == null)
 				data = hub.getUserDataByUIN(UINUtils.valueOf(fragment));
@@ -259,11 +247,55 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 					rsp.append("Offline<br/>");
 				}
 				rsp.append("Flags: " + INatsueUserFlags.Flag.showFlags(data.getFlags()) + "<br/>");
+
+				if (UINUtils.isRegularUser(data.getUIN())) {
+					rsp.append("Known worlds (showing " + limit + " at " + offset + "):<ul>\n");
+					LinkedList<NatsueDBWorldInfo> m = database.getWorldsInUser(UINUtils.uid(data.getUIN()), limit, offset);
+					boolean shouldHaveNext = false;
+					if (m != null) {
+						shouldHaveNext = m.size() == limit;
+						for (NatsueDBWorldInfo world : m) {
+							rsp.append("<li>");
+							writeWorldReference(rsp, world.worldID, world.worldName);
+							rsp.append("</li>\n");
+						}
+					}
+					rsp.append("</ul>\n");
+	
+					writePager(rsp, offset, limit, shouldHaveNext, "user?" + HTMLEncoder.hrefEncode(userRef));
+				}
 			}
 			kisspopUI(r, head, title, rsp.toString());
 		} else {
 			kisspopUI(r, head, "404 Not Found", "No such file...", "");
 		}
+	}
+
+	private void writeWorldReference(StringBuilder rsp, String worldID, String worldName) {
+		rsp.append("<a href=\"world?" + HTMLEncoder.hrefEncode(worldID) + "\">");
+		HTMLEncoder.htmlEncode(rsp, worldName);
+		rsp.append("</a>");
+	}
+
+	private void writePager(StringBuilder rsp, int offset, int limit, boolean shouldHaveNext, String lBase) {
+		int prevOfs = offset - limit;
+		if (prevOfs >= 0) {
+			rsp.append("<a href=\"");
+			rsp.append(lBase);
+			rsp.append("&");
+			rsp.append(prevOfs);
+			rsp.append("\">prev</a>");
+			if (shouldHaveNext)
+				rsp.append(" ");
+		}
+		if (shouldHaveNext) {
+			rsp.append("<a href=\"");
+			rsp.append(lBase);
+			rsp.append("&");
+			rsp.append(offset + limit);
+			rsp.append("\">next</a>");
+		}
+		rsp.append("\n");
 	}
 
 	private void failInvalidRequestFormat(Client r, boolean head) throws IOException {
