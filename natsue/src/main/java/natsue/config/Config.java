@@ -118,6 +118,13 @@ public class Config extends BaseConfig.Group {
 			.describe("During an HTTP request, amount of seconds to go without receiving a byte from the client before we decide we're being trolled.");
 
 	/**
+	 * Socket linger time
+	 */
+	public final Int lingerTime = new Int("lingerTime", 30)
+			.describe("Linger setting. Amount of seconds after closing the socket to keep it around to ensure data finishes transferring.\n" +
+					"Very important so that HTTP works properly.");
+
+	/**
 	 * Allow creature history.
 	 */
 	public final Bool allowCreatureHistory = new Bool("allowCreatureHistory", true)

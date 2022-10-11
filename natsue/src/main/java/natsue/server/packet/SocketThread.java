@@ -130,6 +130,8 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 			socketInput = socket.getInputStream();
 			socketOutput = socket.getOutputStream();
 			socket.setKeepAlive(true);
+			int linger = config.lingerTime.getValue();
+			socket.setSoLinger(true, linger);
 			setName("Natsue-" + socket.getRemoteSocketAddress());
 			if (config.logAllConnections.getValue())
 				log("Accepted");

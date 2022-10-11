@@ -33,6 +33,7 @@ public class HTMLEncoder {
 		safeASCII[']'] = true;
 		safeASCII[','] = true;
 		safeASCII['.'] = true;
+		safeASCII['!'] = true;
 	}
 	public static void htmlEncode(StringBuilder sw, String inp) {
 		for (char ch : inp.toCharArray()) {
