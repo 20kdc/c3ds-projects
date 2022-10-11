@@ -10,16 +10,23 @@ package natsue.server.database.jdbc;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 /**
- * Converts from a ResultSet to something else.
+ * List converter
  */
-public interface ILResultSetConverter<V> {
-	default V fromResultSet(ResultSet rs) throws SQLException {
-		throw new RuntimeException("NYI");
+public class ILListRSC<V> implements ILResultSetConverter<LinkedList<V>> {
+	public final ILResultSetConverter<V> base;
+	public ILListRSC(ILResultSetConverter<V> b) {
+		base = b;
 	}
 
-	default void toStatement(V value, PreparedStatement s) throws SQLException {
-		throw new RuntimeException("NYI");
+	@Override
+	public LinkedList<V> fromResultSet(ResultSet rs) throws SQLException {
+		LinkedList<V> res = new LinkedList<>();
+		res.add(base.fromResultSet(rs));
+		while (rs.next())
+			res.add(base.fromResultSet(rs));
+		return res;
 	}
 }

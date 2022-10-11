@@ -10,8 +10,11 @@ package natsue.server.packet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
 import natsue.config.Config;
@@ -21,12 +24,13 @@ import natsue.data.babel.ctos.BaseCTOS;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.session.ISessionClient;
+import natsue.server.http.IHTTPHandler;
 import natsue.server.session.BaseSessionState;
 
 /**
  * Thread for a given client.
  */
-public class SocketThread extends Thread implements ILogSource, ISessionClient {
+public class SocketThread extends Thread implements ILogSource, ISessionClient, IHTTPHandler.Client {
 	public final Socket socket;
 	private InputStream socketInput;
 	private OutputStream socketOutput;
@@ -35,12 +39,14 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 	public final Config config;
 	public BaseSessionState sessionState;
 	public final Function<SocketThread, BaseSessionState> initialSessionStateBuilder;
+	public final IHTTPHandler initialHandler;
 	public long myUIN;
 
-	public SocketThread(Socket skt, Function<SocketThread, BaseSessionState> iSessionStateBuilder, ILogProvider ilp, Config stc) {
+	public SocketThread(Socket skt, Function<SocketThread, BaseSessionState> iSessionStateBuilder, IHTTPHandler iHandler, ILogProvider ilp, Config stc) {
 		socket = skt;
 		logParent = ilp;
 		initialSessionStateBuilder = iSessionStateBuilder;
+		initialHandler = iHandler;
 		config = stc;
 	}
 
@@ -97,6 +103,26 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 		}
 	}
 
+	private int getKeepAliveTime() {
+		int keepAlive = config.manualKeepAliveTime.getValue();
+		if (keepAlive <= 0) {
+			keepAlive = 0;
+		} else {
+			keepAlive *= 1000;
+		}
+		return keepAlive;
+	}
+
+	private int getHTTPByteTime() {
+		int keepAlive = config.httpRequestNoDataShutdownTime.getValue();
+		if (keepAlive <= 0) {
+			keepAlive = 0;
+		} else {
+			keepAlive *= 1000;
+		}
+		return keepAlive;
+	}
+
 	@Override
 	public void run() {
 		try {
@@ -107,18 +133,29 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 			setName("Natsue-" + socket.getRemoteSocketAddress());
 			if (config.logAllConnections.getValue())
 				log("Accepted");
+			// Get first byte (as HTTP connection check)
+			int firstByte = -1;
+			int keepAlive = getKeepAliveTime();
+			byte[] tmpHttpChk = new byte[1];
+			if (PacketReader.readWithTimeout(socket, keepAlive, tmpHttpChk, 0, 1) != 1) {
+				// fine then, be that way
+				return;
+			}
+			firstByte = tmpHttpChk[0] & 0xFF;
+			if (firstByte != 0x25) {
+				// If this isn't a handshake packet, then this is not a Babel connection (or at least a normal one).
+				// Assume it to be HTTP.
+				handleHTTPConnection(firstByte);
+				return;
+			}
+			// Confirmed to be a Babel connection.
 			sessionState = initialSessionStateBuilder.apply(this);
 			// This is the main loop!
 			while (sessionState != null) {
-				int keepAlive = config.manualKeepAliveTime.getValue();
-				if (keepAlive <= 0) {
-					keepAlive = 0;
-				} else {
-					keepAlive *= 1000;
-				}
 				byte[] header = null;
 				try {
-					header = PacketReader.readPacketHeader(socket, keepAlive);
+					header = PacketReader.readPacketHeader(socket, keepAlive, firstByte);
+					firstByte = -1;
 					if (header == null)
 						break;
 				} catch (SocketTimeoutException ste) {
@@ -149,5 +186,54 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient {
 			if (config.logAllConnections.getValue())
 				log("Closed");
 		}
+	}
+
+	private void handleHTTPConnection(int firstByte) throws IOException {
+		byte[] requestBuffer = new byte[256];
+		int keepAlive = getHTTPByteTime();
+		int len = 1;
+		requestBuffer[0] = (byte) firstByte;
+		while (len < 256) {
+			try {
+				if (PacketReader.readWithTimeout(socket, keepAlive, requestBuffer, len, 1) <= 0) {
+					httpResponse("400 Bad Request", false, "The request did not contain a carriage return or newline.");
+					return;
+				}
+				if ((requestBuffer[len] == (byte) '\r') || (requestBuffer[len] == (byte) '\n')) {
+					try {
+						String line = new String(requestBuffer, 0, len, StandardCharsets.UTF_8);
+						initialHandler.handleHTTP(line, this);
+						return;
+					} catch (Exception ex) {
+						log(ex);
+						StringWriter sb = new StringWriter();
+						PrintWriter pb = new PrintWriter(sb);
+						ex.printStackTrace(pb);
+						pb.flush();
+						httpResponse("500 Internal Server Error", false, sb.toString());
+					}
+				}
+				len++;
+			} catch (SocketTimeoutException ste) {
+				httpResponse("408 Request Timeout", false, "The request was not sent in a timely manner.");
+				return;
+			}
+		}
+		httpResponse("414 URI Too Long", false, "The input URI was too long.");
+	}
+
+	@Override
+	public void httpResponse(String status, boolean head, String contentType, byte[] body) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("HTTP/1.1 ");
+		sb.append(status);
+		sb.append("\r\nContent-Type: ");
+		sb.append(contentType);
+		sb.append("\r\nContent-Length: ");
+		sb.append(body.length);
+		sb.append("\r\nConnection: close\r\n\r\n");
+		socket.getOutputStream().write(sb.toString().getBytes(StandardCharsets.UTF_8));
+		if (!head)
+			socket.getOutputStream().write(body);
 	}
 }

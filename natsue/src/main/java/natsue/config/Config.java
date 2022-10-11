@@ -112,6 +112,12 @@ public class Config extends BaseConfig.Group {
 			.describe("Amount of seconds to go without receiving a packet from the client before we decide to just send a little one to it. <= 0 means not to send these.");
 
 	/**
+	 * Request abuse prevention
+	 */
+	public final Int httpRequestNoDataShutdownTime = new Int("httpRequestNoDataShutdownTime", 30)
+			.describe("During an HTTP request, amount of seconds to go without receiving a byte from the client before we decide we're being trolled.");
+
+	/**
 	 * Allow creature history.
 	 */
 	public final Bool allowCreatureHistory = new Bool("allowCreatureHistory", true)

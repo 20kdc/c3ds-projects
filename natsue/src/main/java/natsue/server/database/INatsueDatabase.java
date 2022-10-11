@@ -7,6 +7,8 @@
 
 package natsue.server.database;
 
+import java.util.LinkedList;
+
 import natsue.config.IConfigProvider;
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.UINUtils;
@@ -60,6 +62,18 @@ public interface INatsueDatabase {
 	 * Updates a creature's name and user text.
 	 */
 	boolean updateCreatureText(String moniker, String name, String userText);
+
+	/**
+	 * Returns creature info.
+	 * Returns null for no info.
+	 */
+	NatsueDBCreatureInfo getCreatureInfo(String moniker);
+
+	/**
+	 * Returns creature events.
+	 * Returns null for no events.
+	 */
+	LinkedList<NatsueDBCreatureEvent> getCreatureEvents(String moniker);
 
 	/**
 	 * Registers a creature life event in the database if it does not already exist

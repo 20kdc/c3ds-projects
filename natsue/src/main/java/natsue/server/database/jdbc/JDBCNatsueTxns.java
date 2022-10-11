@@ -11,8 +11,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 import natsue.data.Snowflake;
+import natsue.server.database.NatsueDBCreatureEvent;
+import natsue.server.database.NatsueDBCreatureInfo;
 import natsue.server.database.NatsueDBUserInfo;
 
 public class JDBCNatsueTxns {
@@ -22,6 +25,8 @@ public class JDBCNatsueTxns {
 	public final StoreOnSpool storeOnSpool = new StoreOnSpool();
 	public final AddCreature addCreature = new AddCreature();
 	public final UpdateCreatureText updateCreatureText = new UpdateCreatureText();
+	public final GetCreatureInfo getCreatureInfo = new GetCreatureInfo();
+	public final GetCreatureEvents getCreatureEvents = new GetCreatureEvents();
 	public final AddCreatureEvent addCreatureEvent = new AddCreatureEvent();
 	public final CreateUser createUser = new CreateUser();
 	public final UpdateUserAuth updateUserAuth = new UpdateUserAuth();
@@ -115,7 +120,9 @@ public class JDBCNatsueTxns {
 
 		@Override
 		protected Boolean executeInner(Connection conn) throws SQLException {
-			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_history_creatures(moniker, first_uid, ch0, ch1, ch2, ch3, ch4, name, user_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_history_creatures(" +
+					"moniker, first_uid, ch0, ch1, ch2, ch3, ch4, name, user_text" +
+					") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 				stmt.setString(1, moniker);
 				stmt.setInt(2, firstUID);
 				stmt.setInt(3, ch0);
@@ -141,7 +148,8 @@ public class JDBCNatsueTxns {
 
 		@Override
 		protected Boolean executeInner(Connection conn) throws SQLException {
-			try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET name=?, user_text=? WHERE moniker=?")) {
+			try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET name=?, user_text=? " +
+					"WHERE moniker=?")) {
 				stmt.setString(1, moniker);
 				stmt.setString(2, name);
 				stmt.setString(3, userText);
@@ -150,6 +158,37 @@ public class JDBCNatsueTxns {
 			}
 		}
 	}
+
+	public static class GetCreatureInfo extends ILDBTxnGet<NatsueDBCreatureInfo> {
+		public String moniker;
+
+		public GetCreatureInfo() {
+			super(CreatureInfoRSC.INSTANCE,
+				"SELECT " + CreatureInfoRSC.SELECTION + " FROM natsue_history_creatures " +
+				"WHERE moniker=?");
+		}
+
+		@Override
+		protected void parameterize(PreparedStatement ps) throws SQLException {
+			ps.setString(1, moniker);
+		}
+	}
+
+	public static class GetCreatureEvents extends ILDBTxnGet<LinkedList<NatsueDBCreatureEvent>> {
+		public String moniker;
+
+		public GetCreatureEvents() {
+			super(CreatureEventListRSC.INSTANCE_LIST,
+				"SELECT " + CreatureEventListRSC.SELECTION + " FROM natsue_history_events " +
+				"WHERE moniker=? ORDER BY event_index ASC");
+		}
+
+		@Override
+		protected void parameterize(PreparedStatement ps) throws SQLException {
+			ps.setString(1, moniker);
+		}
+	}
+
 	public static class AddCreatureEvent extends ILDBTxn<Boolean> {
 		public int senderUID;
 		public String moniker;
@@ -190,9 +229,7 @@ public class JDBCNatsueTxns {
 		}
 	}
 	public static class CreateUser extends ILDBTxn<Boolean> {
-		public int uid;
-		public String nickname, nicknameFolded, passwordHash;
-		public int flags;
+		public NatsueDBUserInfo userInfo;
 
 		public CreateUser() {
 			super(true, Boolean.FALSE);
@@ -200,12 +237,8 @@ public class JDBCNatsueTxns {
 
 		@Override
 		protected Boolean executeInner(Connection conn) throws SQLException {
-			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_users(uid, nickname, nickname_folded, psha256, flags) VALUES (?, ?, ?, ?, ?)")) {
-				stmt.setInt(1, uid);
-				stmt.setString(2, nickname);
-				stmt.setString(3, nicknameFolded);
-				stmt.setString(4, passwordHash);
-				stmt.setInt(5, flags);
+			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_users(" + UserInfoRSC.SELECTION + ") VALUES (" + UserInfoRSC.VALUES + ")")) {
+				UserInfoRSC.INSTANCE.toStatement(userInfo, stmt);
 				stmt.executeUpdate();
 				return Boolean.TRUE;
 			}

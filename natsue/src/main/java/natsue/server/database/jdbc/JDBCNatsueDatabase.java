@@ -14,12 +14,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
 
 import natsue.config.Config;
 import natsue.config.ConfigDB;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.database.INatsueDatabase;
+import natsue.server.database.NatsueDBCreatureEvent;
+import natsue.server.database.NatsueDBCreatureInfo;
 import natsue.server.database.NatsueDBUserInfo;
 
 /**
@@ -109,6 +112,22 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
+	public NatsueDBCreatureInfo getCreatureInfo(String moniker) {
+		synchronized (this) {
+			txns.getCreatureInfo.moniker = moniker;
+			return txns.getCreatureInfo.executeOuter(txnHost);
+		}
+	}
+
+	@Override
+	public LinkedList<NatsueDBCreatureEvent> getCreatureEvents(String moniker) {
+		synchronized (this) {
+			txns.getCreatureEvents.moniker = moniker;
+			return txns.getCreatureEvents.executeOuter(txnHost);
+		}
+	}
+
+	@Override
 	public boolean ensureCreatureEvent(int senderUID, String moniker, int index, int type, int worldTime, int ageTicks, int unixTime, int lifeStage, String param1, String param2, String worldName, String worldID, String userID) {
 		synchronized (this) {
 			txns.addCreatureEvent.senderUID = senderUID;
@@ -131,11 +150,7 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	@Override
 	public boolean tryCreateUser(NatsueDBUserInfo userInfo) {
 		synchronized (this) {
-			txns.createUser.uid = userInfo.uid;
-			txns.createUser.nickname = userInfo.nickname;
-			txns.createUser.nicknameFolded = userInfo.nicknameFolded;
-			txns.createUser.passwordHash = userInfo.passwordHash;
-			txns.createUser.flags = userInfo.flags;
+			txns.createUser.userInfo = userInfo;
 			return txns.createUser.executeOuter(txnHost);
 		}
 	}

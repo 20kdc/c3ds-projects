@@ -28,6 +28,7 @@ import natsue.server.firewall.PRAYBlockListsFWModule;
 import natsue.server.firewall.RejectAllFWModule;
 import natsue.server.firewall.Rejector;
 import natsue.server.firewall.SpoolListFWModule;
+import natsue.server.http.HTTPHandlerImpl;
 import natsue.server.hub.ServerHub;
 import natsue.server.packet.SocketThread;
 import natsue.server.session.LoginSessionState;
@@ -95,6 +96,8 @@ public class Main {
 		// login the system user
 		serverHub.clientLogin(new SystemUserHubClient(config, ilp, serverHub), () -> {});
 
+		HTTPHandlerImpl hhi = new HTTPHandlerImpl(serverHub, actualDB);
+
 		mySource.log("ServerHub initialized.");
 
 		int port = config.port.getValue();
@@ -106,7 +109,7 @@ public class Main {
 
 				new SocketThread(skt, (st) -> {
 					return new LoginSessionState(config, st, serverHub);
-				}, ilp, config).start();
+				}, hhi, ilp, config).start();
 			}
 		}
 	}

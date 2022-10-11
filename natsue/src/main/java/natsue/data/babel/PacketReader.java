@@ -103,15 +103,35 @@ public class PacketReader {
 	}
 
 	/**
-	 * Reads a packet header from a socket. Returns null on EOF and won't throw SocketTimeoutException on a partial read.
+	 * Wraps Socket.getInputStream().read() with setting the socket timeout.
 	 */
-	public static byte[] readPacketHeader(Socket skt, int timeoutMs) throws IOException {
+	public static int readWithTimeout(Socket skt, int timeoutMs, byte[] data, int dataOfs, int dataLen) throws IOException {
 		skt.setSoTimeout(timeoutMs);
+		try {
+			return skt.getInputStream().read(data, dataOfs, dataLen);
+		} finally {
+			skt.setSoTimeout(0);
+		}
+	}
+
+	/**
+	 * Reads a packet header from a socket. Returns null on EOF and won't throw SocketTimeoutException on a partial read.
+	 * firstByte is -1 for no specified byte
+	 */
+	public static byte[] readPacketHeader(Socket skt, int timeoutMs, int firstByte) throws IOException {
 		byte[] data = new byte[PACKET_HEADER_SIZE];
-		int res = skt.getInputStream().read(data);
+		int res;
+		if (firstByte != -1) {
+			data[0] = (byte) firstByte;
+			res = readWithTimeout(skt, timeoutMs, data, 1, data.length - 1);
+		} else {
+			res = readWithTimeout(skt, timeoutMs, data, 0, data.length);
+		}
 		if (res <= 0)
 			return null;
-		skt.setSoTimeout(0);
+		// compensate for the manually read byte
+		if (firstByte != -1)
+			res++;
 		readFully(skt.getInputStream(), data, res, PACKET_HEADER_SIZE - res);
 		return data;
 	}
