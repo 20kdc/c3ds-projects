@@ -120,14 +120,20 @@ public class Config extends BaseConfig.Group {
 	/**
 	 * Request abuse prevention
 	 */
-	public final Int httpRequestNoDataShutdownTime = new Int("httpRequestNoDataShutdownTime", 30)
-			.describe("During an HTTP request, amount of seconds to go without receiving a byte from the client before we decide we're being trolled.");
+	public final Int httpRequestTime = new Int("httpRequestTime", 30)
+			.describe("During an HTTP request, amount of seconds the request may go on for before we decide we're being trolled.");
 
 	/**
 	 * Request abuse prevention
 	 */
 	public final Int httpRequestFakeLingerTime = new Int("httpRequestFakeLingerTime", 10)
-			.describe("During an HTTP request, the linger time for transmitting data back to the client.");
+			.describe("During an HTTP request, amount of seconds for a connection to linger for transmitting data back to the client.");
+
+	/**
+	 * Request abuse prevention
+	 */
+	public final Int httpRequestMaxLength = new Int("httpRequestMaxLength", 8192)
+			.describe("During an HTTP request, maximum size of the header.");
 
 	/**
 	 * Allow creature history.

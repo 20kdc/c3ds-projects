@@ -24,6 +24,7 @@ import natsue.data.babel.ctos.BaseCTOS;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.session.ISessionClient;
+import natsue.server.http.HTTPRequest;
 import natsue.server.http.IHTTPHandler;
 import natsue.server.session.BaseSessionState;
 
@@ -169,57 +170,22 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 	}
 
 	private void handleHTTPConnection(int firstByte) throws IOException {
-		byte[] requestBuffer = new byte[256];
-		int keepAlive = config.httpRequestNoDataShutdownTime.getAsClampedMs();
-		int len = 1;
-		requestBuffer[0] = (byte) firstByte;
-		while (len < 256) {
+		byte[] request = HTTPRequest.readRequestHeader(socket, this, this, firstByte, config.httpRequestMaxLength.getValue(), config.httpRequestTime.getValue());
+		if (request != null) {
+			String requestStr = new String(request, 0, request.length, StandardCharsets.UTF_8);
+			int idx1 = requestStr.indexOf('\r');
+			String requestLine = requestStr.substring(0, idx1);
 			try {
-				if (PacketReader.readWithTimeout(socket, keepAlive, requestBuffer, len, 1) <= 0) {
-					httpResponse("400 Bad Request", false, "The request did not contain a carriage return or newline.");
-					return;
-				}
-				if ((requestBuffer[len] == (byte) '\r') || (requestBuffer[len] == (byte) '\n')) {
-					try {
-						String line = new String(requestBuffer, 0, len, StandardCharsets.UTF_8);
-						// now that's over, try to find the r/n/r/n
-						requestBuffer[0] = 'X';
-						requestBuffer[1] = 'X';
-						requestBuffer[2] = 'X';
-						requestBuffer[3] = '\r';
-						while (true) {
-							if (PacketReader.readWithTimeout(socket, keepAlive, requestBuffer, 4, 1) <= 0) {
-								httpResponse("400 Bad Request", false, "The request did not contain a body separator.");
-								return;
-							}
-							for (int i = 0; i < 4; i++)
-								requestBuffer[i] = requestBuffer[i + 1];
-							// found it?
-							if (requestBuffer[0] == '\r')
-								if (requestBuffer[1] == '\n')
-									if (requestBuffer[2] == '\r')
-										if (requestBuffer[3] == '\n')
-											break;
-						}
-						log("HTTP request: " + line);
-						initialHandler.handleHTTP(line, this);
-						return;
-					} catch (Exception ex) {
-						log(ex);
-						StringWriter sb = new StringWriter();
-						PrintWriter pb = new PrintWriter(sb);
-						ex.printStackTrace(pb);
-						pb.flush();
-						httpResponse("500 Internal Server Error", false, sb.toString());
-					}
-				}
-				len++;
-			} catch (SocketTimeoutException ste) {
-				httpResponse("408 Request Timeout", false, "The request was not sent in a timely manner.");
-				return;
+				initialHandler.handleHTTP(requestLine, this);
+			} catch (Exception ex) {
+				log(ex);
+				StringWriter sb = new StringWriter();
+				PrintWriter pb = new PrintWriter(sb);
+				ex.printStackTrace(pb);
+				pb.flush();
+				httpResponse("500 Internal Server Error", false, sb.toString());
 			}
 		}
-		httpResponse("414 URI Too Long", false, "The input URI was too long.");
 	}
 
 	@Override

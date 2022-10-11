@@ -51,12 +51,19 @@ public class HTMLEncoder {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public static String urlDecode(String substring) {
-		return URLDecoder.decode(substring);
+		try {
+			return URLDecoder.decode(substring, "UTF-8");
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
 	public static String urlEncode(String nickname) {
-		return URLEncoder.encode(nickname);
+		try {
+			return URLEncoder.encode(nickname, "UTF-8");
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 }
