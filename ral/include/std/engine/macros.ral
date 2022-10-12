@@ -10,6 +10,28 @@
  */
 
 include "std/engine/commands/agents.ral";
+// brain not yet added
+// camera not yet added
+// cd not yet added
+// compounds not yet added
+// creatures not yet added
+// debug not yet added
+// files not yet added
+// flow omitted because compiler handles it
+include "std/engine/commands/genetics.ral";
+// history not yet added
+// input not yet added
+// map not yet added
+// motion not yet added
+// net not yet added
+// ports not yet added
+// resources not yet added
+// scripts not yet added
+// sounds not yet added
+// time not yet added
+// variables not yet added
+// vehicles not yet added
+// world not yet added
 
 macro read(str &tag, int &index) &'read {tag} {index}'!str;
 
@@ -24,10 +46,6 @@ macro () scrx(int &family, int &genus, int &species, int &scr) &'scrx {family, g
 macro () scam(Agent? &agent, int &part) &'scam {agent, part}';
 macro () trck(Agent? &agent, int &xp, int &yp, int &s, int &t) &'scam {agent, xp, yp, s, t}';
 
-macro () kill(Agent &value) &'kill {value}';
-
-macro () mesgWrit(Agent &value, int &msgId) &'mesg writ {value} {msgId}';
-
 macro () mvsf(num &x, num &y) &'mvsf {x, y}';
 macro () frel(Agent? &dst) &'frel {dst}';
 macro () flto(num &x, num &y) &'flto {x, y}';
@@ -39,14 +57,12 @@ macro () newSimple(int &family, int &genus, int &species, str &gallery, int &cou
 macro histName(str &moniker) &'hist name {moniker}'!str;
 macro histGend(str &moniker) &'hist gend {moniker}'!int;
 macro () histWipe(str &moniker) &'hist wipe {moniker}';
-
+macro histWnam(str &moniker, int &e) &'hist wnam {moniker, e}'!str;
+macro histWtik(str &moniker, int &e) &'hist wtik {moniker, e}'!int;
+macro histWuid(str &moniker, int &e) &'hist wuid {moniker, e}'!str;
+macro histWvet(str &moniker) &'hist wvet {moniker}'!bool;
 macro ooww(str &moniker) &'ooww {moniker}'!int;
 
-macro () geneKill(Agent &victim, int &slot) &'gene kill {victim, slot}';
-macro () geneClon(Agent &dst, int &dstSlot, Agent &src, int &srcSlot) &'gene clon {dst, dstSlot, src, srcSlot}';
-macro () geneMove(Agent &dst, int &dstSlot, Agent &src, int &srcSlot) &'gene move {dst, dstSlot, src, srcSlot}';
-
-macro gtos(int &slot) &'gtos {slot}'!str;
 macro subs(str &text, int &start, int &len) &'subs {text, start, len}'!str;
 
 // rtar/star/ttar family

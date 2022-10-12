@@ -66,15 +66,63 @@ macro () frat(int &a) &'frat {a}';
 
 macro () gait(int &a) &'gait {a}';
 
-// MISSING...
+macro () gall(str &a, int &b) &'gall {a, b}';
+macro gall() &'gall'!str;
+
+macro gnus() &'gnus'!int;
 
 macro hand() &'hand'!str;
+macro () hand(str &value) &'hand {value}';
+
+macro held() &'held'!Agent?;
+
+macro hght() &'hght'!int;
+
+macro iitt() &'iitt'!Agent?;
+
+macro imsk() &'imsk'!int;
+
+macro () kill(Agent &value) &'kill {value}';
+
+macro () mesgWrit(Agent &value, int &msgId) &'mesg writ {value, msgId}';
+macro () mesgWrtP(Agent &value, int &msgId, any &p1, any &p2, int &delay) &'mesg writ {value, msgId, p1, p2, delay}';
+
+macro mira() &'mira'!int;
+macro () mira(int &a) &'mira {a}';
+
+macro mows() &'mows'!int;
+
+macro mthx() &'mthx'!float;
+macro mthy() &'mthy'!float;
 
 // MISSING...
+
+// NEXT is handled by compiler
+
+macro () nohh() &'nohh';
+
+// NULL is handled by compiler
+
+macro () over() &'over';
+
+// OWNR is handled by compiler
+
+macro paus() &'paus'!int;
+macro () paus(int &a) &'paus {a}';
+
+// MISSING...
+
+macro plne() &'plne'!int;
+macro () plne(int &a) &'plne {a}';
+
+macro pntr() &'pntr'!Pointer;
+
+// POSB below
 
 macro pose() &'pose'!int;
 macro () pose(int &value) &'pose {value}';
 
+// POS, in alphabetical order B.LRTXY
 // Top-left
 macro posl() &'posl'!float;
 macro post() &'post'!float;

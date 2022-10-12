@@ -1,0 +1,21 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * 2.286c/Genetics
+ */
+
+macro () geneClon(Agent &dst, int &dstSlot, Agent &src, int &srcSlot) &'gene clon {dst, dstSlot, src, srcSlot}';
+macro () geneCros(Agent &dst, int &dstSlot, Agent &src1, int &src1Slot, Agent &src2, int &src2Slot, int &cm1, int &dm1, int &cm2, int &dm2) &'gene cros {dst, dstSlot, src1, src1Slot, src2, src2Slot, cm1, dm1, cm2, dm2}';
+macro () geneKill(Agent &victim, int &slot) &'gene kill {victim, slot}';
+macro () geneLoad(Agent &dst, int &dstSlot, str &src) &'gene load {dst, dstSlot, src}';
+macro () geneMove(Agent &dst, int &dstSlot, Agent &src, int &srcSlot) &'gene move {dst, dstSlot, src, srcSlot}';
+
+macro gtos(int &slot) &'gtos {slot}'!str;
+macro mtoa(str &mon) &'mtoa {mon}'!Agent?;
+macro mtoc(str &mon) &'mtoc {mon}'!Agent?;
+
