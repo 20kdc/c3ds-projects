@@ -15,13 +15,55 @@ import natsue.names.CreatureDataVerifier;
  * Data on a creature's history!
  */
 public class CreatureHistoryBlob {
+	// Immutable state block indices
+	public static final int STATE_SEX = 0;
+	public static final int STATE_GENUS = 1;
+	public static final int STATE_VARIANT = 2;
+	public static final int STATE_POINT_MUTATIONS = 3;
+	public static final int STATE_CROSSOVER_POINTS = 4;
+	// values
+	public static final int SEX_MALE = 1;
+	public static final int SEX_FEMALE = 2;
+	public static final int GENUS_NORN = 0;
+	public static final int GENUS_GRENDEL = 1;
+	public static final int GENUS_ETTIN = 2;
+	public static final int GENUS_GEAT = 3;
+	// for convenience
+	public static final int EV_O_CONCEIVED = 0;
+	public static final int EV_O_SPLICED = 1;
+	public static final int EV_O_SYNTHESIZED = 2;
+	public static final int EV_BORN = 3;
+	public static final int EV_AGED = 4;
+	public static final int EV_IMPORTED = 5;
+	public static final int EV_EXPORTED = 6;
+	public static final int EV_DIED = 7;
+	public static final int EV_PREGNANT_SELF = 8;
+	public static final int EV_PREGNANT_OTHER = 9;
+	public static final int EV_O_CLONED = 14;
+	public static final int EV_CLONED_TO = 15;
+	public static final int EV_WARP_OUT = 16;
+	public static final int EV_WARP_IN = 17;
+
+	/**
+	 * Creature's moniker.
+	 */
 	public final String moniker;
+
+	/**
+	 * Immutable state values. May be null (as this is only supposed to be sent once!)
+	 */
 	public final int[] state;
+
+	/**
+	 * List of events.
+	 */
 	public final LifeEvent[] events;
+
 	/**
 	 * Name - if empty, might not be valid!
 	 */
 	public final String name;
+
 	/**
 	 * User text, can be null
 	 */

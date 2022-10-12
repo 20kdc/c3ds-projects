@@ -6,15 +6,14 @@ Format Structure
 * string moniker
 * byte hasCreatureState
 * if hasCreatureState != 0:
-  * int gender
-    * *This isn't absolutely certain.*
+  * int sex
+    * 1: Male, 2: Female
   * int genus
-    * *This isn't absolutely certain.*
+    * 0: Norn, 1: Grendel, 2: Ettin, 3: Geat
   * int variant
-    * *This isn't absolutely certain (though more certain than other entries here)*
-  * int lifeStage
-    * *This isn't absolutely certain.*
-  * int unknown
+    * Range of 1-8 (inclusive).
+  * int pointMutations
+  * int crossoverPoints
 * int eventCount
 * Event[eventCount] events
 * string name

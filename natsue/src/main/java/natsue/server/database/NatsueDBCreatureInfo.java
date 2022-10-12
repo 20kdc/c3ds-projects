@@ -15,18 +15,21 @@ import natsue.data.babel.CreatureHistoryBlob.LifeEvent;
 public class NatsueDBCreatureInfo {
 	public final String moniker;
 	public final int senderUID;
-	public final int ch0, ch1, ch2, ch3, ch4;
+	// see CreatureHistoryBlob
+	public final int[] state;
 	public final String name;
 	public final String userText;
 
 	public NatsueDBCreatureInfo(String m, int u, int c0, int c1, int c2, int c3, int c4, String n, String ut) {
 		moniker = m;
 		senderUID = u;
-		ch0 = c0;
-		ch1 = c1;
-		ch2 = c2;
-		ch3 = c3;
-		ch4 = c4;
+		state = new int[] {
+				c0,
+				c1,
+				c2,
+				c3,
+				c4
+		};
 		name = n;
 		userText = ut;
 	}

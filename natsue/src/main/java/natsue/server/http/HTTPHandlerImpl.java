@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import natsue.data.babel.CreatureHistoryBlob;
 import natsue.data.babel.UINUtils;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.INatsueUserFlags;
@@ -82,20 +83,46 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				rsp.append("<li>First Seen By: ");
 				userReference(rsp, UINUtils.make(ci.senderUID, UINUtils.HID_USER));
 				rsp.append("</li>");
-				rsp.append("<li>CH0: ");
-				rsp.append(ci.ch0);
+				rsp.append("<li>Sex: ");
+				switch (ci.state[CreatureHistoryBlob.STATE_SEX]) {
+				case CreatureHistoryBlob.SEX_MALE:
+					rsp.append("Male");
+					break;
+				case CreatureHistoryBlob.SEX_FEMALE:
+					rsp.append("Female");
+					break;
+				default:
+					rsp.append(ci.state[CreatureHistoryBlob.STATE_SEX]);
+					break;
+				}
 				rsp.append("</li>");
-				rsp.append("<li>CH1: ");
-				rsp.append(ci.ch1);
+				rsp.append("<li>Genus: ");
+				switch (ci.state[CreatureHistoryBlob.STATE_GENUS]) {
+				case CreatureHistoryBlob.GENUS_NORN:
+					rsp.append("Norn");
+					break;
+				case CreatureHistoryBlob.GENUS_GRENDEL:
+					rsp.append("Grendel");
+					break;
+				case CreatureHistoryBlob.GENUS_ETTIN:
+					rsp.append("Ettin");
+					break;
+				case CreatureHistoryBlob.GENUS_GEAT:
+					rsp.append("Geat");
+					break;
+				default:
+					rsp.append(ci.state[CreatureHistoryBlob.STATE_GENUS]);
+					break;
+				}
 				rsp.append("</li>");
-				rsp.append("<li>CH2: ");
-				rsp.append(ci.ch2);
+				rsp.append("<li>Variant: ");
+				rsp.append(ci.state[CreatureHistoryBlob.STATE_VARIANT]);
 				rsp.append("</li>");
-				rsp.append("<li>CH3: ");
-				rsp.append(ci.ch3);
+				rsp.append("<li>Point Mutations: ");
+				rsp.append(ci.state[CreatureHistoryBlob.STATE_POINT_MUTATIONS]);
 				rsp.append("</li>");
-				rsp.append("<li>CH4: ");
-				rsp.append(ci.ch4);
+				rsp.append("<li>Crossover Points: ");
+				rsp.append(ci.state[CreatureHistoryBlob.STATE_CROSSOVER_POINTS]);
 				rsp.append("</li>");
 				rsp.append("</ul>\n");
 			} else {
@@ -332,48 +359,48 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 	}
 
 	private void writeEventDetails(StringBuilder rsp, NatsueDBCreatureEvent ev, HashMap<String, String> creatureNameCache) {
-		if (ev.eventType == 0) {
+		if (ev.eventType == CreatureHistoryBlob.EV_O_CONCEIVED) {
 			rsp.append("Conceived: ");
 			writeCreatureReference(rsp, ev.param1, creatureNameCache);
 			rsp.append(" x ");
 			writeCreatureReference(rsp, ev.param2, creatureNameCache);
-		} else if (ev.eventType == 1) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_O_SPLICED) {
 			rsp.append("Spliced: ");
 			writeCreatureReference(rsp, ev.param1, creatureNameCache);
 			rsp.append(" x ");
 			writeCreatureReference(rsp, ev.param2, creatureNameCache);
-		} else if (ev.eventType == 2) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_O_SYNTHESIZED) {
 			rsp.append("Synthesized: ");
 			HTMLEncoder.htmlEncode(rsp, ev.param2);
-		} else if (ev.eventType == 3) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_BORN) {
 			rsp.append("Born");
-		} else if (ev.eventType == 4) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_AGED) {
 			rsp.append("Aged");
-		} else if (ev.eventType == 5) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_EXPORTED) {
 			rsp.append("Exported");
-		} else if (ev.eventType == 6) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_IMPORTED) {
 			rsp.append("Imported");
-		} else if (ev.eventType == 7) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_DIED) {
 			rsp.append("Died");
-		} else if (ev.eventType == 8) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_PREGNANT_SELF) {
 			rsp.append("Pregnant w/ ");
 			writeCreatureReference(rsp, ev.param1, creatureNameCache);
 			rsp.append(" due to ");
 			writeCreatureReference(rsp, ev.param2, creatureNameCache);
-		} else if (ev.eventType == 9) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_PREGNANT_OTHER) {
 			rsp.append("Impregnated ");
 			writeCreatureReference(rsp, ev.param2, creatureNameCache);
 			rsp.append(" with ");
 			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-		} else if (ev.eventType == 14) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_O_CLONED) {
 			rsp.append("Clone of: ");
 			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-		} else if (ev.eventType == 15) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_CLONED_TO) {
 			rsp.append("Cloned to ");
 			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-		} else if (ev.eventType == 16) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_WARP_OUT) {
 			rsp.append("Warped out");
-		} else if (ev.eventType == 17) {
+		} else if (ev.eventType == CreatureHistoryBlob.EV_WARP_IN) {
 			rsp.append("Warped in");
 		} else {
 			rsp.append("<table><tr><td>");

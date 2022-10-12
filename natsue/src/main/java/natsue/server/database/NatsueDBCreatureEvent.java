@@ -13,6 +13,7 @@ public class NatsueDBCreatureEvent {
 	public final int senderUID;
 	public final String moniker;
 	public final int eventIndex;
+	// see CreatureHistoryBlob.LifeEvent
 	public final int eventType;
 	public final int worldTime;
 	public final int ageTicks;
