@@ -18,7 +18,13 @@ public class CreatureHistoryBlob {
 	public final String moniker;
 	public final int[] state;
 	public final LifeEvent[] events;
+	/**
+	 * Name - if empty, might not be valid!
+	 */
 	public final String name;
+	/**
+	 * User text, can be null
+	 */
 	public final String userText;
 
 	public CreatureHistoryBlob(ByteBuffer dataToRead, int maxEventCount) {
@@ -53,7 +59,11 @@ public class CreatureHistoryBlob {
 			events[i] = new LifeEvent(eventType, worldTime, ageTicks, unixTime, unknown, evMon1, evMon2, evWorldName, evWorldID, evUserID, index);
 		}
 		name = PacketReader.getString(dataToRead);
-		userText = PacketReader.getString(dataToRead);
+		if (dataToRead.getInt() != 0) {
+			userText = PacketReader.getString(dataToRead);
+		} else {
+			userText = null;
+		}
 	}
 
 	/**

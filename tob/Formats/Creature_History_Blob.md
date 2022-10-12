@@ -1,61 +1,60 @@
 # Creature History Blob
+
 Format Structure
 ----------------
-
 
 * string moniker
 * byte hasCreatureState
 * if hasCreatureState != 0:
-	* int gender
-		* *This isn't absolutely certain.*
-	* int genus
-		* *This isn't absolutely certain.*
-	* int variant
-		* *This isn't absolutely certain (though more certain than other entries here)*
-	* int lifeStage
-		* *This isn't absolutely certain.*
-	* int unknown
+  * int gender
+    * *This isn't absolutely certain.*
+  * int genus
+    * *This isn't absolutely certain.*
+  * int variant
+    * *This isn't absolutely certain (though more certain than other entries here)*
+  * int lifeStage
+    * *This isn't absolutely certain.*
+  * int unknown
 * int eventCount
 * Event[eventCount] events
 * string name
-	* Client enforces a limit on names by the amount of pixels in them - in practice this means a soft limit of about 32 characters should do.
-* string userText
-	* 7 lines, each up to about ~124 characters, so 896 is a good limit.
-
+  * Client enforces a limit on names by the amount of pixels in them - in practice this means a soft limit of about 32 characters should do.
+  * The client likes to send this as empty while sending a user text update. If this is an either-or condition or not is unknown, so right now Natsue will assume blank names indicate this condition.
+* int hasUserText
+* if hasUserText != 0:
+  * string userText
+    * 7 lines, each up to about ~124 characters, so 896 is a good limit.
 
 It's worth noting that the game will resend only ranges of events at times.
 
 Events
 ------
 
-
 * int eventType
-	* As in HIST TYPE. Also see "creature_history_event_names".
+  * As in HIST TYPE. Also see "creature_history_event_names".
 * int worldTime
-	* As in HIST WTIK.
+  * As in HIST WTIK.
 * int ageTicks
-	* As in HIST TAGE.
+  * As in HIST TAGE.
 * int unixTime
-	* As in HIST RTIM.
+  * As in HIST RTIM.
 * int lifeStage
-	* As in HIST CAGE.
+  * As in HIST CAGE.
 * string moniker1
-	* As in HIST MON1.
+  * As in HIST MON1.
 * string moniker2
-	* As in HIST MON2.
+  * As in HIST MON2.
 * string worldName
-	* As in HIST WNAM.
+  * As in HIST WNAM.
 * string worldID
-	* As in HIST WUID.
+  * As in HIST WUID.
 * string userID
-	* As in HIST NETU.
+  * As in HIST NETU.
 * int index
-	* Appears to uniquely identify an event within a creature's history (i.e. as deduplication).
-
+  * Appears to uniquely identify an event within a creature's history (i.e. as deduplication).
 
 Strings/Monikers/User IDs
 -------------------------
 
 Strings are encoded here with an int-length-prefix followed by that many bytes, without null terminators.
 Monikers, user IDs, world IDs (...) are strings.
-

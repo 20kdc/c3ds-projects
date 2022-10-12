@@ -396,9 +396,22 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (sanityError == null) {
 			int senderUID = UINUtils.uid(cc.getUIN());
 			if (history.state != null) {
+				// Initialize creature entry
 				String cName = CreatureDataVerifier.stripName(config, history.name);
-				String cUserText = CreatureDataVerifier.stripUserText(config, history.userText);
+				String cUserText = "";
+				if (history.userText != null)
+					cUserText = CreatureDataVerifier.stripUserText(config, history.userText);
 				database.ensureCreature(history.moniker, senderUID, history.state[0], history.state[1], history.state[2], history.state[3], history.state[4], cName, cUserText);
+			} else {
+				// Update name/user text fields
+				String cName = null;
+				String cUserText = null;
+				if (!history.name.equals(""))
+					cName = CreatureDataVerifier.stripName(config, history.name);
+				if (history.userText != null)
+					cUserText = CreatureDataVerifier.stripUserText(config, history.userText);
+				if (cName != null || cUserText != null)
+					database.updateCreatureText(history.moniker, cName, cUserText);
 			}
 			for (LifeEvent le : history.events) {
 				String a = CreatureDataVerifier.stripMonikerLike(le.mon1);

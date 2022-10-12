@@ -60,6 +60,7 @@ public interface INatsueDatabase {
 
 	/**
 	 * Updates a creature's name and user text.
+	 * BIG SCARY NOTE: name or userText can be null to omit that field from being updated.
 	 */
 	boolean updateCreatureText(String moniker, String name, String userText);
 

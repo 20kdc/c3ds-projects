@@ -152,14 +152,34 @@ public class JDBCNatsueTxns {
 
 		@Override
 		protected Boolean executeInner(Connection conn) throws SQLException {
-			try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET name=?, user_text=? " +
-					"WHERE moniker=?")) {
-				stmt.setString(1, moniker);
-				stmt.setString(2, name);
-				stmt.setString(3, userText);
-				stmt.executeUpdate();
-				return Boolean.TRUE;
+			if ((name != null) && (userText != null)) {
+				try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET name=?, user_text=? " +
+						"WHERE moniker=?")) {
+					stmt.setString(1, name);
+					stmt.setString(2, userText);
+					stmt.setString(3, moniker);
+					stmt.executeUpdate();
+					return Boolean.TRUE;
+				}
+			} else if (name != null) {
+				try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET name=? " +
+						"WHERE moniker=?")) {
+					stmt.setString(1, name);
+					stmt.setString(2, moniker);
+					stmt.executeUpdate();
+					return Boolean.TRUE;
+				}
+			} else if (userText != null) {
+				try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET user_text=? " +
+						"WHERE moniker=?")) {
+					stmt.setString(1, userText);
+					stmt.setString(2, moniker);
+					stmt.executeUpdate();
+					return Boolean.TRUE;
+				}
 			}
+			// what are you even doing?
+			return Boolean.TRUE;
 		}
 	}
 
