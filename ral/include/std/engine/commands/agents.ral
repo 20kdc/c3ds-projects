@@ -1,0 +1,95 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * 2.286c/Agents
+ */
+
+macro abba() &'abba'!int;
+
+macro () alph(int &alpha, int &enable) &'alph {alpha, enable}';
+
+// ANIM uses byte-strings, so must be in inline CAOS directly.
+
+macro () anms(str &anim) &'anms {anim}';
+
+macro attr() &'attr'!int;
+macro () attr(int &value) &'attr {value}';
+
+macro base() &'base'!int;
+macro () base(int &value) &'base {value}';
+
+macro bhvr() &'bhvr'!int;
+macro () bhvr(int &value) &'bhvr {value}';
+
+// 'call' is a keyword
+macro () callIndirect(int &scrId, any &p1, any &p2) &'call {scrId, p1, p2}';
+
+macro carr() &'carr'!Agent?;
+
+macro cata() &'cata'!int;
+
+macro cati(int &f, int &g, int &s) &'cati {f, g, s}'!int;
+
+macro () cato(int &c) &'cato {c}';
+
+macro catx(int &c) &'catx {c}'!str;
+
+macro clac() &'clac'!int;
+
+macro clik(int &c) &'clik {c}'!int;
+
+macro () core(float &a, float &b, float &c, float &d) &'core {a, b, c, d}';
+
+macro () dcor(int &a) &'dcor {a}';
+
+macro disq(Agent &a) &'disq {a}'!float;
+
+macro () drop() &'drop';
+
+macro () dsee(int &a) &'dsee {a}';
+
+// ENUM, ESEE, ETCH handled by compiler
+
+macro fltx() &'fltx'!float;
+macro flty() &'flty'!float;
+
+macro fmly() &'fmly'!int;
+
+macro () frat(int &a) &'frat {a}';
+
+// FROM handled by compiler
+
+macro () gait(int &a) &'gait {a}';
+
+// MISSING...
+
+macro hand() &'hand'!str;
+
+// MISSING...
+
+macro pose() &'pose'!int;
+macro () pose(int &value) &'pose {value}';
+
+// Top-left
+macro posl() &'posl'!float;
+macro post() &'post'!float;
+// Bottom-right
+macro posr() &'posr'!float;
+macro posb() &'posb'!float;
+// Centre
+macro posx() &'posx'!float;
+macro posy() &'posy'!float;
+
+// MISSING...
+
+macro wdth() &'wdth'!int;
+
+macro wild(int &f, int &g, int &s, str &ts, int &ofs) &'wild {f, g, s, ts, ofs}'!str;
+
+// _IT_ is handled by compiler
+

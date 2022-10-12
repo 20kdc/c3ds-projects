@@ -9,6 +9,8 @@
  * C2E command macros
  */
 
+include "std/engine/commands/agents.ral";
+
 macro read(str &tag, int &index) &'read {tag} {index}'!str;
 
 macro () inst() &'inst';
@@ -16,8 +18,6 @@ macro () stop() &'stop';
 
 macro () outv(num &value) &'outv {value}';
 macro () outs(str &value) &'outs {value}';
-
-macro hand() &'hand'!str;
 
 macro () scrx(int &family, int &genus, int &species, int &scr) &'scrx {family, genus, species, scr}';
 
@@ -54,22 +54,6 @@ macro () rtar(int &family, int &genus, int &species) &'rtar {family, genus, spec
 macro () star(int &family, int &genus, int &species) &'star {family, genus, species}';
 macro () ttar(int &family, int &genus, int &species) &'ttar {family, genus, species}';
 
-// POSE
-macro pose() &'pose'!int;
-macro () pose(int &value) &'pose {value}';
-
-// BASE
-macro base() &'base'!int;
-macro () base(int &value) &'base {value}';
-
-// ATTR
-macro attr() &'attr'!int;
-macro () attr(int &value) &'attr {value}';
-
-// BHVR
-macro bhvr() &'bhvr'!int;
-macro () bhvr(int &value) &'bhvr {value}';
-
 // type
 macro type(any &value) &'type {value}'!int;
 
@@ -84,17 +68,6 @@ macro fric() &'fric'!int;
 macro () fric(int &value) &'fric {value}';
 macro perm() &'perm'!int;
 macro () perm(int &value) &'perm {value}';
-
-// Position getters
-// Top-left
-macro posl() &'posl'!float;
-macro post() &'post'!float;
-// Bottom-right
-macro posr() &'posr'!float;
-macro posb() &'posb'!float;
-// Centre
-macro posx() &'posx'!float;
-macro posy() &'posy'!float;
 
 // Game variable accessor basis
 
