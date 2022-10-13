@@ -81,10 +81,11 @@ local ral_symbols = {
 	["bool"] = "keyword2",
 	["float"] = "keyword2",
 	["num"] = "keyword2",
-	["null"] = "keyword2",
+	-- can be a variable name or a type...
+	["null"] = "literal",
 	-- compiler helpers
-	["true"] = "keyword2",
-	["false"] = "keyword2",
+	["true"] = "literal",
+	["false"] = "literal",
 }
 
 syntax.add({
