@@ -47,9 +47,6 @@ macro () mvsf(num &x, num &y) &'mvsf {x, y}';
 macro () frel(Agent? &dst) &'frel {dst}';
 macro () flto(num &x, num &y) &'flto {x, y}';
 
-// new family
-macro () newSimple(int &family, int &genus, int &species, str &gallery, int &count, int &first, int &plane) &'new: simp {family, genus, species, gallery, count, first, plane}';
-
 // various
 macro histName(str &moniker) &'hist name {moniker}'!str;
 macro histGend(str &moniker) &'hist gend {moniker}'!int;
@@ -79,16 +76,19 @@ macro () perm(int &value) &'perm {value}';
 
 // Game variable accessor basis
 
-macro gameInt(str &key) &'game {key}'!int;
-macro eameInt(str &key) &'eame {key}'!int;
-macro gameBool(str &key) &'game {key}'!bool;
-macro eameBool(str &key) &'eame {key}'!bool;
-macro gameNum(str &key) &'game {key}'!num;
-macro eameNum(str &key) &'eame {key}'!num;
-macro gameFloat(str &key) &'game {key}'!float;
-macro eameFloat(str &key) &'eame {key}'!float;
-macro gameStr(str &key) &'game {key}'!str;
-macro eameStr(str &key) &'eame {key}'!str;
-macro gameAgent(str &key) &'game {key}'!Agent;
-macro eameAgent(str &key) &'eame {key}'!Agent;
+macro game(str &key) &'game {key}';
+macro eame(str &key) &'eame {key}';
+
+macro gameInt(str &key) game(key)!int;
+macro eameInt(str &key) eame(key)!int;
+macro gameBool(str &key) game(key)!bool;
+macro eameBool(str &key) eame(key)!bool;
+macro gameNum(str &key) game(key)!num;
+macro eameNum(str &key) eame(key)!num;
+macro gameFloat(str &key) game(key)!float;
+macro eameFloat(str &key) eame(key)!float;
+macro gameStr(str &key) game(key)!str;
+macro eameStr(str &key) eame(key)!str;
+macro gameAgent(str &key) game(key)!Agent;
+macro eameAgent(str &key) eame(key)!Agent;
 
