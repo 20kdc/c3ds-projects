@@ -11,7 +11,7 @@
 
 include "std/engine/commands/agents.ral";
 // brain not yet added
-// camera not yet added
+include "std/engine/commands/camera.ral";
 // cd not yet added
 // compounds not yet added
 // creatures not yet added
@@ -31,7 +31,7 @@ include "std/engine/commands/genetics.ral";
 // time not yet added
 // variables not yet added
 // vehicles not yet added
-// world not yet added
+include "std/engine/commands/world.ral";
 
 macro read(str &tag, int &index) &'read {tag} {index}'!str;
 
@@ -42,9 +42,6 @@ macro () outv(num &value) &'outv {value}';
 macro () outs(str &value) &'outs {value}';
 
 macro () scrx(int &family, int &genus, int &species, int &scr) &'scrx {family, genus, species, scr}';
-
-macro () scam(Agent? &agent, int &part) &'scam {agent, part}';
-macro () trck(Agent? &agent, int &xp, int &yp, int &s, int &t) &'scam {agent, xp, yp, s, t}';
 
 macro () mvsf(num &x, num &y) &'mvsf {x, y}';
 macro () frel(Agent? &dst) &'frel {dst}';
@@ -64,11 +61,6 @@ macro histWvet(str &moniker) &'hist wvet {moniker}'!bool;
 macro ooww(str &moniker) &'ooww {moniker}'!int;
 
 macro subs(str &text, int &start, int &len) &'subs {text, start, len}'!str;
-
-// rtar/star/ttar family
-macro () rtar(int &family, int &genus, int &species) &'rtar {family, genus, species}';
-macro () star(int &family, int &genus, int &species) &'star {family, genus, species}';
-macro () ttar(int &family, int &genus, int &species) &'ttar {family, genus, species}';
 
 // type
 macro type(any &value) &'type {value}'!int;

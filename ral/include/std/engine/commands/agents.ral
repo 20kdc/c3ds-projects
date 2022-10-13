@@ -43,7 +43,7 @@ macro clac() &'clac'!int;
 
 macro clik(int &c) &'clik {c}'!int;
 
-macro () core(float &a, float &b, float &c, float &d) &'core {a, b, c, d}';
+macro () core(num &a, num &b, num &c, num &d) &'core {a, b, c, d}';
 
 macro () dcor(int &a) &'dcor {a}';
 
@@ -95,7 +95,9 @@ macro mows() &'mows'!int;
 macro mthx() &'mthx'!float;
 macro mthy() &'mthy'!float;
 
-// MISSING...
+macro ncls(Agent? &prev, int &f, int &g, int &s) &'ncls {prev, f, g, s}'!Agent?;
+
+macro () newSimp(int &family, int &genus, int &species, str &gallery, int &count, int &first, int &plane) &'new: simp {family, genus, species, gallery, count, first, plane}';
 
 // NEXT is handled by compiler
 
@@ -110,7 +112,7 @@ macro () over() &'over';
 macro paus() &'paus'!int;
 macro () paus(int &a) &'paus {a}';
 
-// MISSING...
+macro pcls(Agent? &n, int &f, int &g, int &s) &'pcls {n, f, g, s}'!Agent?;
 
 macro plne() &'plne'!int;
 macro () plne(int &a) &'plne {a}';
@@ -133,7 +135,49 @@ macro posb() &'posb'!float;
 macro posx() &'posx'!float;
 macro posy() &'posy'!float;
 
-// MISSING...
+macro puhl(int &p, int &xy) &'puhl {p, xy}'!int;
+macro () puhl(int &p, int &x, int &y) &'puhl {p, x, y}';
+
+macro pupt(int &p, int &xy) &'pupt {p, xy}'!int;
+macro () pupt(int &p, int &x, int &y) &'pupt {p, x, y}';
+
+macro rnge() &'rnge'!float;
+macro () rnge(num &a) &'rnge {a}';
+
+macro () rtar(int &family, int &genus, int &species) &'rtar {family, genus, species}';
+
+macro seee(Agent &a, Agent &b) &'seee {a, b}'!bool;
+
+macro () show(int &a) &'show {a}';
+
+macro spcs() &'spcs'!int;
+
+macro () star(int &family, int &genus, int &species) &'star {family, genus, species}';
+
+// TARG is handled by compiler
+
+macro tcor(num &a, num &b, num &c, num &d) &'tcor {a, b, c, d}'!bool;
+
+macro tick() &'tick'!int;
+macro () tick(int &a) &'tick {a}';
+
+macro () tino(int &r, int &g, int &b, int &ro, int &s) &'tino {r, g, b, ro, s}';
+macro () tint(int &r, int &g, int &b, int &ro, int &s) &'tint {r, g, b, ro, s}';
+macro tint(int &a) &'tint {a}'!int;
+
+macro totl(int &family, int &genus, int &species) &'totl {family, genus, species}'!int;
+
+macro touc(Agent &a, Agent &b) &'touc {a, b}'!bool;
+
+macro tran(int &x, int &y) &'tran {x, y}'!bool;
+
+macro () ttar(int &family, int &genus, int &species) &'ttar {family, genus, species}';
+
+macro twin(Agent &o, int &n) &'twin {o, n}'!Agent;
+
+macro () ucln() &'ucln';
+
+macro visi(int &a) &'visi {a}'!bool;
 
 macro wdth() &'wdth'!int;
 

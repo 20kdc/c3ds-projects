@@ -1,0 +1,41 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * 2.286c/World
+ */
+
+macro () delw(str &w) &'delw {w}';
+
+macro () load(str &w) &'load {w}';
+
+macro nwld() &'nwld'!int;
+
+// no way to distingulish forms
+macro () pswdS(str &w) &'pswd {w}';
+macro pswdI(int &w) &'pswd {w}'!str;
+
+macro () quit() &'quit';
+
+macro () rgam() &'rgam';
+
+macro () save() &'save';
+
+macro () tntw(int &w) &'tntw {w}';
+
+macro wnam() &'wnam'!str;
+
+macro wnti(str &w) &'wnti {w}'!int;
+
+// no way to distingulish forms
+macro () wrldS(str &w) &'wrld {w}';
+macro wrldI(int &w) &'wrld {w}'!str;
+
+macro () wtnt(int &i, int &r, int &g, int &b, int &ro, int &s) &'wtnt {i, r, g, b, ro, s}';
+
+macro wuid() &'wuid'!str;
+
