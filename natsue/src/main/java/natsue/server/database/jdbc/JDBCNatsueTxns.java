@@ -32,6 +32,7 @@ public class JDBCNatsueTxns {
 	public final AddCreatureEvent addCreatureEvent = new AddCreatureEvent();
 	public final GetCreaturesInWorld getCreaturesInWorld = new GetCreaturesInWorld();
 	public final GetWorldsInUser getWorldsInUser = new GetWorldsInUser();
+	public final GetWorldInfo getWorldInfo = new GetWorldInfo();
 	public final CreateUser createUser = new CreateUser();
 	public final UpdateUserAuth updateUserAuth = new UpdateUserAuth();
 
@@ -283,7 +284,7 @@ public class JDBCNatsueTxns {
 		@Override
 		protected void parameterize(PreparedStatement ps) throws SQLException {
 			ps.setInt(1, uid);
-			ps.setString(2, UINUtils.toString(UINUtils.make(uid, UINUtils.HID_USER)));
+			ps.setString(2, UINUtils.toString(UINUtils.ofRegularUser(uid)));
 			ps.setInt(3, limit);
 			ps.setInt(4, offset);
 		}
@@ -294,6 +295,32 @@ public class JDBCNatsueTxns {
 					// beware the order swap
 					rs.getInt(2),
 					rs.getString(1),
+					rs.getString(3)
+				);
+			}
+		}
+	}
+
+	public static class GetWorldInfo extends ILDBTxnGet<NatsueDBWorldInfo> {
+		public String id;
+
+		public GetWorldInfo() {
+			super(new WRSC(),
+				"SELECT sender_uid, world_id, world_name FROM natsue_history_events " +
+				"WHERE world_id=? ORDER BY world_name");
+		}
+
+		@Override
+		protected void parameterize(PreparedStatement ps) throws SQLException {
+			ps.setString(1, id);
+		}
+		private static class WRSC implements ILResultSetConverter<NatsueDBWorldInfo> {
+			@Override
+			public NatsueDBWorldInfo fromResultSet(ResultSet rs) throws SQLException {
+				return new NatsueDBWorldInfo(
+					// beware the perfectly normal order
+					rs.getInt(1),
+					rs.getString(2),
 					rs.getString(3)
 				);
 			}

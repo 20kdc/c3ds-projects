@@ -94,6 +94,12 @@ public interface INatsueDatabase {
 	LinkedList<NatsueDBWorldInfo> getWorldsInUser(int uid, int limit, int offset);
 
 	/**
+	 * Returns world info.
+	 * Returns null for none.
+	 */
+	NatsueDBWorldInfo getWorldInfo(String id);
+
+	/**
 	 * Tries to create a user with the given details.
 	 */
 	boolean tryCreateUser(NatsueDBUserInfo info);

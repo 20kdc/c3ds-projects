@@ -6,9 +6,9 @@
  */
 package natsue.server.http;
 
-import java.io.StringWriter;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.HashMap;
 
 /**
  * Let's not have any XSS nonsense shall we?
@@ -47,6 +47,22 @@ public class HTMLEncoder {
 				sw.append("&#");
 				sw.append((int) ch);
 				sw.append(';');
+			}
+		}
+	}
+
+	public static void qsToVars(HashMap<String, String> qv, String qs) {
+		String[] qse = qs.split("\\&");
+		// this exists for compatibility with the previous Natsue version
+		// people already wrote catalogues, so...
+		int paramNum = 0;
+		for (String s : qse) {
+			int idxEq = s.indexOf('=');
+			if (idxEq != -1) {
+				qv.put(urlDecode(s.substring(0, idxEq)), urlDecode(s.substring(idxEq + 1)));
+			} else {
+				qv.put("p" + paramNum, HTMLEncoder.urlDecode(s));
+				paramNum++;
 			}
 		}
 	}

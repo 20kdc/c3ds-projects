@@ -169,6 +169,14 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
+	public NatsueDBWorldInfo getWorldInfo(String id) {
+		synchronized (this) {
+			txns.getWorldInfo.id = id;
+			return txns.getWorldInfo.executeOuter(txnHost);
+		}
+	}
+
+	@Override
 	public boolean tryCreateUser(NatsueDBUserInfo userInfo) {
 		synchronized (this) {
 			txns.createUser.userInfo = userInfo;

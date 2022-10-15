@@ -14,6 +14,11 @@ package natsue.data.babel;
 public class UINUtils {
 	// Natsue uses HIDs as a namespacing mechanism.
 	// This isn't necessarily authentic, but who cares?
+	/**
+	 * HID for regular users.
+	 * NOTE: To reduce shenanigans, accesses to this are centralized here but with poking by WhoisBotCommand.
+	 * This means that UINUtils is the central hub for all UID/HID conversions.
+	 */
 	public static final int HID_USER = 1;
 	public static final int HID_SYSTEM = 2;
 	// For the server, but also for the system user
@@ -28,6 +33,9 @@ public class UINUtils {
 
 	public static boolean isRegularUser(long uin) {
 		return hid(uin) == HID_USER;
+	}
+	public static long ofRegularUser(int uid) {
+		return make(uid, HID_USER);
 	}
 
 	public static long make(int uid, int hid) {

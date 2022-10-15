@@ -32,7 +32,7 @@ public class NatsueDBUserInfo implements INatsueUserFlags {
 	}
 
 	public long getUIN() {
-		return UINUtils.make(uid, UINUtils.HID_USER);
+		return UINUtils.ofRegularUser(uid);
 	}
 
 	public int getFlags() {
@@ -40,6 +40,6 @@ public class NatsueDBUserInfo implements INatsueUserFlags {
 	}
 
 	public BabelShortUserData convertToBabel() {
-		return new BabelShortUserData("", "", nickname, UINUtils.make(uid, UINUtils.HID_USER));
+		return new BabelShortUserData("", "", nickname, UINUtils.ofRegularUser(uid));
 	}
 }

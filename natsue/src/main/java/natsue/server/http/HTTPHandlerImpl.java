@@ -7,13 +7,8 @@
 
 package natsue.server.http;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,39 +30,48 @@ import natsue.server.userdata.INatsueUserData;
  * The standard HTTP services
  */
 public class HTTPHandlerImpl implements IHTTPHandler {
+	public final int PAGE_SIZE_CREATURES = 50;
+	public final int PAGE_SIZE_WORLDS = 50;
+	public final int PAGE_SIZE_API_WORLD_CREATURES = 50;
+	public final int PAGE_SIZE_API_USER_WORLDS = 50;
+
 	public final IHubPrivilegedAPI hub;
 	public final INatsueDatabase database;
+	public final Pages pages;
+
 	public HTTPHandlerImpl(IHubPrivilegedAPI sh, INatsueDatabase actualDB) {
 		hub = sh;
 		database = actualDB;
+		pages = new Pages(sh, actualDB);
 	}
 
 	@Override
 	public void handleHTTPGet(String url, boolean head, Client r) throws IOException {
 		int qsIndex = url.indexOf('?');
-		String[] qs = new String[] {""};
+		HashMap<String, String> qv = new HashMap<>();;
 		if (qsIndex != -1) {
-			qs = url.substring(qsIndex + 1).split("\\&");
+			HTMLEncoder.qsToVars(qv, url.substring(qsIndex + 1));
 			url = url.substring(0, qsIndex);
 		}
+		// This is probably not the best of designs.
 		if (url.equals("/")) {
 			StringBuilder rsp = new StringBuilder();
 			rsp.append("<ul>\n");
 			for (INatsueUserData nud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
 				rsp.append("<li>");
-				userReference(rsp, nud);
+				pages.userReference(rsp, nud);
 				rsp.append("</li>\n");
 			}
 			rsp.append("</ul>\n");
-			kisspopUI(r, head, "Current Online Users", rsp.toString());
+			pages.kisspopUI(r, head, "Current Online Users", rsp.toString());
 		} else if (url.equals("/creature")) {
-			if (qs.length < 1) {
-				failInvalidRequestFormat(r, head);
+			String fragment = qv.get("p0");
+			if (fragment == null) {
+				pages.failInvalidRequestFormat(r, head);
 				return;
 			}
 			HashMap<String, String> creatureNameCache = new HashMap<>();
 			StringBuilder rsp = new StringBuilder();
-			String fragment = HTMLEncoder.urlDecode(qs[0]);
 			StringBuilder ttl = new StringBuilder();
 			ttl.append("Creature ");
 			HTMLEncoder.htmlEncode(ttl, fragment);
@@ -81,7 +85,7 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				HTMLEncoder.htmlEncode(rsp, ci.userText);
 				rsp.append("</li>");
 				rsp.append("<li>First Seen By: ");
-				userReference(rsp, UINUtils.make(ci.senderUID, UINUtils.HID_USER));
+				pages.userReference(rsp, UINUtils.ofRegularUser(ci.senderUID));
 				rsp.append("</li>");
 				rsp.append("<li>Sex: ");
 				switch (ci.state[CreatureHistoryBlob.STATE_SEX]) {
@@ -136,18 +140,18 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				rsp.append("<td>Owner</td></tr>\n");
 				for (NatsueDBCreatureEvent ev : ll) {
 					rsp.append("<tr>");
-					long senderUIN = UINUtils.make(ev.senderUID, UINUtils.HID_USER);
+					long senderUIN = UINUtils.ofRegularUser(ev.senderUID);
 					//
 					rsp.append("<td>");
 					rsp.append(ev.eventIndex);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					writeTicks(rsp, ev.worldTime);
+					pages.writeTicks(rsp, ev.worldTime);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					writeTicks(rsp, ev.ageTicks);
+					pages.writeTicks(rsp, ev.ageTicks);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
@@ -157,23 +161,23 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					writeLifeStage(rsp, ev.lifeStage);
+					pages.writeLifeStage(rsp, ev.lifeStage);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					writeEventDetails(rsp, ev, creatureNameCache);
+					pages.writeEventDetails(rsp, ev, creatureNameCache);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
-					writeWorldReference(rsp, ev.worldID, ev.worldName);
+					pages.writeWorldReference(rsp, ev.worldID, ev.worldName);
 					rsp.append("</td>");
 					//
 					rsp.append("<td>");
 					long atUIN = UINUtils.valueOf(ev.userID);
-					userReference(rsp, atUIN);
+					pages.userReference(rsp, atUIN);
 					if (senderUIN != atUIN) {
 						rsp.append("<br/>Sent By:<br/>");
-						userReference(rsp, senderUIN);
+						pages.userReference(rsp, senderUIN);
 					}
 					rsp.append("</td>");
 					//
@@ -181,24 +185,26 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				}
 				rsp.append("</table>\n");
 			}
-			kisspopUI(r, head, ttl.toString(), rsp.toString());
+			pages.kisspopUI(r, head, ttl.toString(), rsp.toString());
 		} else if (url.equals("/world")) {
-			if (qs.length < 1) {
-				failInvalidRequestFormat(r, head);
+			String worldID = qv.get("p0");
+			if (worldID == null) {
+				pages.failInvalidRequestFormat(r, head);
 				return;
 			}
 			HashMap<String, String> creatureNameCache = new HashMap<>();
 
-			int limit = 50;
-			int offset = 0;
-			String worldID = HTMLEncoder.urlDecode(qs[0]);
-			if (qs.length >= 2)
-				offset = Integer.parseInt(qs[1]);
+			int limit = PAGE_SIZE_CREATURES;
+			int offset = Integer.parseInt(qv.getOrDefault("offset", "0"));
 
-			StringBuilder header = new StringBuilder();
 			StringBuilder rsp = new StringBuilder();
 
-			String worldName = null;
+			NatsueDBWorldInfo ci = database.getWorldInfo(worldID);
+			if (ci != null) {
+				rsp.append("Owner: ");
+				pages.userReference(rsp, UINUtils.ofRegularUser(ci.ownerUID));
+				rsp.append("<br/>");
+			}
 
 			rsp.append("Known creatures (showing " + limit + " at " + offset + "):<ul>\n");
 			LinkedList<String> m = database.getCreaturesInWorld(worldID, limit, offset);
@@ -207,32 +213,18 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				shouldHaveNext = m.size() == limit;
 				for (String moniker : m) {
 					rsp.append("<li>");
-					writeCreatureReference(rsp, moniker, creatureNameCache);
-					if (worldName == null) {
-						LinkedList<NatsueDBCreatureEvent> evl = database.getCreatureEvents(moniker);
-						if (evl != null) {
-							for (NatsueDBCreatureEvent ev : evl) {
-								if (ev.worldID.equals(worldID)) {
-									worldName = ev.worldName;
-									header.append("Owner: ");
-									userReference(header, UINUtils.valueOf(ev.userID));
-									header.append("<br/>");
-									break;
-								}
-							}
-						}
-					}
+					pages.writeCreatureReference(rsp, moniker, creatureNameCache);
 					rsp.append("</li>\n");
 				}
 			}
 			rsp.append("</ul>\n");
 
-			writePager(rsp, offset, limit, shouldHaveNext, "world?" + HTMLEncoder.hrefEncode(worldID));
+			pages.writePager(rsp, offset, limit, shouldHaveNext, "world?" + HTMLEncoder.hrefEncode(worldID));
 
 			StringBuilder ttl = new StringBuilder();
 			ttl.append("World ");
-			if (worldName != null) {
-				HTMLEncoder.htmlEncode(ttl, worldName);
+			if (ci != null) {
+				HTMLEncoder.htmlEncode(ttl, ci.worldName);
 				ttl.append(" (");
 				HTMLEncoder.htmlEncode(ttl, worldID);
 				ttl.append(")");
@@ -240,17 +232,16 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				HTMLEncoder.htmlEncode(ttl, worldID);
 			}
 
-			kisspopUI(r, head, ttl.toString(), header + rsp.toString());
+			pages.kisspopUI(r, head, ttl.toString(), rsp.toString());
 		} else if (url.equals("/user")) {
-			if (qs.length < 1) {
-				failInvalidRequestFormat(r, head);
+			String userRef = qv.get("p0");
+			if (userRef == null) {
+				pages.failInvalidRequestFormat(r, head);
 				return;
 			}
-			int limit = 50;
-			int offset = 0;
-			String userRef = HTMLEncoder.urlDecode(qs[0]);
-			if (qs.length >= 2)
-				offset = Integer.parseInt(qs[1]);
+
+			int limit = PAGE_SIZE_WORLDS;
+			int offset = Integer.parseInt(qv.getOrDefault("offset", "0"));
 
 			StringBuilder rsp = new StringBuilder();
 			String fragment = HTMLEncoder.urlDecode(userRef);
@@ -283,214 +274,144 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 						shouldHaveNext = m.size() == limit;
 						for (NatsueDBWorldInfo world : m) {
 							rsp.append("<li>");
-							writeWorldReference(rsp, world.worldID, world.worldName);
+							pages.writeWorldReference(rsp, world.worldID, world.worldName);
 							rsp.append("</li>\n");
 						}
 					}
 					rsp.append("</ul>\n");
 	
-					writePager(rsp, offset, limit, shouldHaveNext, "user?" + HTMLEncoder.hrefEncode(userRef));
+					pages.writePager(rsp, offset, limit, shouldHaveNext, "user?" + HTMLEncoder.hrefEncode(userRef));
 				}
 			}
-			kisspopUI(r, head, title, rsp.toString());
-		} else {
-			kisspopUI(r, head, "404 Not Found", "No such file...", "");
-		}
-	}
-
-	private void writeWorldReference(StringBuilder rsp, String worldID, String worldName) {
-		rsp.append("<a href=\"world?" + HTMLEncoder.hrefEncode(worldID) + "\">");
-		HTMLEncoder.htmlEncode(rsp, worldName);
-		rsp.append("</a>");
-	}
-
-	private void writePager(StringBuilder rsp, int offset, int limit, boolean shouldHaveNext, String lBase) {
-		int prevOfs = offset - limit;
-		if (prevOfs >= 0) {
-			rsp.append("<a href=\"");
-			rsp.append(lBase);
-			rsp.append("&");
-			rsp.append(prevOfs);
-			rsp.append("\">prev</a>");
-			if (shouldHaveNext)
-				rsp.append(" ");
-		}
-		if (shouldHaveNext) {
-			rsp.append("<a href=\"");
-			rsp.append(lBase);
-			rsp.append("&");
-			rsp.append(offset + limit);
-			rsp.append("\">next</a>");
-		}
-		rsp.append("\n");
-	}
-
-	private void failInvalidRequestFormat(Client r, boolean head) throws IOException {
-		kisspopUI(r, head, "Invalid Request Format", "Some component of the request was wrong.");
-	}
-
-	private void kisspopUI(Client r, boolean head, String title, String text) throws IOException {
-		kisspopUI(r, head, "200 OK", title, text);
-	}
-
-	private void kisspopUI(Client r, boolean head, String status, String title, String text) throws IOException {
-		StringBuilder finale = new StringBuilder();
-		try (FileInputStream fis = new FileInputStream("kisspopui.html")) {
-			InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-			while (true) {
-				int ch = isr.read();
-				if (ch == -1)
-					break;
-				finale.append((char) ch);
+			pages.kisspopUI(r, head, title, rsp.toString());
+		} else if (url.equals("/api/index")) { // -- JSON API PAST THIS POINT --
+			JSONEncoder je = new JSONEncoder();
+			je.objectStart();
+			je.writeKV("version", SystemCommands.VERSION);
+			je.writeKV("versionURL", SystemCommands.VERSION_URL);
+			je.writeKV("pageSizeAPIWorldCreatures", PAGE_SIZE_API_WORLD_CREATURES);
+			je.writeKV("pageSizeAPIUserWorlds", PAGE_SIZE_API_USER_WORLDS);
+			je.objectEnd();
+			r.httpOk(head, "application/json", je.out.toString());
+		} else if (url.equals("/api/usersOnline")) {
+			JSONEncoder je = new JSONEncoder();
+			je.arrayStart();
+			for (INatsueUserData nud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem())
+				Resources.encodeUser(je, nud, hub);
+			je.arrayEnd();
+			r.httpOk(head, "application/json", je.out.toString());
+		} else if (url.equals("/api/creatureInfo")) {
+			String fragment = qv.get("moniker");
+			if (fragment == null) {
+				r.httpResponse("404 Not Found", head, "requires moniker=...");
+				return;
 			}
-		} catch (Exception ex) {
-			// :(
-		}
-		String sts = finale.toString();
-
-		// What do you mean it wasn't supposed to be literal?
-		if (!sts.contains("$SHIT_GOES_HERE"))
-			sts += "$PAGE_TITLE<hr/>$SHIT_GOES_HERE<hr/><i>Server Version: $NATSUE_VERSION</i><hr/>kisspopui.html invalid or missing $SHIT_GOES_HERE";
-		sts = sts.replaceFirst("\\$NATSUE_VERSION", "<a href=\"" + SystemCommands.VERSION_URL + "\">" + SystemCommands.VERSION + "</a>");
-		sts = sts.replaceAll("\\$PAGE_TITLE", title);
-		// MUST BE LAST!
-		sts = sts.replaceFirst("\\$SHIT_GOES_HERE", text);
-		r.httpResponse(status, head, "text/html", sts);
-	}
-
-	private void writeEventDetails(StringBuilder rsp, NatsueDBCreatureEvent ev, HashMap<String, String> creatureNameCache) {
-		if (ev.eventType == CreatureHistoryBlob.EV_O_CONCEIVED) {
-			rsp.append("Conceived: ");
-			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-			rsp.append(" x ");
-			writeCreatureReference(rsp, ev.param2, creatureNameCache);
-		} else if (ev.eventType == CreatureHistoryBlob.EV_O_SPLICED) {
-			rsp.append("Spliced: ");
-			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-			rsp.append(" x ");
-			writeCreatureReference(rsp, ev.param2, creatureNameCache);
-		} else if (ev.eventType == CreatureHistoryBlob.EV_O_SYNTHESIZED) {
-			rsp.append("Synthesized: ");
-			HTMLEncoder.htmlEncode(rsp, ev.param2);
-		} else if (ev.eventType == CreatureHistoryBlob.EV_BORN) {
-			rsp.append("Born");
-		} else if (ev.eventType == CreatureHistoryBlob.EV_AGED) {
-			rsp.append("Aged");
-		} else if (ev.eventType == CreatureHistoryBlob.EV_EXPORTED) {
-			rsp.append("Exported");
-		} else if (ev.eventType == CreatureHistoryBlob.EV_IMPORTED) {
-			rsp.append("Imported");
-		} else if (ev.eventType == CreatureHistoryBlob.EV_DIED) {
-			rsp.append("Died");
-		} else if (ev.eventType == CreatureHistoryBlob.EV_PREGNANT_SELF) {
-			rsp.append("Pregnant w/ ");
-			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-			rsp.append(" due to ");
-			writeCreatureReference(rsp, ev.param2, creatureNameCache);
-		} else if (ev.eventType == CreatureHistoryBlob.EV_PREGNANT_OTHER) {
-			rsp.append("Impregnated ");
-			writeCreatureReference(rsp, ev.param2, creatureNameCache);
-			rsp.append(" with ");
-			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-		} else if (ev.eventType == CreatureHistoryBlob.EV_O_CLONED) {
-			rsp.append("Clone of: ");
-			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-		} else if (ev.eventType == CreatureHistoryBlob.EV_CLONED_TO) {
-			rsp.append("Cloned to ");
-			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-		} else if (ev.eventType == CreatureHistoryBlob.EV_WARP_OUT) {
-			rsp.append("Warped out");
-		} else if (ev.eventType == CreatureHistoryBlob.EV_WARP_IN) {
-			rsp.append("Warped in");
-		} else {
-			rsp.append("<table><tr><td>");
-			rsp.append(ev.eventType);
-			rsp.append("</td><td>");
-			writeCreatureReference(rsp, ev.param1, creatureNameCache);
-			rsp.append("</td><td>");
-			writeCreatureReference(rsp, ev.param2, creatureNameCache);
-			rsp.append("</td></tr></table>");
-		}
-	}
-
-	private void writeCreatureReference(StringBuilder rsp, String src, HashMap<String, String> creatureNameCache) {
-		String name = creatureNameCache.get(src);
-		if (name == null) {
-			NatsueDBCreatureInfo ci = database.getCreatureInfo(src);
-			if ((ci != null) && (!ci.name.equals(""))) {
-				int hasPfx = src.indexOf('-');
-				if (hasPfx == -1) {
-					name = "?-" + ci.name;
-				} else {
-					name = src.substring(0, hasPfx + 1) + ci.name;
-				}
+			NatsueDBCreatureInfo ci = database.getCreatureInfo(fragment);
+			if (ci == null) {
+				r.httpResponse("404 Not Found", head, "not in database");
+				return;
+			}
+			JSONEncoder je = new JSONEncoder();
+			Resources.encodeCreatureInfo(je, ci, hub);
+			r.httpOk(head, "application/json", je.out.toString());
+		} else if (url.equals("/api/creatureEvents")) {
+			String fragment = qv.get("moniker");
+			if (fragment == null) {
+				r.httpResponse("404 Not Found", head, "requires moniker=...");
+				return;
+			}
+			LinkedList<NatsueDBCreatureEvent> ci = database.getCreatureEvents(fragment);
+			if (ci == null) {
+				r.httpResponse("404 Not Found", head, "not in database");
+				return;
+			}
+			JSONEncoder je = new JSONEncoder();
+			je.arrayStart();
+			for (NatsueDBCreatureEvent ev : ci)
+				Resources.encodeCreatureEvent(je, ev, hub);
+			je.arrayEnd();
+			r.httpOk(head, "application/json", je.out.toString());
+		} else if (url.equals("/api/user")) {
+			String uin = qv.get("uin");
+			String nickname = qv.get("nickname");
+			INatsueUserData data;
+			if (uin != null) {
+				data = hub.getUserDataByUIN(UINUtils.valueOf(uin));
+			} else if (nickname != null) {
+				data = hub.getUserDataByNickname(nickname);
 			} else {
-				name = src;
+				r.httpResponse("404 Not Found", head, "requires uin=... or nickname=...");
+				return;
 			}
-			creatureNameCache.put(src, name);
-		}
-		rsp.append("<a href=\"creature?" + HTMLEncoder.hrefEncode(src) + "\">");
-		HTMLEncoder.htmlEncode(rsp, name);
-		rsp.append("</a>");
-	}
-
-	private void writeLifeStage(StringBuilder rsp, int lifeStage) {
-		if (lifeStage == -1) {
-			rsp.append("Egg");
-		} else if (lifeStage == 0) {
-			rsp.append("Baby");
-		} else if (lifeStage == 1) {
-			rsp.append("Child");
-		} else if (lifeStage == 2) {
-			rsp.append("Adolescent");
-		} else if (lifeStage == 3) {
-			rsp.append("Youth");
-		} else if (lifeStage == 4) {
-			rsp.append("Adult");
-		} else if (lifeStage == 5) {
-			rsp.append("Old");
-		} else if (lifeStage == 6) {
-			rsp.append("Ancient");
-		} else if (lifeStage == 7) {
-			rsp.append("Dead");
+			if (data == null) {
+				r.httpResponse("404 Not Found", head, "unknown user");
+				return;
+			}
+			JSONEncoder je = new JSONEncoder();
+			Resources.encodeUser(je, data, hub);
+			r.httpOk(head, "application/json", je.out.toString());
+		} else if (url.equals("/api/world")) {
+			String id = qv.get("id");
+			if (id == null) {
+				r.httpResponse("404 Not Found", head, "requires moniker=...");
+				return;
+			}
+			NatsueDBWorldInfo ci = database.getWorldInfo(id);
+			if (ci == null) {
+				r.httpResponse("404 Not Found", head, "not in database");
+				return;
+			}
+			JSONEncoder je = new JSONEncoder();
+			Resources.encodeWorld(je, ci, hub, null);
+			r.httpOk(head, "application/json", je.out.toString());
+		} else if (url.equals("/api/worldCreatures")) {
+			String fragment = qv.get("id");
+			String offset = qv.get("offset");
+			if ((fragment == null) || (offset == null)) {
+				r.httpResponse("404 Not Found", head, "requires id=... and offset=...");
+				return;
+			}
+			JSONEncoder je = new JSONEncoder();
+			je.arrayStart();
+			LinkedList<String> wir = database.getCreaturesInWorld(fragment, PAGE_SIZE_API_WORLD_CREATURES, Integer.parseInt(offset));
+			if (wir != null) {
+				for (String s : wir) {
+					NatsueDBCreatureInfo ci = database.getCreatureInfo(s);
+					if (ci != null) {
+						Resources.encodeCreatureInfo(je, ci, hub);
+					} else {
+						Resources.encodeCreatureInfoFail(je, s);
+					}
+				}
+			}
+			je.arrayEnd();
+			r.httpOk(head, "application/json", je.out.toString());
+		} else if (url.equals("/api/userWorlds")) {
+			String fragment = qv.get("uin");
+			String offset = qv.get("offset");
+			if ((fragment == null) || (offset == null)) {
+				r.httpResponse("404 Not Found", head, "requires uin=... and offset=...");
+				return;
+			}
+			long uin = UINUtils.valueOf(fragment);
+			if (!UINUtils.isRegularUser(uin)) {
+				r.httpResponse("404 Not Found", head, "uin " + uin + " not of a regular user");
+				return;
+			}
+			JSONEncoder je = new JSONEncoder();
+			je.arrayStart();
+			INatsueUserData cache = null;
+			LinkedList<NatsueDBWorldInfo> wir = database.getWorldsInUser(UINUtils.uid(uin), PAGE_SIZE_API_USER_WORLDS, Integer.parseInt(offset));
+			if (wir != null) {
+				for (NatsueDBWorldInfo wi : wir) {
+					// all of these worlds should have one user in common
+					cache = Resources.encodeWorld(je, wi, hub, cache);
+				}
+			}
+			je.arrayEnd();
+			r.httpOk(head, "application/json", je.out.toString());
 		} else {
-			rsp.append(lifeStage);
+			pages.kisspopUI(r, head, "404 Not Found", "No such file...", "");
 		}
-	}
-
-	private void writeTicks(StringBuilder rsp, int ageTicks) {
-		int sec = ageTicks / 20;
-		int min = sec / 60;
-		sec %= 60;
-		int hrs = min / 60;
-		min %= 60;
-		if (hrs > 0) {
-			rsp.append(hrs);
-			rsp.append("h");
-		}
-		if (min > 0) {
-			rsp.append(min);
-			rsp.append("m");
-		}
-		rsp.append(sec);
-		rsp.append("s");
-	}
-
-	private void userReference(StringBuilder rsp, long uin) {
-		INatsueUserData nud = hub.getUserDataByUIN(uin);
-		if (nud == null) {
-			String ts = UINUtils.toString(uin);
-			userReference(rsp, uin, ts, ts + "?");
-		} else {
-			userReference(rsp, nud);
-		}
-	}
-	private void userReference(StringBuilder rsp, INatsueUserData nud) {
-		userReference(rsp, nud.getUIN(), nud.getNicknameFolded(), nud.getNickname());
-	}
-	private void userReference(StringBuilder rsp, long uin, String nf, String nn) {
-		rsp.append("<a href=\"user?" + HTMLEncoder.hrefEncode(nf) + "\">");
-		HTMLEncoder.htmlEncode(rsp, nn);
-		rsp.append("</a>");
 	}
 }
