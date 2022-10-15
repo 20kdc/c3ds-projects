@@ -1,10 +1,6 @@
 # Natsue Web API Documentation
 
-
-
 ***The Natsue Web API is intended for anonymous access requirements, such as online creature geneology tracking. If your use-case requires anything that would require an API key or token or account login, it should go via the NetBabel protocol. See `tob` at the root of this repository for details. And if you're not going to write an auto-rejector, please kindly `denyrandom` your bot account.***
-
-
 
 ## Routes
 
@@ -38,6 +34,8 @@ Returns all creature events as an array of CreatureEvent objects.
 
 Returns a User object for the given UIN.
 
+*Big scary caveat:* UINs are written `uid+hid`, but `+` has a different meaning. URL-encode this field! Or if you must fudge it, `%2B`.
+
 ### GET /api/user?nickname=...
 
 Returns a User object for the given nickname.
@@ -57,6 +55,8 @@ Note that the list can change (most likely expand) as you're paging it in. You w
 Given a UIN and an offset into the list, returns an array of up to `pageSizeAPIUserWorlds` World objects.
 
 Note that the list can change (most likely expand) as you're paging it in. You will have to deal with this.
+
+*Big scary caveat:* UINs are written `uid+hid`, but `+` has a different meaning. URL-encode this field! Or if you must fudge it, `%2B`.
 
 ## Object Definitions
 
