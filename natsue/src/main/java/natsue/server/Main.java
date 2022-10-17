@@ -30,6 +30,7 @@ import natsue.server.firewall.Rejector;
 import natsue.server.firewall.SpoolListFWModule;
 import natsue.server.http.HTTPHandlerImpl;
 import natsue.server.hub.ServerHub;
+import natsue.server.packet.QuotaManager;
 import natsue.server.packet.SocketThread;
 import natsue.server.session.LoginSessionState;
 import natsue.server.system.SystemUserHubClient;
@@ -58,7 +59,11 @@ public class Main {
 
 		mySource.log("DB abstraction initialized.");
 
-		final ServerHub serverHub = new ServerHub(config, ilp, actualDB);
+		QuotaManager qm = new QuotaManager(config.connectionQuotas);
+
+		mySource.log("Quota management initialized.");
+
+		final ServerHub serverHub = new ServerHub(config, qm, ilp, actualDB);
 		// determine the firewall
 		IFWModule[] firewall = null;
 		switch (config.firewallLevel.getValue()) {
@@ -96,7 +101,7 @@ public class Main {
 		// login the system user
 		serverHub.clientLogin(new SystemUserHubClient(config, ilp, serverHub), () -> {});
 
-		HTTPHandlerImpl hhi = new HTTPHandlerImpl(serverHub, actualDB);
+		HTTPHandlerImpl hhi = new HTTPHandlerImpl(serverHub, config.httpAPIPublic.getValue(), actualDB);
 
 		mySource.log("ServerHub initialized.");
 
@@ -106,8 +111,22 @@ public class Main {
 
 			while (true) {
 				Socket skt = sv.accept();
-
-				new SocketThread(skt, (st) -> {
+				if (!qm.socketStart(skt)) {
+					try {
+						try {
+							// Abort the connection as hard as possible.
+							// We don't want to make another thread for this.
+							skt.setSoLinger(true, 0);
+						} catch (Exception ex) {
+							// nuh-uh
+						}
+						skt.close();
+					} catch (Exception ex) {
+						// bye!
+					}
+					continue;
+				}
+				new SocketThread(skt, qm, (st) -> {
 					return new LoginSessionState(config, st, serverHub);
 				}, hhi, ilp, config).start();
 			}

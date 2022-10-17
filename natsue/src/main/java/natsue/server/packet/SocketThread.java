@@ -33,6 +33,7 @@ import natsue.server.session.BaseSessionState;
  */
 public class SocketThread extends Thread implements ILogSource, ISessionClient, IHTTPHandler.Client {
 	public final Socket socket;
+	public final QuotaManager quota;
 	private InputStream socketInput;
 	private OutputStream socketOutput;
 	private final Object sendPacketLock = new Object();
@@ -43,8 +44,9 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 	public final IHTTPHandler initialHandler;
 	public long myUIN;
 
-	public SocketThread(Socket skt, Function<SocketThread, BaseSessionState> iSessionStateBuilder, IHTTPHandler iHandler, ILogProvider ilp, Config stc) {
+	public SocketThread(Socket skt, QuotaManager qm, Function<SocketThread, BaseSessionState> iSessionStateBuilder, IHTTPHandler iHandler, ILogProvider ilp, Config stc) {
 		socket = skt;
+		quota = qm;
 		logParent = ilp;
 		initialSessionStateBuilder = iSessionStateBuilder;
 		initialHandler = iHandler;
@@ -166,6 +168,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 			}
 			if (config.logAllConnections.getValue())
 				log("Closed");
+			quota.socketEnd(socket);
 		}
 	}
 
@@ -191,7 +194,6 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 			}
 		}
 	}
-
 	@Override
 	public void httpResponse(String status, boolean head, String contentType, byte[] body) throws IOException {
 		StringBuilder sb = new StringBuilder();
@@ -208,5 +210,10 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 		}
 		socketOutput.flush();
 		PacketReader.linger(socket, config.httpRequestFakeLingerTime.getAsClampedMs());
+	}
+
+	@Override
+	public boolean isLocal() {
+		return socket.getInetAddress().isLoopbackAddress();
 	}
 }

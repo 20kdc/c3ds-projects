@@ -24,6 +24,7 @@ import natsue.server.firewall.IFWModule;
 import natsue.server.firewall.IRejector;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
+import natsue.server.packet.QuotaManager;
 import natsue.server.system.SystemCommands;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
 import natsue.server.userdata.IHubUserDataCachePrivileged;
@@ -36,6 +37,7 @@ import natsue.server.userdata.INatsueUserData.LongTerm;
 public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	public final Config config;
 	private final ILogProvider logParent;
+	private final QuotaManager quotaManager;
 	public final INatsueDatabase database;
 
 	/**
@@ -58,9 +60,10 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	private final Random randomGen = new Random();
 
-	public ServerHub(Config cfg, ILogProvider logProvider, INatsueDatabase db) {
+	public ServerHub(Config cfg, QuotaManager qm, ILogProvider logProvider, INatsueDatabase db) {
 		config = cfg;
 		logParent = logProvider;
+		quotaManager = qm;
 		database = db;
 		userDataCache = new HubUserDataCache(database, cfg.accounts, logProvider);
 		users = new HubUserRegister(userDataCache);
@@ -445,6 +448,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		sb.append("Connected:\n");
 		for (IHubClient entry : users.connectedClients.values())
 			sb.append(UINUtils.toString(entry.getUIN()) + ": " + entry.getNickname() + "\n");
+		quotaManager.runSystemCheck(sb);
 		return sb.toString();
 	}
 }

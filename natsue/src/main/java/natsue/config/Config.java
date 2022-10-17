@@ -30,6 +30,11 @@ public class Config extends BaseConfig.Group {
 	public final ConfigAccounts accounts = new ConfigAccounts();
 
 	/**
+	 * Quota details
+	 */
+	public final ConfigConnectionQuotas connectionQuotas = new ConfigConnectionQuotas();
+
+	/**
 	 * Maximum amount of spooled messages to send back to a connecting client.
 	 */
 	public final Int maxSpoolToReadOnConnect = new Int("maxSpoolToReadOnConnect", 0x1000)
@@ -116,6 +121,12 @@ public class Config extends BaseConfig.Group {
 	 */
 	public final Int initialNoDataShutdownTime = new Int("initialNoDataShutdownTime", 30)
 			.describe("For an initial connection, amount of seconds to go without receiving a byte from the client before we decide we're being trolled.");
+
+	/**
+	 * Allow remote HTTP API use
+	 */
+	public final Bool httpAPIPublic = new Bool("httpAPIPublic", false)
+			.describe("If false, the HTTP API effectively doesn't exist for anyone except localhost.");
 
 	/**
 	 * Request abuse prevention

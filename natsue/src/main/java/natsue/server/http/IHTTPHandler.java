@@ -51,5 +51,7 @@ public interface IHTTPHandler {
 		}
 	
 		void httpResponse(String status, boolean head, String contentType, byte[] body) throws IOException;
+
+		boolean isLocal();
 	}
 }

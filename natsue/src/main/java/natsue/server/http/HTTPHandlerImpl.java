@@ -38,11 +38,13 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 	public final IHubPrivilegedAPI hub;
 	public final INatsueDatabase database;
 	public final Pages pages;
+	public final boolean apiPublic;
 
-	public HTTPHandlerImpl(IHubPrivilegedAPI sh, INatsueDatabase actualDB) {
+	public HTTPHandlerImpl(IHubPrivilegedAPI sh, boolean ap, INatsueDatabase actualDB) {
 		hub = sh;
 		database = actualDB;
 		pages = new Pages(sh, actualDB);
+		apiPublic = ap;
 	}
 
 	@Override
@@ -53,6 +55,16 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			HTMLEncoder.qsToVars(qv, url.substring(qsIndex + 1));
 			url = url.substring(0, qsIndex);
 		}
+		boolean apiAllowed = apiPublic || r.isLocal();
+		if (pageSubhandler(url, qv, head, r)) {
+			// handled
+		} else if (apiAllowed && apiSubhandler(url, qv, head, r)) {
+			// handled
+		} else {
+			pages.kisspopUI(r, head, "404 Not Found", "No such file...", "");
+		}
+	}
+	private boolean pageSubhandler(String url, HashMap<String, String> qv, boolean head, Client r) throws IOException {
 		// This is probably not the best of designs.
 		if (url.equals("/")) {
 			StringBuilder rsp = new StringBuilder();
@@ -68,7 +80,7 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			String fragment = qv.get("p0");
 			if (fragment == null) {
 				pages.failInvalidRequestFormat(r, head);
-				return;
+				return true;
 			}
 			HashMap<String, String> creatureNameCache = new HashMap<>();
 			StringBuilder rsp = new StringBuilder();
@@ -190,7 +202,7 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			String worldID = qv.get("p0");
 			if (worldID == null) {
 				pages.failInvalidRequestFormat(r, head);
-				return;
+				return true;
 			}
 			HashMap<String, String> creatureNameCache = new HashMap<>();
 
@@ -237,7 +249,7 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			String userRef = qv.get("p0");
 			if (userRef == null) {
 				pages.failInvalidRequestFormat(r, head);
-				return;
+				return true;
 			}
 
 			int limit = PAGE_SIZE_WORLDS;
@@ -284,7 +296,13 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				}
 			}
 			pages.kisspopUI(r, head, title, rsp.toString());
-		} else if (url.equals("/api/index")) { // -- JSON API PAST THIS POINT --
+		} else {
+			return false;
+		}
+		return true;
+	}
+	private boolean apiSubhandler(String url, HashMap<String, String> qv, boolean head, Client r) throws IOException {
+		if (url.equals("/api/index")) {
 			JSONEncoder je = new JSONEncoder();
 			je.objectStart();
 			je.writeKV("version", SystemCommands.VERSION);
@@ -304,12 +322,12 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			String fragment = qv.get("moniker");
 			if (fragment == null) {
 				r.httpResponse("404 Not Found", head, "requires moniker=...");
-				return;
+				return true;
 			}
 			NatsueDBCreatureInfo ci = database.getCreatureInfo(fragment);
 			if (ci == null) {
 				r.httpResponse("404 Not Found", head, "not in database");
-				return;
+				return true;
 			}
 			JSONEncoder je = new JSONEncoder();
 			Resources.encodeCreatureInfo(je, ci, hub);
@@ -318,12 +336,12 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			String fragment = qv.get("moniker");
 			if (fragment == null) {
 				r.httpResponse("404 Not Found", head, "requires moniker=...");
-				return;
+				return true;
 			}
 			LinkedList<NatsueDBCreatureEvent> ci = database.getCreatureEvents(fragment);
 			if (ci == null) {
 				r.httpResponse("404 Not Found", head, "not in database");
-				return;
+				return true;
 			}
 			JSONEncoder je = new JSONEncoder();
 			je.arrayStart();
@@ -341,11 +359,11 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				data = hub.getUserDataByNickname(nickname);
 			} else {
 				r.httpResponse("404 Not Found", head, "requires uin=... or nickname=...");
-				return;
+				return true;
 			}
 			if (data == null) {
 				r.httpResponse("404 Not Found", head, "unknown user");
-				return;
+				return true;
 			}
 			JSONEncoder je = new JSONEncoder();
 			Resources.encodeUser(je, data, hub);
@@ -354,12 +372,12 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			String id = qv.get("id");
 			if (id == null) {
 				r.httpResponse("404 Not Found", head, "requires moniker=...");
-				return;
+				return true;
 			}
 			NatsueDBWorldInfo ci = database.getWorldInfo(id);
 			if (ci == null) {
 				r.httpResponse("404 Not Found", head, "not in database");
-				return;
+				return true;
 			}
 			JSONEncoder je = new JSONEncoder();
 			Resources.encodeWorld(je, ci, hub, null);
@@ -369,7 +387,7 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			String offset = qv.get("offset");
 			if ((fragment == null) || (offset == null)) {
 				r.httpResponse("404 Not Found", head, "requires id=... and offset=...");
-				return;
+				return true;
 			}
 			JSONEncoder je = new JSONEncoder();
 			je.arrayStart();
@@ -391,12 +409,12 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			String offset = qv.get("offset");
 			if ((fragment == null) || (offset == null)) {
 				r.httpResponse("404 Not Found", head, "requires uin=... and offset=...");
-				return;
+				return true;
 			}
 			long uin = UINUtils.valueOf(fragment);
 			if (!UINUtils.isRegularUser(uin)) {
 				r.httpResponse("404 Not Found", head, "uin " + uin + " not of a regular user");
-				return;
+				return true;
 			}
 			JSONEncoder je = new JSONEncoder();
 			je.arrayStart();
@@ -411,7 +429,8 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			je.arrayEnd();
 			r.httpOk(head, "application/json", je.out.toString());
 		} else {
-			pages.kisspopUI(r, head, "404 Not Found", "No such file...", "");
+			return false;
 		}
+		return true;
 	}
 }
