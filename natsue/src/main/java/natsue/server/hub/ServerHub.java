@@ -159,10 +159,10 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	/**
 	 * WARNING: Only call if you're absolutely sure the person isn't presently online!
 	 */
-	private void spoolMessage(long destinationUIN, PackedMessage message, boolean fromRejector) {
+	private void spoolMessage(long destinationUIN, PackedMessage message, int trueSenderUID, boolean fromRejector) {
 		NatsueDBUserInfo ui = database.getUserByUIN(destinationUIN);
 		if (ui != null) {
-			if (!database.spoolMessage(UINUtils.uid(ui.uid), message.toByteArray())) {
+			if (!database.spoolMessage(ui.uid, trueSenderUID, message.toByteArray())) {
 				if (!fromRejector) {
 					// Spooling failed. There is almost nothing we can do, but there is one last thing we can try.
 					rejectMessage(destinationUIN, message, "User " + UINUtils.toString(destinationUIN) + " spool failure");
@@ -174,7 +174,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public void sendMessage(long destinationUIN, PackedMessage message, MsgSendType type) {
+	public void sendMessage(long destinationUIN, PackedMessage message, MsgSendType type, long causeUIN) {
 		IHubClient ihc;
 		if (type.failBehaviour.allowMessageLoss) {
 			synchronized (this) {
@@ -183,7 +183,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			if (ihc != null) {
 				ihc.incomingMessage(message, null);
 			} else {
-				sendMessageFailed(destinationUIN, message, type, "Target offline");
+				sendMessageFailed(destinationUIN, message, type, causeUIN, "Target offline");
 			}
 		} else {
 			// not temp, this message matters
@@ -193,23 +193,23 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 					// They're not online, so do this here.
 					// Otherwise they *could* go online while we're spooling the message (BAD!)
 					// If they go offline while we're SENDING, that's caught by the reject machinery (see below)
-					sendMessageFailed(destinationUIN, message, type, "Target offline");
+					sendMessageFailed(destinationUIN, message, type, causeUIN, "Target offline");
 				}
 			}
 			if (ihc != null) {
 				ihc.incomingMessage(message, () -> {
 					// If this gets run, we apparently couldn't send the message after all...
-					sendMessageFailed(destinationUIN, message, type, "Target went offline during transmit");
+					sendMessageFailed(destinationUIN, message, type, causeUIN, "Target went offline during transmit");
 				});
 			}
 		}
 	}
-	private void sendMessageFailed(long destinationUIN, PackedMessage message, MsgSendType type, String reason) {
+	private void sendMessageFailed(long destinationUIN, PackedMessage message, MsgSendType type, long causeUIN, String reason) {
 		switch (type.failBehaviour) {
 		case Discard:
 			return;
 		case Spool:
-			spoolMessage(destinationUIN, message, type.isReject);
+			spoolMessage(destinationUIN, message, UINUtils.asDBUID(causeUIN), type.isReject);
 			return;
 		case Reject:
 			rejectMessage(destinationUIN, message, reason);
@@ -258,8 +258,12 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				for (int i = 0; i < maxSpool; i++) {
 					byte[] pm = database.popFirstSpooledMessage(uid);
 					if (pm != null) {
-						cc.incomingMessage(PackedMessage.read(pm, config.maxDecompressedPRAYSize.getValue()), () -> {
-							database.spoolMessage(uid, pm);
+						PackedMessage pmi = PackedMessage.read(pm, config.maxDecompressedPRAYSize.getValue());
+						final int pmiSenderUID = UINUtils.asDBUID(pmi.senderUIN);
+						cc.incomingMessage(pmi, () -> {
+							// Note that BECAUSE THESE MESSAGES ARE ALREADY SPOOLED,
+							//  it's okay to spool them again at this level.
+							database.spoolMessage(uid, pmiSenderUID, pm);
 						});
 					} else {
 						break;
@@ -388,7 +392,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			return;
 		}
 		// Send.
-		sendMessage(destinationUIN, message, MsgSendType.Temp);
+		sendMessage(destinationUIN, message, MsgSendType.Temp, cc.getUIN());
 	}
 
 	@Override

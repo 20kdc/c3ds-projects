@@ -17,6 +17,7 @@ import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.names.NicknameVerifier;
 import natsue.names.PWHash;
+import natsue.server.database.UnixTime;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
@@ -141,7 +142,7 @@ public class HubUserDataCache implements IHubUserDataCacheBetweenCacheAndHub, IL
 			// negative numbers will probably fry the Warp inbox system!!!
 			if (uid <= 0)
 				continue;
-			NatsueDBUserInfo newUI = new NatsueDBUserInfo(uid, username, usernameFolded, PWHash.hash(uid, password), 0);
+			NatsueDBUserInfo newUI = new NatsueDBUserInfo(uid, username, usernameFolded, PWHash.hash(uid, password), 0, UnixTime.get());
 			boolean success = database.tryCreateUser(newUI);
 			if (success)
 				log("Registered user: " + username + " as UID " + uid);

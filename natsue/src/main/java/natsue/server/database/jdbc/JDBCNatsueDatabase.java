@@ -70,9 +70,10 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public boolean spoolMessage(int uid, byte[] pm) {
+	public boolean spoolMessage(int uid, int causeUID, byte[] pm) {
 		synchronized (this) {
 			txns.storeOnSpool.uid = uid;
+			txns.storeOnSpool.causeUID = causeUID;
 			txns.storeOnSpool.data = pm;
 			return txns.storeOnSpool.executeOuter(txnHost);
 		}

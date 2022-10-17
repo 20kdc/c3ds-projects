@@ -39,6 +39,16 @@ public class ILMigrations {
 			new Migration(6, 7,
 					"ALTER TABLE natsue_users ADD COLUMN flags INT NOT NULL DEFAULT 0"
 			),
+			// 8: Time extensions
+			new Migration(7, 8,
+					// Worth noting that this is the "true" sender UID, i.e. the cause of the message.
+					// The sender UID stored in the blob may in fact be mucked with by the system (i.e. rejections)
+					"ALTER TABLE natsue_spool ADD COLUMN cause_uid INT",
+					"ALTER TABLE natsue_spool ADD COLUMN send_unix_time BIGINT",
+					"ALTER TABLE natsue_history_events ADD COLUMN send_unix_time BIGINT",
+					"ALTER TABLE natsue_history_creatures ADD COLUMN send_unix_time BIGINT",
+					"ALTER TABLE natsue_users ADD COLUMN creation_unix_time BIGINT"
+			),
 	};
 
 	public static void migrate(Connection conn, ILDBVariant variant, ILogProvider ils) throws SQLException {

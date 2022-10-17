@@ -22,13 +22,15 @@ public class NatsueDBUserInfo implements INatsueUserFlags {
 	public final String passwordHash;
 	public final int uid;
 	public final int flags;
+	public final long creationUnixTime;
 
-	public NatsueDBUserInfo(int ui, String n, String nf, String p, int f) {
+	public NatsueDBUserInfo(int ui, String n, String nf, String p, int f, long l) {
 		uid = ui;
 		nickname = n;
 		nicknameFolded = nf;
 		passwordHash = p;
 		flags = f;
+		creationUnixTime = l;
 	}
 
 	public long getUIN() {

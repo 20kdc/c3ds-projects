@@ -38,6 +38,10 @@ public class UINUtils {
 		return make(uid, HID_USER);
 	}
 
+	public static int asDBUID(long uin) {
+		return isRegularUser(uin) ? uid(uin) : 0;
+	}
+
 	public static long make(int uid, int hid) {
 		// the masking here is very important, it prevents issues with "uninitialized padding" HIDs
 		long uidl = uid & 0xFFFFFFFFL;

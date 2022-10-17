@@ -74,7 +74,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 					args.response.append("Already in global chat (reconnect?)\n");
 				} else {
 					args.response.append("Please stand by.\n");
-					sendGlobalChatRequest(args.senderUIN);
+					sendGlobalChatRequest(args.senderUIN, args.senderUIN);
 				}
 			}
 		});
@@ -112,7 +112,8 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	@Override
 	public void wwrNotify(boolean online, INatsueUserData theirData) {
 		if (online) {
-			hub.sendMessage(theirData.getUIN(), StandardMessages.addToContactList(theirData.getUIN(), UIN), MsgSendType.Temp);
+			PackedMessage pm = StandardMessages.addToContactList(theirData.getUIN(), UIN);
+			hub.sendMessage(theirData.getUIN(), pm, MsgSendType.Temp, theirData.getUIN());
 		} else {
 			removeFromGlobalChat(theirData.getUIN(), "disconnected");
 		}
@@ -145,7 +146,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 							if (str.equals("Request")) {
 								// Yes - we need to accept.
 								PackedMessage npm = StandardMessages.acceptChatRequest(UIN, getNickname(), pt.strMap.get("ChatID"));
-								hub.sendMessage(message.senderUIN, npm, MsgSendType.Temp);
+								hub.sendMessage(message.senderUIN, npm, MsgSendType.Temp, message.senderUIN);
 							} else if (str.equals("Accept")) {
 								if (chatID.equals(CHATID_GLOBAL)) {
 									INatsueUserData nud = hub.getUserDataByUIN(message.senderUIN);
@@ -189,7 +190,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			if (subject.equalsIgnoreCase("SYSTEM MSG")) {
 				if (hub.isUINAdmin(packed.senderUIN)) {
 					for (INatsueUserData sud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
-						hub.sendMessage(sud.getUIN(), StandardMessages.systemMessage(sud.getUIN(), msg), MsgSendType.Temp);
+						hub.sendMessage(sud.getUIN(), StandardMessages.systemMessage(sud.getUIN(), msg), MsgSendType.Temp, packed.senderUIN);
 					}
 				} else {
 					hub.rejectMessage(UIN, packed, "Have to be admin");
@@ -215,9 +216,9 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				for (INatsueUserData potential : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
 					if (potential.getUIN() != senderUIN) {
 						PackedMessage pm = StandardMessages.chatLeave(potential.getUIN(), potential.getNickname(), CHATID_GLOBAL, potential.getUIN(), potential.getNickname());
-						hub.sendMessage(senderUIN, pm, MsgSendType.Temp);
+						hub.sendMessage(senderUIN, pm, MsgSendType.Temp, senderUIN);
 						pm = StandardMessages.chatLeave(senderUIN, senderNick, CHATID_GLOBAL, senderUIN, senderNick);
-						hub.sendMessage(potential.getUIN(), pm, MsgSendType.Temp);
+						hub.sendMessage(potential.getUIN(), pm, MsgSendType.Temp, senderUIN);
 					}
 				}
 				addToGlobalChat(nud);
@@ -229,8 +230,8 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		}
 	}
 
-	private void sendGlobalChatRequest(long targetUIN) {
-		hub.sendMessage(targetUIN, StandardMessages.chatRequest(UIN, NICK_GLOBALCHAT, CHATID_GLOBAL), MsgSendType.Temp);
+	private void sendGlobalChatRequest(long targetUIN, long causeUIN) {
+		hub.sendMessage(targetUIN, StandardMessages.chatRequest(UIN, NICK_GLOBALCHAT, CHATID_GLOBAL), MsgSendType.Temp, causeUIN);
 	}
 	
 	private void addToGlobalChat(INatsueUserData nud) {
@@ -242,7 +243,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		if (nud.isMutedGlobalChat())
 			leader += MSG_MUTED;
 		PackedMessage npm = StandardMessages.chatMessage(UIN, "", CHATID_GLOBAL, leader);
-		hub.sendMessage(senderUIN, npm, MsgSendType.Temp);
+		hub.sendMessage(senderUIN, npm, MsgSendType.Temp, senderUIN);
 		sendGlobalChatStatusUpdate(senderUIN, "joined");
 	}
 
@@ -281,7 +282,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		// basically the client doesn't care if your nickname is wrong, it will just write whatever you put in
 		// that in mind, global chat is just a matter of doing the thing
 		for (Long target : targets)
-			hub.sendMessage(target, StandardMessages.chatMessage(UIN, nickname, CHATID_GLOBAL, text), MsgSendType.Temp);
+			hub.sendMessage(target, StandardMessages.chatMessage(UIN, nickname, CHATID_GLOBAL, text), MsgSendType.Temp, senderUIN);
 		return true;
 	}
 
@@ -302,6 +303,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	private void sendChatMessage(long targetUIN, String chatID, String text) {
-		hub.sendMessage(targetUIN, StandardMessages.chatMessage(UIN, getNickname(), chatID, text), MsgSendType.Temp);
+		hub.sendMessage(targetUIN, StandardMessages.chatMessage(UIN, getNickname(), chatID, text), MsgSendType.Temp, targetUIN);
 	}
 }

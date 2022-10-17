@@ -9,7 +9,6 @@ package natsue.server.firewall;
 
 import java.util.LinkedList;
 
-import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
@@ -74,12 +73,12 @@ public class Rejector implements IRejector {
 	private void sendInversion(long destinationUIN, PackedMessage message) {
 		long tmp = message.senderUIN;
 		message.senderUIN = destinationUIN;
-		hub.sendMessage(tmp, message, MsgSendType.PermReject);
+		hub.sendMessage(tmp, message, MsgSendType.PermReject, message.senderUIN);
 	}
 
 	private void sendAsSystem(PackedMessage message) {
 		long tmp = message.senderUIN;
 		message.senderUIN = onBehalfOf.getUIN();
-		hub.sendMessage(tmp, message, MsgSendType.PermReject);
+		hub.sendMessage(tmp, message, MsgSendType.PermReject, message.senderUIN);
 	}
 }

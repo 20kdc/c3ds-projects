@@ -19,6 +19,7 @@ import natsue.server.database.NatsueDBCreatureEvent;
 import natsue.server.database.NatsueDBCreatureInfo;
 import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.database.NatsueDBWorldInfo;
+import natsue.server.database.UnixTime;
 
 public class JDBCNatsueTxns {
 	public final UserByUID userByUID = new UserByUID();
@@ -90,7 +91,7 @@ public class JDBCNatsueTxns {
 		}
 	}
 	public static class StoreOnSpool extends ILDBTxn<Boolean> {
-		public int uid;
+		public int uid, causeUID;
 		public byte[] data;
 
 		public StoreOnSpool() {
@@ -99,10 +100,12 @@ public class JDBCNatsueTxns {
 
 		@Override
 		protected Boolean executeInner(Connection conn) throws SQLException {
-			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_spool(id, uid, data) VALUES (?, ?, ?)")) {
+			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_spool(id, uid, data, cause_uid, send_unix_time) VALUES (?, ?, ?, ?, ?)")) {
 				stmt.setLong(1, Snowflake.generateSnowflake());
 				stmt.setInt(2, uid);
 				stmt.setBytes(3, data);
+				stmt.setInt(4, causeUID);
+				stmt.setLong(5, UnixTime.get());
 				stmt.executeUpdate();
 				return Boolean.TRUE;
 			}
@@ -126,8 +129,8 @@ public class JDBCNatsueTxns {
 		@Override
 		protected Boolean executeInner(Connection conn) throws SQLException {
 			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_history_creatures(" +
-					"moniker, first_uid, ch0, ch1, ch2, ch3, ch4, name, user_text" +
-					") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+					"moniker, first_uid, ch0, ch1, ch2, ch3, ch4, name, user_text, send_unix_time" +
+					") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 				stmt.setString(1, moniker);
 				stmt.setInt(2, firstUID);
 				stmt.setInt(3, ch0);
@@ -137,6 +140,7 @@ public class JDBCNatsueTxns {
 				stmt.setInt(7, ch4);
 				stmt.setString(8, name);
 				stmt.setString(9, userText);
+				stmt.setLong(10, UnixTime.get());
 				stmt.executeUpdate();
 				return Boolean.TRUE;
 			}
@@ -233,8 +237,8 @@ public class JDBCNatsueTxns {
 		protected Boolean executeInner(Connection conn) throws SQLException {
 			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO natsue_history_events(" +
 					"sender_uid, moniker, event_index, event_type, world_time, age_ticks, unix_time, life_stage, " +
-					"param1, param2, world_name, world_id, user_id" +
-					") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+					"param1, param2, world_name, world_id, user_id, send_unix_time" +
+					") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 				stmt.setInt(1, senderUID);
 				stmt.setString(2, moniker);
 				stmt.setInt(3, eventIndex);
@@ -248,6 +252,7 @@ public class JDBCNatsueTxns {
 				stmt.setString(11, worldName);
 				stmt.setString(12, worldID);
 				stmt.setString(13, userID);
+				stmt.setLong(14, UnixTime.get());
 				stmt.executeUpdate();
 				return Boolean.TRUE;
 			}

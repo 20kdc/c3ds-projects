@@ -47,7 +47,8 @@ public class ComplexFWModule implements IFWModule {
 					String reqType = pt.strMap.getOrDefault("Request Type", "?");
 					if (chatID.equals(SystemUserHubClient.CHATID_GLOBAL) && !reqType.equals("Accept")) {
 						// This request is forfeit as it would break the global chat system
-						hub.sendMessage(message.senderUIN, StandardMessages.systemMessage(message.senderUIN, "You can't invite people to Global Chat."), MsgSendType.Temp);
+						PackedMessage pm = StandardMessages.systemMessage(message.senderUIN, "You can't invite people to Global Chat.");
+						hub.sendMessage(message.senderUIN, pm, MsgSendType.Temp, message.senderUIN);
 						return true;
 					}
 				} else if (type.equals("warp")) {

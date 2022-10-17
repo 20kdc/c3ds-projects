@@ -40,15 +40,17 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	 * The message is assumed to be authenticated.
 	 * If temp is true, the message won't be archived on failure.
 	 * If fromRejector is true, then the message won't go through rejection *again*.
+	 * causeUIN is used for abuse tracking purposes.
 	 */
-	void sendMessage(long destinationUIN, PackedMessage message, MsgSendType type);
+	void sendMessage(long destinationUIN, PackedMessage message, MsgSendType type, long causeUIN);
 
 	/**
 	 * See the other sendMessage definition.
-	 * Note that destUser is just used as a source for the UIN.
+	 * Note that sourceUser is just used as a source for the UIN.
+	 * Note also that causeUser is just used as a source for the UIN.
 	 */
-	default void sendMessage(INatsueUserData destUser, PackedMessage message, MsgSendType type) {
-		sendMessage(destUser.getUIN(), message, type);
+	default void sendMessage(INatsueUserData destUser, PackedMessage message, MsgSendType type, INatsueUserData causeUser) {
+		sendMessage(destUser.getUIN(), message, type, causeUser.getUIN());
 	}
 
 	/**

@@ -8,6 +8,7 @@
 package natsue.server.system;
 
 import natsue.data.babel.UINUtils;
+import natsue.data.babel.pm.PackedMessage;
 import natsue.data.hli.ChatColours;
 import natsue.data.hli.StandardMessages;
 import natsue.server.database.INatsueUserFlags;
@@ -46,7 +47,8 @@ public class SystemCommands {
 						args.response.append(userData.getNickname());
 						args.response.append(ChatColours.CHAT);
 						args.response.append(" to your contact list...\n");
-						args.hub.sendMessage(args.senderUIN, StandardMessages.addToContactList(args.senderUIN, userData.getUIN()), MsgSendType.Temp);
+						PackedMessage pm = StandardMessages.addToContactList(args.senderUIN, userData.getUIN());
+						args.hub.sendMessage(args.senderUIN, pm, MsgSendType.Temp, args.senderUIN);
 					} else {
 						args.appendNoSuchUser(user);
 					}

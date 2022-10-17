@@ -42,11 +42,11 @@ public class SpoolListFWModule implements IFWModule {
 				String type = block.getType();
 				if (type.equals("MESG")) {
 					// message centre
-					hub.sendMessage(destUser, message, MsgSendType.Perm);
+					hub.sendMessage(destUser, message, MsgSendType.Perm, sourceUser);
 					return true;
 				} else if (type.equals("warp")) {
 					// warped creature
-					hub.sendMessage(destUser, message, MsgSendType.PermReturnIfOffline);
+					hub.sendMessage(destUser, message, MsgSendType.PermReturnIfOffline, sourceUser);
 					return true;
 				}
 			}

@@ -46,7 +46,7 @@ public interface INatsueDatabase {
 	 * Spools a PackedMessage.
 	 * Note that a spooled message can only be sent to someone in the database for sanity reasons.
 	 */
-	boolean spoolMessage(int uid, byte[] pm);
+	boolean spoolMessage(int uid, int causeUID, byte[] pm);
 
 	/**
 	 * Removes an arbitrary PackedMessage from a user's spool, or returns null if it's not there.
