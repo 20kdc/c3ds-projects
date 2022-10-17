@@ -49,6 +49,11 @@ public class ILMigrations {
 					"ALTER TABLE natsue_history_creatures ADD COLUMN send_unix_time BIGINT",
 					"ALTER TABLE natsue_users ADD COLUMN creation_unix_time BIGINT"
 			),
+			// 9: Additional extensions
+			new Migration(8, 9,
+					"ALTER TABLE natsue_history_creatures ADD COLUMN updater_name_uid INT",
+					"ALTER TABLE natsue_history_creatures ADD COLUMN updater_text_uid INT"
+			),
 	};
 
 	public static void migrate(Connection conn, ILDBVariant variant, ILogProvider ils) throws SQLException {

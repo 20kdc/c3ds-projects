@@ -104,8 +104,9 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public boolean updateCreatureText(String moniker, String name, String userText) {
+	public boolean updateCreatureText(int senderUID, String moniker, String name, String userText) {
 		synchronized (this) {
+			txns.updateCreatureText.senderUID = senderUID;
 			txns.updateCreatureText.moniker = moniker;
 			txns.updateCreatureText.name = name;
 			txns.updateCreatureText.userText = userText;

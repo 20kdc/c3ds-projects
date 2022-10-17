@@ -147,6 +147,7 @@ public class JDBCNatsueTxns {
 		}
 	}
 	public static class UpdateCreatureText extends ILDBTxn<Boolean> {
+		public int senderUID;
 		public String moniker;
 		public String name;
 		public String userText;
@@ -158,27 +159,38 @@ public class JDBCNatsueTxns {
 		@Override
 		protected Boolean executeInner(Connection conn) throws SQLException {
 			if ((name != null) && (userText != null)) {
-				try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET name=?, user_text=? " +
-						"WHERE moniker=?")) {
-					stmt.setString(1, name);
-					stmt.setString(2, userText);
-					stmt.setString(3, moniker);
+				try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET " +
+						"updater_name_uid=?, updater_text_uid=?, name=?, user_text=? " +
+						"WHERE moniker=? AND (name != ? OR user_text != ?)")) {
+					stmt.setInt(1, senderUID);
+					stmt.setInt(2, senderUID);
+					stmt.setString(3, name);
+					stmt.setString(4, userText);
+					stmt.setString(5, moniker);
+					stmt.setString(6, name);
+					stmt.setString(7, userText);
 					stmt.executeUpdate();
 					return Boolean.TRUE;
 				}
 			} else if (name != null) {
-				try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET name=? " +
-						"WHERE moniker=?")) {
-					stmt.setString(1, name);
-					stmt.setString(2, moniker);
+				try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET " +
+						"updater_name_uid=?, name=? " +
+						"WHERE moniker=? AND name != ?")) {
+					stmt.setInt(1, senderUID);
+					stmt.setString(2, name);
+					stmt.setString(3, moniker);
+					stmt.setString(4, name);
 					stmt.executeUpdate();
 					return Boolean.TRUE;
 				}
 			} else if (userText != null) {
-				try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET user_text=? " +
-						"WHERE moniker=?")) {
-					stmt.setString(1, userText);
-					stmt.setString(2, moniker);
+				try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_history_creatures SET " +
+						"updater_text_uid=?, user_text=? " +
+						"WHERE moniker=? AND user_text != ?")) {
+					stmt.setInt(1, senderUID);
+					stmt.setString(2, userText);
+					stmt.setString(3, moniker);
+					stmt.setString(4, userText);
 					stmt.executeUpdate();
 					return Boolean.TRUE;
 				}

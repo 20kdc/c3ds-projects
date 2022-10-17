@@ -418,7 +418,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				if (history.userText != null)
 					cUserText = CreatureDataVerifier.stripUserText(config, history.userText);
 				if (cName != null || cUserText != null)
-					database.updateCreatureText(history.moniker, cName, cUserText);
+					database.updateCreatureText(senderUID, history.moniker, cName, cUserText);
 			}
 			for (LifeEvent le : history.events) {
 				String a = CreatureDataVerifier.stripMonikerLike(le.mon1);
