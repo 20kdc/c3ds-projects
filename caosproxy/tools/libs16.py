@@ -18,6 +18,26 @@ struct_cs16_frame = struct.Struct("<IHH")
 struct_cs16_pixel = struct.Struct("<H")
 struct_cs16_lofs = struct.Struct("<I")
 
+# short enc/dec
+def _decode_shorts(b: bytes) -> array.array:
+	"""
+	Decodes a list of shorts as fast as possible.
+	"""
+	arr = array.array("H", b)
+	if sys.byteorder != "little":
+		arr = arr.byteswap()
+	return arr
+
+def _encode_shorts(shorts) -> bytes:
+	"""
+	Encodes a list of shorts as fast as possible.
+	"""
+	arr = array.array("H", shorts)
+	if sys.byteorder != "little":
+		arr = arr.byteswap()
+	return arr.tobytes()
+
+# the body
 class S16Image():
 	"""
 	16-bit image that can either be in 555 or 565 format.
@@ -83,6 +103,23 @@ class S16Image():
 		img.putdata(pixseq)
 		return img
 
+def is_c16(data: bytes) -> bool:
+	"""
+	Checks if a file is a C16 file.
+	(This is meant to help with the mask command, which should save whatever it got.)
+	"""
+	filetype, count = struct_cs16_header.unpack_from(data, 0)
+	if filetype == 0:
+		return False
+	elif filetype == 1:
+		return False
+	elif filetype == 2:
+		return True
+	elif filetype == 3:
+		return True
+	else:
+		raise Exception("Unknown S16/C16 magic number " + str(filetype))
+
 def decode_cs16(data: bytes) -> list:
 	"""
 	Decodes a C16 or S16 file.
@@ -124,8 +161,8 @@ def decode_cs16(data: bytes) -> list:
 					runlen = elm >> 1
 					if (elm & 1) != 0:
 						niptr = iptr + (runlen * 2)
-						for vt in struct_cs16_pixel.iter_unpack(data[iptr:niptr]):
-							img.data[pixidx] = vt[0]
+						for v in _decode_shorts(data[iptr:niptr]):
+							img.data[pixidx] = v
 							pixidx += 1
 						iptr = niptr
 					else:
@@ -135,8 +172,8 @@ def decode_cs16(data: bytes) -> list:
 			# just decode everything at once
 			iw2 = iw * ih * 2
 			pixidx = 0
-			for vt in struct_cs16_pixel.iter_unpack(data[iptr:iptr + iw2]):
-				img.data[pixidx] = vt[0]
+			for v in _decode_shorts(data[iptr:iptr + iw2]):
+				img.data[pixidx] = v
 				pixidx += 1
 		results.append(img)
 	return results
@@ -151,8 +188,7 @@ def encode_s16(images) -> bytes:
 	blob = b""
 	for v in images:
 		data += struct_cs16_frame.pack(blob_ptr, v.width, v.height)
-		for xv in v.data:
-			blob += struct_cs16_pixel.pack(xv)
+		blob += _encode_shorts(v.data)
 		blob_ptr += len(v.data) * 2
 	return data + blob
 
@@ -188,10 +224,7 @@ def _encode_c16_line(data, ofs, l):
 	# end of line marker
 	line_p.append(0)
 	# pack into bytes
-	res = b""
-	for v in line_p:
-		res += struct_cs16_pixel.pack(v)
-	return res
+	return _encode_shorts(line_p)
 
 def encode_c16(images) -> bytes:
 	"""
@@ -253,6 +286,8 @@ if __name__ == "__main__":
 		print(" encodes 565 c16 file from directory")
 		print("libs16.py decode <IN> <OUTDIR>")
 		print(" decodes s16 or c16 files")
+		print("libs16.py mask <SOURCE> <X> <Y> <VICTIM> <FRAME>")
+		print(" **REWRITES** the given FRAME of the VICTIM file to use the colours from SOURCE frame 0 at the given X/Y position, but basing alpha on the existing data in the frame.")
 		print("")
 		print(" s16/c16 files are converted to directories of numbered PNG files.")
 		print(" This process is lossless, with a potential oddity if the files are in 555 format rather than 565.")
@@ -282,8 +317,12 @@ if __name__ == "__main__":
 			if f_path is None:
 				# did not find a candidate
 				break
-			imgs.append(pil_to_565(PIL.Image.open(f_path)))
+			print("Frame " + f_path + "...")
+			f_pil = PIL.Image.open(f_path)
+			print(" Encoding to RGB565...")
+			imgs.append(pil_to_565(f_pil))
 			idx += 1
+		print("Building final data...")
 		if compressed:
 			data = encode_c16(imgs)
 		else:
@@ -310,6 +349,26 @@ if __name__ == "__main__":
 				vpil = v.to_pil()
 				vpil.save(os.path.join(sys.argv[3], str(idx) + ".png"), "PNG")
 				idx += 1
+			f.close()
+		elif sys.argv[1] == "mask":
+			srci = decode_cs16(sys.argv[2])[0]
+			srcx = int(sys.argv[3])
+			srcy = int(sys.argv[4])
+			victim_fn = sys.argv[5]
+			frame = int(sys.argv[6])
+			# begin
+			f = open(victim_fn, "rb")
+			victim_data = f.read()
+			images = decode_cs16(victim_data)
+			f.close()
+			# actually run op
+			images[frame].colours_from(srci, srcx, srcy)
+			# begin
+			f = open(victim_fn, "wb")
+			if is_c16(victim_data):
+				f.write(encode_c16(images))
+			else:
+				f.write(encode_s16(images))
 			f.close()
 		else:
 			print("cannot understand: " + sys.argv[1])
