@@ -77,6 +77,17 @@ class S16Image():
 			self.data[i] = v
 		self.is_555 = False
 
+	def convert_565_maycopy(self):
+		"""
+		Returns either this image or a copy in 565 format.
+		"""
+		if not self.is_555:
+			# no need
+			return self
+		c = self.copy()
+		c.convert_565()
+		return c
+
 	def to_pil(self):
 		"""
 		Converts the image to a PIL image.
@@ -102,6 +113,28 @@ class S16Image():
 		img = PIL.Image.new("RGBA", (target.width, target.height))
 		img.putdata(pixseq)
 		return img
+
+	def getpixel(self, x, y):
+		if x < 0 or x >= self.width or y < 0 or y >= self.height:
+			return 0
+		return self.data[x + (y * self.width)]
+
+	def colours_from(self, srci, srcx, srcy):
+		# spaces must match
+		assert self.is_555 == srci.is_555
+		idx = 0
+		for y in range(self.height):
+			for x in range(self.width):
+				sv = srci.getpixel(srcx + x, srcy + y)
+				v = self.data[idx]
+				if v != 0:
+					v = sv
+					if v == 0:
+						# this is not the usual colour for this
+						# but it works regardless of format
+						v = 1
+				self.data[idx] = v
+				idx = idx + 1
 
 def is_c16(data: bytes) -> bool:
 	"""
@@ -186,7 +219,8 @@ def encode_s16(images) -> bytes:
 	data = struct_cs16_header.pack(1, len(images))
 	blob_ptr = struct_cs16_header.size + (struct_cs16_frame.size * len(images))
 	blob = b""
-	for v in images:
+	for vr in images:
+		v = vr.convert_565_maycopy()
 		data += struct_cs16_frame.pack(blob_ptr, v.width, v.height)
 		blob += _encode_shorts(v.data)
 		blob_ptr += len(v.data) * 2
@@ -241,7 +275,8 @@ def encode_c16(images) -> bytes:
 			blob_ptr += (v.height - 1) * 4
 	expected_data_len = blob_ptr
 	# actually build
-	for v in images:
+	for vr in images:
+		v = vr.convert_565_maycopy()
 		data += struct_cs16_frame.pack(blob_ptr, v.width, v.height)
 		for y in range(v.height):
 			if y != 0:
@@ -286,13 +321,16 @@ if __name__ == "__main__":
 		print(" encodes 565 c16 file from directory")
 		print("libs16.py decode <IN> <OUTDIR>")
 		print(" decodes s16 or c16 files")
-		print("libs16.py mask <SOURCE> <X> <Y> <VICTIM> <FRAME>")
+		print("libs16.py decodeFrame <IN> <FRAME> <OUT>")
+		print(" decodes a single frame of a s16/c16 to a file")
+		print("libs16.py mask <SOURCE> <X> <Y> <VICTIM> <FRAME> [<CHECKPRE> [<CHECKPOST>]]")
 		print(" **REWRITES** the given FRAME of the VICTIM file to use the colours from SOURCE frame 0 at the given X/Y position, but basing alpha on the existing data in the frame.")
+		print(" CHECKPRE/CHECKPOST are useful for comparisons")
 		print("")
-		print(" s16/c16 files are converted to directories of numbered PNG files.")
-		print(" This process is lossless, with a potential oddity if the files are in 555 format rather than 565.")
-		print(" The inverse conversion is of course not lossless (lower bits are dropped).")
-		print(" There is NO dithering.")
+		print("s16/c16 files are converted to directories of numbered PNG files.")
+		print("This process is lossless, with a potential oddity if the files are in 555 format rather than 565.")
+		print("The inverse conversion is of course not lossless (lower bits are dropped).")
+		print("There is NO dithering.")
 
 	import sys
 	import os
@@ -344,26 +382,54 @@ if __name__ == "__main__":
 				pass
 			f = open(sys.argv[2], "rb")
 			images = decode_cs16(f.read())
+			f.close()
 			idx = 0
 			for v in images:
 				vpil = v.to_pil()
 				vpil.save(os.path.join(sys.argv[3], str(idx) + ".png"), "PNG")
 				idx += 1
+		elif sys.argv[1] == "decodeFrame":
+			frame = int(sys.argv[3])
+			f = open(sys.argv[2], "rb")
+			images = decode_cs16(f.read())
 			f.close()
+			vpil = images[frame].to_pil()
+			vpil.save(sys.argv[4], "PNG")
 		elif sys.argv[1] == "mask":
-			srci = decode_cs16(sys.argv[2])[0]
+			srci = sys.argv[2]
 			srcx = int(sys.argv[3])
 			srcy = int(sys.argv[4])
 			victim_fn = sys.argv[5]
 			frame = int(sys.argv[6])
-			# begin
+			# test sheets
+			test_pre = None
+			if len(sys.argv) >= 8:
+				test_pre = sys.argv[7]
+			test_post = None
+			if len(sys.argv) >= 9:
+				test_post = sys.argv[8]
+			# load source image
+			f = open(srci, "rb")
+			srci = decode_cs16(f.read())[0]
+			f.close()
+			# load target file
 			f = open(victim_fn, "rb")
 			victim_data = f.read()
 			images = decode_cs16(victim_data)
 			f.close()
+			# test pre
+			if not (test_pre is None):
+				images[frame].to_pil().save(test_pre, "PNG")
+			# ensure spaces match
+			if images[frame].is_555 != srci.is_555:
+				images[frame].convert_565()
+				srci.convert_565()
 			# actually run op
 			images[frame].colours_from(srci, srcx, srcy)
-			# begin
+			# test post
+			if not (test_post is None):
+				images[frame].to_pil().save(test_post, "PNG")
+			# writeout
 			f = open(victim_fn, "wb")
 			if is_c16(victim_data):
 				f.write(encode_c16(images))
