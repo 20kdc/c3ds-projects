@@ -214,6 +214,8 @@ def decode_cs16(data: bytes) -> list:
 def encode_s16(images) -> bytes:
 	"""
 	Encodes a S16 file from S16Image objects.
+	The S16 file is forced to be RGB565.
+	RGB555 S16Image objects are copied and converted.
 	Returns bytes.
 	"""
 	data = struct_cs16_header.pack(1, len(images))
@@ -263,6 +265,8 @@ def _encode_c16_line(data, ofs, l):
 def encode_c16(images) -> bytes:
 	"""
 	Encodes a C16 file from S16Image objects.
+	The C16 file is forced to be RGB565.
+	RGB555 S16Image objects are copied and converted.
 	Returns bytes.
 	"""
 	data = struct_cs16_header.pack(3, len(images))
