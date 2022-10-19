@@ -13,15 +13,22 @@ import struct
 import array
 import PIL.Image
 
+# ---- Constants ----
+
+# NOTE: Do not use in critical places, just comment
 # Masked/transparent colour
 COL_MASK = 0
 # Definitive black colour (as actual blank = transparent)
 COL_BLACK = 0x0020
 
+# ---- Data Structures ----
+
 struct_cs16_header = struct.Struct("<IH")
 struct_cs16_frame = struct.Struct("<IHH")
 struct_cs16_pixel = struct.Struct("<H")
 struct_cs16_lofs = struct.Struct("<I")
+
+struct_blk_header = struct.Struct("<IHHH")
 
 # short enc/dec
 def _decode_shorts(b: bytes, conv_555_565: bool) -> array.array:
@@ -54,7 +61,8 @@ def _encode_shorts(shorts) -> bytes:
 		arr = arr.byteswap()
 	return arr.tobytes()
 
-# the body
+# ---- S16/C16 IO ----
+
 class S16Image():
 	"""
 	RGB565 image. Note that RGB555 is converted to RGB565 during load.
@@ -73,15 +81,30 @@ class S16Image():
 		"""
 		return S16Image(self.width, self.height, self.data.copy())
 
-	def to_pil(self):
+	def to_pil(self, alpha_aware: bool = True):
 		"""
 		Converts the image to a PIL image.
+		If alpha_aware is False, mask colour is totally disrespected.
 		"""
 		target = self
 		pixseq = [(0, 0, 0, 0)] * (target.width * target.height)
-		for i in range(target.width * target.height):
-			v = target.data[i]
-			if v != 0:
+		if alpha_aware:
+			for i in range(target.width * target.height):
+				v = target.data[i]
+				if v != 0: # COL_MASK
+					#     5 11                  3
+					r = (v & 0xF800) >> 8
+					r |= r >> 5
+					#     6  5                  2
+					g = (v & 0x07E0) >> 3
+					g |= g >> 6
+					#     5  0                  3
+					b = (v & 0x001F) << 3
+					b |= b >> 5
+					pixseq[i] = (r, g, b, 255)
+		else:
+			for i in range(target.width * target.height):
+				v = target.data[i]
 				#     5 11                  3
 				r = (v & 0xF800) >> 8
 				r |= r >> 5
@@ -102,7 +125,7 @@ class S16Image():
 		Returns 0 (transparent) if out of range.
 		"""
 		if x < 0 or x >= self.width or y < 0 or y >= self.height:
-			return COL_MASK
+			return 0 # COL_MASK
 		return self.data[x + (y * self.width)]
 
 	def putpixel(self, x: int, y: int, colour: int):
@@ -190,10 +213,10 @@ class S16Image():
 			for x in range(self.width):
 				sv = srci.getpixel(srcx + x, srcy + y)
 				v = self.data[idx]
-				if v != COL_MASK:
+				if v != 0: # COL_MASK
 					v = sv
-					if v == COL_MASK:
-						v = COL_BLACK
+					if v == 0: # COL_MASK
+						v = 0x0020 # COL_BLACK
 				self.data[idx] = v
 				idx = idx + 1
 
@@ -228,6 +251,8 @@ class S16Image():
 			else:
 				for x in xir:
 					self.data[dst_row + x] = srci.data[src_row + x]
+
+# ---- S16/C16 IO ----
 
 def is_555(data: bytes) -> bool:
 	"""
@@ -334,7 +359,7 @@ def encode_s16(images) -> bytes:
 def _encode_c16_run(line_p, run):
 	if len(run) == 0:
 		return
-	if run[0] == COL_MASK:
+	if run[0] == 0: # COL_MASK
 		# transparent run
 		line_p.append(len(run) << 1)
 	else:
@@ -349,7 +374,7 @@ def _encode_c16_line(data, ofs, l):
 	run_tr = False
 	for i in range(l):
 		v = data[ofs]
-		vtr = v == COL_MASK
+		vtr = v == 0 # COL_MASK
 		# break run on change, or if the run is already 16383 pixels long
 		if (vtr != run_tr) or (len(run) >= 0x3FFF):
 			_encode_c16_run(line_p, run)
@@ -400,7 +425,7 @@ def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK) -> S16Image:
 	Encodes a PIL.Image into a 565 S16Image.
 	Pixels that would be "accidentally transparent" are nudged to false_black.
 	"""
-	img = S16Image(pil.width, pil.height, False)
+	img = S16Image(pil.width, pil.height)
 	pil = pil.convert("RGBA")
 	idx = 0
 	for pixel in pil.getdata():
@@ -411,11 +436,87 @@ def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK) -> S16Image:
 		v = 0
 		if a >= 128:
 			v = ((r << 8) & 0xF800) | ((g << 3) & 0x07E0) | ((b >> 3) & 0x001F)
-			if v == COL_MASK:
+			if v == 0: # COL_MASK
 				v = false_black
 		img.data[idx] = v
 		idx += 1
 	return img
+
+def pil_to_565_blk(pil: PIL.Image) -> S16Image:
+	"""
+	Encodes a PIL.Image into a 565 S16Image, assuming it will be a BLK file.
+	Therefore, alpha and collisions with the masking colour are ignored.
+	"""
+	img = S16Image(pil.width, pil.height)
+	pil = pil.convert("RGB")
+	idx = 0
+	for pixel in pil.getdata():
+		r = pixel[0]
+		g = pixel[1]
+		b = pixel[2]
+		v = ((r << 8) & 0xF800) | ((g << 3) & 0x07E0) | ((b >> 3) & 0x001F)
+		img.data[idx] = v
+		idx += 1
+	return img
+
+# ---- BLK ----
+
+def encode_blk_blocks(images, blocks_w: int) -> bytes:
+	"""
+	Encodes a BLK file from S16Image objects (128x128 tiles).
+	The BLK file is forced to be RGB565.
+	Returns bytes.
+	"""
+	# Encode, but then change the header.
+	# This is probably the official procedure which is why the offsets are off by 4.
+	tmp = encode_s16(images)[struct_cs16_header.size:]
+	return struct_blk_header.pack(1, blocks_w, len(images) // blocks_w, len(images)) + tmp
+
+def encode_blk(image: S16Image) -> bytes:
+	"""
+	Encodes a BLK file from an S16Image object.
+	The BLK file is forced to be RGB565.
+	Returns bytes.
+	"""
+	# Calculate necessary blocks
+	blocks_w = image.width >> 7
+	blocks_h = image.height >> 7
+	if (image.width & 127) != 0:
+		blocks_w += 1
+	if (image.height & 127) != 0:
+		blocks_h += 1
+	tiles = []
+	for x in range(blocks_w):
+		for y in range(blocks_h):
+			tile = S16Image(128, 128)
+			tile.blit(image, x * -128, y * -128, False)
+			tiles.append(tile)
+	return encode_blk_blocks(tiles, blocks_w)
+
+def decode_blk_blocks(data: bytes):
+	"""
+	Decodes a BLK file into the width in blocks, the height in blocks, and a list of tiles.
+	As such, returns three values.
+	"""
+	filetype, blocks_w, blocks_h, blocks_total = struct_blk_header.unpack_from(data, 0)
+	# Repack (which handles the 4 offset
+	data = struct_cs16_header.pack(filetype, blocks_total) + data[struct_blk_header.size:]
+	return blocks_w, blocks_h, decode_cs16(data)
+
+def decode_blk(data: bytes) -> S16Image:
+	"""
+	Decodes a BLK file into a full image.
+	"""
+	blocks_w, blocks_h, blocks = decode_blk_blocks(data)
+	full = S16Image(blocks_w * 128, blocks_h * 128)
+	idx = 0
+	for x in range(blocks_w):
+		for y in range(blocks_h):
+			full.blit(blocks[idx], x * 128, y * 128, False)
+			idx += 1
+	return full
+
+# ---- Command Line ----
 
 if __name__ == "__main__":
 
@@ -423,13 +524,17 @@ if __name__ == "__main__":
 		print("libs16.py info <IN>")
 		print(" information on a c16/s16 file")
 		print("libs16.py encodeS16 <INDIR> <OUT>")
-		print(" encodes 565 s16 file from directory")
+		print(" encodes 565 S16 file from directory")
 		print("libs16.py encodeC16 <INDIR> <OUT>")
-		print(" encodes 565 c16 file from directory")
+		print(" encodes 565 C16 file from directory")
+		print("libs16.py encodeBLK <IN> <OUT>")
+		print(" encodes 565 BLK file from source")
 		print("libs16.py decode <IN> <OUTDIR>")
-		print(" decodes s16 or c16 files")
+		print(" decodes S16 or C16 files")
 		print("libs16.py decodeFrame <IN> <FRAME> <OUT>")
-		print(" decodes a single frame of a s16/c16 to a file")
+		print(" decodes a single frame of a S16/C16 to a PNG file")
+		print("libs16.py decodeBLK <IN> <OUT>")
+		print(" decodes a BLK file to a PNG file")
 		print("libs16.py mask <SOURCE> <X> <Y> <VICTIM> <FRAME> [<CHECKPRE> [<CHECKPOST>]]")
 		print(" **REWRITES** the given FRAME of the VICTIM file to use the colours from SOURCE frame 0 at the given X/Y position, but basing alpha on the existing data in the frame.")
 		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
@@ -533,6 +638,12 @@ if __name__ == "__main__":
 			encode_fileset(sys.argv[2], sys.argv[3], False)
 		elif sys.argv[1] == "encodeC16":
 			encode_fileset(sys.argv[2], sys.argv[3], True)
+		elif sys.argv[1] == "encodeBLK":
+			img = PIL.Image.open(sys.argv[2])
+			blk = encode_blk(pil_to_565_blk(img))
+			f = open(sys.argv[3], "wb")
+			f.write(blk)
+			f.close()
 		elif sys.argv[1] == "decode":
 			try:
 				os.mkdir(sys.argv[3])
@@ -550,6 +661,10 @@ if __name__ == "__main__":
 			images = _read_cs16_file(sys.argv[2])
 			vpil = images[frame].to_pil()
 			vpil.save(sys.argv[4], "PNG")
+		elif sys.argv[1] == "decodeBLK":
+			blk = decode_blk(_read_bytes(sys.argv[2]))
+			vpil = blk.to_pil(False)
+			vpil.save(sys.argv[3], "PNG")
 		elif sys.argv[1] == "mask":
 			# args
 			srci = sys.argv[2]
