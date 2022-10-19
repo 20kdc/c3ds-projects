@@ -114,12 +114,88 @@ class S16Image():
 		img.putdata(pixseq)
 		return img
 
-	def getpixel(self, x, y):
+	def getpixel(self, x: int, y: int):
+		"""
+		Gets a specific pixel from the image as a short.
+		Returns 0 (transparent) if out of range.
+		"""
 		if x < 0 or x >= self.width or y < 0 or y >= self.height:
 			return 0
 		return self.data[x + (y * self.width)]
 
-	def colours_from(self, srci, srcx, srcy):
+	def crop_pad(self, crop_box: tuple, pad_box: tuple, pad_colour: int = 0):
+		"""
+		Crops and pads the image.
+		"""
+		self.crop_pad_x(crop_box[0], crop_box[2], pad_box[0], pad_box[2], pad_colour)
+		self.crop_pad_y(crop_box[1], crop_box[3], pad_box[1], pad_box[3], pad_colour)
+
+	def crop_pad_x(self, crop_l: int, crop_r: int, pad_l: int, pad_r: int, pad_colour: int = 0):
+		"""
+		Crops and pads the image on the X axis.
+		"""
+		newdata = []
+		ptr = 0
+		for i in range(self.height):
+			line = self.data[ptr:ptr + self.width]
+			# done as a separate step for checking reasons
+			line = line[crop_l:crop_r]
+			# done as a separate step for clarity reasons
+			line = ([pad_colour] * pad_l) + line + ([pad_colour] * pad_r)
+			newdata.extend(line)
+			ptr += self.width
+		self.data = newdata
+		self.width = (crop_r - crop_l) + pad_l + pad_r
+
+	def crop_pad_y(self, crop_u: int, crop_d: int, pad_u: int, pad_d: int, pad_colour: int = 0):
+		"""
+		Crops and pads the image on the Y axis.
+		"""
+		self.data = self.data[(crop_u * self.width):(crop_d * self.width)]
+		self.height = crop_d - crop_u
+		self.data = ([pad_colour] * (pad_u * self.width)) + self.data + ([pad_colour] * (pad_d * self.width))
+		self.height += pad_u + pad_d
+
+	def shift(self, x: int, y: int, pad_colour: int = 0):
+		"""
+		Shifts the image by given values.
+		Negative values will delete pixels while positive values will pad the top-left with transparency.
+		"""
+		self.shift_x(x, pad_colour)
+		self.shift_y(y, pad_colour)
+
+	def shift_x(self, amount: int, pad_colour: int = 0):
+		"""
+		Shifts the image by the given X value.
+		Negative values will delete pixels while positive values will pad the left with transparency.
+		"""
+		if amount < 0:
+			if amount <= -self.width:
+				self.crop_pad_x(0, 0, 0, 0, pad_colour)
+			else:
+				self.crop_pad_x(-amount, self.width, 0, 0, pad_colour)
+		elif amount > 0:
+			self.crop_pad_x(0, self.width, amount, 0, pad_colour)
+
+	def shift_y(self, amount: int, pad_colour: int = 0):
+		"""
+		Shifts the image by the given Y value.
+		Negative values will delete pixels while positive values will pad the top with transparency.
+		"""
+		if amount < 0:
+			if amount <= -self.height:
+				self.crop_pad_y(0, 0, 0, 0, pad_colour)
+			else:
+				self.crop_pad_y(-amount, self.height, 0, 0, pad_colour)
+		elif amount > 0:
+			self.crop_pad_y(0, self.height, amount, 0, pad_colour)
+
+	def colours_from(self, srci, srcx: int, srcy: int):
+		"""
+		Transfers colours from a given source image.
+		This image and the source image must be of the same colourspace.
+		If you're unsure, use convert_565 or convert_565_maycopy.
+		"""
 		# spaces must match
 		assert self.is_555 == srci.is_555
 		idx = 0
@@ -330,6 +406,10 @@ if __name__ == "__main__":
 		print("libs16.py mask <SOURCE> <X> <Y> <VICTIM> <FRAME> [<CHECKPRE> [<CHECKPOST>]]")
 		print(" **REWRITES** the given FRAME of the VICTIM file to use the colours from SOURCE frame 0 at the given X/Y position, but basing alpha on the existing data in the frame.")
 		print(" CHECKPRE/CHECKPOST are useful for comparisons")
+		print("libs16.py shift <VICTIM> <FRAME> <X> <Y> [<CHECKPRE> [<CHECKPOST>]]")
+		print(" **REWRITES** the given FRAME of the VICTIM file to shift it by X and Y.")
+		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
+		print(" If the X and Y values are *negative*, pixels are lost. If they are *positive*, transparent pixels are added.")
 		print("")
 		print("s16/c16 files are converted to directories of numbered PNG files.")
 		print("This process is lossless, with a potential oddity if the files are in 555 format rather than 565.")
@@ -430,6 +510,38 @@ if __name__ == "__main__":
 				srci.convert_565()
 			# actually run op
 			images[frame].colours_from(srci, srcx, srcy)
+			# test post
+			if not (test_post is None):
+				images[frame].to_pil().save(test_post, "PNG")
+			# writeout
+			f = open(victim_fn, "wb")
+			if is_c16(victim_data):
+				f.write(encode_c16(images))
+			else:
+				f.write(encode_s16(images))
+			f.close()
+		elif sys.argv[1] == "shift":
+			victim_fn = sys.argv[2]
+			frame = int(sys.argv[3])
+			shiftx = int(sys.argv[4])
+			shifty = int(sys.argv[5])
+			# test sheets
+			test_pre = None
+			if len(sys.argv) >= 7:
+				test_pre = sys.argv[6]
+			test_post = None
+			if len(sys.argv) >= 8:
+				test_post = sys.argv[7]
+			# load target file
+			f = open(victim_fn, "rb")
+			victim_data = f.read()
+			images = decode_cs16(victim_data)
+			f.close()
+			# test pre
+			if not (test_pre is None):
+				images[frame].to_pil().save(test_pre, "PNG")
+			# actually run op
+			images[frame].shift(shiftx, shifty)
 			# test post
 			if not (test_post is None):
 				images[frame].to_pil().save(test_post, "PNG")
