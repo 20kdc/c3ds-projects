@@ -13,19 +13,36 @@ import struct
 import array
 import PIL.Image
 
+# Masked/transparent colour
+COL_MASK = 0
+# Definitive black colour (as actual blank = transparent)
+COL_BLACK = 0x0020
+
 struct_cs16_header = struct.Struct("<IH")
 struct_cs16_frame = struct.Struct("<IHH")
 struct_cs16_pixel = struct.Struct("<H")
 struct_cs16_lofs = struct.Struct("<I")
 
 # short enc/dec
-def _decode_shorts(b: bytes) -> array.array:
+def _decode_shorts(b: bytes, conv_555_565: bool) -> array.array:
 	"""
 	Decodes a list of shorts as fast as possible.
 	"""
 	arr = array.array("H", b)
 	if sys.byteorder != "little":
 		arr = arr.byteswap()
+	if conv_555_565:
+		for i in range(len(arr)):
+			v = arr[i]
+			# cheeky!
+			#      ----____----____
+			# 555: 0RRRRRGGGGGBBBBB
+			# 565: RRRRRGGGGGgBBBBB
+			# first moves R/G source fields up 1 to match 565
+			# second copies upper G bit
+			# third handles B
+			v = ((v & 0x7FE0) << 1) | ((v & 0x0200) >> 4) | (v & 0x001F)
+			arr[i] = v
 	return arr
 
 def _encode_shorts(shorts) -> bytes:
@@ -40,12 +57,11 @@ def _encode_shorts(shorts) -> bytes:
 # the body
 class S16Image():
 	"""
-	16-bit image that can either be in 555 or 565 format.
+	RGB565 image. Note that RGB555 is converted to RGB565 during load.
 	"""
-	def __init__(self, w: int, h: int, is_555: bool, data = None):
+	def __init__(self, w: int, h: int, data = None):
 		self.width = w
 		self.height = h
-		self.is_555 = is_555
 		if data == None:
 			self.data = [0] * (w * h)
 		else:
@@ -55,47 +71,13 @@ class S16Image():
 		"""
 		Creates a copy of this image.
 		"""
-		return S16Image(self.width, self.height, self.is_555, self.data.copy())
-
-	def convert_565(self):
-		"""
-		Converts this image in-place to 565 format.
-		"""
-		if not self.is_555:
-			# no need
-			return
-		for i in range(self.width * self.height):
-			v = self.data[i]
-			# cheeky!
-			#      ----____----____
-			# 555: 0RRRRRGGGGGBBBBB
-			# 565: RRRRRGGGGGgBBBBB
-			# first moves R/G source fields up 1 to match 565
-			# second copies upper G bit
-			# third handles B
-			v = ((v & 0x7FE0) << 1) | ((v & 0x0200) >> 4) | (v & 0x001F)
-			self.data[i] = v
-		self.is_555 = False
-
-	def convert_565_maycopy(self):
-		"""
-		Returns either this image or a copy in 565 format.
-		"""
-		if not self.is_555:
-			# no need
-			return self
-		c = self.copy()
-		c.convert_565()
-		return c
+		return S16Image(self.width, self.height, self.data.copy())
 
 	def to_pil(self):
 		"""
 		Converts the image to a PIL image.
 		"""
 		target = self
-		if self.is_555:
-			target = self.copy()
-			target.convert_565()
 		pixseq = [(0, 0, 0, 0)] * (target.width * target.height)
 		for i in range(target.width * target.height):
 			v = target.data[i]
@@ -120,7 +102,7 @@ class S16Image():
 		Returns 0 (transparent) if out of range.
 		"""
 		if x < 0 or x >= self.width or y < 0 or y >= self.height:
-			return 0
+			return COL_MASK
 		return self.data[x + (y * self.width)]
 
 	def putpixel(self, x: int, y: int, colour: int):
@@ -129,7 +111,7 @@ class S16Image():
 		Does nothing if out of range.
 		"""
 		if x < 0 or x >= self.width or y < 0 or y >= self.height:
-			return 0
+			return
 		self.data[x + (y * self.width)] = colour
 
 	def crop_pad(self, crop_box: tuple, pad_box: tuple, pad_colour: int = 0):
@@ -202,22 +184,16 @@ class S16Image():
 	def colours_from(self, srci, srcx: int, srcy: int):
 		"""
 		Transfers colours from a given source image.
-		This image and the source image must be of the same colourspace.
-		If you're unsure, use convert_565 or convert_565_maycopy.
 		"""
-		# spaces must match
-		assert self.is_555 == srci.is_555
 		idx = 0
 		for y in range(self.height):
 			for x in range(self.width):
 				sv = srci.getpixel(srcx + x, srcy + y)
 				v = self.data[idx]
-				if v != 0:
+				if v != COL_MASK:
 					v = sv
-					if v == 0:
-						# this is not the usual colour for this
-						# but it works regardless of format
-						v = 1
+					if v == COL_MASK:
+						v = COL_BLACK
 				self.data[idx] = v
 				idx = idx + 1
 
@@ -227,8 +203,6 @@ class S16Image():
 		Note that alpha_aware can be set to false in which case transparency is a lie and so forth.
 		Also be aware this function won't error if the image goes off the borders.
 		"""
-		# spaces must match
-		assert self.is_555 == srci.is_555
 		# create in-range arrays
 		# this is still more efficient than doing the checks on every pixel
 		xir = []
@@ -298,7 +272,7 @@ def decode_cs16(data: bytes) -> list:
 	results = []
 	for i in range(count):
 		iptr, iw, ih = struct_cs16_frame.unpack_from(data, hptr)
-		img = S16Image(iw, ih, is_555)
+		img = S16Image(iw, ih)
 		if is_compressed:
 			# 8 + (4 * (ih - 1))
 			hptr += 4 * (ih + 1)
@@ -313,9 +287,8 @@ def decode_cs16(data: bytes) -> list:
 					runlen = elm >> 1
 					if (elm & 1) != 0:
 						niptr = iptr + (runlen * 2)
-						for v in _decode_shorts(data[iptr:niptr]):
-							img.data[pixidx] = v
-							pixidx += 1
+						img.data[pixidx:pixidx + runlen] = _decode_shorts(data[iptr:niptr], is_555)
+						pixidx += runlen
 						iptr = niptr
 					else:
 						pixidx += runlen
@@ -323,10 +296,7 @@ def decode_cs16(data: bytes) -> list:
 			hptr += 8
 			# just decode everything at once
 			iw2 = iw * ih * 2
-			pixidx = 0
-			for v in _decode_shorts(data[iptr:iptr + iw2]):
-				img.data[pixidx] = v
-				pixidx += 1
+			img.data[0:iw2] = _decode_shorts(data[iptr:iptr + iw2], is_555)
 		results.append(img)
 	return results
 
@@ -334,14 +304,12 @@ def encode_s16(images) -> bytes:
 	"""
 	Encodes a S16 file from S16Image objects.
 	The S16 file is forced to be RGB565.
-	RGB555 S16Image objects are copied and converted.
 	Returns bytes.
 	"""
 	data = struct_cs16_header.pack(1, len(images))
 	blob_ptr = struct_cs16_header.size + (struct_cs16_frame.size * len(images))
 	blob = b""
-	for vr in images:
-		v = vr.convert_565_maycopy()
+	for v in images:
 		data += struct_cs16_frame.pack(blob_ptr, v.width, v.height)
 		blob += _encode_shorts(v.data)
 		blob_ptr += len(v.data) * 2
@@ -350,7 +318,7 @@ def encode_s16(images) -> bytes:
 def _encode_c16_run(line_p, run):
 	if len(run) == 0:
 		return
-	if run[0] == 0:
+	if run[0] == COL_MASK:
 		# transparent run
 		line_p.append(len(run) << 1)
 	else:
@@ -365,7 +333,7 @@ def _encode_c16_line(data, ofs, l):
 	run_tr = False
 	for i in range(l):
 		v = data[ofs]
-		vtr = v == 0
+		vtr = v == COL_MASK
 		# break run on change, or if the run is already 16383 pixels long
 		if (vtr != run_tr) or (len(run) >= 0x3FFF):
 			_encode_c16_run(line_p, run)
@@ -385,7 +353,6 @@ def encode_c16(images) -> bytes:
 	"""
 	Encodes a C16 file from S16Image objects.
 	The C16 file is forced to be RGB565.
-	RGB555 S16Image objects are copied and converted.
 	Returns bytes.
 	"""
 	data = struct_cs16_header.pack(3, len(images))
@@ -398,8 +365,7 @@ def encode_c16(images) -> bytes:
 			blob_ptr += (v.height - 1) * 4
 	expected_data_len = blob_ptr
 	# actually build
-	for vr in images:
-		v = vr.convert_565_maycopy()
+	for v in images:
 		data += struct_cs16_frame.pack(blob_ptr, v.width, v.height)
 		for y in range(v.height):
 			if y != 0:
@@ -413,7 +379,7 @@ def encode_c16(images) -> bytes:
 	assert expected_data_len == len(data)
 	return data + blob
 
-def pil_to_565(pil: PIL.Image, false_black: int = 0x0020) -> S16Image:
+def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK) -> S16Image:
 	"""
 	Encodes a PIL.Image into a 565 S16Image.
 	Pixels that would be "accidentally transparent" are nudged to false_black.
@@ -429,7 +395,7 @@ def pil_to_565(pil: PIL.Image, false_black: int = 0x0020) -> S16Image:
 		v = 0
 		if a >= 128:
 			v = ((r << 8) & 0xF800) | ((g << 3) & 0x07E0) | ((b >> 3) & 0x001F)
-			if v == 0:
+			if v == COL_MASK:
 				v = false_black
 		img.data[idx] = v
 		idx += 1
@@ -459,7 +425,7 @@ if __name__ == "__main__":
 		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
 		print("")
 		print("s16/c16 files are converted to directories of numbered PNG files.")
-		print("This process is lossless, with a potential oddity if the files are in 555 format rather than 565.")
+		print("This process is lossless, though RGB555 files are converted to RGB565.")
 		print("The inverse conversion is of course not lossless (lower bits are dropped).")
 		print("There is NO dithering.")
 
@@ -565,9 +531,6 @@ if __name__ == "__main__":
 			images = decode_cs16(victim_data)
 			# test pre
 			_opt_save_test(test_pre, images[frame])
-			# spaces
-			images[frame].convert_565()
-			srci.convert_565()
 			# actually run op
 			images[frame].colours_from(srci, srcx, srcy)
 			# test post
@@ -610,9 +573,6 @@ if __name__ == "__main__":
 			images = decode_cs16(victim_data)
 			# test pre
 			_opt_save_test(test_pre, images[frame])
-			# spaces
-			images[frame].convert_565()
-			srci.convert_565()
 			# actually run op
 			images[frame].blit(srci, targetx, targety)
 			# finish
