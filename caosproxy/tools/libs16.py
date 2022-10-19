@@ -229,6 +229,22 @@ class S16Image():
 				for x in xir:
 					self.data[dst_row + x] = srci.data[src_row + x]
 
+def is_555(data: bytes) -> bool:
+	"""
+	Checks if a file is RGB555.
+	"""
+	filetype, count = struct_cs16_header.unpack_from(data, 0)
+	if filetype == 0:
+		return True
+	elif filetype == 1:
+		return False
+	elif filetype == 2:
+		return True
+	elif filetype == 3:
+		return False
+	else:
+		raise Exception("Unknown S16/C16 magic number " + str(filetype))
+
 def is_c16(data: bytes) -> bool:
 	"""
 	Checks if a file is a C16 file.
@@ -404,6 +420,8 @@ def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK) -> S16Image:
 if __name__ == "__main__":
 
 	def command_help():
+		print("libs16.py info <IN>")
+		print(" information on a c16/s16 file")
 		print("libs16.py encodeS16 <INDIR> <OUT>")
 		print(" encodes 565 s16 file from directory")
 		print("libs16.py encodeC16 <INDIR> <OUT>")
@@ -494,7 +512,24 @@ if __name__ == "__main__":
 		res.close()
 
 	if len(sys.argv) >= 2:
-		if sys.argv[1] == "encodeS16":
+		if sys.argv[1] == "info":
+			data = _read_bytes(sys.argv[2])
+			images = decode_cs16(data)
+			idx = 0
+			if is_555(data):
+				if is_c16(data):
+					print("RGB555 C16")
+				else:
+					print("RGB555 S16")
+			elif is_c16(data):
+				print("RGB565 C16")
+			else:
+				print("RGB565 S16")
+			print(str(len(images)) + " frames")
+			for v in images:
+				print(" " + str(idx) + ": " + str(v.width) + "x" + str(v.height))
+				idx += 1
+		elif sys.argv[1] == "encodeS16":
 			encode_fileset(sys.argv[2], sys.argv[3], False)
 		elif sys.argv[1] == "encodeC16":
 			encode_fileset(sys.argv[2], sys.argv[3], True)
