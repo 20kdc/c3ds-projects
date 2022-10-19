@@ -123,6 +123,15 @@ class S16Image():
 			return 0
 		return self.data[x + (y * self.width)]
 
+	def putpixel(self, x: int, y: int, colour: int):
+		"""
+		Sets a specific pixel from the image as a short.
+		Does nothing if out of range.
+		"""
+		if x < 0 or x >= self.width or y < 0 or y >= self.height:
+			return 0
+		self.data[x + (y * self.width)] = colour
+
 	def crop_pad(self, crop_box: tuple, pad_box: tuple, pad_colour: int = 0):
 		"""
 		Crops and pads the image.
@@ -211,6 +220,40 @@ class S16Image():
 						v = 1
 				self.data[idx] = v
 				idx = idx + 1
+
+	def blit(self, srci, tx: int, ty: int, alpha_aware: bool = True):
+		"""
+		Blits the source image to the given destination.
+		Note that alpha_aware can be set to false in which case transparency is a lie and so forth.
+		Also be aware this function won't error if the image goes off the borders.
+		"""
+		# spaces must match
+		assert self.is_555 == srci.is_555
+		# create in-range arrays
+		# this is still more efficient than doing the checks on every pixel
+		xir = []
+		for x in range(srci.width):
+			rx = x + tx
+			if rx >= 0 and rx < self.width:
+				xir.append(x)
+		yir = []
+		for y in range(srci.height):
+			ry = y + ty
+			if ry >= 0 and ry < self.height:
+				yir.append(y)
+		# continue
+		for y in yir:
+			src_row = y * srci.width
+			dst_row = ((ty + y) * self.width) + tx
+			# inner loop, optimize
+			if alpha_aware:
+				for x in xir:
+					v = srci.data[src_row + x]
+					if v != 0:
+						self.data[dst_row + x] = v
+			else:
+				for x in xir:
+					self.data[dst_row + x] = srci.data[src_row + x]
 
 def is_c16(data: bytes) -> bool:
 	"""
@@ -405,16 +448,47 @@ if __name__ == "__main__":
 		print(" decodes a single frame of a s16/c16 to a file")
 		print("libs16.py mask <SOURCE> <X> <Y> <VICTIM> <FRAME> [<CHECKPRE> [<CHECKPOST>]]")
 		print(" **REWRITES** the given FRAME of the VICTIM file to use the colours from SOURCE frame 0 at the given X/Y position, but basing alpha on the existing data in the frame.")
-		print(" CHECKPRE/CHECKPOST are useful for comparisons")
+		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
 		print("libs16.py shift <VICTIM> <FRAME> <X> <Y> [<CHECKPRE> [<CHECKPOST>]]")
 		print(" **REWRITES** the given FRAME of the VICTIM file to shift it by X and Y.")
 		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
 		print(" If the X and Y values are *negative*, pixels are lost. If they are *positive*, transparent pixels are added.")
+		print("libs16.py blit <SOURCE> <SRCFRAME> <VICTIM> <DSTFRAME> <X> <Y> [<CHECKPRE> [<CHECKPOST>]]")
+		print(" **REWRITES** the given DSTFRAME of the VICTIM file, blitting SOURCE's SRCFRAME to it.")
+		print(" This blit is alpha-aware.")
+		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
 		print("")
 		print("s16/c16 files are converted to directories of numbered PNG files.")
 		print("This process is lossless, with a potential oddity if the files are in 555 format rather than 565.")
 		print("The inverse conversion is of course not lossless (lower bits are dropped).")
 		print("There is NO dithering.")
+
+	def _read_bytes(fn):
+		f = open(fn, "rb")
+		data = f.read()
+		f.close()
+		return data
+
+	def _read_cs16_file(fn):
+		return decode_cs16(_read_bytes(fn))
+
+	def _opt_save_test(fn, fr):
+		if not (fn is None):
+			if fn != "":
+				fr.to_pil().save(fn, "PNG")
+
+	def _opt_arg(idx):
+		if len(sys.argv) <= idx:
+			return None
+		return sys.argv[idx]
+
+	def _write_equal_format(fn, images, original):
+		f = open(fn, "wb")
+		if is_c16(original):
+			f.write(encode_c16(images))
+		else:
+			f.write(encode_s16(images))
+		f.close()
 
 	import sys
 	import os
@@ -464,9 +538,7 @@ if __name__ == "__main__":
 			except:
 				# we don't care
 				pass
-			f = open(sys.argv[2], "rb")
-			images = decode_cs16(f.read())
-			f.close()
+			images = _read_cs16_file(sys.argv[2])
 			idx = 0
 			for v in images:
 				vpil = v.to_pil()
@@ -474,84 +546,78 @@ if __name__ == "__main__":
 				idx += 1
 		elif sys.argv[1] == "decodeFrame":
 			frame = int(sys.argv[3])
-			f = open(sys.argv[2], "rb")
-			images = decode_cs16(f.read())
-			f.close()
+			images = _read_cs16_file(sys.argv[2])
 			vpil = images[frame].to_pil()
 			vpil.save(sys.argv[4], "PNG")
 		elif sys.argv[1] == "mask":
+			# args
 			srci = sys.argv[2]
 			srcx = int(sys.argv[3])
 			srcy = int(sys.argv[4])
 			victim_fn = sys.argv[5]
 			frame = int(sys.argv[6])
-			# test sheets
-			test_pre = None
-			if len(sys.argv) >= 8:
-				test_pre = sys.argv[7]
-			test_post = None
-			if len(sys.argv) >= 9:
-				test_post = sys.argv[8]
+			test_pre = _opt_arg(7)
+			test_post = _opt_arg(8)
 			# load source image
-			f = open(srci, "rb")
-			srci = decode_cs16(f.read())[0]
-			f.close()
+			srci = _read_cs16_file(srci)[0]
 			# load target file
-			f = open(victim_fn, "rb")
-			victim_data = f.read()
+			victim_data = _read_bytes(victim_fn)
 			images = decode_cs16(victim_data)
-			f.close()
 			# test pre
-			if not (test_pre is None):
-				images[frame].to_pil().save(test_pre, "PNG")
-			# ensure spaces match
-			if images[frame].is_555 != srci.is_555:
-				images[frame].convert_565()
-				srci.convert_565()
+			_opt_save_test(test_pre, images[frame])
+			# spaces
+			images[frame].convert_565()
+			srci.convert_565()
 			# actually run op
 			images[frame].colours_from(srci, srcx, srcy)
 			# test post
-			if not (test_post is None):
-				images[frame].to_pil().save(test_post, "PNG")
+			_opt_save_test(test_post, images[frame])
 			# writeout
-			f = open(victim_fn, "wb")
-			if is_c16(victim_data):
-				f.write(encode_c16(images))
-			else:
-				f.write(encode_s16(images))
-			f.close()
+			_write_equal_format(victim_fn, images, victim_data)
 		elif sys.argv[1] == "shift":
+			# args
 			victim_fn = sys.argv[2]
 			frame = int(sys.argv[3])
 			shiftx = int(sys.argv[4])
 			shifty = int(sys.argv[5])
-			# test sheets
-			test_pre = None
-			if len(sys.argv) >= 7:
-				test_pre = sys.argv[6]
-			test_post = None
-			if len(sys.argv) >= 8:
-				test_post = sys.argv[7]
+			test_pre = _opt_arg(6)
+			test_post = _opt_arg(7)
 			# load target file
-			f = open(victim_fn, "rb")
-			victim_data = f.read()
+			victim_data = _read_bytes(victim_fn)
 			images = decode_cs16(victim_data)
-			f.close()
 			# test pre
-			if not (test_pre is None):
-				images[frame].to_pil().save(test_pre, "PNG")
+			_opt_save_test(test_pre, images[frame])
 			# actually run op
 			images[frame].shift(shiftx, shifty)
 			# test post
-			if not (test_post is None):
-				images[frame].to_pil().save(test_post, "PNG")
+			_opt_save_test(test_post, images[frame])
 			# writeout
-			f = open(victim_fn, "wb")
-			if is_c16(victim_data):
-				f.write(encode_c16(images))
-			else:
-				f.write(encode_s16(images))
-			f.close()
+			_write_equal_format(victim_fn, images, victim_data)
+		elif sys.argv[1] == "blit":
+			# args
+			srci = sys.argv[2]
+			srcf = int(sys.argv[3])
+			victim_fn = sys.argv[4]
+			frame = int(sys.argv[5])
+			targetx = int(sys.argv[6])
+			targety = int(sys.argv[7])
+			test_pre = _opt_arg(8)
+			test_post = _opt_arg(9)
+			# load source image
+			srci = _read_cs16_file(srci)[srcf]
+			# load target file
+			victim_data = _read_bytes(victim_fn)
+			images = decode_cs16(victim_data)
+			# test pre
+			_opt_save_test(test_pre, images[frame])
+			# spaces
+			images[frame].convert_565()
+			srci.convert_565()
+			# actually run op
+			images[frame].blit(srci, targetx, targety)
+			# finish
+			_opt_save_test(test_post, images[frame])
+			_write_equal_format(victim_fn, images, victim_data)
 		else:
 			print("cannot understand: " + sys.argv[1])
 			command_help()
