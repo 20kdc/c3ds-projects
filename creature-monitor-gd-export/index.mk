@@ -10,7 +10,7 @@ rel: creature-monitor-gd-export/creamoni.pck creature-monitor-gd-export/creamoni
 
 .PHONY: creature-monitor-gd-export/creamoni.pck
 creature-monitor-gd-export/creamoni.pck creature-monitor-gd-export/creamoni.x86_64 creature-monitor-gd-export/creamoni.exe COPYING-godot.txt:
-	godot --path creature-monitor-gd --export "Linux/X11" ../creature-monitor-gd-export/creamoni.x86_64
-	godot --path creature-monitor-gd --export "Windows Desktop" ../creature-monitor-gd-export/creamoni.exe
-	TARGET_FILE=../COPYING-godot.txt godot --path creature-monitor-gd -s "addons/lco_gd/gen_gdcf.gd"
+	godot --no-window --path creature-monitor-gd --export "Linux/X11" ../creature-monitor-gd-export/creamoni.x86_64
+	godot --no-window --path creature-monitor-gd --export "Windows Desktop" ../creature-monitor-gd-export/creamoni.exe
+	TARGET_FILE=../COPYING-godot.txt godot --no-window --path creature-monitor-gd -s "addons/lco_gd/gen_gdcf.gd"
 
