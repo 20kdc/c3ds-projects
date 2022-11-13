@@ -7,7 +7,8 @@
 
 include "std/c3ds.ral";
 
-// This script's purpose is to help in 
+// This script's purpose is to help in "adjusting" a Norn's language.
+// I blame the lack of a blackboard...
 
 macro () handleLangGroup(str &id, str &cat, int size) {
 	outs("* ");
@@ -20,7 +21,7 @@ macro () handleLangGroup(str &id, str &cat, int size) {
 		outv(a);
 		outs(" ");
 		outs(read(cat, a));
-		outs("\nordr writ targ ");
+		outs("\nordr writ va00 ");
 		outx('perfect {id} {vtos(a)} {read(cat, a)}');
 		outs("\n");
 	}
@@ -28,6 +29,10 @@ macro () handleLangGroup(str &id, str &cat, int size) {
 }
 
 install {
+	outs("* Vocabulary conversion script\n");
+	outs("targ pntr\n");
+	outs("seta va00 norn\n");
+	outs("\n");
 	handleLangGroup("noun", "Agent Categories", 40);
 	handleLangGroup("verb", "Creature Actions", 14);
 	handleLangGroup("special", "Learnt Specials", 12);
