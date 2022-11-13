@@ -203,7 +203,7 @@ image::diagram/BreakStmt.png[]
 They're essentially fancy syntax for a `while` loop with some rearranging.
 
 ```
-for a = 1; a <= 10; a++ {
+for a = 1; a <= 10; a++; {
 // some code here
 }
 ```

@@ -1,0 +1,39 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "std/c3ds.ral";
+
+// This script's purpose is to help in 
+
+macro () handleLangGroup(str &id, str &cat, int size) {
+	outs("* ");
+	outs(id);
+	outs(" - ");
+	outs(cat);
+	outs("\n");
+	for a = 0; a < size; a++; {
+		outs("* ");
+		outv(a);
+		outs(" ");
+		outs(read(cat, a));
+		outs("\nordr writ targ ");
+		outx('perfect {id} {vtos(a)} {read(cat, a)}');
+		outs("\n");
+	}
+	outs("\n");
+}
+
+install {
+	handleLangGroup("noun", "Agent Categories", 40);
+	handleLangGroup("verb", "Creature Actions", 14);
+	handleLangGroup("special", "Learnt Specials", 12);
+	handleLangGroup("drive", "Creature Drives", 20);
+	handleLangGroup("nice_drive", "Learnt Nice Drives", 20);
+	handleLangGroup("qualifier", "Learnt Qualifiers", 5);
+	handleLangGroup("personal", "Learnt Personals", 1);
+}
+

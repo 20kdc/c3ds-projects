@@ -40,6 +40,7 @@ macro () stop() &'stop';
 
 macro () outv(num &value) &'outv {value}';
 macro () outs(str &value) &'outs {value}';
+macro () outx(str &value) &'outx {value}';
 
 macro () scrx(int &family, int &genus, int &species, int &scr) &'scrx {family, genus, species, scr}';
 
@@ -58,6 +59,7 @@ macro histWvet(str &moniker) &'hist wvet {moniker}'!bool;
 macro ooww(str &moniker) &'ooww {moniker}'!int;
 
 macro subs(str &text, int &start, int &len) &'subs {text, start, len}'!str;
+macro vtos(num &val) &'vtos {val}'!str;
 
 // type
 macro type(any &value) &'type {value}'!int;
