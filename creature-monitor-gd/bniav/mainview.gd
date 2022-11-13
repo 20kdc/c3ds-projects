@@ -2,6 +2,8 @@ class_name BNIAVMainBrainView
 extends Control
 
 const CELL_SIZE = Vector2(16, 16)
+const NEURON_EXPR_INPUTS = ["v"]
+const DENDRITE_EXPR_INPUTS = ["v", "s", "d"]
 
 var snapshot: BrainSnapshot setget set_snapshot
 var relative_canvas_nu: Rect2
@@ -11,6 +13,15 @@ var highlighted_column = -1 setget set_highlighted_column
 
 var show_dendrites = true setget set_show_dendrites
 var show_dendrites_back = true setget set_show_dendrites_back
+
+var neuron_expr: Expression setget set_neuron_expr
+var dendrite_expr: Expression setget set_dendrite_expr
+
+func _init():
+	neuron_expr = Expression.new()
+	neuron_expr.parse("v[0]", NEURON_EXPR_INPUTS)
+	dendrite_expr = Expression.new()
+	dendrite_expr.parse("v[0] * s[0]", DENDRITE_EXPR_INPUTS)
 
 func _ready():
 	update()
@@ -40,7 +51,14 @@ func _draw():
 				if highlighted_column == neuron.x or highlighted_row == neuron.y:
 					draw_rect(nrs, Color(0.3, 0.3, 0.3), true)
 				var nrs_dg = nrs.grow(-4)
-				draw_rect(nrs_dg, neuron_to_colour(neuron.values[0]), true)
+				# translate & show value
+				var inputs = [
+					neuron.values
+				]
+				var value = neuron_expr.execute(inputs)
+				var vt = typeof(value)
+				if vt == TYPE_REAL or vt == TYPE_INT:
+					draw_rect(nrs_dg, neuron_to_colour(value), true)
 			# lobe details
 			var base_text_pos = lobe_rect_scaled.position + Vector2(0, -4)
 			for cidx in range(4):
@@ -57,11 +75,18 @@ func _draw():
 					var neuron_dst_rect = lobe_dst.neuron_as_rect(dendrite.dst_neuron)
 					var src_pt = translate_and_scale(neuron_src_rect).get_center()
 					var dst_pt = translate_and_scale(neuron_dst_rect).get_center()
-					var weight = dendrite.values[0]
-					var value = lobe_src.neuron(dendrite.src_neuron).values[0]
 					if show_dendrites_back:
 						draw_line(src_pt, dst_pt, Color(0.5, 0.5, 0.5), 2, true)
-					draw_line(src_pt, dst_pt, neuron_to_colour(weight * value))
+					# translate & show value
+					var inputs = [
+						dendrite.values,
+						lobe_src.neuron(dendrite.src_neuron).values,
+						lobe_dst.neuron(dendrite.dst_neuron).values
+					]
+					var value = dendrite_expr.execute(inputs)
+					var vt = typeof(value)
+					if vt == TYPE_REAL or vt == TYPE_INT:
+						draw_line(src_pt, dst_pt, neuron_to_colour(value))
 
 func neuron_to_colour(f: float) -> Color:
 	return Color(f * -16, abs(f), f * 16)
@@ -84,4 +109,12 @@ func set_show_dendrites(button_pressed):
 
 func set_show_dendrites_back(button_pressed):
 	show_dendrites_back = button_pressed
+	update()
+
+func set_dendrite_expr(ex):
+	dendrite_expr = ex
+	update()
+
+func set_neuron_expr(ex):
+	neuron_expr = ex
 	update()

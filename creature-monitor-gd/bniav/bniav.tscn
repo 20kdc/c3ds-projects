@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://bniav/mainview.gd" type="Script" id=1]
 [ext_resource path="res://lib/visibility_update_timer.gd" type="Script" id=2]
@@ -8,6 +8,7 @@
 [ext_resource path="res://bniav/verbs.gd" type="Script" id=6]
 [ext_resource path="res://bniav/pull_snapshots_from_root.gd" type="Script" id=7]
 [ext_resource path="res://bniav/nouns.gd" type="Script" id=8]
+[ext_resource path="res://bniav/expression_editor.tscn" type="PackedScene" id=9]
 
 [node name="Brain" type="HSplitContainer"]
 anchor_right = 1.0
@@ -16,12 +17,12 @@ split_offset = 728
 script = ExtResource( 3 )
 
 [node name="bva" type="ScrollContainer" parent="."]
-margin_right = 714.0
+margin_right = 728.0
 margin_bottom = 600.0
 
 [node name="main_brain_view" type="Control" parent="bva"]
 unique_name_in_owner = true
-margin_right = 714.0
+margin_right = 728.0
 margin_bottom = 600.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -31,36 +32,36 @@ script = ExtResource( 1 )
 script = ExtResource( 7 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-margin_left = 726.0
+margin_left = 740.0
 margin_right = 1024.0
 margin_bottom = 600.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
-margin_right = 298.0
+margin_right = 284.0
 margin_bottom = 20.0
 
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="source_of_data" type="Label" parent="VBoxContainer/HBoxContainer"]
 margin_top = 3.0
-margin_right = 155.0
+margin_right = 141.0
 margin_bottom = 17.0
 size_flags_horizontal = 3
-text = "Snapshot IO (view-only!)"
+text = "???"
 
 [node name="snapsave" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 159.0
-margin_right = 202.0
+margin_left = 145.0
+margin_right = 188.0
 margin_bottom = 20.0
 text = "SAVE"
 
 [node name="snapload" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 206.0
-margin_right = 255.0
+margin_left = 192.0
+margin_right = 241.0
 margin_bottom = 20.0
 text = "LOAD"
 
 [node name="snapunload" type="Button" parent="VBoxContainer/HBoxContainer"]
-margin_left = 259.0
-margin_right = 298.0
+margin_left = 245.0
+margin_right = 284.0
 margin_bottom = 20.0
 text = "LIVE"
 
@@ -74,18 +75,17 @@ size_flags_vertical = 1
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
 margin_top = 24.0
-margin_right = 298.0
+margin_right = 284.0
 margin_bottom = 28.0
 
 [node name="TabContainer" type="TabContainer" parent="VBoxContainer"]
 margin_top = 32.0
-margin_right = 298.0
+margin_right = 284.0
 margin_bottom = 600.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Stats" type="ScrollContainer" parent="VBoxContainer/TabContainer"]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -102,6 +102,7 @@ text = "no information"
 script = ExtResource( 5 )
 
 [node name="ViewOpt" type="VBoxContainer" parent="VBoxContainer/TabContainer"]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -109,18 +110,55 @@ margin_top = 32.0
 margin_right = -4.0
 margin_bottom = -4.0
 
-[node name="CheckBox" type="CheckBox" parent="VBoxContainer/TabContainer/ViewOpt"]
+[node name="Label" type="Label" parent="VBoxContainer/TabContainer/ViewOpt"]
 margin_right = 290.0
-margin_bottom = 24.0
+margin_bottom = 14.0
+text = "Dendite Display"
+
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer/TabContainer/ViewOpt"]
+margin_top = 18.0
+margin_right = 290.0
+margin_bottom = 42.0
 pressed = true
 text = "Show Dendrites"
 
 [node name="CheckBox2" type="CheckBox" parent="VBoxContainer/TabContainer/ViewOpt"]
-margin_top = 28.0
+margin_top = 46.0
 margin_right = 290.0
-margin_bottom = 52.0
+margin_bottom = 70.0
 pressed = true
 text = "Show Dendrites Back"
+
+[node name="Label3" type="Label" parent="VBoxContainer/TabContainer/ViewOpt"]
+margin_top = 74.0
+margin_right = 290.0
+margin_bottom = 105.0
+text = "Expression (v[0] ... v[7]: dendrite state, s[0] ... & d[0]...: neuron state)"
+autowrap = true
+
+[node name="DendriteExpr" parent="VBoxContainer/TabContainer/ViewOpt" instance=ExtResource( 9 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 109.0
+margin_right = 290.0
+margin_bottom = 133.0
+is_dendrite = true
+text = "v[0] * s[0]"
+
+[node name="Label2" type="Label" parent="VBoxContainer/TabContainer/ViewOpt"]
+margin_top = 137.0
+margin_right = 290.0
+margin_bottom = 151.0
+text = "Neuron Expression (v[0] ... v[7]: neuron state)"
+autowrap = true
+
+[node name="NeuronExpr" parent="VBoxContainer/TabContainer/ViewOpt" instance=ExtResource( 9 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 155.0
+margin_right = 290.0
+margin_bottom = 179.0
+text = "v[0]"
 
 [node name="RowCol" type="TabContainer" parent="VBoxContainer/TabContainer"]
 visible = false
@@ -140,7 +178,7 @@ margin_right = -4.0
 margin_bottom = -4.0
 
 [node name="verbs" type="VBoxContainer" parent="VBoxContainer/TabContainer/RowCol/verb"]
-margin_right = 282.0
+margin_right = 268.0
 size_flags_horizontal = 3
 script = ExtResource( 6 )
 entries = PoolStringArray( "look", "push", "get", "drop", "eat", "pull", "approach", "hit", "retreat", "express", "rest", "left", "right" )
@@ -155,7 +193,7 @@ margin_right = -4.0
 margin_bottom = -4.0
 
 [node name="nouns" type="VBoxContainer" parent="VBoxContainer/TabContainer/RowCol/noun"]
-margin_right = 282.0
+margin_right = 268.0
 size_flags_horizontal = 3
 script = ExtResource( 8 )
 column = true
@@ -170,7 +208,7 @@ margin_right = -4.0
 margin_bottom = -4.0
 
 [node name="drives" type="VBoxContainer" parent="VBoxContainer/TabContainer/RowCol/driv"]
-margin_right = 282.0
+margin_right = 268.0
 size_flags_horizontal = 3
 script = ExtResource( 8 )
 tag = "Creature Drives"
@@ -181,11 +219,13 @@ count = 20
 script = ExtResource( 2 )
 interval = 0.05
 
-[connection signal="snapshot_updated" from="." to="VBoxContainer/TabContainer/Stats/Label" method="update_from_snapshot"]
 [connection signal="snapshot_updated" from="." to="bva/main_brain_view/pull_snapshots_from_root" method="_on_Brain_snapshot_updated"]
+[connection signal="snapshot_updated" from="." to="VBoxContainer/TabContainer/Stats/Label" method="update_from_snapshot"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/snapsave" to="." method="_on_snapsave_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/snapload" to="." method="_on_snapload_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/snapunload" to="." method="_on_snapunload_pressed"]
 [connection signal="toggled" from="VBoxContainer/TabContainer/ViewOpt/CheckBox" to="bva/main_brain_view/pull_snapshots_from_root" method="_on_CheckBox_toggled"]
 [connection signal="toggled" from="VBoxContainer/TabContainer/ViewOpt/CheckBox2" to="bva/main_brain_view/pull_snapshots_from_root" method="_on_CheckBox2_toggled"]
+[connection signal="on_parsed_expression" from="VBoxContainer/TabContainer/ViewOpt/DendriteExpr" to="bva/main_brain_view/pull_snapshots_from_root" method="_on_DendriteExpr_on_parsed_expression"]
+[connection signal="on_parsed_expression" from="VBoxContainer/TabContainer/ViewOpt/NeuronExpr" to="bva/main_brain_view/pull_snapshots_from_root" method="_on_NeuronExpr_on_parsed_expression"]
 [connection signal="do_update" from="VisibilityUpdateTimer" to="." method="_on_VisibilityUpdateTimer_do_update"]

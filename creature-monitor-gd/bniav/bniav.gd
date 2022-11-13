@@ -5,10 +5,13 @@ var snapshot: BrainSnapshot
 var req: CPXRequest
 var file_view: bool = false
 
+onready var source_of_data_label = find_node("source_of_data")
+
 signal snapshot_updated(snapshot)
 
 func _ready():
 	TargetCreature.connect("target_creature_changed", self, "_invalidate_config")
+	_update_source_of_data_label()
 
 func _invalidate_config():
 	config = null
@@ -51,11 +54,21 @@ func _on_snapload_pressed():
 	$VBoxContainer/CPXErrorBox.visible = false
 	file_view = true
 	emit_signal("snapshot_updated", snapshot)
+	_update_source_of_data_label()
 
 func _on_snapunload_pressed():
 	file_view = false
+	_update_source_of_data_label()
 
 func _on_snapsave_pressed():
 	print("SNAPSHOT SAVE: " + OS.get_user_data_dir())
 	if snapshot != null:
 		ResourceSaver.save("user://snapshot.tres", snapshot)
+
+func _update_source_of_data_label():
+	if snapshot == null:
+		source_of_data_label.text = "None"
+	elif file_view:
+		source_of_data_label.text = "Snapshot"
+	else:
+		source_of_data_label.text = "Live"
