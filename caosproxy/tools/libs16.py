@@ -31,9 +31,13 @@ struct_cs16_lofs = struct.Struct("<I")
 struct_blk_header = struct.Struct("<IHHH")
 
 # short enc/dec
-def _decode_shorts(b: bytes, conv_555_565: bool) -> array.array:
+def _decode_shorts(b: bytes, conv_555_565: bool, expected: int) -> array.array:
 	"""
 	Decodes a list of shorts as fast as possible.
+	For error correction, will pads/cuts to the given expected size.
+	This is not done as fast as possible.
+	Note that this returns array.array, so you should use slice assignment if
+	 putting this into an S16Image.
 	"""
 	arr = array.array("H", b)
 	if sys.byteorder != "little":
@@ -50,7 +54,9 @@ def _decode_shorts(b: bytes, conv_555_565: bool) -> array.array:
 			# third handles B
 			v = ((v & 0x7FE0) << 1) | ((v & 0x0200) >> 4) | (v & 0x001F)
 			arr[i] = v
-	return arr
+	while len(arr) < expected:
+		arr.append(0)
+	return arr[0:expected]
 
 def _encode_shorts(shorts) -> bytes:
 	"""
@@ -250,7 +256,8 @@ class S16Image():
 						self.data[dst_row + x] = v
 			else:
 				for x in xir:
-					self.data[dst_row + x] = srci.data[src_row + x]
+					col = srci.data[src_row + x]
+					self.data[dst_row + x] = col
 
 # ---- S16/C16 IO ----
 
@@ -328,7 +335,7 @@ def decode_cs16(data: bytes) -> list:
 					runlen = elm >> 1
 					if (elm & 1) != 0:
 						niptr = iptr + (runlen * 2)
-						img.data[pixidx:pixidx + runlen] = _decode_shorts(data[iptr:niptr], is_555)
+						img.data[pixidx:pixidx + runlen] = _decode_shorts(data[iptr:niptr], is_555, runlen)
 						pixidx += runlen
 						iptr = niptr
 					else:
@@ -336,8 +343,9 @@ def decode_cs16(data: bytes) -> list:
 		else:
 			hptr += 8
 			# just decode everything at once
+			iw = iw * ih
 			iw2 = iw * ih * 2
-			img.data[0:iw2] = _decode_shorts(data[iptr:iptr + iw2], is_555)
+			img.data[0:iw] = _decode_shorts(data[iptr:iptr + iw2], is_555, iw)
 		results.append(img)
 	return results
 
@@ -499,9 +507,53 @@ def decode_blk_blocks(data: bytes):
 	As such, returns three values.
 	"""
 	filetype, blocks_w, blocks_h, blocks_total = struct_blk_header.unpack_from(data, 0)
-	# Repack (which handles the 4 offset
-	data = struct_cs16_header.pack(filetype, blocks_total) + data[struct_blk_header.size:]
-	return blocks_w, blocks_h, decode_cs16(data)
+	iptr = struct_blk_header.size
+
+	# Ok, so.
+	# About the "Creatures 3 Room Editor" from www.smog-it.co.uk/software/c3re.
+	# It doesn't even produce normal, valid BLK files, but it still
+	#  appears to watermark them with an advert for itself...
+	# Hence the name and shame here.
+	# The tile offsets break after the first row.
+	# This seems accidental, because:
+	#  + Someone who actually knew offsets didn't matter would simply zero them
+	#  + Backgrounds are column-major, indicating an attempt to write accurate
+	#     offsets
+	# If you want a victim, get Random's Room off of the EemFoo archive.
+
+	# That in mind, we can no longer change header and pass to decode_cs16.
+	# Instead, we have to base things on how C3 *actually* handles backgrounds:
+	# Read everything assuming the exact order the Map Editor would write it
+	#  with no padding.
+
+	# Check header
+	is_555 = False
+	if filetype == 0:
+		is_compressed = False
+		is_555 = True
+	elif filetype == 1:
+		is_compressed = False
+		is_555 = False
+	else:
+		raise Exception("Unknown BLK magic number " + str(filetype))
+
+	# Read sprite headers, but we don't *actually* care about pointers
+	results = []
+	for i in range(blocks_total):
+		xptr, iw, ih = struct_cs16_frame.unpack_from(data, iptr)
+		img = S16Image(iw, ih)
+		results.append(img)
+		iptr += struct_cs16_frame.size
+
+	# Read the actual sprites
+	for img in results:
+		# just decode everything at once
+		iw = img.width * img.height
+		iw2 = iw * 2
+		img.data[0:iw] = _decode_shorts(data[iptr:iptr + iw2], is_555, iw)
+		iptr += iw2
+
+	return blocks_w, blocks_h, results
 
 def decode_blk(data: bytes) -> S16Image:
 	"""
