@@ -1,0 +1,20 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * 2.286c/History - INCOMPLETE
+ */
+
+macro histName(str &moniker) &'hist name {moniker}'!str;
+macro histGend(str &moniker) &'hist gend {moniker}'!int;
+macro () histWipe(str &moniker) &'hist wipe {moniker}';
+macro histWnam(str &moniker, int &e) &'hist wnam {moniker, e}'!str;
+macro histWtik(str &moniker, int &e) &'hist wtik {moniker, e}'!int;
+macro histWuid(str &moniker, int &e) &'hist wuid {moniker, e}'!str;
+macro histWvet(str &moniker) &'hist wvet {moniker}'!bool;
+macro ooww(str &moniker) &'ooww {moniker}'!int;
+

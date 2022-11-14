@@ -1,0 +1,37 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * 2.286c/Vehicles
+ */
+
+macro () cabn(int &l, int &t, int &r, int &b) &'cabn {l, t, r, b}';
+
+macro cabb() &'cabb'!int;
+macro cabl() &'cabl'!int;
+macro cabr() &'cabr'!int;
+macro cabt() &'cabt'!int;
+
+macro () cabp(int &p) &'cabp {p}';
+macro cabp() &'cabp'!int;
+
+macro () cabv(int &p) &'cabv {p}';
+macro cabv() &'cabv'!int;
+
+macro () cabw(int &p) &'cabw {p}';
+
+macro () dpas(int &f, int &g, int &s) &'dpas {f, g, s}';
+
+// EPAS covered by compiler
+
+macro () gpas(int &f, int &g, int &s, int &r) &'dpas {f, g, s, r}';
+
+macro () newVhcl(int &f, int &g, int &s, str &sprite, int &fc, int &fb, int &p) &'new: vhcl {f, g, s, sprite, fc, fb, p}';
+
+macro () rpas(Agent &v, Agent &p) &'rpas {v, p}';
+macro () spas(Agent &v, Agent &p) &'spas {v, p}';
+

@@ -16,70 +16,25 @@ include "std/engine/commands/camera.ral";
 // compounds not yet added
 // creatures not yet added
 // debug not yet added
-// files not yet added
+include "std/engine/commands/files.ral"; // INCOMPLETE
 // flow omitted because compiler handles it
 include "std/engine/commands/genetics.ral";
-// history not yet added
+include "std/engine/commands/history.ral"; // INCOMPLETE
 // input not yet added
-// map not yet added
-// motion not yet added
+include "std/engine/commands/map.ral"; // INCOMPLETE
+include "std/engine/commands/motion.ral"; // INCOMPLETE
 // net not yet added
 // ports not yet added
 // resources not yet added
-// scripts not yet added
-// sounds not yet added
-// time not yet added
-// variables not yet added
-// vehicles not yet added
+include "std/engine/commands/scripts.ral"; // INCOMPLETE
+include "std/engine/commands/sounds.ral";
+include "std/engine/commands/time.ral";
+include "std/engine/commands/variables.ral"; // INCOMPLETE
+include "std/engine/commands/vehicles.ral";
 include "std/engine/commands/world.ral";
 
-macro read(str &tag, int &index) &'read {tag} {index}'!str;
-
-macro () inst() &'inst';
-macro () stop() &'stop';
-
-macro () outv(num &value) &'outv {value}';
-macro () outs(str &value) &'outs {value}';
-macro () outx(str &value) &'outx {value}';
-
-macro () scrx(int &family, int &genus, int &species, int &scr) &'scrx {family, genus, species, scr}';
-
-macro () mvsf(num &x, num &y) &'mvsf {x, y}';
-macro () frel(Agent? &dst) &'frel {dst}';
-macro () flto(num &x, num &y) &'flto {x, y}';
-
-// various
-macro histName(str &moniker) &'hist name {moniker}'!str;
-macro histGend(str &moniker) &'hist gend {moniker}'!int;
-macro () histWipe(str &moniker) &'hist wipe {moniker}';
-macro histWnam(str &moniker, int &e) &'hist wnam {moniker, e}'!str;
-macro histWtik(str &moniker, int &e) &'hist wtik {moniker, e}'!int;
-macro histWuid(str &moniker, int &e) &'hist wuid {moniker, e}'!str;
-macro histWvet(str &moniker) &'hist wvet {moniker}'!bool;
-macro ooww(str &moniker) &'ooww {moniker}'!int;
-
-macro subs(str &text, int &start, int &len) &'subs {text, start, len}'!str;
-macro vtos(num &val) &'vtos {val}'!str;
-
-// type
-macro type(any &value) &'type {value}'!int;
-
-// physics props
-macro elas() &'elas'!int;
-macro () elas(int &value) &'elas {value}';
-macro accg() &'accg'!float;
-macro () accg(float &value) &'accg {value}';
-macro aero() &'aero'!int;
-macro () aero(int &value) &'aero {value}';
-macro fric() &'fric'!int;
-macro () fric(int &value) &'fric {value}';
-macro perm() &'perm'!int;
-macro () perm(int &value) &'perm {value}';
-
-// Game variable accessor basis
-
-macro game(str &key) &'game {key}';
-macro eame(str &key) &'eame {key}';
+// Game variable accessors, expanded
+// This *might* get removed later
 
 macro gameInt(str &key) game(key)!int;
 macro eameInt(str &key) eame(key)!int;

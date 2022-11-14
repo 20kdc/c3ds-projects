@@ -1,0 +1,24 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * 2.286c/Motion - INCOMPLETE
+ */
+
+macro elas() &'elas'!int;
+macro () elas(int &value) &'elas {value}';
+macro accg() &'accg'!float;
+macro () accg(float &value) &'accg {value}';
+macro aero() &'aero'!int;
+macro () aero(int &value) &'aero {value}';
+macro fric() &'fric'!int;
+macro () fric(int &value) &'fric {value}';
+
+macro () mvsf(num &x, num &y) &'mvsf {x, y}';
+macro () frel(Agent? &dst) &'frel {dst}';
+macro () flto(num &x, num &y) &'flto {x, y}';
+

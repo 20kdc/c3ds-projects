@@ -1,0 +1,48 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * 2.286c/Time
+ */
+
+macro () buzz(int &ms) &'buzz {ms}';
+macro buzz() &'buzz'!int;
+
+macro date() &'date'!int;
+
+macro dayt() &'dayt'!int;
+
+macro etik() &'etik'!int;
+
+macro histDate(int &v) &'hist date {v}'!int;
+macro histSean(int &v) &'hist sean {v}'!int;
+macro histTime(int &v) &'hist time {v}'!int;
+macro histYear(int &v) &'hist year {v}'!int;
+
+macro mont() &'mont'!int;
+macro msec() &'msec'!int;
+macro pace() &'pace'!float;
+macro race() &'race'!int;
+
+macro rtif(int &rt, str &fmt) &'rtif {rt, fmt}'!str;
+
+macro rtim() &'rtim'!int;
+
+// SCOL uses byte-strings. What is this doing in time, anyway?
+
+macro sean() &'sean'!int;
+
+macro time() &'time'!int;
+
+macro wolf(int &and, int &eor) &'wolf {and, eor}'!int;
+
+macro () wpau(int &p) &'wolf {p}';
+macro wpau() &'wpau'!int;
+
+macro wtik() &'wtik'!int;
+macro year() &'year'!int;
+
