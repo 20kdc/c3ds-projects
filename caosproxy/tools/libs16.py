@@ -598,6 +598,8 @@ if __name__ == "__main__":
 		print(" **REWRITES** the given DSTFRAME of the VICTIM file, blitting SOURCE's SRCFRAME to it.")
 		print(" This blit is alpha-aware.")
 		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
+		print("libs16.py genPalRef <DST>")
+		print(" generates a PNG palette reference file")
 		print("")
 		print("s16/c16 files are converted to directories of numbered PNG files.")
 		print("This process is lossless, though RGB555 files are converted to RGB565.")
@@ -715,7 +717,7 @@ if __name__ == "__main__":
 			vpil.save(sys.argv[4], "PNG")
 		elif sys.argv[1] == "decodeBLK":
 			blk = decode_blk(_read_bytes(sys.argv[2]))
-			vpil = blk.to_pil(False)
+			vpil = blk.to_pil(alpha_aware = False)
 			vpil.save(sys.argv[3], "PNG")
 		elif sys.argv[1] == "mask":
 			# args
@@ -780,6 +782,15 @@ if __name__ == "__main__":
 			# finish
 			_opt_save_test(test_post, images[frame])
 			_write_equal_format(victim_fn, images, victim_data)
+		elif sys.argv[1] == "genPalRef":
+			image = S16Image(256, 256)
+			idx = 0
+			for y in range(256):
+				for x in range(256):
+					image.data[idx] = idx
+					idx += 1
+			vpil = image.to_pil(alpha_aware = False)
+			vpil.save(sys.argv[2], "PNG")
 		else:
 			print("cannot understand: " + sys.argv[1])
 			command_help()

@@ -65,7 +65,7 @@ outs('The hand is named {hand()}.'); // The hand is named Lambert.
 
 `instanceof` checks if a given value matches a given classifier (returning false if the value is null).
 
-The amount of checking performed is based on the existing type.
+It will only perform a null check if the value is not nullable, but will otherwise check all fields (to prevent creating rather brittle code).
 
 ```
 let isDolphin = targ instanceof Dolphin;

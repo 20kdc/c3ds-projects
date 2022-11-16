@@ -1,4 +1,6 @@
 :doctype: book
+:toc:
+:toclevels: 4
 
 include::README.adoc[]
 
