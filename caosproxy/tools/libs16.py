@@ -428,41 +428,99 @@ def encode_c16(images) -> bytes:
 	assert expected_data_len == len(data)
 	return data + blob
 
-def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK) -> S16Image:
+# ---- PIL encoding ----
+
+def dither_channel(w: int, h: int, data, bits: int, strategy: str):
+	"""
+	Dithers a channel to a given number of bits with a given strategy.
+	Note that this process still works in 8-bit integer space.
+	Numbers are guaranteed to be clipped to, say, XXXX0000 for bits = 4.
+	data is a sequence of integers between 0 and 255 inclusive.
+	"""
+	# This masks such that 1 bit is 0x80, 8 is 0xFF.
+	mask = (0xFF00 >> bits) & 0xFF
+	if strategy == "floor":
+		for i in range(len(data)):
+			data[i] &= mask
+	elif strategy == "nearest":
+		# Same masking strategy as floor, but with added stuff to it
+		# This mask is used to check the half-way threshold.
+		nudge_mask = 0x80 >> bits
+		nudge = 0x100 >> bits
+		for i in range(len(data)):
+			sb = data[i] & nudge_mask
+			data[i] &= mask
+			# If a nudge is reasonable and possible (can't exceed 0xFF), do it
+			# The extra check is needed for, i.e. bits = 1, v = 192
+			if sb != 0 and ((data[i] + nudge) <= 0xFF):
+				data[i] += nudge
+	elif strategy == "debug1bit":
+		# Testing only.
+		for i in range(len(data)):
+			if data[i] >= 128:
+				data[i] = 0xFF & mask
+			else:
+				data[i] = 0
+	else:
+		raise Exception("Unsupported dithering strategy '" + strategy + "'")
+
+def dither_565(w: int, h: int, data_r: list, data_g: list, data_b: list, cdmode: str):
+	"""
+	Dithers an image to RGB565.
+	The data is given as lists of tuples as per list(Image.getdata()).
+	However the tuples are replaced with lists in processing.
+	They are not replaced back for efficiency reasons.
+	This is done using the given strategy and modes.
+	See dither_channel for precise control and output details.
+	"""
+	dither_channel(w, h, data_r, 5, cdmode)
+	dither_channel(w, h, data_g, 6, cdmode)
+	dither_channel(w, h, data_b, 5, cdmode)
+
+def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK, cdmode: str = "floor", admode: str = "nearest") -> S16Image:
 	"""
 	Encodes a PIL.Image into a 565 S16Image.
 	Pixels that would be "accidentally transparent" are nudged to false_black.
+	cdmode and admode are dither modes as per the dither function.
+	These are for colours and alpha respectively.
 	"""
 	img = S16Image(pil.width, pil.height)
 	pil = pil.convert("RGBA")
 	idx = 0
-	for pixel in pil.getdata():
-		r = pixel[0]
-		g = pixel[1]
-		b = pixel[2]
-		a = pixel[3]
+	data_r = list(pil.getdata(0))
+	data_g = list(pil.getdata(1))
+	data_b = list(pil.getdata(2))
+	data_a = list(pil.getdata(3))
+	# skip the full dithering pass if we implement it ourselves
+	if cdmode != "floor":
+		dither_565(pil.width, pil.height, data_r, data_g, data_b, cdmode)
+	if admode != "nearest":
+		dither_channel(pil.width, pil.height, data_a, 1, admode)
+	for i in range(pil.width * pil.height):
 		v = 0
-		if a >= 128:
-			v = ((r << 8) & 0xF800) | ((g << 3) & 0x07E0) | ((b >> 3) & 0x001F)
+		if data_a[i] >= 128:
+			v = ((data_r[i] << 8) & 0xF800) | ((data_g[i] << 3) & 0x07E0) | ((data_b[i] >> 3) & 0x001F)
 			if v == 0: # COL_MASK
 				v = false_black
 		img.data[idx] = v
 		idx += 1
 	return img
 
-def pil_to_565_blk(pil: PIL.Image) -> S16Image:
+def pil_to_565_blk(pil: PIL.Image, cdmode: str = "floor") -> S16Image:
 	"""
 	Encodes a PIL.Image into a 565 S16Image, assuming it will be a BLK file.
 	Therefore, alpha and collisions with the masking colour are ignored.
+	cdmode is a dither mode as per the dither function.
 	"""
 	img = S16Image(pil.width, pil.height)
 	pil = pil.convert("RGB")
 	idx = 0
-	for pixel in pil.getdata():
-		r = pixel[0]
-		g = pixel[1]
-		b = pixel[2]
-		v = ((r << 8) & 0xF800) | ((g << 3) & 0x07E0) | ((b >> 3) & 0x001F)
+	data_r = list(pil.getdata(0))
+	data_g = list(pil.getdata(1))
+	data_b = list(pil.getdata(2))
+	dither_565(pil.width, pil.height, data_r, data_g, data_b, cdmode)
+	for i in range(pil.width * pil.height):
+		v = ((data_r[i] << 8) & 0xF800) | ((data_g[i] << 3) & 0x07E0) | ((data_b[i] >> 3) & 0x001F)
 		img.data[idx] = v
 		idx += 1
 	return img
@@ -575,11 +633,11 @@ if __name__ == "__main__":
 	def command_help():
 		print("libs16.py info <IN>")
 		print(" information on a c16/s16 file")
-		print("libs16.py encodeS16 <INDIR> <OUT>")
+		print("libs16.py encodeS16 <INDIR> <OUT> [<CDMODE> [<ADMODE>]]")
 		print(" encodes 565 S16 file from directory")
-		print("libs16.py encodeC16 <INDIR> <OUT>")
+		print("libs16.py encodeC16 <INDIR> <OUT> [<CDMODE> [<ADMODE>]]")
 		print(" encodes 565 C16 file from directory")
-		print("libs16.py encodeBLK <IN> <OUT>")
+		print("libs16.py encodeBLK <IN> <OUT> [<CDMODE>]")
 		print(" encodes 565 BLK file from source")
 		print("libs16.py decode <IN> <OUTDIR>")
 		print(" decodes S16 or C16 files")
@@ -604,7 +662,10 @@ if __name__ == "__main__":
 		print("s16/c16 files are converted to directories of numbered PNG files.")
 		print("This process is lossless, though RGB555 files are converted to RGB565.")
 		print("The inverse conversion is of course not lossless (lower bits are dropped).")
-		print("There is NO dithering.")
+		print("CDMODE and ADMODE controls dithering and such.")
+		print("Modes are: floor, nearest")
+		print("The default CDMODE is floor, and the default ADMODE is nearest.")
+		print("(This is because these modes are lossless with decode output.)")
 
 	def _read_bytes(fn):
 		f = open(fn, "rb")
@@ -620,9 +681,9 @@ if __name__ == "__main__":
 			if fn != "":
 				fr.to_pil().save(fn, "PNG")
 
-	def _opt_arg(idx):
+	def _opt_arg(idx, df = None):
 		if len(sys.argv) <= idx:
-			return None
+			return df
 		return sys.argv[idx]
 
 	def _write_equal_format(fn, images, original):
@@ -637,7 +698,7 @@ if __name__ == "__main__":
 	import os
 	import os.path
 
-	def encode_fileset(fileset, output, compressed):
+	def encode_fileset(fileset, output, compressed, cdmode, admode):
 		imgs = []
 		idx = 0
 		exts = [".png", ".jpg", ".bmp"]
@@ -659,7 +720,7 @@ if __name__ == "__main__":
 			print("Frame " + f_path + "...")
 			f_pil = PIL.Image.open(f_path)
 			print(" Encoding to RGB565...")
-			imgs.append(pil_to_565(f_pil))
+			imgs.append(pil_to_565(f_pil, cdmode = cdmode, admode = admode))
 			idx += 1
 		print("Building final data...")
 		if compressed:
@@ -688,13 +749,14 @@ if __name__ == "__main__":
 			for v in images:
 				print(" " + str(idx) + ": " + str(v.width) + "x" + str(v.height))
 				idx += 1
-		elif sys.argv[1] == "encodeS16":
-			encode_fileset(sys.argv[2], sys.argv[3], False)
-		elif sys.argv[1] == "encodeC16":
-			encode_fileset(sys.argv[2], sys.argv[3], True)
+		elif sys.argv[1] == "encodeS16" or sys.argv[1] == "encodeC16":
+			cdmode = _opt_arg(4, "floor")
+			admode = _opt_arg(5, "nearest")
+			encode_fileset(sys.argv[2], sys.argv[3], sys.argv[1] == "encodeC16", cdmode, admode)
 		elif sys.argv[1] == "encodeBLK":
+			cdmode = _opt_arg(4, "floor")
 			img = PIL.Image.open(sys.argv[2])
-			blk = encode_blk(pil_to_565_blk(img))
+			blk = encode_blk(pil_to_565_blk(img, cdmode = cdmode))
 			f = open(sys.argv[3], "wb")
 			f.write(blk)
 			f.close()
