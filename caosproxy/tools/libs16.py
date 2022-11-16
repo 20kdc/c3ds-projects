@@ -12,6 +12,7 @@ import io
 import struct
 import array
 import PIL.Image
+import random
 
 # ---- Constants ----
 
@@ -437,16 +438,19 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 	Numbers are guaranteed to be clipped to, say, XXXX0000 for bits = 4.
 	data is a sequence of integers between 0 and 255 inclusive.
 	"""
+	# Common numbers
 	# This masks such that 1 bit is 0x80, 8 is 0xFF.
 	mask = (0xFF00 >> bits) & 0xFF
+	# This mask is used to check the half-way threshold.
+	nudge_mask = 0x80 >> bits
+	# This is the amount of distance between jumps
+	nudge = 0x100 >> bits
+	# Strategies!
 	if strategy == "floor":
 		for i in range(len(data)):
 			data[i] &= mask
-	elif strategy == "nearest":
+	elif strategy == "nearest-floor":
 		# Same masking strategy as floor, but with added stuff to it
-		# This mask is used to check the half-way threshold.
-		nudge_mask = 0x80 >> bits
-		nudge = 0x100 >> bits
 		for i in range(len(data)):
 			sb = data[i] & nudge_mask
 			data[i] &= mask
@@ -461,6 +465,34 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 				data[i] = 0xFF & mask
 			else:
 				data[i] = 0
+	elif strategy == "random-floor":
+		# Random dither with floored values
+		nudge_m1 = nudge - 1
+		for i in range(len(data)):
+			data[i] = min(data[i] + random.randint(0, nudge_m1), 0xFF) & mask
+	elif strategy == "random-approx":
+		# Random dither trying to account for bitcopying
+		# This nudges high values lower, and lower values higher.
+		# This is to account for their lower bits, which do the opposite.
+		nudge_m1 = nudge - 1
+		for i in range(len(data)):
+			# at 0, there is no negative nudge. at 255, full negative nudge.
+			nudge_neg = (nudge_m1 * data[i]) // 255
+			# inverted
+			nudge_pos = nudge_m1 - nudge_neg
+			data[i] = max(min(data[i] + random.randint(-nudge_neg, nudge_pos), 0xFF), 0) & mask
+	elif strategy == "random-borked":
+		# Random dither trying to compensate
+		nudge_m1 = (nudge >> 1) - 1
+		error = 0
+		for i in range(len(data)):
+			orig = data[i]
+			modified = orig - error
+			v = max(min(modified + random.randint(-nudge_m1, nudge_m1), 0xFF), 0) & mask
+			data[i] = v
+			# simulate DD & libs16 bit copying
+			simulated = v | (v >> bits)
+			error = simulated - orig
 	else:
 		raise Exception("Unsupported dithering strategy '" + strategy + "'")
 
@@ -477,7 +509,7 @@ def dither_565(w: int, h: int, data_r: list, data_g: list, data_b: list, cdmode:
 	dither_channel(w, h, data_g, 6, cdmode)
 	dither_channel(w, h, data_b, 5, cdmode)
 
-def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK, cdmode: str = "floor", admode: str = "nearest") -> S16Image:
+def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK, cdmode: str = "floor", admode: str = "nearest-floor") -> S16Image:
 	"""
 	Encodes a PIL.Image into a 565 S16Image.
 	Pixels that would be "accidentally transparent" are nudged to false_black.
@@ -494,7 +526,7 @@ def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK, cdmode: str = "floo
 	# skip the full dithering pass if we implement it ourselves
 	if cdmode != "floor":
 		dither_565(pil.width, pil.height, data_r, data_g, data_b, cdmode)
-	if admode != "nearest":
+	if admode != "nearest-floor":
 		dither_channel(pil.width, pil.height, data_a, 1, admode)
 	for i in range(pil.width * pil.height):
 		v = 0
@@ -663,8 +695,14 @@ if __name__ == "__main__":
 		print("This process is lossless, though RGB555 files are converted to RGB565.")
 		print("The inverse conversion is of course not lossless (lower bits are dropped).")
 		print("CDMODE and ADMODE controls dithering and such.")
-		print("Modes are: floor, nearest")
-		print("The default CDMODE is floor, and the default ADMODE is nearest.")
+		print("Modes are:")
+		print(" floor: Floors the value")
+		print(" nearest-floor: Nearest floored value")
+		print(" debug1bit: 1-bit")
+		print(" random-floor: Random increase up to the distance between floored values, then floors")
+		print(" random-approx: random-floor, but the increase/decrease window is based on pixel value to account for bit-copying")
+		print(" random-borked: A silly attempt at an error-correction-based dither that goes a little out of control")
+		print("The default CDMODE is floor, and the default ADMODE is nearest-floor.")
 		print("(This is because these modes are lossless with decode output.)")
 
 	def _read_bytes(fn):
@@ -751,7 +789,7 @@ if __name__ == "__main__":
 				idx += 1
 		elif sys.argv[1] == "encodeS16" or sys.argv[1] == "encodeC16":
 			cdmode = _opt_arg(4, "floor")
-			admode = _opt_arg(5, "nearest")
+			admode = _opt_arg(5, "nearest-floor")
 			encode_fileset(sys.argv[2], sys.argv[3], sys.argv[1] == "encodeC16", cdmode, admode)
 		elif sys.argv[1] == "encodeBLK":
 			cdmode = _opt_arg(4, "floor")
