@@ -24,29 +24,20 @@ COL_BLACK = 0x0020
 
 # ---- Format Registry ----
 
-class CS16ColourFormat():
-	pass
-
-CFMT_RGB555_LE = CS16ColourFormat()
-CFMT_RGB565_LE = CS16ColourFormat()
-CFMT_RGB5551_BE = CS16ColourFormat()
-
 class CS16Format():
-	def __init__(self, compressed, cfmt, big_endian, desc):
+	def __init__(self, compressed, cfmt, endian, desc):
 		self.compressed = compressed
 		self.cfmt = cfmt
-		self.big_endian = big_endian
+		self.endian = endian
 		self.desc = desc
 
-# Note that colour endianness is considered part of the cfmt.
-# It's done this way so that _decode_shorts can be later updated to use cfmts.
 CS16_FILETYPES = {
-	0x00000000: CS16Format(False,  CFMT_RGB555_LE, False, "S16 RGB555"),
-	0x00000001: CS16Format(False,  CFMT_RGB565_LE, False, "S16 RGB565"),
-	0x00000002: CS16Format( True,  CFMT_RGB555_LE, False, "C16 RGB555"),
-	0x00000003: CS16Format( True,  CFMT_RGB565_LE, False, "C16 RGB565"),
-	0x01000000: CS16Format(False, CFMT_RGB5551_BE,  True, "N16 RGB5551"),
-	0x03000000: CS16Format(False, CFMT_RGB5551_BE,  True, "M16 RGB5551")
+	0x00000000: CS16Format(False, "rgb555",  "little", "S16 RGB555 LE"),
+	0x00000001: CS16Format(False, "rgb565",  "little", "S16 RGB565 LE"),
+	0x00000002: CS16Format( True, "rgb555",  "little", "C16 RGB555 LE"),
+	0x00000003: CS16Format( True, "rgb565",  "little", "C16 RGB565 LE"),
+	0x01000000: CS16Format(False, "rgb5551", "big",    "N16 RGB5551 BE"),
+	0x03000000: CS16Format(False, "rgb5551", "big",    "M16 RGB5551 BE")
 }
 
 # ---- Data Structures ----
@@ -59,18 +50,22 @@ struct_cs16_lofs = struct.Struct("<I")
 struct_blk_header = struct.Struct("<IHHH")
 
 # short enc/dec
-def _decode_shorts(b: bytes, conv_555_565: bool, expected: int) -> array.array:
+def _decode_shorts(b: bytes, cfmt: str, endian: str, expected: int) -> array.array:
 	"""
-	Decodes a list of shorts as fast as possible.
-	For error correction, will pads/cuts to the given expected size.
+	Decodes a list of shorts to RGB565 as fast as possible.
+	For error correction, will pad/cut to the given expected size.
 	This is not done as fast as possible.
 	Note that this returns array.array, so you should use slice assignment if
 	 putting this into an S16Image.
 	"""
 	arr = array.array("H", b)
-	if sys.byteorder != "little":
+	# endianness swap	
+	if sys.byteorder != endian:
 		arr = arr.byteswap()
-	if conv_555_565:
+	# RGB!
+	if cfmt == "rgb565":
+		pass
+	elif cfmt == "rgb555":
 		for i in range(len(arr)):
 			v = arr[i]
 			# cheeky!
@@ -82,6 +77,8 @@ def _decode_shorts(b: bytes, conv_555_565: bool, expected: int) -> array.array:
 			# third handles B
 			v = ((v & 0x7FE0) << 1) | ((v & 0x0200) >> 4) | (v & 0x001F)
 			arr[i] = v
+	else:
+		raise Exception("Unsupported colour format for decoding: " + cfmt)
 	while len(arr) < expected:
 		arr.append(0)
 	return arr[0:expected]
@@ -313,7 +310,9 @@ def decode_cs16(data: bytes) -> list:
 	"""
 	filetype, count = struct_cs16_header.unpack_from(data, 0)
 	cs16fmt = _filetype_or_fail(filetype)
-	is_555 = cs16fmt.cfmt == CFMT_RGB555_LE
+	cfmt = cs16fmt.cfmt
+	if cs16fmt.endian != "little":
+		raise Exception("No support for non-LE format: " + cs16fmt.desc)
 	hptr = 6
 	results = []
 	for i in range(count):
@@ -333,7 +332,7 @@ def decode_cs16(data: bytes) -> list:
 					runlen = elm >> 1
 					if (elm & 1) != 0:
 						niptr = iptr + (runlen * 2)
-						img.data[pixidx:pixidx + runlen] = _decode_shorts(data[iptr:niptr], is_555, runlen)
+						img.data[pixidx:pixidx + runlen] = _decode_shorts(data[iptr:niptr], cfmt, "little", runlen)
 						pixidx += runlen
 						iptr = niptr
 					else:
@@ -343,7 +342,7 @@ def decode_cs16(data: bytes) -> list:
 			# just decode everything at once
 			iw = iw * ih
 			iw2 = iw * ih * 2
-			img.data[0:iw] = _decode_shorts(data[iptr:iptr + iw2], is_555, iw)
+			img.data[0:iw] = _decode_shorts(data[iptr:iptr + iw2], cfmt, "little", iw)
 		results.append(img)
 	return results
 
@@ -851,8 +850,11 @@ def decode_blk_blocks(data: bytes):
 
 	# Check header
 	cs16fmt = _filetype_or_fail(filetype)
-	is_555 = cs16fmt.cfmt == CFMT_RGB555_LE
-	is_compressed = cs16fmt.compressed
+	cfmt = cs16fmt.cfmt
+	if cs16fmt.endian != "little":
+		raise Exception("No support for non-LE format: " + cs16fmt.desc)
+	if cs16fmt.compressed:
+		raise Exception("BLK files aren't supposed to be compressed! Found: " + cs16fmt.desc)
 
 	# Read sprite headers, but we don't *actually* care about pointers
 	results = []
@@ -867,7 +869,7 @@ def decode_blk_blocks(data: bytes):
 		# just decode everything at once
 		iw = img.width * img.height
 		iw2 = iw * 2
-		img.data[0:iw] = _decode_shorts(data[iptr:iptr + iw2], is_555, iw)
+		img.data[0:iw] = _decode_shorts(data[iptr:iptr + iw2], cfmt, "little", iw)
 		iptr += iw2
 
 	return blocks_w, blocks_h, results
