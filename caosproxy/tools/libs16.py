@@ -446,7 +446,7 @@ def _gen_bitcopy(bits: int):
 
 # Bitcopy tables for varying amounts of bits.
 BITCOPY_TABLES = [
-	None,
+	_gen_bitcopy(0), # maps to all 0s but that's alright
 	_gen_bitcopy(1),
 	_gen_bitcopy(2),
 	_gen_bitcopy(3),
@@ -542,17 +542,7 @@ def dither_point_mapprob_list(points: list):
 	return res
 
 # Bitcopy tables for varying amounts of bits.
-BITCOPY_MAPPROB_TABLES = [
-	None,
-	dither_point_mapprob_list(BITCOPY_TABLES[1]),
-	dither_point_mapprob_list(BITCOPY_TABLES[2]),
-	dither_point_mapprob_list(BITCOPY_TABLES[3]),
-	dither_point_mapprob_list(BITCOPY_TABLES[4]),
-	dither_point_mapprob_list(BITCOPY_TABLES[5]),
-	dither_point_mapprob_list(BITCOPY_TABLES[6]),
-	dither_point_mapprob_list(BITCOPY_TABLES[7]),
-	dither_point_mapprob_list(BITCOPY_TABLES[8])
-]
+BITCOPY_MAPPROB_TABLES = [dither_point_mapprob_list(v) for v in BITCOPY_TABLES]
 
 # ---- Dithering ----
 
@@ -643,6 +633,26 @@ DITHER_PATTERN_SET_HEXCHECKERS = dither_compile_bit_pattern_set([
 	]),
 ])
 
+DITHER_PATTERN_SET_CHECKERS = dither_compile_bit_pattern_set([
+	DitherBitPattern([
+		[0]
+	]),
+	DitherBitPattern([
+		[1, 0],
+		[0, 1],
+	]),
+	DitherBitPattern([
+		[1]
+	])
+])
+
+DITHER_PATTERN_SET_ALWAYS_CHECKERS = dither_compile_bit_pattern_set([
+	DitherBitPattern([
+		[1, 0],
+		[0, 1],
+	])
+])
+
 def dither_bitpattern(w: int, h: int, data, values: list, mask: int, patterns: list):
 	"""
 	Dithers a channel using:
@@ -652,6 +662,19 @@ def dither_bitpattern(w: int, h: int, data, values: list, mask: int, patterns: l
 	(See dither_compile_bit_pattern_set)
 	The list must be 256 entries long.
 	Each entry is a DitherBitPattern.
+	"""
+	for i in range(len(data)):
+		vmapprob = values[data[i]]
+		vmapfrac = min(255, max(0, int(vmapprob[1] * 255)))
+		pmapprob = patterns[vmapfrac]
+		if pmapprob[0].sample(i % w, i // w) != 0:
+			data[i] = vmapprob[2] & mask
+		else:
+			data[i] = vmapprob[0] & mask
+
+def dither_bitpattern_random(w: int, h: int, data, values: list, mask: int, patterns: list):
+	"""
+	Like dither_bitpattern, but interpolates between patterns using randomness.
 	"""
 	for i in range(len(data)):
 		vmapprob = values[data[i]]
@@ -724,6 +747,14 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 			error = simulated - orig
 	elif strategy == "hexcheckers":
 		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_HEXCHECKERS)
+	elif strategy == "hexcheckers-random":
+		dither_bitpattern_random(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_HEXCHECKERS)
+	elif strategy == "checkers":
+		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_CHECKERS)
+	elif strategy == "checkers-random":
+		dither_bitpattern_random(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_CHECKERS)
+	elif strategy == "always-checkers":
+		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_ALWAYS_CHECKERS)
 	else:
 		raise Exception("Unsupported dithering strategy '" + strategy + "'")
 
@@ -923,8 +954,12 @@ if __name__ == "__main__":
 		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
 		print("libs16.py genPalRef <DST>")
 		print(" generates a PNG palette reference file")
-		print("libs16.py dither <IN> <OUT> [<CDMODE> [<ADMODE>]]")
-		print(" tests dithering")
+		print("libs16.py dither <IN> <OUT> [<CDMODE> [<ADMODE> [<RBITS> [<GBITS> [<BBITS> [<ABITS>]]]]]]")
+		print(" tests dithering - defaults to RGB565")
+		print("libs16.py dithera <IN> [<CDMODE> [<ADMODE> [<RBITS> [<GBITS> [<BBITS> [<ABITS>]]]]]]")
+		print(" dither command, but output name is inferred from details")
+		print("libs16.py dithercmyk <IN> [<CDMODE> [<CBITS> [<MBITS> [<YBITS> [<KBITS>]]]]]")
+		print(" joke command")
 		print("")
 		print("s16/c16 files are converted to directories of numbered PNG files.")
 		print("This process is lossless, though RGB555 files are converted to RGB565.")
@@ -939,7 +974,12 @@ if __name__ == "__main__":
 		print(" random-borked: A silly attempt at an error-correction-based dither that goes a little out of control")
 		print("                Decent with alpha, though")
 		print(" hexcheckers: Ordered \"4x4-ish\" (but tries to stick to hexagonal 2x2) dither.")
-		print("              Some randomness thrown in to blend between patterns.")
+		print(" hexcheckers-random: Same, but with randomness used to blend between patterns.")
+		print(" checkers: 2x2 checkerboard in the 25% to 75% range.")
+		print("           Adds less than a bit of \"effective depth\", but very reliable.")
+		print(" checkers-random: Same, but with the randomness blending.")
+		print("                  The checkerboarding avoids some of random's problems.")
+		print(" always-checkers: Checkerboard whenever the value is not exactly equal.")
 		print("The default CDMODE is floor, and the default ADMODE is nearest.")
 		print("(This is because these modes are lossless with decode output.)")
 
@@ -1129,13 +1169,91 @@ if __name__ == "__main__":
 					idx += 1
 			vpil = image.to_pil(alpha_aware = False)
 			vpil.save(sys.argv[2], "PNG")
-		elif sys.argv[1] == "dither":
+		elif sys.argv[1] == "dither" or sys.argv[1] == "dithera":
 			fni = sys.argv[2]
-			fno = sys.argv[3]
-			cdmode = _opt_arg(4, CDMODE_DEFAULT)
-			admode = _opt_arg(5, ADMODE_DEFAULT)
+			fno = None
+			filter_params_base = 4
+			if sys.argv[1] == "dithera":
+				filter_params_base = 3
+			else:
+				fno = sys.argv[3]
+			cdmode = _opt_arg(filter_params_base, CDMODE_DEFAULT)
+			admode = _opt_arg(filter_params_base + 1, ADMODE_DEFAULT)
+			rbits = int(_opt_arg(filter_params_base + 2, "5"))
+			gbits = int(_opt_arg(filter_params_base + 3, "6"))
+			bbits = int(_opt_arg(filter_params_base + 4, "5"))
+			abits = int(_opt_arg(filter_params_base + 5, "1"))
+			# autogen name
+			if fno == None:
+				fno = os.path.join(os.path.dirname(fni), os.path.basename(fni) + "." + cdmode + str(rbits) + str(gbits) + str(bbits) + "." + admode + str(abits) + ".png")
+			# alright, load
 			vpil = PIL.Image.open(fni)
-			vpil = pil_to_565(vpil, cdmode = cdmode, admode = admode).to_pil()
+			vpil = vpil.convert("RGBA")
+			# convert
+			data_r = list(vpil.getdata(0))
+			data_g = list(vpil.getdata(1))
+			data_b = list(vpil.getdata(2))
+			data_a = list(vpil.getdata(3))
+			# dither
+			dither_channel(vpil.width, vpil.height, data_r, rbits, cdmode)
+			dither_channel(vpil.width, vpil.height, data_g, gbits, cdmode)
+			dither_channel(vpil.width, vpil.height, data_b, bbits, cdmode)
+			dither_channel(vpil.width, vpil.height, data_a, abits, admode)
+			# convert
+			data_total = []
+			for i in range(vpil.width * vpil.height):
+				r = BITCOPY_TABLES[rbits][data_r[i]]
+				g = BITCOPY_TABLES[gbits][data_g[i]]
+				b = BITCOPY_TABLES[bbits][data_b[i]]
+				a = BITCOPY_TABLES[abits][data_a[i]]
+				data_total.append((r, g, b, a))
+			vpil.putdata(data_total)
+			# done
+			vpil.save(fno, "PNG")
+		elif sys.argv[1] == "dithercmyk":
+			# For fun only. PIL's RGB->CMYK conversion is a little broken.
+			# It pretends K doesn't really exist.
+			fni = sys.argv[2]
+			cdmode = _opt_arg(3, CDMODE_DEFAULT)
+			cbits = int(_opt_arg(4, "1"))
+			mbits = int(_opt_arg(5, str(cbits)))
+			ybits = int(_opt_arg(6, str(mbits)))
+			kbits = int(_opt_arg(7, str(ybits)))
+			# autogen name
+			fno = os.path.join(os.path.dirname(fni), os.path.basename(fni) + ".cmyk." + cdmode + str(cbits) + str(mbits) + str(ybits) + str(kbits) + ".png")
+			# alright, load
+			vpil = PIL.Image.open(fni)
+			vpil = vpil.convert("CMYK")
+			# convert
+			data_c = list(vpil.getdata(0))
+			data_m = list(vpil.getdata(1))
+			data_y = list(vpil.getdata(2))
+			data_k = list(vpil.getdata(3))
+			# Fix K???
+			for i in range(vpil.width * vpil.height):
+				if data_k[i] == 0:
+					common = min(data_c[i], data_m[i], data_y[i])
+					data_k[i] = common
+					data_c[i] -= common
+					data_m[i] -= common
+					data_y[i] -= common
+			# dither
+			dither_channel(vpil.width, vpil.height, data_c, cbits, cdmode)
+			dither_channel(vpil.width, vpil.height, data_m, mbits, cdmode)
+			dither_channel(vpil.width, vpil.height, data_y, ybits, cdmode)
+			dither_channel(vpil.width, vpil.height, data_k, kbits, cdmode)
+			# convert
+			data_total = []
+			for i in range(vpil.width * vpil.height):
+				c = BITCOPY_TABLES[cbits][data_c[i]]
+				m = BITCOPY_TABLES[mbits][data_m[i]]
+				y = BITCOPY_TABLES[ybits][data_y[i]]
+				k = BITCOPY_TABLES[kbits][data_k[i]]
+				data_total.append((c, m, y, k))
+			vpil.putdata(data_total)
+			# done
+			# can't actually *save* as CMYK, except in EPS, which is hard to check
+			vpil = vpil.convert("RGBA")
 			vpil.save(fno, "PNG")
 		else:
 			print("cannot understand: " + sys.argv[1])
