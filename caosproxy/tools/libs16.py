@@ -22,6 +22,33 @@ COL_MASK = 0
 # Definitive black colour (as actual blank = transparent)
 COL_BLACK = 0x0020
 
+# ---- Format Registry ----
+
+class CS16ColourFormat():
+	pass
+
+CFMT_RGB555_LE = CS16ColourFormat()
+CFMT_RGB565_LE = CS16ColourFormat()
+CFMT_RGB5551_BE = CS16ColourFormat()
+
+class CS16Format():
+	def __init__(self, compressed, cfmt, big_endian, desc):
+		self.compressed = compressed
+		self.cfmt = cfmt
+		self.big_endian = big_endian
+		self.desc = desc
+
+# Note that colour endianness is considered part of the cfmt.
+# It's done this way so that _decode_shorts can be later updated to use cfmts.
+CS16_FILETYPES = {
+	0x00000000: CS16Format(False,  CFMT_RGB555_LE, False, "S16 RGB555"),
+	0x00000001: CS16Format(False,  CFMT_RGB565_LE, False, "S16 RGB565"),
+	0x00000002: CS16Format( True,  CFMT_RGB555_LE, False, "C16 RGB555"),
+	0x00000003: CS16Format( True,  CFMT_RGB565_LE, False, "C16 RGB565"),
+	0x01000000: CS16Format(False, CFMT_RGB5551_BE,  True, "N16 RGB5551"),
+	0x03000000: CS16Format(False, CFMT_RGB5551_BE,  True, "M16 RGB5551")
+}
+
 # ---- Data Structures ----
 
 struct_cs16_header = struct.Struct("<IH")
@@ -262,38 +289,22 @@ class S16Image():
 
 # ---- S16/C16 IO ----
 
-def is_555(data: bytes) -> bool:
+def identify_cs16(data: bytes) -> CS16Format:
 	"""
-	Checks if a file is RGB555.
+	Returns the type of a CS16 header from CS16_FILETYPES, or None.
 	"""
-	filetype, count = struct_cs16_header.unpack_from(data, 0)
-	if filetype == 0:
-		return True
-	elif filetype == 1:
-		return False
-	elif filetype == 2:
-		return True
-	elif filetype == 3:
-		return False
-	else:
-		raise Exception("Unknown S16/C16 magic number " + str(filetype))
+	filetype, _ = struct_cs16_header.unpack_from(data, 0)
+	if filetype in CS16_FILETYPES:
+		return CS16_FILETYPES[filetype]
+	return None
 
-def is_c16(data: bytes) -> bool:
+def _filetype_or_fail(ft: int) -> CS16Format:
 	"""
-	Checks if a file is a C16 file.
-	(This is meant to help with the mask command, which should save whatever it got.)
+	Returns the type of a CS16 header from CS16_FILETYPES, or None.
 	"""
-	filetype, count = struct_cs16_header.unpack_from(data, 0)
-	if filetype == 0:
-		return False
-	elif filetype == 1:
-		return False
-	elif filetype == 2:
-		return True
-	elif filetype == 3:
-		return True
-	else:
-		raise Exception("Unknown S16/C16 magic number " + str(filetype))
+	if not (ft in CS16_FILETYPES):
+		raise Exception("Unknown S16/C16/BLK magic number " + str(ft))
+	return CS16_FILETYPES[ft]
 
 def decode_cs16(data: bytes) -> list:
 	"""
@@ -301,28 +312,14 @@ def decode_cs16(data: bytes) -> list:
 	Returns a list of S16Image objects.
 	"""
 	filetype, count = struct_cs16_header.unpack_from(data, 0)
-	is_compressed = False
-	is_555 = False
-	if filetype == 0:
-		is_compressed = False
-		is_555 = True
-	elif filetype == 1:
-		is_compressed = False
-		is_555 = False
-	elif filetype == 2:
-		is_compressed = True
-		is_555 = True
-	elif filetype == 3:
-		is_compressed = True
-		is_555 = False
-	else:
-		raise Exception("Unknown S16/C16 magic number " + str(filetype))
+	cs16fmt = _filetype_or_fail(filetype)
+	is_555 = cs16fmt.cfmt == CFMT_RGB555_LE
 	hptr = 6
 	results = []
 	for i in range(count):
 		iptr, iw, ih = struct_cs16_frame.unpack_from(data, hptr)
 		img = S16Image(iw, ih)
-		if is_compressed:
+		if cs16fmt.compressed:
 			# 8 + (4 * (ih - 1))
 			hptr += 4 * (ih + 1)
 			# have to decode things in lines. how can we cheese this for max. efficiency?
@@ -736,17 +733,18 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 	else:
 		raise Exception("Unsupported dithering strategy '" + strategy + "'")
 
-def dither_565(w: int, h: int, data_r, data_g, data_b, cdmode: str):
-	"""
-	Dithers an image to RGB565.
-	The data is given as modifiable sequence-like objects.
-	(This is only tested on lists!)
-	This is done using the given strategy and modes.
-	See dither_channel for precise control and output details.
-	"""
-	dither_channel(w, h, data_r, 5, cdmode)
-	dither_channel(w, h, data_g, 6, cdmode)
-	dither_channel(w, h, data_b, 5, cdmode)
+def _dither_565_if_not_floor(pil, cdmode: str):
+	w = pil.width
+	h = pil.height
+	data_r = list(pil.getdata(0))
+	data_g = list(pil.getdata(1))
+	data_b = list(pil.getdata(2))
+	# dither RGB, unless mode is floor
+	if cdmode != "floor":
+		dither_channel(w, h, data_r, 5, cdmode)
+		dither_channel(w, h, data_g, 6, cdmode)
+		dither_channel(w, h, data_b, 5, cdmode)
+	return data_r, data_g, data_b
 
 CDMODE_DEFAULT = "floor"
 ADMODE_DEFAULT = "nearest"
@@ -761,13 +759,9 @@ def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK, cdmode: str = CDMOD
 	img = S16Image(pil.width, pil.height)
 	pil = pil.convert("RGBA")
 	idx = 0
-	data_r = list(pil.getdata(0))
-	data_g = list(pil.getdata(1))
-	data_b = list(pil.getdata(2))
 	data_a = list(pil.getdata(3))
 	# skip the full dithering pass if we implement it ourselves
-	if cdmode != "floor":
-		dither_565(pil.width, pil.height, data_r, data_g, data_b, cdmode)
+	data_r, data_g, data_b = _dither_565_if_not_floor(pil, cdmode)
 	if admode != "nearest":
 		dither_channel(pil.width, pil.height, data_a, 1, admode)
 	for i in range(pil.width * pil.height):
@@ -789,10 +783,7 @@ def pil_to_565_blk(pil: PIL.Image, cdmode: str = "floor") -> S16Image:
 	img = S16Image(pil.width, pil.height)
 	pil = pil.convert("RGB")
 	idx = 0
-	data_r = list(pil.getdata(0))
-	data_g = list(pil.getdata(1))
-	data_b = list(pil.getdata(2))
-	dither_565(pil.width, pil.height, data_r, data_g, data_b, cdmode)
+	data_r, data_g, data_b = _dither_565_if_not_floor(pil, cdmode)
 	for i in range(pil.width * pil.height):
 		v = ((data_r[i] << 8) & 0xF800) | ((data_g[i] << 3) & 0x07E0) | ((data_b[i] >> 3) & 0x001F)
 		img.data[idx] = v
@@ -859,15 +850,9 @@ def decode_blk_blocks(data: bytes):
 	#  with no padding.
 
 	# Check header
-	is_555 = False
-	if filetype == 0:
-		is_compressed = False
-		is_555 = True
-	elif filetype == 1:
-		is_compressed = False
-		is_555 = False
-	else:
-		raise Exception("Unknown BLK magic number " + str(filetype))
+	cs16fmt = _filetype_or_fail(filetype)
+	is_555 = cs16fmt.cfmt == CFMT_RGB555_LE
+	is_compressed = cs16fmt.compressed
 
 	# Read sprite headers, but we don't *actually* care about pointers
 	results = []
@@ -981,7 +966,7 @@ if __name__ == "__main__":
 
 	def _write_equal_format(fn, images, original):
 		f = open(fn, "wb")
-		if is_c16(original):
+		if identify_cs16(original).compressed:
 			f.write(encode_c16(images))
 		else:
 			f.write(encode_s16(images))
@@ -1027,17 +1012,14 @@ if __name__ == "__main__":
 	if len(sys.argv) >= 2:
 		if sys.argv[1] == "info":
 			data = _read_bytes(sys.argv[2])
+			info = identify_cs16(data)
+			if info == None:
+				print("Unknown!")
+			else:
+				print(info.desc)
+			# this COULD fail (no support for Mac files), do it late
 			images = decode_cs16(data)
 			idx = 0
-			if is_555(data):
-				if is_c16(data):
-					print("RGB555 C16")
-				else:
-					print("RGB555 S16")
-			elif is_c16(data):
-				print("RGB565 C16")
-			else:
-				print("RGB565 S16")
 			print(str(len(images)) + " frames")
 			for v in images:
 				print(" " + str(idx) + ": " + str(v.width) + "x" + str(v.height))
@@ -1160,6 +1142,7 @@ if __name__ == "__main__":
 			gbits = int(_opt_arg(filter_params_base + 3, "6"))
 			bbits = int(_opt_arg(filter_params_base + 4, "5"))
 			abits = int(_opt_arg(filter_params_base + 5, "1"))
+			bits = [rbits, gbits, bbits, abits]
 			# autogen name
 			if fno == None:
 				fno = os.path.join(os.path.dirname(fni), os.path.basename(fni) + "." + cdmode + str(rbits) + str(gbits) + str(bbits) + "." + admode + str(abits) + ".png")
@@ -1167,23 +1150,15 @@ if __name__ == "__main__":
 			vpil = PIL.Image.open(fni)
 			vpil = vpil.convert("RGBA")
 			# convert
-			data_r = list(vpil.getdata(0))
-			data_g = list(vpil.getdata(1))
-			data_b = list(vpil.getdata(2))
-			data_a = list(vpil.getdata(3))
+			data = [list(vpil.getdata(i)) for i in range(4)]
 			# dither
-			dither_channel(vpil.width, vpil.height, data_r, rbits, cdmode)
-			dither_channel(vpil.width, vpil.height, data_g, gbits, cdmode)
-			dither_channel(vpil.width, vpil.height, data_b, bbits, cdmode)
-			dither_channel(vpil.width, vpil.height, data_a, abits, admode)
+			for i in range(3):
+				dither_channel(vpil.width, vpil.height, data[i], bits[i], cdmode)
+			dither_channel(vpil.width, vpil.height, data[3], abits[3], admode)
 			# convert
 			data_total = []
 			for i in range(vpil.width * vpil.height):
-				r = BITCOPY_TABLES[rbits][data_r[i]]
-				g = BITCOPY_TABLES[gbits][data_g[i]]
-				b = BITCOPY_TABLES[bbits][data_b[i]]
-				a = BITCOPY_TABLES[abits][data_a[i]]
-				data_total.append((r, g, b, a))
+				data_total.append(tuple([BITCOPY_TABLES[bits[j]][data[j][i]] for j in range(4)]))
 			vpil.putdata(data_total)
 			# done
 			vpil.save(fno, "PNG")
