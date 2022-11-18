@@ -564,6 +564,14 @@ class DitherBitPattern():
 	def sample(self, x, y):
 		return self.content[y % self.height][x % self.width]
 
+# some of the more obvious patterns
+DITHER_BP_ZERO = DitherBitPattern([[0]])
+DITHER_BP_ONE = DitherBitPattern([[1]])
+DITHER_BP_CHECKER = DitherBitPattern([
+	[1, 0],
+	[0, 1]
+])
+
 def dither_compile_bit_pattern_set(patterns: list):
 	"""
 	Compiles a set of 256 patterns from a list.
@@ -583,75 +591,51 @@ def dither_compile_bit_pattern_set(patterns: list):
 		pset.append([pdc[mapprob[0]], mapprob[1], pdc[mapprob[2]]])
 	return pset
 
-DITHER_PATTERN_SET_HEXCHECKERS = dither_compile_bit_pattern_set([
-	DitherBitPattern([
-		[0],
-	]),
-	DitherBitPattern([
-		#     | shift down 2
-		[1, 0, 0, 0],
-		[0, 0, 0, 0],
-		[0, 0, 1, 0],
-		[0, 0, 0, 0],
-	]),
-	DitherBitPattern([
-		#     | shift down 1
-		[1, 0, 0, 0],
-		[0, 0, 1, 0],
-	]),
-	DitherBitPattern([
-		#          | shift down 2
-		[1, 0, 0, 0, 0, 1, 0, 1],
-		[0, 0, 1, 0, 1, 0, 1, 0],
-		[0, 1, 0, 1, 1, 0, 0, 0],
-		[1, 0, 1, 0, 0, 0, 1, 0],
-	]),
-	DitherBitPattern([
-		[1, 0],
-		[0, 1],
-	]),
-	DitherBitPattern([
-		[0, 0, 1, 1],
-		[1, 1, 0, 1],
-		[1, 1, 0, 0],
-		[0, 1, 1, 1],
-	]),
-	DitherBitPattern([
-		#     | shift down 1
-		[0, 1, 1, 1],
-		[1, 1, 0, 1],
-	]),
-	DitherBitPattern([
-		#     | shift down 2
-		[0, 1, 1, 1],
-		[1, 1, 1, 1],
-		[1, 1, 0, 1],
-		[1, 1, 1, 1],
-	]),
-	DitherBitPattern([
-		[1],
-	]),
-])
-
 DITHER_PATTERN_SET_CHECKERS = dither_compile_bit_pattern_set([
-	DitherBitPattern([
-		[0]
-	]),
-	DitherBitPattern([
-		[1, 0],
-		[0, 1],
-	]),
-	DitherBitPattern([
-		[1]
-	])
+	DITHER_BP_ZERO,
+	DITHER_BP_CHECKER,
+	DITHER_BP_ONE
 ])
 
 DITHER_PATTERN_SET_ALWAYS_CHECKERS = dither_compile_bit_pattern_set([
-	DitherBitPattern([
-		[1, 0],
-		[0, 1],
-	])
+	DITHER_BP_CHECKER
 ])
+
+def dither_compile_bayer_bit_pattern_set(array):
+	res = []
+	for i in range(16):
+		v = i + 1
+		rows = []
+		for irow in array:
+			orow = []
+			for minv in irow:
+				if v >= minv:
+					orow.append(0)
+				else:
+					orow.append(1)
+			rows.append(orow)
+		res.append(DitherBitPattern(rows))
+	return dither_compile_bit_pattern_set(res)
+
+# From DHALF.txt, source https://github.com/SixLabors/ImageSharp/blob/main/src/ImageSharp/Processing/Processors/Dithering/DHALF.TXT
+DITHER_PATTERN_SET_BAYER4 = dither_compile_bayer_bit_pattern_set([
+	[ 1,  9,  3, 11],
+	[13,  5, 15,  7],
+	[ 4, 12,  2, 10],
+	[16,  8, 14,  6]
+])
+
+DITHER_PATTERN_SET_BAYER2 = dither_compile_bayer_bit_pattern_set([
+	[1, 3],
+	[4, 2]
+])
+
+DITHER_PATTERN_SETS = {
+	"checkers": DITHER_PATTERN_SET_CHECKERS,
+	"always-checkers": DITHER_PATTERN_SET_ALWAYS_CHECKERS,
+	"bayer2": DITHER_PATTERN_SET_BAYER2,
+	"bayer4": DITHER_PATTERN_SET_BAYER4,
+}
 
 def dither_bitpattern(w: int, h: int, data, values: list, mask: int, patterns: list):
 	"""
@@ -745,16 +729,10 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 			# simulate DD & libs16 bit copying
 			simulated = v | (v >> bits)
 			error = simulated - orig
-	elif strategy == "hexcheckers":
-		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_HEXCHECKERS)
-	elif strategy == "hexcheckers-random":
-		dither_bitpattern_random(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_HEXCHECKERS)
-	elif strategy == "checkers":
-		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_CHECKERS)
-	elif strategy == "checkers-random":
-		dither_bitpattern_random(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_CHECKERS)
-	elif strategy == "always-checkers":
-		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_ALWAYS_CHECKERS)
+	elif strategy in DITHER_PATTERN_SETS:
+		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SETS[strategy])
+	elif strategy.endswith("-random") and (strategy[0:-7] in DITHER_PATTERN_SETS):
+		dither_bitpattern_random(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SETS[strategy[0:-7]])
 	else:
 		raise Exception("Unsupported dithering strategy '" + strategy + "'")
 
@@ -958,8 +936,6 @@ if __name__ == "__main__":
 		print(" tests dithering - defaults to RGB565")
 		print("libs16.py dithera <IN> [<CDMODE> [<ADMODE> [<RBITS> [<GBITS> [<BBITS> [<ABITS>]]]]]]")
 		print(" dither command, but output name is inferred from details")
-		print("libs16.py dithercmyk <IN> [<CDMODE> [<CBITS> [<MBITS> [<YBITS> [<KBITS>]]]]]")
-		print(" joke command")
 		print("")
 		print("s16/c16 files are converted to directories of numbered PNG files.")
 		print("This process is lossless, though RGB555 files are converted to RGB565.")
@@ -973,13 +949,14 @@ if __name__ == "__main__":
 		print(" random: Randomly picks from the two nearest values, weighted by distance.")
 		print(" random-borked: A silly attempt at an error-correction-based dither that goes a little out of control")
 		print("                Decent with alpha, though")
-		print(" hexcheckers: Ordered \"4x4-ish\" (but tries to stick to hexagonal 2x2) dither.")
-		print(" hexcheckers-random: Same, but with randomness used to blend between patterns.")
+		print(" The following are considered 'pattern sets'.")
+		print(" They are all internally ordered dithers that all have a '-random' variant.")
+		print(" This variant interpolates between the stages using randomness.")
 		print(" checkers: 2x2 checkerboard in the 25% to 75% range.")
 		print("           Adds less than a bit of \"effective depth\", but very reliable.")
-		print(" checkers-random: Same, but with the randomness blending.")
-		print("                  The checkerboarding avoids some of random's problems.")
 		print(" always-checkers: Checkerboard whenever the value is not exactly equal.")
+		print(" bayer2: Bayer 2x2 as described by https://github.com/SixLabors/ImageSharp/blob/main/src/ImageSharp/Processing/Processors/Dithering/DHALF.TXT")
+		print(" bayer4: Bayer 4x4 from same")
 		print("The default CDMODE is floor, and the default ADMODE is nearest.")
 		print("(This is because these modes are lossless with decode output.)")
 
@@ -1209,51 +1186,6 @@ if __name__ == "__main__":
 				data_total.append((r, g, b, a))
 			vpil.putdata(data_total)
 			# done
-			vpil.save(fno, "PNG")
-		elif sys.argv[1] == "dithercmyk":
-			# For fun only. PIL's RGB->CMYK conversion is a little broken.
-			# It pretends K doesn't really exist.
-			fni = sys.argv[2]
-			cdmode = _opt_arg(3, CDMODE_DEFAULT)
-			cbits = int(_opt_arg(4, "1"))
-			mbits = int(_opt_arg(5, str(cbits)))
-			ybits = int(_opt_arg(6, str(mbits)))
-			kbits = int(_opt_arg(7, str(ybits)))
-			# autogen name
-			fno = os.path.join(os.path.dirname(fni), os.path.basename(fni) + ".cmyk." + cdmode + str(cbits) + str(mbits) + str(ybits) + str(kbits) + ".png")
-			# alright, load
-			vpil = PIL.Image.open(fni)
-			vpil = vpil.convert("CMYK")
-			# convert
-			data_c = list(vpil.getdata(0))
-			data_m = list(vpil.getdata(1))
-			data_y = list(vpil.getdata(2))
-			data_k = list(vpil.getdata(3))
-			# Fix K???
-			for i in range(vpil.width * vpil.height):
-				if data_k[i] == 0:
-					common = min(data_c[i], data_m[i], data_y[i])
-					data_k[i] = common
-					data_c[i] -= common
-					data_m[i] -= common
-					data_y[i] -= common
-			# dither
-			dither_channel(vpil.width, vpil.height, data_c, cbits, cdmode)
-			dither_channel(vpil.width, vpil.height, data_m, mbits, cdmode)
-			dither_channel(vpil.width, vpil.height, data_y, ybits, cdmode)
-			dither_channel(vpil.width, vpil.height, data_k, kbits, cdmode)
-			# convert
-			data_total = []
-			for i in range(vpil.width * vpil.height):
-				c = BITCOPY_TABLES[cbits][data_c[i]]
-				m = BITCOPY_TABLES[mbits][data_m[i]]
-				y = BITCOPY_TABLES[ybits][data_y[i]]
-				k = BITCOPY_TABLES[kbits][data_k[i]]
-				data_total.append((c, m, y, k))
-			vpil.putdata(data_total)
-			# done
-			# can't actually *save* as CMYK, except in EPS, which is hard to check
-			vpil = vpil.convert("RGBA")
 			vpil.save(fno, "PNG")
 		else:
 			print("cannot understand: " + sys.argv[1])
