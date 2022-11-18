@@ -643,11 +643,12 @@ DITHER_PATTERN_SET_HEXCHECKERS = dither_compile_bit_pattern_set([
 	]),
 ])
 
-def dither_bitpattern(w: int, h: int, data, values: list, patterns: list):
+def dither_bitpattern(w: int, h: int, data, values: list, mask: int, patterns: list):
 	"""
 	Dithers a channel using:
 	+ a given list of value mapprobs
 	+ a given list of pattern mapprobs
+	+ a mask (to ensure values comply)
 	(See dither_compile_bit_pattern_set)
 	The list must be 256 entries long.
 	Each entry is a DitherBitPattern.
@@ -660,9 +661,9 @@ def dither_bitpattern(w: int, h: int, data, values: list, patterns: list):
 		if random.random() < pmapprob[1]:
 			pattern = pmapprob[2]
 		if pattern.sample(i % w, i // w) != 0:
-			data[i] = vmapprob[2]
+			data[i] = vmapprob[2] & mask
 		else:
-			data[i] = vmapprob[0]
+			data[i] = vmapprob[0] & mask
 
 def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 	"""
@@ -683,15 +684,11 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 	if strategy == "floor":
 		for i in range(len(data)):
 			data[i] &= mask
-	elif strategy == "nearest-floor":
-		# Same masking strategy as floor, but with added stuff to it
+	elif strategy == "nearest":
+		# Nearest pixel value
+		mapprob = BITCOPY_MAPPROB_TABLES[bits]
 		for i in range(len(data)):
-			sb = data[i] & nudge_mask
-			data[i] &= mask
-			# If a nudge is reasonable and possible (can't exceed 0xFF), do it
-			# The extra check is needed for, i.e. bits = 1, v = 192
-			if sb != 0 and ((data[i] + nudge) <= 0xFF):
-				data[i] += nudge
+			data[i] = mapprob[data[i]][0] & mask
 	elif strategy == "debug1bit":
 		# Testing only.
 		for i in range(len(data)):
@@ -704,17 +701,15 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 		nudge_m1 = nudge - 1
 		for i in range(len(data)):
 			data[i] = min(data[i] + random.randint(0, nudge_m1), 0xFF) & mask
-	elif strategy == "random-approx":
-		# Random dither trying to account for bitcopying
-		# This nudges high values lower, and lower values higher.
-		# This is to account for their lower bits, which do the opposite.
-		nudge_m1 = nudge - 1
+	elif strategy == "random":
+		# Random dither
+		mapprob = BITCOPY_MAPPROB_TABLES[bits]
 		for i in range(len(data)):
-			# at 0, there is no negative nudge. at 255, full negative nudge.
-			nudge_neg = (nudge_m1 * data[i]) // 255
-			# inverted
-			nudge_pos = nudge_m1 - nudge_neg
-			data[i] = max(min(data[i] + random.randint(-nudge_neg, nudge_pos), 0xFF), 0) & mask
+			vmapprob = mapprob[data[i]]
+			if random.random() < vmapprob[1]:
+				data[i] = vmapprob[2] & mask
+			else:
+				data[i] = vmapprob[0] & mask
 	elif strategy == "random-borked":
 		# Random dither trying to compensate
 		nudge_m1 = (nudge >> 1) - 1
@@ -728,7 +723,7 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 			simulated = v | (v >> bits)
 			error = simulated - orig
 	elif strategy == "hexcheckers":
-		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], DITHER_PATTERN_SET_HEXCHECKERS)
+		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], mask, DITHER_PATTERN_SET_HEXCHECKERS)
 	else:
 		raise Exception("Unsupported dithering strategy '" + strategy + "'")
 
@@ -745,7 +740,7 @@ def dither_565(w: int, h: int, data_r, data_g, data_b, cdmode: str):
 	dither_channel(w, h, data_b, 5, cdmode)
 
 CDMODE_DEFAULT = "floor"
-ADMODE_DEFAULT = "nearest-floor"
+ADMODE_DEFAULT = "nearest"
 
 def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK, cdmode: str = CDMODE_DEFAULT, admode: str = ADMODE_DEFAULT) -> S16Image:
 	"""
@@ -764,7 +759,7 @@ def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK, cdmode: str = CDMOD
 	# skip the full dithering pass if we implement it ourselves
 	if cdmode != "floor":
 		dither_565(pil.width, pil.height, data_r, data_g, data_b, cdmode)
-	if admode != "nearest-floor":
+	if admode != "nearest":
 		dither_channel(pil.width, pil.height, data_a, 1, admode)
 	for i in range(pil.width * pil.height):
 		v = 0
@@ -937,15 +932,15 @@ if __name__ == "__main__":
 		print("CDMODE and ADMODE controls dithering and such.")
 		print("Modes are:")
 		print(" floor: Floors the value")
-		print(" nearest-floor: Nearest floored value")
+		print(" nearest: Nearest bitcopied value")
 		print(" debug1bit: 1-bit")
 		print(" random-floor: Random increase up to the distance between floored values, then floors")
-		print(" random-approx: random-floor, but the increase/decrease window is based on pixel value to account for bit-copying")
+		print(" random: Randomly picks from the two nearest values, weighted by distance.")
 		print(" random-borked: A silly attempt at an error-correction-based dither that goes a little out of control")
 		print("                Decent with alpha, though")
 		print(" hexcheckers: Ordered \"4x4-ish\" (but tries to stick to hexagonal 2x2) dither.")
 		print("              Some randomness thrown in to blend between patterns.")
-		print("The default CDMODE is floor, and the default ADMODE is nearest-floor.")
+		print("The default CDMODE is floor, and the default ADMODE is nearest.")
 		print("(This is because these modes are lossless with decode output.)")
 
 	def _read_bytes(fn):
