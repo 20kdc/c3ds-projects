@@ -429,25 +429,33 @@ def encode_c16(images) -> bytes:
 	assert expected_data_len == len(data)
 	return data + blob
 
-# ---- PIL encoding ----
+# ---- Bitcopy/number management ----
 
-class DitherBitPattern():
-	"""
-	A bitpattern for dithering.
-	"""
-	def __init__(self, content: list):
-		self.width = len(content[0])
-		self.height = len(content)
-		self.content = content
-		total = 0
-		occupancy = 0
-		for row in self.content:
-			for v in row:
-				total += 1
-				occupancy += v
-		self.value = (occupancy * 256) // total
-	def sample(self, x, y):
-		return self.content[y % self.height][x % self.width]
+# Generates a bitcopy table.
+def _gen_bitcopy(bits: int):
+	tbl = []
+	mask = (0xFF00 >> bits) & 0xFF
+	for i in range(256):
+		vb = i & mask
+		v = 0
+		# Make all 8 possible duplicates
+		for j in range(8):
+			v |= vb >> (bits * j)
+		tbl.append(v)
+	return tbl
+
+# Bitcopy tables for varying amounts of bits.
+BITCOPY_TABLES = [
+	None,
+	_gen_bitcopy(1),
+	_gen_bitcopy(2),
+	_gen_bitcopy(3),
+	_gen_bitcopy(4),
+	_gen_bitcopy(5),
+	_gen_bitcopy(6),
+	_gen_bitcopy(7),
+	_gen_bitcopy(8)
+]
 
 def dither_point_nearest_list(points: list):
 	"""
@@ -533,6 +541,39 @@ def dither_point_mapprob_list(points: list):
 			res.append([v, dist_to_target / dist_to_relevant, v2])
 	return res
 
+# Bitcopy tables for varying amounts of bits.
+BITCOPY_MAPPROB_TABLES = [
+	None,
+	dither_point_mapprob_list(BITCOPY_TABLES[1]),
+	dither_point_mapprob_list(BITCOPY_TABLES[2]),
+	dither_point_mapprob_list(BITCOPY_TABLES[3]),
+	dither_point_mapprob_list(BITCOPY_TABLES[4]),
+	dither_point_mapprob_list(BITCOPY_TABLES[5]),
+	dither_point_mapprob_list(BITCOPY_TABLES[6]),
+	dither_point_mapprob_list(BITCOPY_TABLES[7]),
+	dither_point_mapprob_list(BITCOPY_TABLES[8])
+]
+
+# ---- Dithering ----
+
+class DitherBitPattern():
+	"""
+	A bitpattern for dithering.
+	"""
+	def __init__(self, content: list):
+		self.width = len(content[0])
+		self.height = len(content)
+		self.content = content
+		total = 0
+		occupancy = 0
+		for row in self.content:
+			for v in row:
+				total += 1
+				occupancy += v
+		self.value = (occupancy * 256) // total
+	def sample(self, x, y):
+		return self.content[y % self.height][x % self.width]
+
 def dither_compile_bit_pattern_set(patterns: list):
 	"""
 	Compiles a set of 256 patterns from a list.
@@ -602,20 +643,26 @@ DITHER_PATTERN_SET_HEXCHECKERS = dither_compile_bit_pattern_set([
 	]),
 ])
 
-def dither_bitpattern(w: int, h: int, data, mask: int, patterns: list):
+def dither_bitpattern(w: int, h: int, data, values: list, patterns: list):
 	"""
-	Dithers a channel using a given list of pattern mapprobs.
+	Dithers a channel using:
+	+ a given list of value mapprobs
+	+ a given list of pattern mapprobs
 	(See dither_compile_bit_pattern_set)
-	This is 1-bit - output values are 0 or mask.
 	The list must be 256 entries long.
 	Each entry is a DitherBitPattern.
 	"""
 	for i in range(len(data)):
-		pmapprob = patterns[data[i]]
+		vmapprob = values[data[i]]
+		vmapfrac = min(255, max(0, int(vmapprob[1] * 255)))
+		pmapprob = patterns[vmapfrac]
 		pattern = pmapprob[0]
 		if random.random() < pmapprob[1]:
 			pattern = pmapprob[2]
-		data[i] = pattern.sample(i % w, i // w) * mask
+		if pattern.sample(i % w, i // w) != 0:
+			data[i] = vmapprob[2]
+		else:
+			data[i] = vmapprob[0]
 
 def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 	"""
@@ -680,8 +727,8 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 			# simulate DD & libs16 bit copying
 			simulated = v | (v >> bits)
 			error = simulated - orig
-	elif strategy == "hexcheckers1b":
-		dither_bitpattern(w, h, data, mask, DITHER_PATTERN_SET_HEXCHECKERS)
+	elif strategy == "hexcheckers":
+		dither_bitpattern(w, h, data, BITCOPY_MAPPROB_TABLES[bits], DITHER_PATTERN_SET_HEXCHECKERS)
 	else:
 		raise Exception("Unsupported dithering strategy '" + strategy + "'")
 
@@ -896,7 +943,8 @@ if __name__ == "__main__":
 		print(" random-approx: random-floor, but the increase/decrease window is based on pixel value to account for bit-copying")
 		print(" random-borked: A silly attempt at an error-correction-based dither that goes a little out of control")
 		print("                Decent with alpha, though")
-		print(" hexcheckers1b: 1-bit with an ordered 4x2 dither, basically.")
+		print(" hexcheckers: Ordered \"4x4-ish\" (but tries to stick to hexagonal 2x2) dither.")
+		print("              Some randomness thrown in to blend between patterns.")
 		print("The default CDMODE is floor, and the default ADMODE is nearest-floor.")
 		print("(This is because these modes are lossless with decode output.)")
 
