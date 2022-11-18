@@ -431,12 +431,199 @@ def encode_c16(images) -> bytes:
 
 # ---- PIL encoding ----
 
+class DitherBitPattern():
+	"""
+	A bitpattern for dithering.
+	"""
+	def __init__(self, content: list):
+		self.width = len(content[0])
+		self.height = len(content)
+		self.content = content
+		total = 0
+		occupancy = 0
+		for row in self.content:
+			for v in row:
+				total += 1
+				occupancy += v
+		self.value = (occupancy * 256) // total
+	def sample(self, x, y):
+		return self.content[y % self.height][x % self.width]
+
+def dither_point_nearest_list(points: list):
+	"""
+	Given a list of 0-255 ints, creates a list mapping 256 values to the nearest.
+	"""
+	lst = []
+	for i in range(256):
+		nearest = 0
+		nearest_dist = 512
+		for v in points:
+			dist = abs(v - i)
+			if dist < nearest_dist:
+				nearest = v
+				nearest_dist = dist
+		lst.append(nearest)
+	return lst
+
+def dither_point_first_list(points: list):
+	"""
+	Given a list of 0-255 ints, creates a list giving the index to the first
+	instance of a given number.
+	"""
+	lst = []
+	last_value = -1
+	last_index = -1
+	idx = 0
+	for v in points:
+		if v != last_value:
+			lst.append(idx)
+			last_value = v
+			last_index = idx
+		else:
+			lst.append(last_index)
+		idx += 1
+	return lst
+
+def dither_point_last_list(points: list):
+	"""
+	Given a list of 0-255 ints, creates a list giving the index to the last
+	instance of a given number.
+	"""
+	# reverse inputs
+	tmprev = list(points)
+	tmprev.reverse()
+	# do it
+	lst = dither_point_first_list(tmprev)
+	# reverse results
+	lst.reverse()
+	for i in range(len(lst)):
+		lst[i] = len(points) - (lst[i] + 1)
+	return lst
+
+def dither_point_mapprob_list(points: list):
+	"""
+	Given a list of 0-255 ints, creates a list of 256 entries as follows:
+	[nearest, prob, second]
+	nearest and second are values from points.
+	prob is the floating-point fraction to blend between nearest and second.
+	prob should not reach above 0.5 (as that should change the nearest)
+	"""
+	nearest = dither_point_nearest_list(points)
+	first = dither_point_first_list(nearest)
+	last = dither_point_last_list(nearest)
+	res = []
+	for target in range(256):
+		v = nearest[target]
+		relevant_idx = target
+		if target < v:
+			# below
+			relevant_idx = first[target] - 1
+		elif target > v:
+			# above
+			relevant_idx = last[target] + 1
+		if relevant_idx == target or relevant_idx < 0 or relevant_idx >= 256:
+			# nothing to interpolate to
+			res.append([v, 0.0, v])
+		else:
+			v2 = nearest[relevant_idx]
+			if v == v2:
+				raise Exception("Not supposed to happen: " + str(v) + " " + str(v2) + " " + str(target) + " " + str(relevant_idx))
+			dist_to_relevant = float(abs(v - v2))
+			dist_to_target = float(abs(v - target))
+			res.append([v, dist_to_target / dist_to_relevant, v2])
+	return res
+
+def dither_compile_bit_pattern_set(patterns: list):
+	"""
+	Compiles a set of 256 patterns from a list.
+	The patterns are measured to determine the best places for them.
+	Each entry is as follows:
+	[nearest, prob, second] - where nearest and second are patterns.
+	"""
+	ppt = []
+	pdc = {}
+	for p in patterns:
+		pdc[p.value] = p
+		ppt.append(p.value)
+	pmap = dither_point_mapprob_list(ppt)
+	pset = []
+	for i in range(256):
+		mapprob = pmap[i]
+		pset.append([pdc[mapprob[0]], mapprob[1], pdc[mapprob[2]]])
+	return pset
+
+DITHER_PATTERN_SET_HEXCHECKERS = dither_compile_bit_pattern_set([
+	DitherBitPattern([
+		[0],
+	]),
+	DitherBitPattern([
+		#     | shift down 2
+		[1, 0, 0, 0],
+		[0, 0, 0, 0],
+		[0, 0, 1, 0],
+		[0, 0, 0, 0],
+	]),
+	DitherBitPattern([
+		#     | shift down 1
+		[1, 0, 0, 0],
+		[0, 0, 1, 0],
+	]),
+	DitherBitPattern([
+		#          | shift down 2
+		[1, 0, 0, 0, 0, 1, 0, 1],
+		[0, 0, 1, 0, 1, 0, 1, 0],
+		[0, 1, 0, 1, 1, 0, 0, 0],
+		[1, 0, 1, 0, 0, 0, 1, 0],
+	]),
+	DitherBitPattern([
+		[1, 0],
+		[0, 1],
+	]),
+	DitherBitPattern([
+		[0, 0, 1, 1],
+		[1, 1, 0, 1],
+		[1, 1, 0, 0],
+		[0, 1, 1, 1],
+	]),
+	DitherBitPattern([
+		#     | shift down 1
+		[0, 1, 1, 1],
+		[1, 1, 0, 1],
+	]),
+	DitherBitPattern([
+		#     | shift down 2
+		[0, 1, 1, 1],
+		[1, 1, 1, 1],
+		[1, 1, 0, 1],
+		[1, 1, 1, 1],
+	]),
+	DitherBitPattern([
+		[1],
+	]),
+])
+
+def dither_bitpattern(w: int, h: int, data, mask: int, patterns: list):
+	"""
+	Dithers a channel using a given list of pattern mapprobs.
+	(See dither_compile_bit_pattern_set)
+	This is 1-bit - output values are 0 or mask.
+	The list must be 256 entries long.
+	Each entry is a DitherBitPattern.
+	"""
+	for i in range(len(data)):
+		pmapprob = patterns[data[i]]
+		pattern = pmapprob[0]
+		if random.random() < pmapprob[1]:
+			pattern = pmapprob[2]
+		data[i] = pattern.sample(i % w, i // w) * mask
+
 def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 	"""
 	Dithers a channel to a given number of bits with a given strategy.
 	Note that this process still works in 8-bit integer space.
 	Numbers are guaranteed to be clipped to, say, XXXX0000 for bits = 4.
 	data is a sequence of integers between 0 and 255 inclusive.
+	(This is only tested on lists!)
 	"""
 	# Common numbers
 	# This masks such that 1 bit is 0x80, 8 is 0xFF.
@@ -493,15 +680,16 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 			# simulate DD & libs16 bit copying
 			simulated = v | (v >> bits)
 			error = simulated - orig
+	elif strategy == "hexcheckers1b":
+		dither_bitpattern(w, h, data, mask, DITHER_PATTERN_SET_HEXCHECKERS)
 	else:
 		raise Exception("Unsupported dithering strategy '" + strategy + "'")
 
-def dither_565(w: int, h: int, data_r: list, data_g: list, data_b: list, cdmode: str):
+def dither_565(w: int, h: int, data_r, data_g, data_b, cdmode: str):
 	"""
 	Dithers an image to RGB565.
-	The data is given as lists of tuples as per list(Image.getdata()).
-	However the tuples are replaced with lists in processing.
-	They are not replaced back for efficiency reasons.
+	The data is given as modifiable sequence-like objects.
+	(This is only tested on lists!)
 	This is done using the given strategy and modes.
 	See dither_channel for precise control and output details.
 	"""
@@ -509,7 +697,10 @@ def dither_565(w: int, h: int, data_r: list, data_g: list, data_b: list, cdmode:
 	dither_channel(w, h, data_g, 6, cdmode)
 	dither_channel(w, h, data_b, 5, cdmode)
 
-def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK, cdmode: str = "floor", admode: str = "nearest-floor") -> S16Image:
+CDMODE_DEFAULT = "floor"
+ADMODE_DEFAULT = "nearest-floor"
+
+def pil_to_565(pil: PIL.Image, false_black: int = COL_BLACK, cdmode: str = CDMODE_DEFAULT, admode: str = ADMODE_DEFAULT) -> S16Image:
 	"""
 	Encodes a PIL.Image into a 565 S16Image.
 	Pixels that would be "accidentally transparent" are nudged to false_black.
@@ -690,6 +881,8 @@ if __name__ == "__main__":
 		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
 		print("libs16.py genPalRef <DST>")
 		print(" generates a PNG palette reference file")
+		print("libs16.py dither <IN> <OUT> [<CDMODE> [<ADMODE>]]")
+		print(" tests dithering")
 		print("")
 		print("s16/c16 files are converted to directories of numbered PNG files.")
 		print("This process is lossless, though RGB555 files are converted to RGB565.")
@@ -702,6 +895,8 @@ if __name__ == "__main__":
 		print(" random-floor: Random increase up to the distance between floored values, then floors")
 		print(" random-approx: random-floor, but the increase/decrease window is based on pixel value to account for bit-copying")
 		print(" random-borked: A silly attempt at an error-correction-based dither that goes a little out of control")
+		print("                Decent with alpha, though")
+		print(" hexcheckers1b: 1-bit with an ordered 4x2 dither, basically.")
 		print("The default CDMODE is floor, and the default ADMODE is nearest-floor.")
 		print("(This is because these modes are lossless with decode output.)")
 
@@ -788,8 +983,8 @@ if __name__ == "__main__":
 				print(" " + str(idx) + ": " + str(v.width) + "x" + str(v.height))
 				idx += 1
 		elif sys.argv[1] == "encodeS16" or sys.argv[1] == "encodeC16":
-			cdmode = _opt_arg(4, "floor")
-			admode = _opt_arg(5, "nearest-floor")
+			cdmode = _opt_arg(4, CDMODE_DEFAULT)
+			admode = _opt_arg(5, ADMODE_DEFAULT)
 			encode_fileset(sys.argv[2], sys.argv[3], sys.argv[1] == "encodeC16", cdmode, admode)
 		elif sys.argv[1] == "encodeBLK":
 			cdmode = _opt_arg(4, "floor")
@@ -891,6 +1086,14 @@ if __name__ == "__main__":
 					idx += 1
 			vpil = image.to_pil(alpha_aware = False)
 			vpil.save(sys.argv[2], "PNG")
+		elif sys.argv[1] == "dither":
+			fni = sys.argv[2]
+			fno = sys.argv[3]
+			cdmode = _opt_arg(4, CDMODE_DEFAULT)
+			admode = _opt_arg(5, ADMODE_DEFAULT)
+			vpil = PIL.Image.open(fni)
+			vpil = pil_to_565(vpil, cdmode = cdmode, admode = admode).to_pil()
+			vpil.save(fno, "PNG")
 		else:
 			print("cannot understand: " + sys.argv[1])
 			command_help()
