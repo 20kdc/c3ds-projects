@@ -179,6 +179,10 @@ class S16Image():
 		"""
 		Crops and pads the image on the X axis.
 		"""
+		if crop_l < 0 or crop_l > self.width or crop_r < crop_l or crop_r > self.width:
+			raise Exception("Invalid crop coordinates " + str(crop_l) + ", " + str(crop_r) + " of width " + self.width)
+		if pad_l < 0 or pad_r < 0:
+			raise Exception("Negative pad values not allowed")
 		newdata = []
 		ptr = 0
 		for i in range(self.height):
@@ -196,6 +200,10 @@ class S16Image():
 		"""
 		Crops and pads the image on the Y axis.
 		"""
+		if crop_u < 0 or crop_u > self.height or crop_d < crop_u or crop_d > self.height:
+			raise Exception("Invalid crop coordinates " + str(crop_u) + ", " + str(crop_d) + " of height " + self.height)
+		if pad_u < 0 or pad_d < 0:
+			raise Exception("Negative pad values not allowed")
 		self.data = self.data[(crop_u * self.width):(crop_d * self.width)]
 		self.height = crop_d - crop_u
 		self.data = ([pad_colour] * (pad_u * self.width)) + self.data + ([pad_colour] * (pad_d * self.width))
