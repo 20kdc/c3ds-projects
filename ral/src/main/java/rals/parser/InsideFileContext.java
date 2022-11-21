@@ -6,21 +6,23 @@
  */
 package rals.parser;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.LinkedList;
-
 import rals.code.Scripts;
 import rals.diag.DiagRecorder;
+import rals.lex.Lexer;
 import rals.types.TypeSystem;
 
 /**
- * Context for includes/searchpath stuff
+ * Context for parsing inside of a file.
  */
-public class IncludeParseContext {
-	public final DiagRecorder diags = new DiagRecorder();
-	public final LinkedList<File> searchPaths = new LinkedList<>();
-	public final HashSet<File> included = new HashSet<>();
-	public final TypeSystem typeSystem = new TypeSystem();
-	public final Scripts module = new Scripts();
+public class InsideFileContext {
+	public final DiagRecorder diags;
+	public final Lexer lexer;
+	public final TypeSystem typeSystem;
+	public final Scripts module;
+	public InsideFileContext(IncludeParseContext ipc, Lexer lx) {
+		typeSystem = ipc.typeSystem;
+		module = ipc.module;
+		lexer = lx;
+		diags = ipc.diags;
+	}
 }

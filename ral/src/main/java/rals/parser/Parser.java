@@ -40,6 +40,7 @@ public class Parser {
 		findParseFile(ic, null, "std/cpx_connection_test.ral");
 		StringBuilder sb = new StringBuilder();
 		ic.module.compileInstall(sb, ic.typeSystem, false);
+		ic.diags.unwrap();
 		return sb.toString();
 	}
 
@@ -79,37 +80,40 @@ public class Parser {
 		if (ctx.included.contains(here))
 			return;
 		ctx.included.add(here);
-		System.out.println("include: " + name);
+		System.err.println("include: " + name);
 		try (FileInputStream fis = new FileInputStream(here)) {
-			parseFileInnards(ctx, here.getParentFile(), name, fis);
+			parseFileInnards(ctx, here, name, fis);
 		}
 	}
 
 	/**
-	 * Parses a file given it's parent (for includes), name (for errors), and input stream.
+	 * Parses a file with the given file (for includes & errors), name (for OTHER errors), and input stream.
 	 * Does NOT do the include sanity check.
 	 */
-	public static void parseFileInnards(IncludeParseContext ctx, File hereParent, String name, InputStream fis) throws IOException {
+	public static void parseFileInnards(IncludeParseContext ctx, File here, String name, InputStream fis) throws IOException {
+		File hereParent = here.getParentFile();
 		try {
-			Lexer lx = new Lexer(name, fis);
+			Lexer lx = new Lexer(here, name, fis, ctx.diags);
+			InsideFileContext ifc = new InsideFileContext(ctx, lx);
 			while (true) {
 				Token tkn = lx.next();
 				if (tkn == null)
 					break;
-				if (tkn.isKeyword("include")) {
-					String str = ParserExpr.parseConstString(ctx.typeSystem, lx);
-					lx.requireNextKw(";");
-					findParseFile(ctx, hereParent, str);
-				} else if (tkn.isKeyword("addSearchPath")) {
-					String str = ParserExpr.parseConstString(ctx.typeSystem, lx);
-					lx.requireNextKw(";");
-					ctx.searchPaths.add(new File(hereParent, str));
-				} else {
-					try {
-						parseDeclaration(ctx.typeSystem, ctx.module, tkn, lx);
-					} catch (Exception ex) {
-						throw new RuntimeException("declaration of " + tkn + " at line " + tkn.lineNumber, ex);
+				// Needs to catch include exceptions
+				try {
+					if (tkn.isKeyword("include")) {
+						String str = ParserExpr.parseConstString(ifc);
+						lx.requireNextKw(";");
+						findParseFile(ctx, hereParent, str);
+					} else if (tkn.isKeyword("addSearchPath")) {
+						String str = ParserExpr.parseConstString(ifc);
+						lx.requireNextKw(";");
+						ctx.searchPaths.add(new File(hereParent, str));
+					} else {
+						parseDeclaration(ifc, tkn);
 					}
+				} catch (Exception ex) {
+					ctx.diags.error(tkn.lineNumber, "exception in declaration: ", ex);
 				}
 			}
 		} catch (Exception ex) {
@@ -117,7 +121,10 @@ public class Parser {
 		}
 	}
 
-	public static void parseDeclaration(TypeSystem ts, Scripts m, Token tkn, Lexer lx) {
+	public static void parseDeclaration(InsideFileContext ifc, Token tkn) {
+		TypeSystem ts = ifc.typeSystem;
+		Lexer lx = ifc.lexer;
+		Scripts m = ifc.module;
 		if (tkn.isKeyword("class")) {
 			String name = lx.requireNextID();
 			Token xtkn = lx.requireNext();
@@ -131,9 +138,9 @@ public class Parser {
 				}
 			} else {
 				lx.back();
-				int a = ParserExpr.parseConstInteger(ts, lx);
-				int b = ParserExpr.parseConstInteger(ts, lx);
-				int c = ParserExpr.parseConstInteger(ts, lx);
+				int a = ParserExpr.parseConstInteger(ifc);
+				int b = ParserExpr.parseConstInteger(ifc);
+				int c = ParserExpr.parseConstInteger(ifc);
 				RALType.Agent ag = ts.declareClass(new Classifier(a, b, c), name);
 				parseExtendsClauses(ts, ag, lx);
 			}
@@ -152,7 +159,7 @@ public class Parser {
 			if (rt instanceof RALType.Agent) {
 				lx.requireNextKw(".");
 				String fieldName = lx.requireNextID();
-				int ovSlot = ParserExpr.parseConstInteger(ts, lx);
+				int ovSlot = ParserExpr.parseConstInteger(ifc);
 				((RALType.Agent) rt).declareField(fieldName, fieldType, ovSlot);
 				lx.requireNextKw(";");
 			} else {
@@ -166,7 +173,7 @@ public class Parser {
 				if (!lx.optNextKw("->"))
 					lx.requireNextKw(":");
 				String msgName = lx.requireNextID();
-				int msgId = ParserExpr.parseConstInteger(ts, lx);
+				int msgId = ParserExpr.parseConstInteger(ifc);
 				((RALType.Agent) rt).declareMS(msgName, msgId, false);
 				lx.requireNextKw(";");
 			} else {
@@ -192,8 +199,8 @@ public class Parser {
 			if (!(possibleDivider.isKeyword(":") || possibleDivider.isKeyword("->"))) {
 				// Not providing a name so not declaring a message ID.
 				lx.back();
-				scriptId = ParserExpr.parseConstInteger(ts, lx);
-				stmt = ParserCode.parseStatement(ts, lx);
+				scriptId = ParserExpr.parseConstInteger(ifc);
+				stmt = ParserCode.parseStatement(ifc);
 			} else {
 				msgName = lx.requireNextID();
 				// If this form is followed by a { then we assume it to be a declaration.
@@ -202,14 +209,14 @@ public class Parser {
 				boolean isDeclaration = !chk.isKeyword("{");
 				lx.back();
 				if (isDeclaration) {
-					scriptId = ParserExpr.parseConstInteger(ts, lx);
+					scriptId = ParserExpr.parseConstInteger(ifc);
 					lx.requireNextKw(";");
 				} else {
 					Integer msgId = ac.lookupMSID(msgName, true);
 					if (msgId == null)
 						throw new RuntimeException("No such script ID: " + name + ":" + msgName);
 					scriptId = msgId;
-					stmt = ParserCode.parseStatement(ts, lx);
+					stmt = ParserCode.parseStatement(ifc);
 				}
 			}
 			if (stmt != null) {
@@ -221,9 +228,9 @@ public class Parser {
 				ac.declareMS(msgName, scriptId, true);
 			}
 		} else if (tkn.isKeyword("install")) {
-			m.addInstall(ParserCode.parseStatement(ts, lx));
+			m.addInstall(ParserCode.parseStatement(ifc));
 		} else if (tkn.isKeyword("remove")) {
-			m.addRemove(ParserCode.parseStatement(ts, lx));
+			m.addRemove(ParserCode.parseStatement(ifc));
 		} else if (tkn.isKeyword("macro")) {
 			boolean isStmtMacro = lx.requireNext().isKeyword("(");
 			lx.back();
@@ -231,24 +238,24 @@ public class Parser {
 				MacroArg[] rets = parseArgList(ts, lx, false);
 				String name = lx.requireNextID();
 				MacroArg[] args = parseArgList(ts, lx, true);
-				RALStatementUR rs = ParserCode.parseStatement(ts, lx);
+				RALStatementUR rs = ParserCode.parseStatement(ifc);
 				m.addMacro(name, args.length, new Macro(name, args, new RALStmtExprInverted(rets, rs)));
 			} else {
 				String name = lx.requireNextID();
 				MacroArg[] args = parseArgList(ts, lx, true);
-				RALExprUR rs = ParserExpr.parseExpr(ts, lx, false);
+				RALExprUR rs = ParserExpr.parseExpr(ifc, false);
 				m.addMacro(name, args.length, new Macro(name, args, rs));
 			}
 		} else if (tkn.isKeyword("overrideOwnr")) {
-			int scrId = ParserExpr.parseConstInteger(ts, lx);
+			int scrId = ParserExpr.parseConstInteger(ifc);
 			ts.overrideOwnr.put(scrId, ParserType.parseType(ts, lx));
 			lx.requireNextKw(";");
 		} else if (tkn.isKeyword("messageHook")) {
-			int scrId = ParserExpr.parseConstInteger(ts, lx);
+			int scrId = ParserExpr.parseConstInteger(ifc);
 			ts.messageHooks.add(scrId);
 			lx.requireNextKw(";");
 		} else if (tkn.isKeyword("assertConst")) {
-			RALConstant rc1 = ParserExpr.parseConst(ts, lx);
+			RALConstant rc1 = ParserExpr.parseConst(ifc);
 			if (!RALCondition.constToBool(rc1))
 				throw new RuntimeException("failed constant assert at " + tkn.lineNumber);
 		} else if (tkn.isKeyword(";")) {
@@ -258,7 +265,7 @@ public class Parser {
 			Token tx = lx.requireNext();
 			if (!tx.isKeyword("="))
 				throw new RuntimeException("unknown declaration " + tkn);
-			RALConstant cst = ParserExpr.parseConst(ts, lx);
+			RALConstant cst = ParserExpr.parseConst(ifc);
 			ts.declareConst(name, tkn.lineNumber, cst);
 			if (!lx.requireNext().isKeyword(";"))
 				throw new RuntimeException("constant termination weirdness");

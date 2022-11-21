@@ -6,8 +6,12 @@
  */
 package rals.lex;
 
-import java.io.IOException;
+import java.io.File;
 import java.io.InputStream;
+
+import rals.diag.DiagRecorder;
+import rals.diag.SrcPos;
+import rals.lex.Token.ID;
 
 /**
  * Big monolith.
@@ -26,7 +30,9 @@ public class Lexer {
 	private static final String OPERATORS = OPERATORS_BREAKING + OPERATORS_UNBREAKING;
 	private static final String BREAKERS = "\"\'" + LONERS + OPERATORS_BREAKING;
 
+	private File file;
 	private String fileName;
+
 	/**
 	 * Last comment encountered.
 	 * Can be reset to null by caller to consume a comment.
@@ -36,13 +42,17 @@ public class Lexer {
 	public int levelOfStringEmbedding = 0;
 	public int levelOfStringEmbeddingEscape = 0;
 
-	public Lexer(String fn, InputStream inp) {
+	public final DiagRecorder diags;
+
+	public Lexer(File f, String fn, InputStream inp, DiagRecorder d) {
 		byteHistory = new ByteHistory(inp);
+		file = f;
 		fileName = fn;
+		diags = d;
 	}
 
 	public SrcPos genLN() {
-		return new SrcPos(fileName, byteHistory.lineNumber);
+		return new SrcPos(file, fileName, byteHistory.lineNumber);
 	}
 
 	private int getNextByte() {
@@ -69,8 +79,10 @@ public class Lexer {
 					// Block comment.
 					while (true) {
 						b = getNextByte();
-						if (b == -1)
-							throw new RuntimeException("Unterminated block comment, starting at " + at);
+						if (b == -1) {
+							diags.error(at, "Unterminated block comment");
+							break;
+						}
 						if (b == '*') {
 							b = getNextByte();
 							if (b == '/') {
@@ -185,7 +197,9 @@ public class Lexer {
 				} catch (Exception ex) {
 					// nope
 				}
-				throw new RuntimeException("number-like not number at " + genLN());
+				SrcPos sp = genLN();
+				diags.error(sp, "number-like not number");
+				return new Token.ID(sp, str);
 			}
 		}
 		if (LONERS.indexOf(c) != -1) {
@@ -233,10 +247,13 @@ public class Lexer {
 		StringBuilder sb = new StringBuilder();
 		boolean escaping = false;
 		boolean endIsClusterStart = false;
+		SrcPos sp = genLN();
 		while (true) {
 			int c2 = getNextByte();
-			if (c2 == -1)
-				throw new RuntimeException("Unterminated string");
+			if (c2 == -1) {
+				diags.error(sp, "Unterminated string");
+				break;
+			}
 			if (escaping) {
 				if (c2 == 'r')
 					c2 = '\r';
@@ -263,9 +280,9 @@ public class Lexer {
 			}
 		}
 		if (isEmbedding) {
-			return new Token.StrEmb(genLN(), sb.toString(), startIsClusterEnd, endIsClusterStart);
+			return new Token.StrEmb(sp, sb.toString(), startIsClusterEnd, endIsClusterStart);
 		} else {
-			return new Token.Str(genLN(), sb.toString());
+			return new Token.Str(sp, sb.toString());
 		}
 	}
 

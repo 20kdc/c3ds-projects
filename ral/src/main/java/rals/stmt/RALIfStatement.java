@@ -10,9 +10,9 @@ import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.cond.RALCondition;
+import rals.diag.SrcPos;
 import rals.expr.RALConstant;
 import rals.expr.RALExprUR;
-import rals.lex.SrcPos;
 
 /**
  * The first conditional.

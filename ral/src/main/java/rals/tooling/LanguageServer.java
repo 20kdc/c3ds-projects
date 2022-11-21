@@ -6,26 +6,94 @@
  */
 package rals.tooling;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import rals.diag.Diag;
+import rals.diag.SrcPos;
+import rals.parser.IncludeParseContext;
+import rals.parser.Parser;
 
 /**
  * Language server logic.
  */
 public class LanguageServer implements ILSPCore {
+	public File uriToPath(String uri) {
+		if (uri.startsWith("file://"))
+			return new File(uri.substring(7));
+		return null;
+	}
+
+	public Diag[] getDiagnostics(File pathIfAny, String text) {
+		File assumedFilename = pathIfAny != null ? pathIfAny : new File("VIRTUAL_LSP_FILE.ral");
+		assumedFilename = assumedFilename.getAbsoluteFile();
+		try {
+			IncludeParseContext ipc = new IncludeParseContext();
+			ByteArrayInputStream bais = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+			if (pathIfAny != null)
+				ipc.included.add(pathIfAny);
+			Parser.parseFileInnards(ipc, assumedFilename, assumedFilename.getName(), bais);
+			LinkedList<Diag> finalDiagSet = new LinkedList<>();
+			for (Diag d : ipc.diags.diagnostics)
+				if (d.location.file.equals(assumedFilename))
+					finalDiagSet.add(d);
+			return finalDiagSet.toArray(new Diag[0]);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			String msg = "diagnostics exception: " + ex.toString();
+			// whoopsie!
+			return new Diag[] {
+				new Diag(Diag.Kind.Error, new SrcPos(assumedFilename, assumedFilename.getName(), 1), msg, msg)
+			};
+		}
+	}
+
+	public JSONObject srcPosToRange(SrcPos sp) {
+		int l = sp.line - 1;
+		return new JSONObject("{\"start\":{\"line\":" + l + ",\"character\":0},\"end\":{\"line\":" + l + ",\"character\":0}}"); 
+	}
+
+	public void regenDiagnostics(String uri, String text, LSPBaseProtocolLoop sendback) throws IOException {
+		JSONObject diagsUpdate = new JSONObject();
+		diagsUpdate.put("uri", uri);
+		JSONArray diagsContent = new JSONArray();
+		Diag[] gd = getDiagnostics(uriToPath(uri), text);
+		for (Diag d : gd) {
+			JSONObject diagJ = new JSONObject();
+			diagJ.put("range", srcPosToRange(d.location));
+			// lite-xl needs this to not malfunction
+			diagJ.put("severity", 1);
+			diagJ.put("message", d.shortText);
+			diagsContent.put(diagJ);
+		}
+		diagsUpdate.put("diagnostics", diagsContent);
+		sendback.sendNotification("textDocument/publishDiagnostics", diagsUpdate);
+	}
+
 	@Override
 	public void handleNotification(String method, JSONObject params, LSPBaseProtocolLoop sendback) throws IOException {
 		if (method.equals("textDocument/didOpen")) {
 			JSONObject actualParams = params.getJSONObject("textDocument");
 			String uri = actualParams.getString("uri");
-			JSONObject diagsUpdate = new JSONObject();
-			diagsUpdate.put("uri", uri);
-			JSONArray diagsContent = new JSONArray();
-			diagsContent.put(new JSONObject("{\"range\":{\"start\":{\"line\":1,\"character\":0},\"end\":{\"line\":1,\"character\":0}},\"message\":\"Hai\"}"));
-			diagsUpdate.put("diagnostics", diagsContent);
-			sendback.sendNotification("textDocument/publishDiagnostics", diagsUpdate);
+			regenDiagnostics(uri, actualParams.getString("text"), sendback);
+		} else if (method.equals("textDocument/didChange")) {
+			JSONObject ident = params.getJSONObject("textDocument");
+			String uri = ident.getString("uri");
+			JSONArray changes = params.getJSONArray("contentChanges");
+			String anyFullContent = null;
+			for (int i = 0; i < changes.length(); i++) {
+				JSONObject change = changes.getJSONObject(i);
+				if (!change.has("range"))
+					anyFullContent = change.getString("text");
+			}
+			if (anyFullContent != null)
+				regenDiagnostics(uri, anyFullContent, sendback);
 		}
 	}
 

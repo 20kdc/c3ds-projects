@@ -9,7 +9,7 @@ package rals.stmt;
 import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
-import rals.lex.SrcPos;
+import rals.diag.SrcPos;
 
 /**
  * Oh, now this is just WRONG.

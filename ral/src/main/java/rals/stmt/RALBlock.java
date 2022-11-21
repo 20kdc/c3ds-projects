@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
-import rals.lex.SrcPos;
+import rals.diag.SrcPos;
 
 /**
  * Block "statement"

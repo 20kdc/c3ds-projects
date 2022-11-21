@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import rals.diag.SrcPos;
 import rals.expr.*;
-import rals.lex.SrcPos;
 import rals.types.RALType.AgentClassifier;
 import rals.types.RALType.Opaque;
 

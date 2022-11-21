@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import rals.cond.*;
+import rals.diag.SrcPos;
 import rals.expr.*;
 import rals.expr.RALConstant.Int;
 import rals.expr.RALConstant.Str;
@@ -38,23 +39,23 @@ public class ParserExpr {
 				allOps.add(t);
 	}
 
-	public static RALConstant parseConst(TypeSystem ts, Lexer lx) {
-		RALExprUR ex = parseExpr(ts, lx, true);
-		RALConstant ex2 = ex.resolveConst(ts);
+	public static RALConstant parseConst(InsideFileContext ifc) {
+		RALExprUR ex = parseExpr(ifc, true);
+		RALConstant ex2 = ex.resolveConst(ifc.typeSystem);
 		if (ex2 == null)
 			throw new RuntimeException("Unable to resolve " + ex + " to constant expression.");
 		return ex2;
 	}
-	public static int parseConstInteger(TypeSystem ts, Lexer lx) {
-		RALConstant re = parseConst(ts, lx);
+	public static int parseConstInteger(InsideFileContext ifc) {
+		RALConstant re = parseConst(ifc);
 		if (re instanceof RALConstant.Int) {
 			return ((RALConstant.Int) re).value;
 		} else {
 			throw new RuntimeException("Expected constant integer.");
 		}
 	}
-	public static String parseConstString(TypeSystem ts, Lexer lx) {
-		RALConstant re = parseConst(ts, lx);
+	public static String parseConstString(InsideFileContext ifc) {
+		RALConstant re = parseConst(ifc);
 		if (re instanceof RALConstant.Str) {
 			return ((RALConstant.Str) re).value;
 		} else {
@@ -62,8 +63,9 @@ public class ParserExpr {
 		}
 	}
 
-	public static RALExprUR parseExpr(TypeSystem ts, Lexer lx, boolean must) {
-		RALExprUR firstAtom = parseExprFullAtomOrNull(ts, lx);
+	public static RALExprUR parseExpr(InsideFileContext ifc, boolean must) {
+		Lexer lx = ifc.lexer;
+		RALExprUR firstAtom = parseExprFullAtomOrNull(ifc);
 		if (firstAtom == null) {
 			if (must)
 				throw new RuntimeException("expected at least one expression around " + lx.genLN());
@@ -89,7 +91,7 @@ public class ParserExpr {
 				break;
 			}
 			ops.add(opId);
-			firstAtom = parseExprFullAtomOrNull(ts, lx);
+			firstAtom = parseExprFullAtomOrNull(ifc);
 			if (firstAtom == null)
 				throw new RuntimeException(opId + " without expression at " + tkn.lineNumber);
 			atoms.add(firstAtom);
@@ -162,14 +164,17 @@ public class ParserExpr {
 		throw new RuntimeException("No handler for binop " + string);
 	}
 
-	public static RALExprUR parseExprFullAtomOrNull(TypeSystem ts, Lexer lx) {
-		RALExprUR firstAtom = parseExprAtomOrNull(ts, lx);
+	public static RALExprUR parseExprFullAtomOrNull(InsideFileContext ifc) {
+		RALExprUR firstAtom = parseExprAtomOrNull(ifc);
 		if (firstAtom == null)
 			return null;
-		return parseExprSuffix(firstAtom, ts, lx);
+		return parseExprSuffix(firstAtom, ifc);
 	}
 
-	private static RALExprUR parseExprAtomOrNull(TypeSystem ts, Lexer lx) {
+	private static RALExprUR parseExprAtomOrNull(InsideFileContext ifc) {
+		TypeSystem ts = ifc.typeSystem;
+		Lexer lx = ifc.lexer;
+
 		Token tkn = lx.requireNext();
 		if (tkn instanceof Token.Int) {
 			return new RALConstant.Int(ts, ((Token.Int) tkn).value);
@@ -188,7 +193,7 @@ public class ParserExpr {
 			if (se.startIsClusterEnd)
 				return null;
 			// Ok, it's not. Use the same string embed parser as inline expressions use to start with.
-			Object[] objs = ParserCode.parseStringEmbed(ts, lx, true);
+			Object[] objs = ParserCode.parseStringEmbed(ifc, true);
 			// Then convert the strings to constants.
 			RALExprUR[] total = new RALExprUR[objs.length];
 			for (int i = 0; i < total.length; i++) {
@@ -204,12 +209,12 @@ public class ParserExpr {
 			// Because we ran into the string embed in the first place, this will have at least one value.
 			return new RALChainOp(RALChainOp.ADD_STR, total);
 		} else if (tkn.isKeyword("++") || tkn.isKeyword("--")) {
-			RALExprUR inner = parseExprAtomOrNull(ts, lx);
+			RALExprUR inner = parseExprAtomOrNull(ifc);
 			if (inner == null)
 				throw new RuntimeException("Looked like the setup for a pre-inc/dec, but was not :" + tkn);
 			return makeIncDec(tkn.lineNumber, ts, inner, true, tkn.isKeyword("++"));
 		} else if (tkn.isKeyword("&")) {
-			return new RALInlineExpr(ParserCode.parseStringEmbed(ts, lx, true));
+			return new RALInlineExpr(ParserCode.parseStringEmbed(ifc, true));
 		} else if (tkn.isKeyword("{")) {
 			// Oh, this gets weird...
 			RALBlock stmt = new RALBlock(tkn.lineNumber, false);
@@ -219,17 +224,17 @@ public class ParserExpr {
 				if (chk.isKeyword("}")) {
 					break;
 				} else if (chk.isKeyword("return")) {
-					ret = parseExpr(ts, lx, false);
+					ret = parseExpr(ifc, false);
 					lx.requireNextKw(";");
 					lx.requireNextKw("}");
 					break;
 				}
 				lx.back();
-				stmt.content.add(ParserCode.parseStatement(ts, lx));
+				stmt.content.add(ParserCode.parseStatement(ifc));
 			}
 			return new RALStmtExpr(stmt, ret);
 		} else if (tkn.isKeyword("(")) {
-			RALExprUR interior = parseExpr(ts, lx, false);
+			RALExprUR interior = parseExpr(ifc, false);
 			lx.requireNextKw(")");
 			return interior;
 		} else if (tkn.isKeyword("!")) {
@@ -237,13 +242,13 @@ public class ParserExpr {
 			// so the reason this uses parseExprFullAtomOrNull?
 			// "if !ownr.cubeOccupied {"
 			// the field access is a suffix, so...
-			RALExprUR interior = parseExprFullAtomOrNull(ts, lx);
+			RALExprUR interior = parseExprFullAtomOrNull(ifc);
 			if (interior == null)
 				throw new RuntimeException("Logical NOT with no expression at " + tkn.lineNumber);
 			return new RALCondInvert(interior);
 		} else if (tkn.isKeyword("~")) {
 			// bitwise NOT
-			RALExprUR interior = parseExprFullAtomOrNull(ts, lx);
+			RALExprUR interior = parseExprFullAtomOrNull(ifc);
 			if (interior == null)
 				throw new RuntimeException("Bitwise NOT with no expression at " + tkn.lineNumber);
 			return new RALBitInvert(interior);
@@ -271,7 +276,10 @@ public class ParserExpr {
 			return new RALStmtExpr(blk, id);
 		}
 	}
-	private static RALExprUR parseExprSuffix(RALExprUR base, TypeSystem ts, Lexer lx) {
+	private static RALExprUR parseExprSuffix(RALExprUR base, InsideFileContext ifc) {
+		TypeSystem ts = ifc.typeSystem;
+		Lexer lx = ifc.lexer;
+
 		while (true) {
 			Token tkn = lx.next();
 			if (tkn == null) {
@@ -287,7 +295,7 @@ public class ParserExpr {
 				base = makeIncDec(tkn.lineNumber, ts, base, false, tkn.isKeyword("++"));
 			} else if (tkn.isKeyword("(")) {
 				// Call.
-				RALExprUR group = ParserExpr.parseExpr(ts, lx, false);
+				RALExprUR group = ParserExpr.parseExpr(ifc, false);
 				lx.requireNextKw(")");
 				if (base instanceof RALAmbiguousID) {
 					base = new RALCall(((RALAmbiguousID) base).text, group);

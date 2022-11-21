@@ -86,6 +86,7 @@ public class Main {
 			} else {
 				throw new RuntimeException("?");
 			}
+			ic.diags.unwrap();
 			FileOutputStream fos = new FileOutputStream(outFile);
 			for (char chr : outText.toString().toCharArray())
 				fos.write(chr);

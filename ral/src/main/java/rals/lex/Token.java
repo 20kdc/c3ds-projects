@@ -8,6 +8,8 @@ package rals.lex;
 
 import java.util.HashSet;
 
+import rals.diag.SrcPos;
+
 /**
  * Text (may not be text) with a type and a position. 
  */
