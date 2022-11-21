@@ -3,7 +3,7 @@
 mvn package
 rm -f ral.zip
 cd target
-zip ../ral.zip cdsp-ral-0.666-SNAPSHOT.jar
+zip ../ral.zip cdsp-ral-0.666-SNAPSHOT-jar-with-dependencies.jar
 cd ../docs
 asciidoctor-pdf full.adoc -o full.pdf
 cd ..

@@ -9,11 +9,14 @@ package rals;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.LinkedList;
 
 import rals.parser.*;
 import rals.tooling.Injector;
+import rals.tooling.LSPBaseProtocolLoop;
+import rals.tooling.LanguageServer;
 
 /**
  * The RAL compiler.
@@ -22,7 +25,8 @@ import rals.tooling.Injector;
  */
 public class Main {
 	public static void main(String[] args) throws IOException {
-		System.out.println("RAL Compiler");
+		// IMPORTANT: All text printed before we go into LSP stdio mode needs to be on STDERR.
+		System.err.println("RAL Compiler");
 		String override = System.getenv("RAL_STDLIB_PATH");
 		if ((override != null) && (override.equals("")))
 			override = null;
@@ -47,10 +51,10 @@ public class Main {
 				// that's fine
 			}
 		}
-		System.out.println("Standard Library Directory: " + ralStandardLibrary);
+		System.err.println("Standard Library Directory: " + ralStandardLibrary);
 		if (!ralStandardLibrary.isDirectory()) {
-			System.out.println("Warning! Directory is missing. A directory called 'include' should be at or near the RAL jar file.");
-			System.out.println("Failing this, specify RAL_STDLIB_PATH in your environment.");
+			System.err.println("Warning! Directory is missing. A directory called 'include' should be at or near the RAL jar file.");
+			System.err.println("Failing this, specify RAL_STDLIB_PATH in your environment.");
 		}
 		// the rest!
 		if (args.length < 1) {
@@ -117,6 +121,12 @@ public class Main {
 		} else if (args[0].equals("cpxConnectionTest")) {
 			// be a little flashy with this
 			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest(ralStandardLibrary)));
+		} else if (args[0].equals("lsp")) {
+			new LSPBaseProtocolLoop(new LanguageServer()).run();
+		} else if (args[0].equals("lspLog")) {
+			FileOutputStream fos = new FileOutputStream(new File(ralStandardLibrary, "lsp.log"), true);
+			System.setErr(new PrintStream(fos, true, "UTF-8"));
+			new LSPBaseProtocolLoop(new LanguageServer()).run();
 		} else {
 			printHelp();
 		}
@@ -131,6 +141,7 @@ public class Main {
 		System.out.println("inject INPUT: Injects event scripts and install script");
 		System.out.println("injectEvents INPUT: Injects event scripts only");
 		System.out.println("injectRemove INPUT: Injects removal script");
+		System.out.println("lsp: Language server over standard input/output");
 		System.out.println("cpxConnectionTest: Test CPX connection");
 	}
 }
