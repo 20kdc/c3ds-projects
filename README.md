@@ -25,8 +25,11 @@ Some parts of this repository use third-party dependencies, in particular:
 
 + creature-monitor-gd uses Godot Engine ( https://godotengine.org/ ) and dependencies thereof.
 + natsue by default is packaged with sqlite-jdbc, mysql-connector-java, and dependencies of these (though these do not enter c3ds-projects binary releases).
++ RAL uses JSON-java ( https://github.com/stleary/JSON-java ) as part of LSP support.
 
 While c3ds-projects is under CC0, these dependencies are mostly not.
 
-Information on Godot's licensing is given as COPYING-godot.txt in release archives, in the form roughly as reported by Godot Engine's "Third-party Licenses" panel.
++ Information on Godot's licensing is given as COPYING-godot.txt in release archives, in the form roughly as reported by Godot Engine's "Third-party Licenses" panel.
++ Natsue binary builds include sqlite-jdbc, mysql-connector-java, and by extension Google's protobuf library.
++ JSON-java's `LICENSE` file is as follows: `Public Domain.`
 
