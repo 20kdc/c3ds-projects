@@ -18,6 +18,8 @@ import rals.diag.Diag;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
 import rals.diag.Diag.Kind;
+import rals.hcm.DummyHCMRecorder;
+import rals.hcm.IHCMRecorder;
 import rals.parser.IDocPath;
 import rals.parser.IncludeParseContext;
 import rals.parser.Parser;
@@ -36,7 +38,8 @@ public class LanguageServer implements ILSPCore {
 	public Diag[] getDiagnostics(IDocPath docPath) {
 		SrcPosFile docPathSPF = new SrcPosFile(null, docPath, docPath.getRootShortName());
 		try {
-			IncludeParseContext ipc = new IncludeParseContext(false);
+			IHCMRecorder hcm = new DummyHCMRecorder();
+			IncludeParseContext ipc = new IncludeParseContext(hcm, false);
 			ipc.searchPaths.add(stdLib);
 
 			// Actually compile this...

@@ -11,6 +11,8 @@ import java.util.LinkedList;
 
 import rals.code.Scripts;
 import rals.diag.DiagRecorder;
+import rals.hcm.DummyHCMRecorder;
+import rals.hcm.IHCMRecorder;
 import rals.types.TypeSystem;
 
 /**
@@ -19,11 +21,14 @@ import rals.types.TypeSystem;
 public class IncludeParseContext {
 	public final boolean outputIncludesToErr;
 	public final DiagRecorder diags = new DiagRecorder();
+	public final IHCMRecorder hcm;
 	public final LinkedList<IDocPath> searchPaths = new LinkedList<>();
 	public final HashSet<IDocPath> included = new HashSet<>();
 	public final TypeSystem typeSystem = new TypeSystem();
 	public final Scripts module = new Scripts();
-	public IncludeParseContext(boolean err) {
+
+	public IncludeParseContext(IHCMRecorder h, boolean err) {
 		outputIncludesToErr = err;
+		hcm = h;
 	}
 }

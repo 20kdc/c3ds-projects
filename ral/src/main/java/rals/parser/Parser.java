@@ -20,6 +20,7 @@ import rals.cond.*;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
 import rals.expr.*;
+import rals.hcm.DummyHCMRecorder;
 import rals.lex.*;
 import rals.stmt.*;
 import rals.types.*;
@@ -28,18 +29,20 @@ import rals.types.*;
  * Parser, but also discards any hope of this being an AST...
  */
 public class Parser {
-	public static IncludeParseContext run(IDocPath stdlib, String path) throws IOException {
-		IDocPath init = new FileDocPath(new File(path));
-		IncludeParseContext ic = new IncludeParseContext(true);
+	private static IncludeParseContext newContext(IDocPath stdlib) throws IOException {
+		IncludeParseContext ic = new IncludeParseContext(new DummyHCMRecorder(), true);
 		ic.searchPaths.add(stdlib);
 		findParseFile(ic, null, "std/compiler_helpers.ral", null);
+		return ic;
+	}
+	public static IncludeParseContext run(IDocPath stdlib, String path) throws IOException {
+		IncludeParseContext ic = newContext(stdlib);
+		IDocPath init = new FileDocPath(new File(path));
 		parseFileAt(ic, new SrcPosFile(null, init, path));
 		return ic;
 	}
 	public static String runCPXConnTest(IDocPath stdlib) throws IOException {
-		IncludeParseContext ic = new IncludeParseContext(true);
-		ic.searchPaths.add(stdlib);
-		findParseFile(ic, null, "std/compiler_helpers.ral", null);
+		IncludeParseContext ic = newContext(stdlib);
 		findParseFile(ic, null, "std/cpx_connection_test.ral", null);
 		StringBuilder sb = new StringBuilder();
 		ic.module.compileInstall(new OuterCompileContext(sb, ic.typeSystem, ic.diags, false));
