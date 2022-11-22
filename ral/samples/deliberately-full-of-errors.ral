@@ -13,6 +13,8 @@ thisIsNotAValidDeclaration;
 
 install {
 	)))
+	// Put an error in the middle of a bunch of stuff to see how well positional errors work today
+	let alphabetStew = 37; alphabetStew = "IAmACompileError"; alphabetStew = 10;
 }
 
 assertConst aFalse == 0;

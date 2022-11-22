@@ -13,6 +13,7 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.LinkedList;
 
+import rals.code.CodeWriter;
 import rals.code.OuterCompileContext;
 import rals.parser.*;
 import rals.tooling.Injector;
@@ -91,8 +92,7 @@ public class Main {
 			}
 			ic.diags.unwrap();
 			FileOutputStream fos = new FileOutputStream(outFile);
-			for (char chr : outText.toString().toCharArray())
-				fos.write(chr);
+			fos.write(outText.toString().getBytes(CodeWriter.CAOS_CHARSET));
 			fos.close();
 			System.out.println("Compile completed");
 		} else if (args[0].equals("inject") || args[0].equals("injectEvents") || args[0].equals("injectRemove")) {

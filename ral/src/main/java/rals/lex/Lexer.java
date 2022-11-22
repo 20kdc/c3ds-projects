@@ -8,6 +8,7 @@ package rals.lex;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.Reader;
 
 import rals.diag.DiagRecorder;
 import rals.diag.SrcPos;
@@ -18,7 +19,7 @@ import rals.lex.Token.ID;
  * Big monolith.
  */
 public class Lexer {
-	private ByteHistory byteHistory;
+	private CharHistory charHistory;
 
 	private int tokenHistoryPtr = 3;
 	private Token[] tokenHistory = new Token[3];
@@ -44,22 +45,26 @@ public class Lexer {
 
 	public final DiagRecorder diags;
 
-	public Lexer(SrcPosFile fn, InputStream inp, DiagRecorder d) {
-		byteHistory = new ByteHistory(inp);
+	public Lexer(SrcPosFile fn, Reader inp, DiagRecorder d) {
+		charHistory = new CharHistory(inp, 3);
 		file = fn;
 		diags = d;
 	}
 
 	public SrcPos genLN() {
-		return new SrcPos(file, byteHistory.lineNumber);
+		return charHistory.genLN(file);
 	}
 
+	/**
+	 * This now returns a char rather than a byte.
+	 * Since the conversion was done by cast anyway, this isn't a problem...
+	 */
 	private int getNextByte() {
-		return byteHistory.getNextByte();
+		return charHistory.getNextChar();
 	}
 
 	private void backByte() {
-		byteHistory.backByte();
+		charHistory.backChar();
 	}
 
 	private boolean consumeWS() {

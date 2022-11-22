@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 import rals.code.*;
@@ -91,7 +93,7 @@ public class Parser {
 	 */
 	public static void parseFileInnards(IncludeParseContext ctx, File hereParent, SrcPosFile spf, InputStream fis) throws IOException {
 		try {
-			Lexer lx = new Lexer(spf, fis, ctx.diags);
+			Lexer lx = new Lexer(spf, new InputStreamReader(fis, StandardCharsets.UTF_8), ctx.diags);
 			InsideFileContext ifc = new InsideFileContext(ctx, lx);
 			while (true) {
 				Token tkn = lx.next();

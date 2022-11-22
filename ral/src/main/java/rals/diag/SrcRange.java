@@ -6,43 +6,29 @@
  */
 package rals.diag;
 
-import java.io.File;
-
 import org.json.JSONObject;
 
 /**
- * Position in source code.
- * This is represented in language server format.
+ * Range in source code.
  */
-public class SrcPos {
+public class SrcRange {
 	public final SrcPosFile file;
-	public final int line, character;
-	public SrcPos(SrcPosFile f, int l, int c) {
-		file = f;
-		line = l;
-		character = c;
-	}
-
-	@Override
-	public String toString() {
-		return file + ":" + (line + 1);
+	public final SrcPos start, end;
+	public SrcRange(SrcPos s, SrcPos e) {
+		if (s.file != e.file)
+			throw new RuntimeException("Range start and end must have same SrcPosFile");
+		file = s.file;
+		start = s;
+		end = e;
 	}
 
 	/**
-	 * Translates this to a Language Server Protocol UTF-16 range.
-	 */
-	public JSONObject toLSPPosition() {
-		return new JSONObject("{\"line\":" + line + ",\"character\":" + character + "}"); 
-	}
-
-	/**
-	 * Translates this to a Language Server Protocol UTF-16 range.
+	 * Translates this to a Language Server Protocol Range.
 	 */
 	public JSONObject toLSPRange() {
 		JSONObject range = new JSONObject();
-		JSONObject pos = toLSPPosition();
-		range.put("start", pos);
-		range.put("end", pos);
+		range.put("start", start.toLSPPosition());
+		range.put("end", end.toLSPPosition());
 		return range;
 	}
 }

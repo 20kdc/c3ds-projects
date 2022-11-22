@@ -75,14 +75,9 @@ public class LanguageServer implements ILSPCore {
 			// whoopsie!
 			SrcPosFile synth = new SrcPosFile(null, assumedFilename, assumedFilename.getName());
 			return new Diag[] {
-				new Diag(Diag.Kind.Error, new SrcPos(synth, 1), msg, msg)
+				new Diag(Diag.Kind.Error, new SrcPos(synth, 0, 0), msg, msg)
 			};
 		}
-	}
-
-	public JSONObject srcPosToRange(SrcPos sp) {
-		int l = sp.line - 1;
-		return new JSONObject("{\"start\":{\"line\":" + l + ",\"character\":0},\"end\":{\"line\":" + l + ",\"character\":0}}"); 
 	}
 
 	public void regenDiagnostics(String uri, String text, LSPBaseProtocolLoop sendback) throws IOException {
@@ -92,7 +87,7 @@ public class LanguageServer implements ILSPCore {
 		Diag[] gd = getDiagnostics(uriToPath(uri), text);
 		for (Diag d : gd) {
 			JSONObject diagJ = new JSONObject();
-			diagJ.put("range", srcPosToRange(d.location));
+			diagJ.put("range", d.location.toLSPRange());
 			// lite-xl needs this to not malfunction
 			diagJ.put("severity", 1);
 			diagJ.put("message", d.shortText);
