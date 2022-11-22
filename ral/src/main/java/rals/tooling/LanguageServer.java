@@ -6,10 +6,7 @@
  */
 package rals.tooling;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -21,6 +18,7 @@ import rals.diag.Diag;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
 import rals.diag.Diag.Kind;
+import rals.parser.IDocPath;
 import rals.parser.IncludeParseContext;
 import rals.parser.Parser;
 
@@ -28,33 +26,30 @@ import rals.parser.Parser;
  * Language server logic.
  */
 public class LanguageServer implements ILSPCore {
-	public File uriToPath(String uri) {
-		if (uri.startsWith("file://"))
-			return new File(uri.substring(7));
-		return null;
+	public final LSPDocRepo docRepo = new LSPDocRepo();
+	public final IDocPath stdLib;
+
+	public LanguageServer(IDocPath sl) {
+		stdLib = sl;
 	}
 
-	public Diag[] getDiagnostics(File pathIfAny, String text) {
-		File assumedFilename = pathIfAny != null ? pathIfAny : new File("VIRTUAL_LSP_FILE.ral");
-		assumedFilename = assumedFilename.getAbsoluteFile();
+	public Diag[] getDiagnostics(IDocPath docPath) {
+		SrcPosFile docPathSPF = new SrcPosFile(null, docPath, docPath.getRootShortName());
 		try {
-			IncludeParseContext ipc = new IncludeParseContext();
-			ByteArrayInputStream bais = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
-			if (pathIfAny != null)
-				ipc.included.add(pathIfAny);
-			SrcPosFile spp = new SrcPosFile(null, assumedFilename, assumedFilename.getName());
+			IncludeParseContext ipc = new IncludeParseContext(false);
+			ipc.searchPaths.add(stdLib);
 
 			// Actually compile this...
-			Parser.parseFileInnards(ipc, assumedFilename.getParentFile(), spp, bais);
+			Parser.parseFileAt(ipc, docPathSPF);
 			ipc.module.compile(new OuterCompileContext(new StringBuilder(), ipc.typeSystem, ipc.diags, false));
 
 			LinkedList<Diag> finalDiagSet = new LinkedList<>();
-			HashSet<File> includeWarnings = new HashSet<>();
+			HashSet<IDocPath> includeWarnings = new HashSet<>();
 			for (Diag d : ipc.diags.diagnostics) {
-				if (d.location.file.absoluteFile.equals(assumedFilename)) {
+				if (d.location.file.docPath.equals(docPath)) {
 					finalDiagSet.add(d);
 				} else if (d.kind == Kind.Error) {
-					File originalSource = d.location.file.absoluteFile;
+					IDocPath originalSource = d.location.file.docPath;
 					String originalSourceName = d.location.file.shortName;
 					// set checkMe to the location of the include
 					SrcPos checkMe = d.location;
@@ -73,18 +68,17 @@ public class LanguageServer implements ILSPCore {
 			ex.printStackTrace();
 			String msg = "diagnostics exception: " + ex.toString();
 			// whoopsie!
-			SrcPosFile synth = new SrcPosFile(null, assumedFilename, assumedFilename.getName());
 			return new Diag[] {
-				new Diag(Diag.Kind.Error, new SrcPos(synth, 0, 0, 0), msg, msg)
+				new Diag(Diag.Kind.Error, new SrcPos(docPathSPF, 0, 0, 0), msg, msg)
 			};
 		}
 	}
 
-	public void regenDiagnostics(String uri, String text, LSPBaseProtocolLoop sendback) throws IOException {
+	public void regenDiagnostics(String uri, LSPBaseProtocolLoop sendback) throws IOException {
 		JSONObject diagsUpdate = new JSONObject();
 		diagsUpdate.put("uri", uri);
 		JSONArray diagsContent = new JSONArray();
-		Diag[] gd = getDiagnostics(uriToPath(uri), text);
+		Diag[] gd = getDiagnostics(docRepo.getDocPath(uri));
 		for (Diag d : gd) {
 			JSONObject diagJ = new JSONObject();
 			diagJ.put("range", d.location.toLSPRange());
@@ -101,11 +95,12 @@ public class LanguageServer implements ILSPCore {
 	public void handleNotification(String method, JSONObject params, LSPBaseProtocolLoop sendback) throws IOException {
 		if (method.equals("textDocument/didOpen")) {
 			JSONObject actualParams = params.getJSONObject("textDocument");
-			String uri = actualParams.getString("uri");
-			regenDiagnostics(uri, actualParams.getString("text"), sendback);
+			String givenURI = actualParams.getString("uri");
+			docRepo.storeShadow(docRepo.getDocPath(givenURI), actualParams.getString("text"));
+			regenDiagnostics(givenURI, sendback);
 		} else if (method.equals("textDocument/didChange")) {
 			JSONObject ident = params.getJSONObject("textDocument");
-			String uri = ident.getString("uri");
+			String givenURI = ident.getString("uri");
 			JSONArray changes = params.getJSONArray("contentChanges");
 			String anyFullContent = null;
 			for (int i = 0; i < changes.length(); i++) {
@@ -113,8 +108,14 @@ public class LanguageServer implements ILSPCore {
 				if (!change.has("range"))
 					anyFullContent = change.getString("text");
 			}
-			if (anyFullContent != null)
-				regenDiagnostics(uri, anyFullContent, sendback);
+			if (anyFullContent != null) {
+				docRepo.storeShadow(docRepo.getDocPath(givenURI), anyFullContent);
+				regenDiagnostics(givenURI, sendback);
+			}
+		} else if (method.equals("textDocument/didClose")) {
+			JSONObject ident = params.getJSONObject("textDocument");
+			String givenURI = ident.getString("uri");
+			docRepo.storeShadow(docRepo.getDocPath(givenURI), null);
 		}
 	}
 
@@ -132,8 +133,13 @@ public class LanguageServer implements ILSPCore {
 			diag.put("interFileDependencies", true);
 			diag.put("workspaceDiagnostics", false);
 			caps.put("diagnosticProvider", diag);
+			caps.put("hoverProvider", true);
 			res.put("capabilities", caps);
 			return res;
+		} else if (method.equals("textDocument/hover")) {
+			JSONObject test = new JSONObject();
+			test.put("contents", "A rabbit.");
+			return test;
 		}
 		throw new LSPMethodNotFoundException(method);
 	}

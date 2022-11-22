@@ -8,6 +8,8 @@ package rals.diag;
 
 import java.io.File;
 
+import rals.parser.IDocPath;
+
 /**
  * Details about a source file.
  */
@@ -17,18 +19,17 @@ public class SrcPosFile {
 	 */
 	public final SrcPos includedFrom;
 	/**
-	 * Absolute file. This is expected to AT LEAST compare properly.
-	 * Some Parser functions treat this as real.
+	 * Handle to access the file.
 	 */
-	public final File absoluteFile;
+	public final IDocPath docPath;
 	/**
 	 * Short name for user display.
 	 */
 	public final String shortName;
 
-	public SrcPosFile(SrcPos f, File a, String s) {
+	public SrcPosFile(SrcPos f, IDocPath rh, String s) {
 		includedFrom = f;
-		absoluteFile = a;
+		docPath = rh;
 		shortName = s;
 	}
 

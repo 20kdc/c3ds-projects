@@ -6,7 +6,6 @@
  */
 package rals.parser;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -18,9 +17,13 @@ import rals.types.TypeSystem;
  * Context for includes/searchpath stuff
  */
 public class IncludeParseContext {
+	public final boolean outputIncludesToErr;
 	public final DiagRecorder diags = new DiagRecorder();
-	public final LinkedList<File> searchPaths = new LinkedList<>();
-	public final HashSet<File> included = new HashSet<>();
+	public final LinkedList<IDocPath> searchPaths = new LinkedList<>();
+	public final HashSet<IDocPath> included = new HashSet<>();
 	public final TypeSystem typeSystem = new TypeSystem();
 	public final Scripts module = new Scripts();
+	public IncludeParseContext(boolean err) {
+		outputIncludesToErr = err;
+	}
 }

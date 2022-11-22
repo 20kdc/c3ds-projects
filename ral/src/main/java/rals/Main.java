@@ -58,6 +58,7 @@ public class Main {
 			System.err.println("Warning! Directory is missing. A directory called 'include' should be at or near the RAL jar file.");
 			System.err.println("Failing this, specify RAL_STDLIB_PATH in your environment.");
 		}
+		IDocPath stdLibDP = new FileDocPath(ralStandardLibrary);
 		// the rest!
 		if (args.length < 1) {
 			printHelp();
@@ -73,7 +74,7 @@ public class Main {
 				return;
 			}
 			File outFile = new File(args[2]);
-			IncludeParseContext ic = Parser.run(ralStandardLibrary, args[1]);
+			IncludeParseContext ic = Parser.run(stdLibDP, args[1]);
 			StringBuilder outText = new StringBuilder();
 			OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
 			OuterCompileContext cctxDbg = new OuterCompileContext(outText, ic.typeSystem, ic.diags, true);
@@ -100,7 +101,7 @@ public class Main {
 				printHelp();
 				return;
 			}
-			IncludeParseContext ic = Parser.run(ralStandardLibrary, args[1]);
+			IncludeParseContext ic = Parser.run(stdLibDP, args[1]);
 			LinkedList<String> queuedRequests = new LinkedList<>();
 			if (args[0].equals("inject")) {
 				// events
@@ -129,13 +130,13 @@ public class Main {
 				System.out.println(Injector.cpxRequest(req));
 		} else if (args[0].equals("cpxConnectionTest")) {
 			// be a little flashy with this
-			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest(ralStandardLibrary)));
+			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest(stdLibDP)));
 		} else if (args[0].equals("lsp")) {
-			new LSPBaseProtocolLoop(new LanguageServer()).run();
+			new LSPBaseProtocolLoop(new LanguageServer(stdLibDP)).run();
 		} else if (args[0].equals("lspLog")) {
 			FileOutputStream fos = new FileOutputStream(new File(ralStandardLibrary, "lsp.log"), true);
 			System.setErr(new PrintStream(fos, true, "UTF-8"));
-			new LSPBaseProtocolLoop(new LanguageServer()).run();
+			new LSPBaseProtocolLoop(new LanguageServer(stdLibDP)).run();
 		} else {
 			printHelp();
 		}

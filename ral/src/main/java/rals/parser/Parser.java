@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
@@ -27,16 +28,16 @@ import rals.types.*;
  * Parser, but also discards any hope of this being an AST...
  */
 public class Parser {
-	public static IncludeParseContext run(File stdlib, String path) throws IOException {
-		File init = new File(path);
-		IncludeParseContext ic = new IncludeParseContext();
+	public static IncludeParseContext run(IDocPath stdlib, String path) throws IOException {
+		IDocPath init = new FileDocPath(new File(path));
+		IncludeParseContext ic = new IncludeParseContext(true);
 		ic.searchPaths.add(stdlib);
 		findParseFile(ic, null, "std/compiler_helpers.ral", null);
-		parseFileAt(ic, new SrcPosFile(null, init.getAbsoluteFile(), path));
+		parseFileAt(ic, new SrcPosFile(null, init, path));
 		return ic;
 	}
-	public static String runCPXConnTest(File stdlib) throws IOException {
-		IncludeParseContext ic = new IncludeParseContext();
+	public static String runCPXConnTest(IDocPath stdlib) throws IOException {
+		IncludeParseContext ic = new IncludeParseContext(true);
 		ic.searchPaths.add(stdlib);
 		findParseFile(ic, null, "std/compiler_helpers.ral", null);
 		findParseFile(ic, null, "std/cpx_connection_test.ral", null);
@@ -50,23 +51,25 @@ public class Parser {
 	 * Finds and parses a file.
 	 * Does do the include sanity check.
 	 */
-	public static void findParseFile(IncludeParseContext ctx, File relTo, String inc, SrcPos incFrom) throws IOException {
-		LinkedList<File> attempts = new LinkedList<>();
+	public static void findParseFile(IncludeParseContext ctx, IDocPath relTo, String inc, SrcPos incFrom) throws IOException {
+		LinkedList<IDocPath> attempts = new LinkedList<>();
 		// relative path
 		if (relTo != null) {
-			File f = new File(relTo, inc);
-			attempts.add(f);
+			IDocPath f = relTo.getRelative(inc);
+			if (f != null)
+				attempts.add(f);
 		}
 		// search paths
-		for (File sp : ctx.searchPaths) {
-			File f = new File(sp, inc);
-			attempts.add(f);
+		for (IDocPath sp : ctx.searchPaths) {
+			IDocPath f = sp.getRelative(inc);
+			if (f != null)
+				attempts.add(f);
 		}
 		// now attempt them all
-		for (File f : attempts) {
-			if (!f.exists())
+		for (IDocPath f : attempts) {
+			if (!f.isFile())
 				continue;
-			parseFileAt(ctx, new SrcPosFile(incFrom, f.getAbsoluteFile(), inc));
+			parseFileAt(ctx, new SrcPosFile(incFrom, f, inc));
 			return;
 		}
 		throw new RuntimeException("Ran out of search paths trying to find " + inc + " from " + relTo + ", tried: " + attempts);
@@ -78,12 +81,13 @@ public class Parser {
 	 */
 	public static void parseFileAt(IncludeParseContext ctx, SrcPosFile fileId) throws IOException {
 		// It's critically important we do this because otherwise getParentFile returns null.
-		if (ctx.included.contains(fileId.absoluteFile))
+		if (ctx.included.contains(fileId.docPath))
 			return;
-		ctx.included.add(fileId.absoluteFile);
-		System.err.println("include: " + fileId.shortName);
-		try (FileInputStream fis = new FileInputStream(fileId.absoluteFile)) {
-			parseFileInnards(ctx, fileId.absoluteFile.getParentFile(), fileId, fis);
+		ctx.included.add(fileId.docPath);
+		if (ctx.outputIncludesToErr)
+			System.err.println("include: " + fileId.shortName);
+		try (Reader r = fileId.docPath.open()) {
+			parseFileInnards(ctx, fileId.docPath.getRelative(".."), fileId, r);
 		}
 	}
 
@@ -91,9 +95,9 @@ public class Parser {
 	 * Parses a file with the given parent (for includes), SrcPosFile (for errors), and input stream.
 	 * Does NOT do the include sanity check.
 	 */
-	public static void parseFileInnards(IncludeParseContext ctx, File hereParent, SrcPosFile spf, InputStream fis) throws IOException {
+	public static void parseFileInnards(IncludeParseContext ctx, IDocPath hereParent, SrcPosFile spf, Reader r) throws IOException {
 		try {
-			Lexer lx = new Lexer(spf, new InputStreamReader(fis, StandardCharsets.UTF_8), ctx.diags);
+			Lexer lx = new Lexer(spf, r, ctx.diags);
 			InsideFileContext ifc = new InsideFileContext(ctx, lx);
 			while (true) {
 				Token tkn = lx.next();
@@ -108,7 +112,9 @@ public class Parser {
 					} else if (tkn.isKeyword("addSearchPath")) {
 						String str = ParserExpr.parseConstString(ifc);
 						lx.requireNextKw(";");
-						ctx.searchPaths.add(new File(hereParent, str));
+						IDocPath possible = hereParent.getRelative(str);
+						if (possible != null)
+							ctx.searchPaths.add(possible);
 					} else {
 						parseDeclaration(ifc, tkn);
 					}
