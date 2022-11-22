@@ -14,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import rals.code.OuterCompileContext;
+import rals.code.Scripts;
 import rals.diag.Diag;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
@@ -44,7 +45,9 @@ public class LanguageServer implements ILSPCore {
 
 			// Actually compile this...
 			Parser.parseFileAt(ipc, docPathSPF);
-			ipc.module.compile(new OuterCompileContext(new StringBuilder(), ipc.typeSystem, ipc.diags, false));
+			Scripts scr = ipc.module.resolve(ipc.typeSystem, ipc.diags);
+			// This shouldn't really be necessary, but do it to be safe.
+			scr.compile(new OuterCompileContext(new StringBuilder(), ipc.typeSystem, ipc.diags, false));
 
 			LinkedList<Diag> finalDiagSet = new LinkedList<>();
 			HashSet<IDocPath> includeWarnings = new HashSet<>();

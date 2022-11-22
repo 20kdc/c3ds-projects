@@ -45,7 +45,8 @@ public class Parser {
 		IncludeParseContext ic = newContext(stdlib);
 		findParseFile(ic, null, "std/cpx_connection_test.ral", null);
 		StringBuilder sb = new StringBuilder();
-		ic.module.compileInstall(new OuterCompileContext(sb, ic.typeSystem, ic.diags, false));
+		Scripts scr = ic.module.resolve(ic.typeSystem, ic.diags);
+		scr.compileInstall(new OuterCompileContext(sb, ic.typeSystem, ic.diags, false));
 		ic.diags.unwrap();
 		return sb.toString();
 	}

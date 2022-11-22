@@ -6,14 +6,17 @@
  */
 package rals.code;
 
+import rals.diag.DiagRecorder;
+import rals.types.TypeSystem;
+
 /**
  * Responsible for holding VA handles.
  */
 public class CompileContext extends CompileContextNW {
 	public final CodeWriter writer;
 
-	public CompileContext(ScriptContext sc, CodeWriter cw) {
-		super(sc);
+	public CompileContext(TypeSystem ts, Scripts m, DiagRecorder d, CodeWriter cw) {
+		super(ts, m, d);
 		writer = cw;
 	}
 

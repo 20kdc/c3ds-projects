@@ -19,7 +19,7 @@ import rals.types.*;
  */
 public class CompileContextNW implements AutoCloseable, IVAAllocator {
 	public final TypeSystem typeSystem;
-	public final ScriptsUR module;
+	public final Scripts module;
 	public final HashMap<IVAHandle, Integer> heldVAHandles = new HashMap<>();
 	public final HashMap<IEHHandle, RALExprSlice> heldExprHandles = new HashMap<>();
 	public final ScopedVAAllocator alloc;
@@ -40,10 +40,10 @@ public class CompileContextNW implements AutoCloseable, IVAAllocator {
 	 */
 	public String breakLabel, breakBool;
 
-	protected CompileContextNW(ScriptContext sc) {
-		typeSystem = sc.typeSystem;
-		module = sc.module;
-		diags = sc.diags;
+	protected CompileContextNW(TypeSystem ts, Scripts m, DiagRecorder d) {
+		typeSystem = ts;
+		module = m;
+		diags = d;
 		labelAllocator = new AtomicInteger();
 		subUserTrackingParent = null;
 		// create the VA allocator

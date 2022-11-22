@@ -15,6 +15,7 @@ import java.util.LinkedList;
 
 import rals.code.CodeWriter;
 import rals.code.OuterCompileContext;
+import rals.code.Scripts;
 import rals.parser.*;
 import rals.tooling.Injector;
 import rals.tooling.LSPBaseProtocolLoop;
@@ -78,16 +79,17 @@ public class Main {
 			StringBuilder outText = new StringBuilder();
 			OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
 			OuterCompileContext cctxDbg = new OuterCompileContext(outText, ic.typeSystem, ic.diags, true);
+			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags);
 			if (args[0].equals("compile")) {
-				ic.module.compile(cctx);
+				resolvedCode.compile(cctx);
 			} else if (args[0].equals("compileDebug")) {
-				ic.module.compile(cctxDbg);
+				resolvedCode.compile(cctxDbg);
 			} else if (args[0].equals("compileInstall")) {
-				ic.module.compileInstall(cctx);
+				resolvedCode.compileInstall(cctx);
 			} else if (args[0].equals("compileEvents")) {
-				ic.module.compileEvents(cctx);
+				resolvedCode.compileEvents(cctx);
 			} else if (args[0].equals("compileRemove")) {
-				ic.module.compileRemove(cctx);
+				resolvedCode.compileRemove(cctx);
 			} else {
 				throw new RuntimeException("?");
 			}
@@ -103,24 +105,23 @@ public class Main {
 			}
 			IncludeParseContext ic = Parser.run(stdLibDP, args[1]);
 			LinkedList<String> queuedRequests = new LinkedList<>();
+			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags);
 			if (args[0].equals("inject")) {
 				// events
-				ic.module.compileEventsForInject(queuedRequests, ic.typeSystem, ic.diags);
+				resolvedCode.compileEventsForInject(queuedRequests, ic.typeSystem, ic.diags);
 				// install
 				StringBuilder outText = new StringBuilder();
 				outText.append("execute\n");
 				OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
-				ic.module.compileInstall(cctx);
-				ic.diags.unwrap();
+				resolvedCode.compileInstall(cctx);
 				queuedRequests.add(outText.toString());
 			} else if (args[0].equals("injectEvents")) {
-				ic.module.compileEventsForInject(queuedRequests, ic.typeSystem, ic.diags);
+				resolvedCode.compileEventsForInject(queuedRequests, ic.typeSystem, ic.diags);
 			} else if (args[0].equals("injectRemove")) {
 				StringBuilder outText = new StringBuilder();
 				outText.append("execute\n");
 				OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
-				ic.module.compileRemove(cctx);
-				ic.diags.unwrap();
+				resolvedCode.compileRemove(cctx);
 				queuedRequests.add(outText.toString());
 			} else {
 				throw new RuntimeException("?");

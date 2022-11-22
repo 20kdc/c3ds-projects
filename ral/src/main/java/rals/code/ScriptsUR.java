@@ -13,6 +13,7 @@ import java.util.Map;
 import rals.diag.DiagRecorder;
 import rals.expr.RALCallable;
 import rals.stmt.RALBlock;
+import rals.stmt.RALInlineStatement;
 import rals.stmt.RALStatement;
 import rals.stmt.RALStatementUR;
 import rals.types.RALType;
@@ -47,111 +48,40 @@ public class ScriptsUR {
 		res.addMacro(count, c);
 	}
 
-	/**
-	 * Compiles the module's install script.
-	 */
-	public void compileInstall(OuterCompileContext ctx) {
-		TypeSystem ts = ctx.typeSystem;
-		if (installScript != null) {
-			ScriptContext scr = new ScriptContext(ts, this, ctx.diags, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
-			compile(ctx.out, scr, installScript, 0, ctx.debug);
-		}
-	}
+	public Scripts resolve(TypeSystem ts, DiagRecorder diags) {
+		Scripts scripts = new Scripts();
 
-	/**
-	 * Compiles the module's event scripts.
-	 */
-	public void compileEvents(OuterCompileContext ctx) {
+		ScriptContext installScriptCtx = new ScriptContext(ts, this, diags, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
+		scripts.installScript = resolveStmt(installScriptCtx, installScript);
+
 		for (Map.Entry<ScriptIdentifier, RALStatementUR> eventScript : eventScripts.entrySet()) {
 			ScriptIdentifier k = eventScript.getKey();
-			ctx.out.append(" * ");
-			RALType.AgentClassifier type = ctx.typeSystem.byClassifier(k.classifier);
-			ctx.out.append(type.typeName);
-			String msgName = type.lookupMSName(k.script, true);
-			if (msgName != null) {
-				ctx.out.append(":");
-				ctx.out.append(msgName);
+			RALStatementUR v = eventScript.getValue();
+			RALType oOwnr = ts.byClassifier(k.classifier);
+			RALType oFrom = ts.gAny;
+			RALType oP1 = ts.gAny;
+			RALType oP2 = ts.gAny;
+			RALType override = ts.overrideOwnr.get(k.script);
+			if (override != null) {
+				oOwnr = override;
+				oFrom = oOwnr;
 			}
-			ctx.out.append(" ");
-			ctx.out.append(k.script);
-			ctx.out.append("\n");
-			ctx.out.append(k.toScrpLine());
-			ctx.out.append("\n");
-			compileEventContents(ctx, k);
-			ctx.out.append("endm\n");
+			ScriptContext scr = new ScriptContext(ts, this, diags, oOwnr, oFrom, oP1, oP2);
+			scripts.eventScripts.put(k, resolveStmt(scr, v));
 		}
+
+		ScriptContext removeScriptCtx = new ScriptContext(ts, this, diags, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
+		scripts.removeScript = resolveStmt(removeScriptCtx, removeScript);
+
+		return scripts;
 	}
 
-	/**
-	 * Compiles the module's event scripts to a set of requests.
-	 */
-	public void compileEventsForInject(LinkedList<String> requests, TypeSystem ts, DiagRecorder diags) {
-		for (Map.Entry<ScriptIdentifier, RALStatementUR> eventScript : eventScripts.entrySet()) {
-			ScriptIdentifier k = eventScript.getKey();
-			StringBuilder outText = new StringBuilder();
-			outText.append(k.toScrpLine());
-			outText.append('\n');
-			compileEventContents(new OuterCompileContext(outText, ts, diags, false), k);
-			requests.add(outText.toString());
-		}
-	}
-
-	/**
-	 * Compiles the content of an event script.
-	 */
-	public void compileEventContents(OuterCompileContext ctx, ScriptIdentifier k) {
-		TypeSystem ts = ctx.typeSystem;
-		RALStatementUR v = eventScripts.get(k);
-		RALType oOwnr = ts.byClassifier(k.classifier);
-		RALType oFrom = ts.gAny;
-		RALType oP1 = ts.gAny;
-		RALType oP2 = ts.gAny;
-		RALType override = ts.overrideOwnr.get(k.script);
-		if (override != null) {
-			oOwnr = override;
-			oFrom = oOwnr;
-		}
-		ScriptContext scr = new ScriptContext(ts, this, ctx.diags, oOwnr, oFrom, oP1, oP2);
-		compile(ctx.out, scr, v, 1, ctx.debug);
-	}
-
-	/**
-	 * Compiles the module's install script.
-	 */
-	public void compileRemove(OuterCompileContext ctx) {
-		TypeSystem ts = ctx.typeSystem;
-		if (removeScript != null) {
-			ScriptContext scr = new ScriptContext(ts, this, ctx.diags, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
-			compile(ctx.out, scr, removeScript, 1, ctx.debug);
-		}
-	}
-
-	/**
-	 * Compiles the module.
-	 */
-	public void compile(OuterCompileContext ctx) {
-		compileInstall(ctx);
-		compileEvents(ctx);
-		if (removeScript != null)
-			ctx.out.append("rscr\n");
-		compileRemove(ctx);
-	}
-
-	private void compile(StringBuilder sb, ScriptContext scr, RALStatementUR v, int ii, boolean debug) {
-		RALStatement res;
+	private RALStatement resolveStmt(ScriptContext scr, RALStatementUR v) {
 		try {
-			ScopeContext scope = new ScopeContext(scr);
-			res = v.resolve(scope);
+			return v.resolve(new ScopeContext(scr));
 		} catch (Exception ex) {
 			scr.diags.error(v.lineNumber, "failed resolving: ", ex);
-			return;
-		}
-		try {
-			CodeWriter cw = new CodeWriter(sb, debug);
-			cw.indent = ii;
-			res.compile(cw, new CompileContext(scr, cw));
-		} catch (Exception ex) {
-			scr.diags.error(v.lineNumber, "failed writing code: ", ex);
+			return new RALInlineStatement.Resolved(v.lineNumber, new String[] {"STOP * RAL resolveStmt error"});
 		}
 	}
 
