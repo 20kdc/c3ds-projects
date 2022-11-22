@@ -11,11 +11,18 @@ package rals.diag;
  */
 public class Diag {
 	public final Kind kind;
-	public final SrcPos location;
+	public final SrcRange location;
 	public final String text;
 	public final String shortText;
 
 	public Diag(Kind k, SrcPos loc, String t, String txs) {
+		kind = k;
+		location = new SrcRange(loc, loc);
+		text = t;
+		shortText = txs;
+	}
+
+	public Diag(Kind k, SrcRange loc, String t, String txs) {
 		kind = k;
 		location = loc;
 		text = t;

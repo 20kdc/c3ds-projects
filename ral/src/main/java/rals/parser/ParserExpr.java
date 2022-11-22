@@ -190,7 +190,7 @@ public class ParserExpr {
 		} else if (tkn instanceof Token.Flo) {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
-			return new RALAmbiguousID(ts, ((Token.ID) tkn).text);
+			return new RALAmbiguousID(tkn.extent, ts, ((Token.ID) tkn).text);
 		} else if (tkn instanceof Token.StrEmb) {
 			// So before we accept this, this could actually be a termination.
 			Token.StrEmb se = (Token.StrEmb) tkn;
@@ -274,7 +274,7 @@ public class ParserExpr {
 			return new RALStmtExpr(mod, inner);
 		} else {
 			String idStr = ts.newParserVariableName();
-			RALAmbiguousID id = new RALAmbiguousID(ts, idStr);
+			RALAmbiguousID id = new RALAmbiguousID(ln.toRange(), ts, idStr);
 			// return value is before the adjustment
 			// so store a temporary before the operation
 			RALBlock blk = new RALBlock(ln, false);

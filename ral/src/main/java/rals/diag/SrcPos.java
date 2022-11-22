@@ -54,4 +54,8 @@ public class SrcPos {
 		range.put("end", pos);
 		return range;
 	}
+
+	public SrcRange toRange() {
+		return new SrcRange(this, this);
+	}
 }

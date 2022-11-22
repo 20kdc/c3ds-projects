@@ -327,9 +327,13 @@ public class Lexer {
 	}
 
 	public String requireNextID() {
+		return requireNextIDTkn().text;
+	}
+
+	public Token.ID requireNextIDTkn() {
 		Token tkn = requireNext();
 		if (tkn instanceof Token.ID)
-			return ((Token.ID) tkn).text;
+			return (Token.ID) tkn;
 		throw new RuntimeException("Expected ID, got " + tkn);
 	}
 

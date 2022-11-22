@@ -51,8 +51,10 @@ public class ScriptsUR {
 	public Scripts resolve(TypeSystem ts, DiagRecorder diags) {
 		Scripts scripts = new Scripts();
 
-		ScriptContext installScriptCtx = new ScriptContext(ts, this, diags, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
-		scripts.installScript = resolveStmt(installScriptCtx, installScript);
+		if (installScript != null) {
+			ScriptContext installScriptCtx = new ScriptContext(ts, this, diags, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
+			scripts.installScript = resolveStmt(installScriptCtx, installScript);
+		}
 
 		for (Map.Entry<ScriptIdentifier, RALStatementUR> eventScript : eventScripts.entrySet()) {
 			ScriptIdentifier k = eventScript.getKey();
@@ -70,8 +72,10 @@ public class ScriptsUR {
 			scripts.eventScripts.put(k, resolveStmt(scr, v));
 		}
 
-		ScriptContext removeScriptCtx = new ScriptContext(ts, this, diags, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
-		scripts.removeScript = resolveStmt(removeScriptCtx, removeScript);
+		if (removeScript != null) {
+			ScriptContext removeScriptCtx = new ScriptContext(ts, this, diags, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
+			scripts.removeScript = resolveStmt(removeScriptCtx, removeScript);
+		}
 
 		return scripts;
 	}

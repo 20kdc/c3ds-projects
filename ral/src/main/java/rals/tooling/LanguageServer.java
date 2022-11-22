@@ -58,7 +58,7 @@ public class LanguageServer implements ILSPCore {
 					IDocPath originalSource = d.location.file.docPath;
 					String originalSourceName = d.location.file.shortName;
 					// set checkMe to the location of the include
-					SrcPos checkMe = d.location;
+					SrcPos checkMe = d.location.start;
 					while (checkMe.file.includedFrom != null)
 						checkMe = checkMe.file.includedFrom;
 					// only show one

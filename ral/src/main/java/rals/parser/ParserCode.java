@@ -47,17 +47,17 @@ public class ParserCode {
 		} else if (tkn.isKeyword("let")) {
 			return parseLetStatement(tkn.lineNumber, ifc);
 		} else if (tkn.isKeyword("alias")) {
-			String id = lx.requireNextID();
+			Token.ID id = lx.requireNextIDTkn();
 			if (lx.optNextKw("=")) {
 				// alias x = y;
 				RALExprUR res = ParserExpr.parseExpr(ifc, true);
 				lx.requireNextKw(";");
-				return new RALAliasStatement(tkn.lineNumber, id, res);
+				return new RALAliasStatement(tkn.lineNumber, id.text, res);
 			} else if (lx.optNextKw("!")) {
 				// alias x!Y;
 				RALType rt = ParserType.parseType(ts, lx);
 				lx.requireNextKw(";");
-				return new RALAliasStatement(tkn.lineNumber, id, RALCast.of(new RALAmbiguousID(ts, id), rt));
+				return new RALAliasStatement(tkn.lineNumber, id.text, RALCast.of(new RALAmbiguousID(id.extent, ts, id.text), rt));
 			} else {
 				throw new RuntimeException("Did not understand alias form at: " + tkn);
 			}
@@ -119,8 +119,8 @@ public class ParserCode {
 			if (!(type instanceof RALType.AgentClassifier))
 				throw new RuntimeException("Can only 'with' on classes");
 			Classifier cl = ((RALType.AgentClassifier) type).classifier;
-			String varName = lx.requireNextID();
-			RALExprUR var = new RALAmbiguousID(ts, varName);
+			Token.ID varName = lx.requireNextIDTkn();
+			RALExprUR var = new RALAmbiguousID(varName.extent, ts, varName.text);
 			if (paren)
 				lx.requireNextKw(")");
 			RALStatementUR body = ParserCode.parseStatement(ifc);
@@ -132,12 +132,12 @@ public class ParserCode {
 				lx.back();
 			}
 			RALBlock bodyOuter = new RALBlock(tkn.lineNumber, true);
-			bodyOuter.content.add(new RALAliasStatement(tkn.lineNumber, varName, RALCast.of(var, type)));
+			bodyOuter.content.add(new RALAliasStatement(tkn.lineNumber, varName.text, RALCast.of(var, type)));
 			bodyOuter.content.add(body);
 			return new RALIfStatement(tkn.lineNumber, new RALInstanceof(cl, var), bodyOuter, elseBranch, false);
 		} else if (tkn.isKeyword("call")) {
 			// CALL
-			RALExprUR getMsgType = parseRelativeMessageID(new RALAmbiguousID(ts, "ownr"), ifc);
+			RALExprUR getMsgType = parseRelativeMessageID(new RALAmbiguousID(tkn.lineNumber.toRange(), ts, "ownr"), ifc);
 			lx.requireNextKw("(");
 			RALExprUR params = ParserExpr.parseExpr(ifc, false);
 			lx.requireNextKw(")");

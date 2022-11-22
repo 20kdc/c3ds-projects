@@ -27,11 +27,23 @@ public class DiagRecorder {
 		diag(new Diag(Diag.Kind.Error, where, text, text));
 	}
 
+	public void error(SrcRange where, String text) {
+		diag(new Diag(Diag.Kind.Error, where, text, text));
+	}
+
 	public void error(SrcPos where, Exception ex) {
 		error(where, "", ex);
 	}
 
+	public void error(SrcRange where, Exception ex) {
+		error(where, "", ex);
+	}
+
 	public void error(SrcPos where, String text, Exception ex) {
+		error(new SrcRange(where, where), text, ex);
+	}
+
+	public void error(SrcRange where, String text, Exception ex) {
 		StringWriter details = new StringWriter();
 		details.append(text);
 		ex.printStackTrace(new PrintWriter(details));

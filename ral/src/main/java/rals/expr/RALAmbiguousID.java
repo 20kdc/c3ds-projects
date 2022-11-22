@@ -7,6 +7,7 @@
 package rals.expr;
 
 import rals.code.*;
+import rals.diag.SrcRange;
 import rals.types.*;
 
 /**
@@ -15,8 +16,10 @@ import rals.types.*;
 public class RALAmbiguousID implements RALExprUR {
 	public final TypeSystem typeSystem;
 	public final String text;
+	public final SrcRange extent;
 
-	public RALAmbiguousID(TypeSystem ts, String txt) {
+	public RALAmbiguousID(SrcRange ex, TypeSystem ts, String txt) {
+		extent = ex;
 		typeSystem = ts;
 		text = txt;
 	}
@@ -52,6 +55,7 @@ public class RALAmbiguousID implements RALExprUR {
 				new RALConstant.Int(typeSystem, cl.species)
 			).resolve(context);
 		}
-		throw new RuntimeException("Unknown ID " + text);
+		context.script.diags.error(extent, "Unknown ID " + text);
+		return RALExprSlice.EMPTY;
 	}
 }
