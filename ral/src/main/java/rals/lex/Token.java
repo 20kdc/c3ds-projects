@@ -9,6 +9,7 @@ package rals.lex;
 import java.util.HashSet;
 
 import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 
 /**
  * Text (may not be text) with a type and a position. 
@@ -52,9 +53,12 @@ public class Token {
 		keywords.add("call");
 	}
 
+	// TODO: temporary workaround.
 	public final SrcPos lineNumber;
-	public Token(SrcPos ln) {
-		lineNumber = ln;
+	public final SrcRange extent;
+	public Token(SrcRange ex) {
+		lineNumber = ex.start;
+		extent = ex;
 	}
 
 	public boolean isKeyword(String kw) {
@@ -66,7 +70,7 @@ public class Token {
 
 	public static class ID extends Token {
 		public String text;
-		public ID(SrcPos ln, String tx) {
+		public ID(SrcRange ln, String tx) {
 			super(ln);
 			text = tx;
 		}
@@ -78,7 +82,7 @@ public class Token {
 	}
 	public static class Kw extends Token {
 		public String text;
-		public Kw(SrcPos ln, String tx) {
+		public Kw(SrcRange ln, String tx) {
 			super(ln);
 			text = tx;
 		}
@@ -90,7 +94,7 @@ public class Token {
 	}
 	public static class Str extends Token {
 		public String text;
-		public Str(SrcPos ln, String tx) {
+		public Str(SrcRange ln, String tx) {
 			super(ln);
 			text = tx;
 		}
@@ -103,7 +107,7 @@ public class Token {
 	public static class StrEmb extends Token {
 		public String text;
 		public boolean startIsClusterEnd, endIsClusterStart;
-		public StrEmb(SrcPos ln, String tx, boolean ce, boolean cs) {
+		public StrEmb(SrcRange ln, String tx, boolean ce, boolean cs) {
 			super(ln);
 			text = tx;
 			startIsClusterEnd = ce;
@@ -117,7 +121,7 @@ public class Token {
 	}
 	public static class Int extends Token {
 		public int value;
-		public Int(SrcPos ln, int v) {
+		public Int(SrcRange ln, int v) {
 			super(ln);
 			value = v;
 		}
@@ -129,7 +133,7 @@ public class Token {
 	}
 	public static class Flo extends Token {
 		public float value;
-		public Flo(SrcPos ln, float v) {
+		public Flo(SrcRange ln, float v) {
 			super(ln);
 			value = v;
 		}

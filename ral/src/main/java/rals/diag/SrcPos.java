@@ -6,8 +6,6 @@
  */
 package rals.diag;
 
-import java.io.File;
-
 import org.json.JSONObject;
 
 /**
@@ -15,17 +13,28 @@ import org.json.JSONObject;
  * This is represented in language server format.
  */
 public class SrcPos {
+	/**
+	 * The file identifier of this source position.
+	 * It would be nice if this was cleaner.
+	 */
 	public final SrcPosFile file;
+
+	/**
+	 * The global index of the source position.
+	 * This is EXACTLY equivalent to indexes that would be passed to a charAt on the String of a StringReader.
+	 */
+	public final int globalPosition;
 	public final int line, character;
-	public SrcPos(SrcPosFile f, int l, int c) {
+	public SrcPos(SrcPosFile f, int g, int l, int c) {
 		file = f;
+		globalPosition = g;
 		line = l;
 		character = c;
 	}
 
 	@Override
 	public String toString() {
-		return file + ":" + (line + 1);
+		return file + ":" + (line + 1) + "," + (character + 1);
 	}
 
 	/**

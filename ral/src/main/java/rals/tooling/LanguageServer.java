@@ -75,7 +75,7 @@ public class LanguageServer implements ILSPCore {
 			// whoopsie!
 			SrcPosFile synth = new SrcPosFile(null, assumedFilename, assumedFilename.getName());
 			return new Diag[] {
-				new Diag(Diag.Kind.Error, new SrcPos(synth, 0, 0), msg, msg)
+				new Diag(Diag.Kind.Error, new SrcPos(synth, 0, 0, 0), msg, msg)
 			};
 		}
 	}

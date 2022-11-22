@@ -13,6 +13,7 @@ import java.io.Reader;
 import rals.diag.DiagRecorder;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
+import rals.diag.SrcRange;
 import rals.lex.Token.ID;
 
 /**
@@ -55,6 +56,10 @@ public class Lexer {
 		return charHistory.genLN(file);
 	}
 
+	private SrcRange completeExtent(SrcPos sp) {
+		return new SrcRange(sp, charHistory.genLN(file));
+	}
+
 	/**
 	 * This now returns a char rather than a byte.
 	 * Since the conversion was done by cast anyway, this isn't a problem...
@@ -78,6 +83,7 @@ public class Lexer {
 				// Let's find out the difference...
 				b = getNextByte();
 				if (b == '*') {
+					// This is only used for diagnostics, so it doesn't need to be character-precise.
 					SrcPos at = genLN();
 					StringBuilder sb = new StringBuilder();
 					// Block comment.
@@ -145,19 +151,21 @@ public class Lexer {
 
 	private Token nextInner() {
 		consumeWS();
+		// Get this after consuming whitespace but before grabbing what will be the start character of the token.
+		SrcPos startOfToken = genLN();
 		int c = getNextByte();
 		if (c == -1)
 			return null;
 		if (c == '\"') {
 			// Regular ol' string
-			return finishReadingString(c, false, false);
+			return finishReadingString(startOfToken, c, false, false);
 		} else if (c == '\'') {
 			// String w/ string embedding capabilities
-			return finishReadingString(c, false, true);
+			return finishReadingString(startOfToken, c, false, true);
 		} else if ((c == '}') && (levelOfStringEmbedding > 0) && (levelOfStringEmbeddingEscape == 0)) {
 			// Leaving string embedding argument and entering the string part again
 			levelOfStringEmbedding--;
-			return finishReadingString('\'', true, true);
+			return finishReadingString(startOfToken, '\'', true, true);
 		}
 		// This has to punch a gap in the nice little else-if chain.
 		// Why? Because it needs to fallthrough if stuff goes wrong...
@@ -192,18 +200,18 @@ public class Lexer {
 				}
 				String str = sb.toString();
 				try {
-					return new Token.Int(genLN(), Integer.parseInt(str));
+					return new Token.Int(completeExtent(startOfToken), Integer.parseInt(str));
 				} catch (Exception ex) {
 					// nope
 				}
 				try {
-					return new Token.Flo(genLN(), Float.parseFloat(str));
+					return new Token.Flo(completeExtent(startOfToken), Float.parseFloat(str));
 				} catch (Exception ex) {
 					// nope
 				}
 				SrcPos sp = genLN();
 				diags.error(sp, "number-like not number");
-				return new Token.ID(sp, str);
+				return new Token.ID(new SrcRange(startOfToken, sp), str);
 			}
 		}
 		if (LONERS.indexOf(c) != -1) {
@@ -214,7 +222,7 @@ public class Lexer {
 					if (levelOfStringEmbeddingEscape > 0)
 						levelOfStringEmbeddingEscape--;
 			}
-			return new Token.Kw(genLN(), Character.toString((char) c));
+			return new Token.Kw(completeExtent(startOfToken), Character.toString((char) c));
 		} else if (OPERATORS.indexOf(c) != -1) {
 			StringBuilder sb = new StringBuilder();
 			sb.append((char) c);
@@ -227,7 +235,7 @@ public class Lexer {
 				sb.append((char) c);
 			}
 			String str = sb.toString();
-			return new Token.Kw(genLN(), str);
+			return new Token.Kw(completeExtent(startOfToken), str);
 		} else {
 			StringBuilder sb = new StringBuilder();
 			sb.append((char) c);
@@ -241,21 +249,20 @@ public class Lexer {
 			}
 			String str = sb.toString();
 			if (Token.keywords.contains(str)) {
-				return new Token.Kw(genLN(), str);
+				return new Token.Kw(completeExtent(startOfToken), str);
 			} else {
-				return new Token.ID(genLN(), str);
+				return new Token.ID(completeExtent(startOfToken), str);
 			}
 		}
 	}
-	private Token finishReadingString(int c, boolean startIsClusterEnd, boolean isEmbedding) {
+	private Token finishReadingString(SrcPos startOfToken, int c, boolean startIsClusterEnd, boolean isEmbedding) {
 		StringBuilder sb = new StringBuilder();
 		boolean escaping = false;
 		boolean endIsClusterStart = false;
-		SrcPos sp = genLN();
 		while (true) {
 			int c2 = getNextByte();
 			if (c2 == -1) {
-				diags.error(sp, "Unterminated string");
+				diags.error(startOfToken, "Unterminated string");
 				break;
 			}
 			if (escaping) {
@@ -283,6 +290,7 @@ public class Lexer {
 				}
 			}
 		}
+		SrcRange sp = completeExtent(startOfToken);
 		if (isEmbedding) {
 			return new Token.StrEmb(sp, sb.toString(), startIsClusterEnd, endIsClusterStart);
 		} else {
@@ -301,10 +309,10 @@ public class Lexer {
 		return tkn;
 	}
 
-	public void requireNextKw(String kw) {
+	public Token requireNextKw(String kw) {
 		Token tkn = requireNext();
 		if (tkn.isKeyword(kw))
-			return;
+			return tkn;
 		throw new RuntimeException("Expected " + kw + ", got " + tkn);
 	}
 

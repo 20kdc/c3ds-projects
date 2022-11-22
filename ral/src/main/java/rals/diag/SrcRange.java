@@ -13,13 +13,27 @@ import org.json.JSONObject;
  */
 public class SrcRange {
 	public final SrcPosFile file;
-	public final SrcPos start, end;
+	/**
+	 * Start position (inclusive)
+	 */
+	public final SrcPos start;
+	/**
+	 * End position (exclusive)
+	 */
+	public final SrcPos end;
 	public SrcRange(SrcPos s, SrcPos e) {
 		if (s.file != e.file)
 			throw new RuntimeException("Range start and end must have same SrcPosFile");
 		file = s.file;
 		start = s;
 		end = e;
+	}
+
+	@Override
+	public String toString() {
+		if (start.line == end.line)
+			return file + ":" + (start.line + 1) + ",(" + (start.character + 1) + " .. " + (end.character + 1) + ")";
+		return file + ":" + (start.line + 1) + "," + (start.character + 1) + " .. " + (end.line + 1) + "," + (end.character + 1);
 	}
 
 	/**

@@ -21,6 +21,7 @@ public class CharHistory {
 
 	private int lineNumber = 0;
 	private int linePosition = 0;
+	private int globalPosition = 0;
 
 	// If not at charHistory.length, the next byte to "read".
 	private int charHistoryPtr;
@@ -29,12 +30,14 @@ public class CharHistory {
 	private final int[] charHistory;
 	private final int[] lnHistory;
 	private final int[] lpHistory;
+	private final int[] gpHistory;
 
 	public CharHistory(Reader inp, int len) {
 		charHistoryPtr = len;
 		charHistory = new int[len];
 		lnHistory = new int[len];
 		lpHistory = new int[len];
+		gpHistory = new int[len];
 		input = inp;
 	}
 
@@ -53,6 +56,7 @@ public class CharHistory {
 			advanceHistory(charHistory, val);
 			advanceHistory(lnHistory, lineNumber);
 			advanceHistory(lpHistory, linePosition);
+			advanceHistory(gpHistory, globalPosition);
 			// line number/position updates
 			if (val == 10) {
 				lineNumber++;
@@ -60,6 +64,7 @@ public class CharHistory {
 			} else if (val != -1) {
 				linePosition++;
 			}
+			globalPosition++;
 			// done!
 			return val;
 		} catch (IOException ioe) {
@@ -76,7 +81,7 @@ public class CharHistory {
 	 */
 	public SrcPos genLN(SrcPosFile file) {
 		if (charHistoryPtr < charHistory.length)
-			return new SrcPos(file, lnHistory[charHistoryPtr], lpHistory[charHistoryPtr]);
-		return new SrcPos(file, lineNumber, linePosition);
+			return new SrcPos(file, gpHistory[charHistoryPtr], lnHistory[charHistoryPtr], lpHistory[charHistoryPtr]);
+		return new SrcPos(file, globalPosition, lineNumber, linePosition);
 	}
 }
