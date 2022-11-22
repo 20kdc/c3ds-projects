@@ -33,7 +33,7 @@ public class RALBlock extends RALStatementUR {
 		for (RALStatementUR ur : content)
 			content2.add(ur.resolve(scope));
 
-		return new RALStatement(lineNumber) {
+		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext cc) {
 				if (isScopeBreaking) {

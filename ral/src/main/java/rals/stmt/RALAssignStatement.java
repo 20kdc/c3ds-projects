@@ -37,7 +37,7 @@ public class RALAssignStatement extends RALStatementUR {
 			for (int i = 0; i < targetsR.length; i++)
 				sourceR.readType(i).implicitlyCastOrThrow(targetsR.writeType(i), sourceR, targetsR);
 		}
-		return new RALStatement(lineNumber) {
+		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext cc) {
 				// Break scope here so we don't leak temporaries.

@@ -8,6 +8,7 @@ package rals.stmt;
 
 import rals.code.*;
 import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.lex.*;
 import rals.types.*;
@@ -57,14 +58,14 @@ public class RALLetStatement extends RALStatementUR {
 			RALVarVA rvv = scope.newLocal(names[i], finalTypes[i]);
 			vars[i] = rvv;
 		}
-		return new Resolved(lineNumber, vars, initRes);
+		return new Resolved(extent, vars, initRes);
 	}
 
 	public class Resolved extends RALStatement {
 		public final RALVarVA[] vars;
 		public final RALExprSlice init;
 	
-		public Resolved(SrcPos sp, RALVarVA[] v, RALExprSlice i) {
+		public Resolved(SrcRange sp, RALVarVA[] v, RALExprSlice i) {
 			super(sp);
 			vars = v;
 			init = i;

@@ -27,7 +27,7 @@ public class RALAliasStatement extends RALStatementUR {
 	public RALStatement resolveInner(ScopeContext scope) {
 		final RALExprSlice exp = target.resolve(scope);
 		scope.scopedVariables.put(name, exp);
-		return new RALStatement(lineNumber) {
+		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext scope) {
 				writer.writeComment(exp + ": " + name);

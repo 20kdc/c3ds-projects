@@ -21,7 +21,7 @@ public class RALBreakFromLoop extends RALStatementUR {
 
 	@Override
 	public RALStatement resolveInner(ScopeContext scope) {
-		return new RALStatement(lineNumber) {
+		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext context) {
 				if (context.breakBool != null)

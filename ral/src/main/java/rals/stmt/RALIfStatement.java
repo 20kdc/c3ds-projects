@@ -46,7 +46,7 @@ public class RALIfStatement extends RALStatementUR {
 			final RALStatement execBranchR = execBranch != null ? execBranch.resolve(subScope) : null;
 			if (execBranchR != null)
 				return execBranchR;
-			return new RALStatement(lineNumber) {
+			return new RALStatement(extent) {
 				@Override
 				protected void compileInner(CodeWriter writer, CompileContext context) {
 					// nothing to do here!
@@ -61,7 +61,7 @@ public class RALIfStatement extends RALStatementUR {
 			final RALCondition conditionR = RALCondition.coerceToCondition(condition.resolve(subScope), scope.script.typeSystem);
 			final RALStatement mainBranchR = mainBranch.resolve(new ScopeContext(subScope));
 			final RALStatement elseBranchR = elseBranch != null ? elseBranch.resolve(new ScopeContext(subScope)) : null;
-			return new RALStatement(lineNumber) {
+			return new RALStatement(extent) {
 				@Override
 				protected void compileInner(CodeWriter writer, CompileContext context) {
 					try (CompileContext outerCtx = new CompileContext(context)) {

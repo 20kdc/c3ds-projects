@@ -8,6 +8,7 @@ package rals.stmt;
 
 import rals.code.*;
 import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 import rals.lex.*;
 
 /**
@@ -15,8 +16,16 @@ import rals.lex.*;
  */
 public abstract class RALStatementUR {
 	public final SrcPos lineNumber;
+	public final SrcRange extent;
+
 	public RALStatementUR(SrcPos ln) {
 		lineNumber = ln;
+		extent = ln.toRange();
+	}
+
+	public RALStatementUR(SrcRange lr) {
+		lineNumber = lr.start;
+		extent = lr;
 	}
 
 	/**
@@ -26,8 +35,8 @@ public abstract class RALStatementUR {
 		try {
 			return resolveInner(scope);
 		} catch (Exception ex) {
-			scope.script.diags.error(lineNumber, "statement resolve: ", ex);
-			return new RALInlineStatement.Resolved(lineNumber, new String[] {"STOP * RAL STATEMENT RESOLVE ERROR"});
+			scope.script.diags.error(extent, "statement resolve: ", ex);
+			return new RALInlineStatement.Resolved(extent, new String[] {"STOP * RAL STATEMENT RESOLVE ERROR"});
 		}
 	}
 

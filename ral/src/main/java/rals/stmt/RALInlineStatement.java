@@ -8,6 +8,7 @@ package rals.stmt;
 
 import rals.code.*;
 import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.lex.*;
 import rals.types.*;
@@ -25,13 +26,13 @@ public class RALInlineStatement extends RALStatementUR {
 
 	@Override
 	public RALStatement resolveInner(ScopeContext csc) {
-		return new Resolved(lineNumber, resolveParts(parts, csc));
+		return new Resolved(extent, resolveParts(parts, csc));
 	}
 
 	public static final class Resolved extends RALStatement {
 		private final Object[] parts2;
 
-		public Resolved(SrcPos ln, Object[] parts2) {
+		public Resolved(SrcRange ln, Object[] parts2) {
 			super(ln);
 			this.parts2 = parts2;
 		}

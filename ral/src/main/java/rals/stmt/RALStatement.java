@@ -8,29 +8,30 @@ package rals.stmt;
 
 import rals.code.*;
 import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 import rals.lex.*;
 
 /**
- * Represents a statement inside a RAL script.
+ * Represents a resolved statement inside a RAL script.
  */
 public abstract class RALStatement {
-	public final SrcPos lineNumber;
-	public RALStatement(SrcPos ln) {
-		lineNumber = ln;
+	public final SrcRange extent;
+	public RALStatement(SrcRange ln) {
+		extent = ln;
 	}
 
 	public final void compile(CodeWriter writer, CompileContext context) {
 		if (writer.queuedCommentForNextLine == null) {
 			if (writer.shouldWriteStatementDetails) {
-				writer.queuedCommentForNextLine = "@ " + lineNumber + " " + this;
+				writer.queuedCommentForNextLine = "@ " + extent + " " + this;
 			} else {
-				writer.queuedCommentForNextLine = "@ " + lineNumber;
+				writer.queuedCommentForNextLine = "@ " + extent;
 			}
 		}
 		try {
 			compileInner(writer, context);
 		} catch (Exception ex) {
-			context.diags.error(lineNumber, "statement compile: ", ex);
+			context.diags.error(extent, "statement compile: ", ex);
 		}
 	}
 

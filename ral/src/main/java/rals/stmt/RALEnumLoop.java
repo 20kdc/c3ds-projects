@@ -33,7 +33,7 @@ public class RALEnumLoop extends RALStatementUR {
 		final RALStatement loopStarter;
 		if (enumToken.equals("econ")) {
 			paramsR.assert1ReadType().assertImpCast(scope.script.typeSystem.gAgent);
-			loopStarter = new RALInlineStatement.Resolved(lineNumber, new Object[] {
+			loopStarter = new RALInlineStatement.Resolved(extent, new Object[] {
 				enumToken + " ",
 				paramsR
 			});
@@ -42,14 +42,14 @@ public class RALEnumLoop extends RALStatementUR {
 				if (!(targType instanceof RALType.AgentClassifier))
 					throw new RuntimeException("Can't " + enumToken + " over " + targType + " as it's not an AgentClassifier");
 				RALType.AgentClassifier ac = (RALType.AgentClassifier) targType;
-				loopStarter = new RALInlineStatement.Resolved(lineNumber, new Object[] {
+				loopStarter = new RALInlineStatement.Resolved(extent, new Object[] {
 					enumToken + " " + ac.classifier.family + " " + ac.classifier.genus + " " + ac.classifier.species
 				});
 			} else if (paramsR.length == 3) {
 				paramsR.readType(0).assertImpCast(scope.script.typeSystem.gInteger);
 				paramsR.readType(1).assertImpCast(scope.script.typeSystem.gInteger);
 				paramsR.readType(2).assertImpCast(scope.script.typeSystem.gInteger);
-				loopStarter = new RALInlineStatement.Resolved(lineNumber, new Object[] {
+				loopStarter = new RALInlineStatement.Resolved(extent, new Object[] {
 					enumToken + " ",
 					paramsR
 				});
@@ -63,7 +63,7 @@ public class RALEnumLoop extends RALStatementUR {
 		final boolean isAdjustingLoopBodyForBreak = true;
 		final RALStatement loopBodyR = loopBody.resolve(scope);
 		// finally make it
-		return new RALStatement(lineNumber) {
+		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext context) {
 				try (CompileContext cc = new CompileContext(context)) {

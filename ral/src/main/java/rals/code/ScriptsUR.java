@@ -85,7 +85,7 @@ public class ScriptsUR {
 			return v.resolve(new ScopeContext(scr));
 		} catch (Exception ex) {
 			scr.diags.error(v.lineNumber, "failed resolving: ", ex);
-			return new RALInlineStatement.Resolved(v.lineNumber, new String[] {"STOP * RAL resolveStmt error"});
+			return new RALInlineStatement.Resolved(v.extent, new String[] {"STOP * RAL resolveStmt error"});
 		}
 	}
 

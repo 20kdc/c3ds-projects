@@ -103,7 +103,7 @@ public class Scripts {
 			cw.indent = ii;
 			v.compile(cw, new CompileContext(ctx.typeSystem, this, ctx.diags, cw));
 		} catch (Exception ex) {
-			ctx.diags.error(v.lineNumber, "failed writing code: ", ex);
+			ctx.diags.error(v.extent, "failed writing code: ", ex);
 		}
 	}
 }

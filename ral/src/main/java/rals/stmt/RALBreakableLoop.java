@@ -24,7 +24,7 @@ public class RALBreakableLoop extends RALStatementUR {
 	@Override
 	public RALStatement resolveInner(ScopeContext scope) {
 		final RALStatement rs = content.resolve(new ScopeContext(scope));
-		return new RALStatement(lineNumber) {
+		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext context) {
 				try (CompileContext ccs = new CompileContext(context)) {
