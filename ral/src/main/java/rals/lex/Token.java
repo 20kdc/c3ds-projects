@@ -73,7 +73,7 @@ public class Token {
 
 		@Override
 		public String toString() {
-			return "ID:" + lineNumber + ":" + text;
+			return "ID:" + text;
 		}
 	}
 	public static class Kw extends Token {
@@ -85,7 +85,7 @@ public class Token {
 
 		@Override
 		public String toString() {
-			return "Kw:" + lineNumber + ":" + text;
+			return "K:" + text;
 		}
 	}
 	public static class Str extends Token {
@@ -97,7 +97,7 @@ public class Token {
 
 		@Override
 		public String toString() {
-			return "Str:" + lineNumber + ":" + text;
+			return "S:" + text;
 		}
 	}
 	public static class StrEmb extends Token {
@@ -112,7 +112,7 @@ public class Token {
 
 		@Override
 		public String toString() {
-			return "StrEmb:" + lineNumber + ":" + text;
+			return "SE:" + text;
 		}
 	}
 	public static class Int extends Token {
@@ -124,7 +124,7 @@ public class Token {
 
 		@Override
 		public String toString() {
-			return "Int:" + lineNumber + ":" + value;
+			return "I:" + value;
 		}
 	}
 	public static class Flo extends Token {
@@ -136,7 +136,7 @@ public class Token {
 
 		@Override
 		public String toString() {
-			return "Flo:" + lineNumber + ":" + value;
+			return "F:" + value;
 		}
 	}
 }

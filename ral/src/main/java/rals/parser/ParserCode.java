@@ -147,7 +147,7 @@ public class ParserCode {
 		} else {
 			lx.back();
 			// System.out.println("entered expr parser with " + tkn);
-			RALExprUR target = ParserExpr.parseExpr(ifc, false);
+			RALExprUR target = ParserExpr.parseExpr(ifc, true);
 			Token sp = lx.requireNext();
 			if (sp.isKeyword(";")) {
 				return new RALAssignStatement(tkn.lineNumber, null, target);
@@ -185,7 +185,8 @@ public class ParserCode {
 				}
 				return new RALAssignStatement(tkn.lineNumber, null, call);
 			} else {
-				throw new RuntimeException("Saw expression at " + tkn + " but then was wrong about it, got " + sp);
+				ifc.diags.error(sp.lineNumber, sp + " after expression statement");
+				return new RALBlock(tkn.lineNumber, false);
 			}
 		}
 	}

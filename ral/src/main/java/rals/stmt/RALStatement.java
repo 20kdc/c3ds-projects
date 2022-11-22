@@ -30,7 +30,7 @@ public abstract class RALStatement {
 		try {
 			compileInner(writer, context);
 		} catch (Exception ex) {
-			throw new RuntimeException("At " + lineNumber, ex);
+			context.diags.error(lineNumber, "statement compile: ", ex);
 		}
 	}
 

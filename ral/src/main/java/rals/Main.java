@@ -13,6 +13,7 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.LinkedList;
 
+import rals.code.OuterCompileContext;
 import rals.parser.*;
 import rals.tooling.Injector;
 import rals.tooling.LSPBaseProtocolLoop;
@@ -73,16 +74,18 @@ public class Main {
 			File outFile = new File(args[2]);
 			IncludeParseContext ic = Parser.run(ralStandardLibrary, args[1]);
 			StringBuilder outText = new StringBuilder();
+			OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
+			OuterCompileContext cctxDbg = new OuterCompileContext(outText, ic.typeSystem, ic.diags, true);
 			if (args[0].equals("compile")) {
-				ic.module.compile(outText, ic.typeSystem, false);
+				ic.module.compile(cctx);
 			} else if (args[0].equals("compileDebug")) {
-				ic.module.compile(outText, ic.typeSystem, true);
+				ic.module.compile(cctxDbg);
 			} else if (args[0].equals("compileInstall")) {
-				ic.module.compileInstall(outText, ic.typeSystem, false);
+				ic.module.compileInstall(cctx);
 			} else if (args[0].equals("compileEvents")) {
-				ic.module.compileEvents(outText, ic.typeSystem, false);
+				ic.module.compileEvents(cctx);
 			} else if (args[0].equals("compileRemove")) {
-				ic.module.compileRemove(outText, ic.typeSystem, false);
+				ic.module.compileRemove(cctx);
 			} else {
 				throw new RuntimeException("?");
 			}
@@ -101,22 +104,27 @@ public class Main {
 			LinkedList<String> queuedRequests = new LinkedList<>();
 			if (args[0].equals("inject")) {
 				// events
-				ic.module.compileEventsForInject(queuedRequests, ic.typeSystem);
+				ic.module.compileEventsForInject(queuedRequests, ic.typeSystem, ic.diags);
 				// install
 				StringBuilder outText = new StringBuilder();
 				outText.append("execute\n");
-				ic.module.compileInstall(outText, ic.typeSystem, false);
+				OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
+				ic.module.compileInstall(cctx);
+				ic.diags.unwrap();
 				queuedRequests.add(outText.toString());
 			} else if (args[0].equals("injectEvents")) {
-				ic.module.compileEventsForInject(queuedRequests, ic.typeSystem);
+				ic.module.compileEventsForInject(queuedRequests, ic.typeSystem, ic.diags);
 			} else if (args[0].equals("injectRemove")) {
 				StringBuilder outText = new StringBuilder();
 				outText.append("execute\n");
-				ic.module.compileRemove(outText, ic.typeSystem, false);
+				OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
+				ic.module.compileRemove(cctx);
+				ic.diags.unwrap();
 				queuedRequests.add(outText.toString());
 			} else {
 				throw new RuntimeException("?");
 			}
+			ic.diags.unwrap();
 			for (String req : queuedRequests)
 				System.out.println(Injector.cpxRequest(req));
 		} else if (args[0].equals("cpxConnectionTest")) {

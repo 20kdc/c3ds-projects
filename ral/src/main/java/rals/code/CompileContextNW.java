@@ -9,6 +9,7 @@ package rals.code;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import rals.diag.DiagRecorder;
 import rals.expr.*;
 import rals.types.*;
 
@@ -22,6 +23,7 @@ public class CompileContextNW implements AutoCloseable, IVAAllocator {
 	public final HashMap<IVAHandle, Integer> heldVAHandles = new HashMap<>();
 	public final HashMap<IEHHandle, RALExprSlice> heldExprHandles = new HashMap<>();
 	public final ScopedVAAllocator alloc;
+	public final DiagRecorder diags;
 
 	/**
 	 * Just to be sure...
@@ -41,6 +43,7 @@ public class CompileContextNW implements AutoCloseable, IVAAllocator {
 	protected CompileContextNW(ScriptContext sc) {
 		typeSystem = sc.typeSystem;
 		module = sc.module;
+		diags = sc.diags;
 		labelAllocator = new AtomicInteger();
 		subUserTrackingParent = null;
 		// create the VA allocator
@@ -51,6 +54,7 @@ public class CompileContextNW implements AutoCloseable, IVAAllocator {
 	protected CompileContextNW(CompileContextNW sc) {
 		typeSystem = sc.typeSystem;
 		module = sc.module;
+		diags = sc.diags;
 		labelAllocator = sc.labelAllocator;
 		alloc = new ScopedVAAllocator(sc.alloc);
 		// inherit break label

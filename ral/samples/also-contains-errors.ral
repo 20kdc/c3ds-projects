@@ -7,14 +7,9 @@
 
 /* For LSP testing */
 
-include "also-contains-errors.ral";
-
-thisIsNotAValidDeclaration;
-
 install {
-	)))
+	let a = 12;
+	a = "Ducky";
 }
-
-assertConst aFalse == 0;
 
 /*

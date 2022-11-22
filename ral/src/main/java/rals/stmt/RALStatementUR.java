@@ -26,7 +26,8 @@ public abstract class RALStatementUR {
 		try {
 			return resolveInner(scope);
 		} catch (Exception ex) {
-			throw new RuntimeException("At " + lineNumber, ex);
+			scope.script.diags.error(lineNumber, "statement resolve: ", ex);
+			return new RALInlineStatement.Resolved(lineNumber, new String[] {"STOP * RAL STATEMENT RESOLVE ERROR"});
 		}
 	}
 

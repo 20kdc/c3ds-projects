@@ -8,14 +8,14 @@ package rals.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 
-import rals.Main;
 import rals.code.*;
 import rals.cond.*;
+import rals.diag.SrcPos;
+import rals.diag.SrcPosFile;
 import rals.expr.*;
 import rals.lex.*;
 import rals.stmt.*;
@@ -29,17 +29,17 @@ public class Parser {
 		File init = new File(path);
 		IncludeParseContext ic = new IncludeParseContext();
 		ic.searchPaths.add(stdlib);
-		findParseFile(ic, null, "std/compiler_helpers.ral");
-		parseFileAt(ic, init, path);
+		findParseFile(ic, null, "std/compiler_helpers.ral", null);
+		parseFileAt(ic, new SrcPosFile(null, init.getAbsoluteFile(), path));
 		return ic;
 	}
 	public static String runCPXConnTest(File stdlib) throws IOException {
 		IncludeParseContext ic = new IncludeParseContext();
 		ic.searchPaths.add(stdlib);
-		findParseFile(ic, null, "std/compiler_helpers.ral");
-		findParseFile(ic, null, "std/cpx_connection_test.ral");
+		findParseFile(ic, null, "std/compiler_helpers.ral", null);
+		findParseFile(ic, null, "std/cpx_connection_test.ral", null);
 		StringBuilder sb = new StringBuilder();
-		ic.module.compileInstall(sb, ic.typeSystem, false);
+		ic.module.compileInstall(new OuterCompileContext(sb, ic.typeSystem, ic.diags, false));
 		ic.diags.unwrap();
 		return sb.toString();
 	}
@@ -48,7 +48,7 @@ public class Parser {
 	 * Finds and parses a file.
 	 * Does do the include sanity check.
 	 */
-	public static void findParseFile(IncludeParseContext ctx, File relTo, String inc) throws IOException {
+	public static void findParseFile(IncludeParseContext ctx, File relTo, String inc, SrcPos incFrom) throws IOException {
 		LinkedList<File> attempts = new LinkedList<>();
 		// relative path
 		if (relTo != null) {
@@ -64,7 +64,7 @@ public class Parser {
 		for (File f : attempts) {
 			if (!f.exists())
 				continue;
-			parseFileAt(ctx, f, inc);
+			parseFileAt(ctx, new SrcPosFile(incFrom, f.getAbsoluteFile(), inc));
 			return;
 		}
 		throw new RuntimeException("Ran out of search paths trying to find " + inc + " from " + relTo + ", tried: " + attempts);
@@ -74,26 +74,24 @@ public class Parser {
 	 * Parses a file.
 	 * Does do the include sanity check.
 	 */
-	public static void parseFileAt(IncludeParseContext ctx, File here, String name) throws IOException {
+	public static void parseFileAt(IncludeParseContext ctx, SrcPosFile fileId) throws IOException {
 		// It's critically important we do this because otherwise getParentFile returns null.
-		here = here.getAbsoluteFile();
-		if (ctx.included.contains(here))
+		if (ctx.included.contains(fileId.absoluteFile))
 			return;
-		ctx.included.add(here);
-		System.err.println("include: " + name);
-		try (FileInputStream fis = new FileInputStream(here)) {
-			parseFileInnards(ctx, here, name, fis);
+		ctx.included.add(fileId.absoluteFile);
+		System.err.println("include: " + fileId.shortName);
+		try (FileInputStream fis = new FileInputStream(fileId.absoluteFile)) {
+			parseFileInnards(ctx, fileId.absoluteFile.getParentFile(), fileId, fis);
 		}
 	}
 
 	/**
-	 * Parses a file with the given file (for includes & errors), name (for OTHER errors), and input stream.
+	 * Parses a file with the given parent (for includes), SrcPosFile (for errors), and input stream.
 	 * Does NOT do the include sanity check.
 	 */
-	public static void parseFileInnards(IncludeParseContext ctx, File here, String name, InputStream fis) throws IOException {
-		File hereParent = here.getParentFile();
+	public static void parseFileInnards(IncludeParseContext ctx, File hereParent, SrcPosFile spf, InputStream fis) throws IOException {
 		try {
-			Lexer lx = new Lexer(here, name, fis, ctx.diags);
+			Lexer lx = new Lexer(spf, fis, ctx.diags);
 			InsideFileContext ifc = new InsideFileContext(ctx, lx);
 			while (true) {
 				Token tkn = lx.next();
@@ -104,7 +102,7 @@ public class Parser {
 					if (tkn.isKeyword("include")) {
 						String str = ParserExpr.parseConstString(ifc);
 						lx.requireNextKw(";");
-						findParseFile(ctx, hereParent, str);
+						findParseFile(ctx, hereParent, str, tkn.lineNumber);
 					} else if (tkn.isKeyword("addSearchPath")) {
 						String str = ParserExpr.parseConstString(ifc);
 						lx.requireNextKw(";");
@@ -117,7 +115,7 @@ public class Parser {
 				}
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException("in file " + name, ex);
+			throw new RuntimeException("in file " + spf.shortName, ex);
 		}
 	}
 
@@ -263,14 +261,16 @@ public class Parser {
 		} else if (tkn instanceof Token.ID) {
 			String name = ((Token.ID) tkn).text;
 			Token tx = lx.requireNext();
-			if (!tx.isKeyword("="))
-				throw new RuntimeException("unknown declaration " + tkn);
-			RALConstant cst = ParserExpr.parseConst(ifc);
-			ts.declareConst(name, tkn.lineNumber, cst);
-			if (!lx.requireNext().isKeyword(";"))
-				throw new RuntimeException("constant termination weirdness");
+			if (!tx.isKeyword("=")) {
+				lx.back();
+				ifc.diags.error(tkn.lineNumber, "unknown declaration " + tkn);
+			} else {
+				RALConstant cst = ParserExpr.parseConst(ifc);
+				ts.declareConst(name, tkn.lineNumber, cst);
+				lx.requireNextKw(";");
+			}
 		} else {
-			throw new RuntimeException("unknown declaration " + tkn);
+			ifc.diags.error(tkn.lineNumber, "unknown declaration " + tkn);
 		}
 	}
 

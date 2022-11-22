@@ -11,6 +11,7 @@ import java.io.InputStream;
 
 import rals.diag.DiagRecorder;
 import rals.diag.SrcPos;
+import rals.diag.SrcPosFile;
 import rals.lex.Token.ID;
 
 /**
@@ -30,8 +31,7 @@ public class Lexer {
 	private static final String OPERATORS = OPERATORS_BREAKING + OPERATORS_UNBREAKING;
 	private static final String BREAKERS = "\"\'" + LONERS + OPERATORS_BREAKING;
 
-	private File file;
-	private String fileName;
+	private SrcPosFile file;
 
 	/**
 	 * Last comment encountered.
@@ -44,15 +44,14 @@ public class Lexer {
 
 	public final DiagRecorder diags;
 
-	public Lexer(File f, String fn, InputStream inp, DiagRecorder d) {
+	public Lexer(SrcPosFile fn, InputStream inp, DiagRecorder d) {
 		byteHistory = new ByteHistory(inp);
-		file = f;
-		fileName = fn;
+		file = fn;
 		diags = d;
 	}
 
 	public SrcPos genLN() {
-		return new SrcPos(file, fileName, byteHistory.lineNumber);
+		return new SrcPos(file, byteHistory.lineNumber);
 	}
 
 	private int getNextByte() {

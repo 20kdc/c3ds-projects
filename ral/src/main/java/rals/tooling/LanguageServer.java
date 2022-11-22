@@ -10,13 +10,17 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import rals.code.OuterCompileContext;
 import rals.diag.Diag;
 import rals.diag.SrcPos;
+import rals.diag.SrcPosFile;
+import rals.diag.Diag.Kind;
 import rals.parser.IncludeParseContext;
 import rals.parser.Parser;
 
@@ -38,18 +42,40 @@ public class LanguageServer implements ILSPCore {
 			ByteArrayInputStream bais = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
 			if (pathIfAny != null)
 				ipc.included.add(pathIfAny);
-			Parser.parseFileInnards(ipc, assumedFilename, assumedFilename.getName(), bais);
+			SrcPosFile spp = new SrcPosFile(null, assumedFilename, assumedFilename.getName());
+
+			// Actually compile this...
+			Parser.parseFileInnards(ipc, assumedFilename.getParentFile(), spp, bais);
+			ipc.module.compile(new OuterCompileContext(new StringBuilder(), ipc.typeSystem, ipc.diags, false));
+
 			LinkedList<Diag> finalDiagSet = new LinkedList<>();
-			for (Diag d : ipc.diags.diagnostics)
-				if (d.location.file.equals(assumedFilename))
+			HashSet<File> includeWarnings = new HashSet<>();
+			for (Diag d : ipc.diags.diagnostics) {
+				if (d.location.file.absoluteFile.equals(assumedFilename)) {
 					finalDiagSet.add(d);
+				} else if (d.kind == Kind.Error) {
+					File originalSource = d.location.file.absoluteFile;
+					String originalSourceName = d.location.file.shortName;
+					// set checkMe to the location of the include
+					SrcPos checkMe = d.location;
+					while (checkMe.file.includedFrom != null)
+						checkMe = checkMe.file.includedFrom;
+					// only show one
+					if (!includeWarnings.contains(originalSource)) {
+						includeWarnings.add(originalSource);
+						String ost = originalSourceName + " contains errors";
+						finalDiagSet.add(new Diag(Diag.Kind.Error, checkMe, ost, ost));
+					}
+				}
+			}
 			return finalDiagSet.toArray(new Diag[0]);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			String msg = "diagnostics exception: " + ex.toString();
 			// whoopsie!
+			SrcPosFile synth = new SrcPosFile(null, assumedFilename, assumedFilename.getName());
 			return new Diag[] {
-				new Diag(Diag.Kind.Error, new SrcPos(assumedFilename, assumedFilename.getName(), 1), msg, msg)
+				new Diag(Diag.Kind.Error, new SrcPos(synth, 1), msg, msg)
 			};
 		}
 	}

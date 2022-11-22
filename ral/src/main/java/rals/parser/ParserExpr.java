@@ -64,13 +64,20 @@ public class ParserExpr {
 	}
 
 	public static RALExprUR parseExpr(InsideFileContext ifc, boolean must) {
-		Lexer lx = ifc.lexer;
-		RALExprUR firstAtom = parseExprFullAtomOrNull(ifc);
-		if (firstAtom == null) {
+		RALExprUR expr = parseExprOrNull(ifc);
+		if (expr == null) {
 			if (must)
-				throw new RuntimeException("expected at least one expression around " + lx.genLN());
+				ifc.diags.error(ifc.lexer.genLN(), "expected expression");
 			return RALExprGroupUR.of();
 		}
+		return expr;
+	}
+
+	public static RALExprUR parseExprOrNull(InsideFileContext ifc) {
+		Lexer lx = ifc.lexer;
+		RALExprUR firstAtom = parseExprFullAtomOrNull(ifc);
+		if (firstAtom == null)
+			return null;
 		LinkedList<RALExprUR> atoms = new LinkedList<>();
 		LinkedList<String> ops = new LinkedList<>();
 		atoms.add(firstAtom);

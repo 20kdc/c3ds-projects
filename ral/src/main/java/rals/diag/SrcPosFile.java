@@ -9,18 +9,31 @@ package rals.diag;
 import java.io.File;
 
 /**
- * Position in source code.
+ * Details about a source file.
  */
-public class SrcPos {
-	public final SrcPosFile file;
-	public final int line;
-	public SrcPos(SrcPosFile f, int l) {
-		file = f;
-		line = l;
+public class SrcPosFile {
+	/**
+	 * File that included this source file.
+	 */
+	public final SrcPos includedFrom;
+	/**
+	 * Absolute file. This is expected to AT LEAST compare properly.
+	 * Some Parser functions treat this as real.
+	 */
+	public final File absoluteFile;
+	/**
+	 * Short name for user display.
+	 */
+	public final String shortName;
+
+	public SrcPosFile(SrcPos f, File a, String s) {
+		includedFrom = f;
+		absoluteFile = a;
+		shortName = s;
 	}
 
 	@Override
 	public String toString() {
-		return file + ":" + line;
+		return shortName;
 	}
 }
