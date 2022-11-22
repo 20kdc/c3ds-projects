@@ -133,7 +133,7 @@ public class Parser {
 	public static void parseDeclaration(InsideFileContext ifc, Token tkn) {
 		TypeSystem ts = ifc.typeSystem;
 		Lexer lx = ifc.lexer;
-		Scripts m = ifc.module;
+		ScriptsUR m = ifc.module;
 		if (tkn.isKeyword("class")) {
 			String name = lx.requireNextID();
 			Token xtkn = lx.requireNext();

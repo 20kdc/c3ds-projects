@@ -19,10 +19,10 @@ public class ScriptContext {
 	public final RALType p1Type;
 	public final RALType p2Type;
 	public final TypeSystem typeSystem;
-	public final Scripts module;
+	public final ScriptsUR module;
 	public final DiagRecorder diags;
 
-	public ScriptContext(TypeSystem ts, Scripts m, DiagRecorder d, RALType ot, RALType ft, RALType p1, RALType p2) {
+	public ScriptContext(TypeSystem ts, ScriptsUR m, DiagRecorder d, RALType ot, RALType ft, RALType p1, RALType p2) {
 		typeSystem = ts;
 		module = m;
 		diags = d;

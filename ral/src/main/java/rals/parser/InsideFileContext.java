@@ -6,7 +6,7 @@
  */
 package rals.parser;
 
-import rals.code.Scripts;
+import rals.code.ScriptsUR;
 import rals.diag.DiagRecorder;
 import rals.lex.Lexer;
 import rals.types.TypeSystem;
@@ -18,7 +18,7 @@ public class InsideFileContext {
 	public final DiagRecorder diags;
 	public final Lexer lexer;
 	public final TypeSystem typeSystem;
-	public final Scripts module;
+	public final ScriptsUR module;
 	public InsideFileContext(IncludeParseContext ipc, Lexer lx) {
 		typeSystem = ipc.typeSystem;
 		module = ipc.module;

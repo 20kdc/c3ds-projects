@@ -9,7 +9,7 @@ package rals.parser;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import rals.code.Scripts;
+import rals.code.ScriptsUR;
 import rals.diag.DiagRecorder;
 import rals.hcm.DummyHCMRecorder;
 import rals.hcm.IHCMRecorder;
@@ -25,7 +25,7 @@ public class IncludeParseContext {
 	public final LinkedList<IDocPath> searchPaths = new LinkedList<>();
 	public final HashSet<IDocPath> included = new HashSet<>();
 	public final TypeSystem typeSystem = new TypeSystem();
-	public final Scripts module = new Scripts();
+	public final ScriptsUR module = new ScriptsUR();
 
 	public IncludeParseContext(IHCMRecorder h, boolean err) {
 		outputIncludesToErr = err;
