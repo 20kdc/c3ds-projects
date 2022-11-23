@@ -12,7 +12,7 @@ import rals.types.*;
 /**
  * Used by the inverted statement expression stuff.
  */
-public class RALVarEH extends RALDeferredExpr {
+public class RALVarEH extends RALExprSlice.Deferred {
 	public final IEHHandle handle;
 	public final RALType type;
 

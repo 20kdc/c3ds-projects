@@ -10,7 +10,7 @@ import rals.code.*;
 import rals.types.*;
 
 /**
- * For trivial expressions & variables.
+ * For trivial expressions and variables.
  * Goes nicely with inline statements.
  */
 public class RALVarVA extends RALVarString {

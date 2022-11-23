@@ -12,6 +12,9 @@ import rals.types.*;
 /**
  * Part of a general redesign of RALExpr.
  * 
+ * <i>This file essentially defines the core model of how RAL expressions work.
+ * Be careful with it!</i>
+ * 
  * KNOWN CONCERNS:
  * + If a side-effect-causing expression is sliced away, the side effects are also lost.
  * + Read/write APIs are massive (but seem necessary).
@@ -26,9 +29,79 @@ public abstract class RALExprSlice {
 		length = l;
 	}
 
+	// -- Public Wrappers --
+
+	/**
+	 * Returns the readable type of a given slot in this slice.
+	 * Also used to test readability (throws exception if not readable)
+	 */
+	public final RALType readType(int index) {
+		checkSlot(index);
+		return readTypeInner(index);
+	}
+
+	/**
+	 * Compiles a read of this expression slice, which writes into the given output expression slice.
+	 * Must throw if not readable.
+	 */
+	public final void readCompile(RALExprSlice out, CompileContext context) {
+		if (out.length != length)
+			throw new RuntimeException("Attempted to read " + this + " directly to " + out + " (different lengths!)");
+		getUnderlying(context).readCompileInner(out, context);
+	}
+
+	/**
+	 * Returns the writable type of a given slot in this slice.
+	 * Also used to test writability (throws exception if not writable)
+	 */
+	public final RALType writeType(int index) {
+		checkSlot(index);
+		return writeTypeInner(index);
+	}
+
+	/**
+	 * Compiles a write.
+	 * WARNING: May alter TARG before input runs. If this matters, make a temporary.
+	 * Must throw if not writable, or else expression handles (return-values-as-variables) will break.
+	 */
+	public final void writeCompile(int index, String input, RALType inputExactType, CompileContext context) {
+		checkSlot(index);
+		getUnderlying(context).writeCompileInner(index, input, inputExactType, context);
+	}
+
+	/**
+	 * Gets the inline CAOS for this expression, or null if that's not possible.
+	 * NOTE: This mustn't throw because a write was requested. Always return null for impossible operations.
+	 * This acts as a "fast-path" to avoid temporary variables.
+	 * It's also critical to how inline statements let you modify variables, hence the name.
+	 */
+	public final String getInlineCAOS(int index, boolean write, CompileContextNW context) {
+		checkSlot(index);
+		return getUnderlying(context).getInlineCAOSInner(index, write, context);
+	}
+
+	/**
+	 * Like getInlineCAOS but better.
+	 */
+	public final RALSpecialInline getSpecialInline(int index, CompileContextNW context) {
+		checkSlot(index);
+		return getUnderlying(context).getSpecialInlineInner(index, context);
+	}
+
+	// -- Public API --
+
 	@Override
 	public String toString() {
 		return getClass().getName();
+	}
+
+	/**
+	 * Throws an error if the length isn't 1, then returns readType(0).
+	 */
+	public final RALType assert1ReadType() {
+		if (length != 1)
+			throw new RuntimeException("Failed assert1ReadType: " + this);
+		return readTypeInner(0);
 	}
 
 	/**
@@ -42,7 +115,7 @@ public abstract class RALExprSlice {
 	}
 
 	/**
-	 * Attempts to join together a pair of slices.
+	 * Joins together a pair of slices.
 	 */
 	public static RALExprSlice concat(RALExprSlice a, RALExprSlice b) {
 		// try the most obvious
@@ -83,6 +156,18 @@ public abstract class RALExprSlice {
 		return sliceInner(base, newLen);
 	}
 
+	// -- Internal API --
+
+	/**
+	 * This divorces the type signature of a slice from it's underlying implementation (xCompile/xInline functions).
+	 * This is important for expressions where:
+	 * 1. The type signature is known
+	 * 2. The expression won't exist until later
+	 */
+	protected RALExprSlice getUnderlying(CompileContextNW context) {
+		return this;
+	}
+
 	/**
 	 * Implementation of slicing this expression slice.
 	 */
@@ -97,27 +182,9 @@ public abstract class RALExprSlice {
 		return null;
 	}
 
-	protected final void checkSlot(int index) {
+	private final void checkSlot(int index) {
 		if (index < 0 || index >= length)
 			throw new IndexOutOfBoundsException("Invalid slot " + index + " in " + this);
-	}
-
-	/**
-	 * Returns the readable type of a given slot in this slice.
-	 * Also used to test readability (throws exception if not readable)
-	 */
-	public final RALType readType(int index) {
-		checkSlot(index);
-		return readTypeInner(index);
-	}
-
-	/**
-	 * Throws an error if the length isn't 1, then returns readType(0).
-	 */
-	public final RALType assert1ReadType() {
-		if (length != 1)
-			throw new RuntimeException("Failed assert1ReadType: " + this);
-		return readTypeInner(0);
 	}
 
 	/**
@@ -132,27 +199,8 @@ public abstract class RALExprSlice {
 	 * Compiles a read of this expression slice, which writes into the given output expression slice.
 	 * Must throw if not readable.
 	 */
-	public final void readCompile(RALExprSlice out, CompileContext context) {
-		if (out.length != length)
-			throw new RuntimeException("Attempted to read " + this + " directly to " + out + " (different lengths!)");
-		readCompileInner(out, context);
-	}
-
-	/**
-	 * Compiles a read of this expression slice, which writes into the given output expression slice.
-	 * Must throw if not readable.
-	 */
 	protected void readCompileInner(RALExprSlice out, CompileContext context) {
 		throw new RuntimeException("Read not supported on " + this);
-	}
-
-	/**
-	 * Returns the writable type of a given slot in this slice.
-	 * Also used to test writability (throws exception if not writable)
-	 */
-	public final RALType writeType(int index) {
-		checkSlot(index);
-		return writeTypeInner(index);
 	}
 
 	/**
@@ -168,29 +216,8 @@ public abstract class RALExprSlice {
 	 * WARNING: May alter TARG before input runs. If this matters, make a temporary.
 	 * Must throw if not writable, or else expression handles (return-values-as-variables) will break.
 	 */
-	public final void writeCompile(int index, String input, RALType inputExactType, CompileContext context) {
-		checkSlot(index);
-		writeCompileInner(index, input, inputExactType, context);
-	}
-
-	/**
-	 * Compiles a write.
-	 * WARNING: May alter TARG before input runs. If this matters, make a temporary.
-	 * Must throw if not writable, or else expression handles (return-values-as-variables) will break.
-	 */
 	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
 		throw new RuntimeException("Write not supported on " + this);
-	}
-
-	/**
-	 * Gets the inline CAOS for this expression, or null if that's not possible.
-	 * NOTE: This mustn't throw because a write was requested. Always return null for impossible operations.
-	 * This acts as a "fast-path" to avoid temporary variables.
-	 * It's also critical to how inline statements let you modify variables, hence the name.
-	 */
-	public final String getInlineCAOS(int index, boolean write, CompileContextNW context) {
-		checkSlot(index);
-		return getInlineCAOSInner(index, write, context);
 	}
 
 	/**
@@ -209,19 +236,12 @@ public abstract class RALExprSlice {
 	/**
 	 * Like getInlineCAOS but better.
 	 */
-	public final RALSpecialInline getSpecialInline(int index, CompileContextNW context) {
-		checkSlot(index);
-		return getSpecialInlineInner(index, context);
-	}
-
-	/**
-	 * Like getInlineCAOS but better.
-	 */
 	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 		return RALSpecialInline.None;
 	}
 
 	/**
+	 * The empty slice.
 	 * Private as you shouldn't instanceof this.
 	 */
 	private static final class Empty extends RALExprSlice {
@@ -231,6 +251,39 @@ public abstract class RALExprSlice {
 		@Override
 		protected void readCompileInner(RALExprSlice out, CompileContext context) {
 			// Reading is supported (but NOP) because someone could pass in an empty slice.
+			// Think: () = ()
+			// This assignment is perfectly logically reasonable.
+		}
+	}
+
+	/**
+	 * Deferred. The actual resolved instance doesn't exist yet (but the types do).
+	 */
+	public static abstract class Deferred extends RALExprSlice {
+		public final int base;
+		public final RALType[] readTypes, writeTypes;
+
+		public Deferred(int b, int l, RALType[] r, RALType[] w) {
+			super(l);
+			base = b;
+			readTypes = r;
+			writeTypes = w;
+		}
+
+		@Override
+		protected RALType readTypeInner(int index) {
+			if (readTypes == null)
+				super.readTypeInner(index);
+			return readTypes[base + index];
+		}
+
+		@Override
+		protected RALType writeTypeInner(int index) {
+			// Yes, this can be unchecked.
+			// This is the reason I'm so paranoid about making sure compile functions throw.
+			if (writeTypes == null)
+				super.writeTypeInner(index);
+			return writeTypes[base + index];
 		}
 	}
 
@@ -252,6 +305,15 @@ public abstract class RALExprSlice {
 				a = ra;
 				b = rb;
 			}
+		}
+
+		@Override
+		public RALExprSlice getUnderlying(CompileContextNW context) {
+			RALExprSlice mA = a.getUnderlying(context);
+			RALExprSlice mB = b.getUnderlying(context);
+			if (mA != a || mB != b)
+				return concat(mA, mB);
+			return this;
 		}
 
 		@Override
@@ -328,22 +390,40 @@ public abstract class RALExprSlice {
 
 	/**
 	 * Private as you still shouldn't instanceof this.
-	 * This is used for impossible slices.
+	 * This is used for (presently) impossible slices.
 	 * Note that the assumption is that bigger slices are more possible than smaller slices.
+	 * Note also that getUnderlying may return an object on which the slice is possible.
 	 */
 	private static final class QuasiSlice extends RALExprSlice {
 		final RALExprSlice source;
-		final int sliceBase, sliceLen;
-		public QuasiSlice(RALExprSlice src, int base, int length) {
-			super(length);
+		final int sliceBase;
+		public QuasiSlice(RALExprSlice src, int base, int l) {
+			super(l);
 			source = src;
 			sliceBase = base;
-			sliceLen = length;
 		}
 
 		@Override
-		protected RALExprSlice sliceInner(int base, int length) {
-			return source.slice(sliceBase + base, length);
+		public RALExprSlice getUnderlying(CompileContextNW cc) {
+			RALExprSlice res = source.getUnderlying(cc);
+			if (res == source)
+				return this;
+			return res.slice(sliceBase, length);
+		}
+
+		@Override
+		protected RALType readTypeInner(int index) {
+			return source.readTypeInner(sliceBase + index);
+		}
+
+		@Override
+		protected RALType writeTypeInner(int index) {
+			return source.writeTypeInner(sliceBase + index);
+		}
+
+		@Override
+		protected RALExprSlice sliceInner(int b, int l) {
+			return source.slice(sliceBase + b, l);
 		}
 
 		@Override
@@ -352,8 +432,8 @@ public abstract class RALExprSlice {
 				QuasiSlice qs = (QuasiSlice) b;
 				if (qs.source == source) {
 					// see if this attaches
-					if (qs.sliceBase == sliceBase + sliceLen)
-						return source.slice(sliceBase, sliceLen + qs.sliceLen);
+					if (qs.sliceBase == sliceBase + length)
+						return source.slice(sliceBase, length + qs.length);
 				}
 			}
 			return super.tryConcatWithInner(b);
@@ -361,7 +441,7 @@ public abstract class RALExprSlice {
 
 		@Override
 		public String toString() {
-			return "impossible slice [" + sliceBase + " len " + sliceLen + "]: " + source;
+			return "unresolved slice [" + sliceBase + " len " + length + "]: " + source;
 		}
 	}
 }
