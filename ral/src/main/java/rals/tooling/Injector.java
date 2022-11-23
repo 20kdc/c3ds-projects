@@ -8,7 +8,6 @@ package rals.tooling;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -62,6 +61,8 @@ public class Injector {
 		}
 	}
 	public static class CPXException extends RuntimeException {
+		private static final long serialVersionUID = -6375845826233160433L;
+
 		public CPXException(String text) {
 			super(text);
 		}

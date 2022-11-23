@@ -10,8 +10,6 @@ import rals.code.*;
 import rals.diag.SrcPos;
 import rals.diag.SrcRange;
 import rals.expr.*;
-import rals.lex.*;
-import rals.types.*;
 
 /**
  * Inline statement, made up of a set of parts.

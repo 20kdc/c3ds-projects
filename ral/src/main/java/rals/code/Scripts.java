@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import rals.diag.DiagRecorder;
+import rals.expr.RALExprSlice;
 import rals.stmt.RALStatement;
 import rals.types.RALType;
 import rals.types.ScriptIdentifier;
@@ -23,6 +24,11 @@ public class Scripts {
 	public RALStatement installScript;
 	public HashMap<ScriptIdentifier, RALStatement> eventScripts = new HashMap<>();
 	public RALStatement removeScript;
+
+	/**
+	 * Floating expressions, essentially global expression handle values.
+	 */
+	public HashMap<Object, RALExprSlice> floatingExprs = new HashMap<>();
 
 	/**
 	 * Compiles the module's install script.

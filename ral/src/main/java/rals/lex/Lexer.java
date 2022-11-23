@@ -6,15 +6,12 @@
  */
 package rals.lex;
 
-import java.io.File;
-import java.io.InputStream;
 import java.io.Reader;
 
 import rals.diag.DiagRecorder;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
 import rals.diag.SrcRange;
-import rals.lex.Token.ID;
 
 /**
  * Big monolith.

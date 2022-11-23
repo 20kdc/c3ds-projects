@@ -12,8 +12,6 @@ import java.util.LinkedList;
 import rals.cond.*;
 import rals.diag.SrcPos;
 import rals.expr.*;
-import rals.expr.RALConstant.Int;
-import rals.expr.RALConstant.Str;
 import rals.lex.*;
 import rals.stmt.*;
 import rals.types.*;

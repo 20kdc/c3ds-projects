@@ -8,7 +8,9 @@ package rals.code;
 
 import java.util.HashMap;
 
+import rals.diag.DiagRecorder;
 import rals.expr.*;
+import rals.types.TypeSystem;
 
 /**
  * A set of macro definitions.
@@ -19,6 +21,12 @@ public class MacroDefSet implements RALCallable {
 
 	public MacroDefSet(String n) {
 		name = n;
+	}
+
+	@Override
+	public void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags, Scripts target) {
+		for (RALCallable rc : map.values())
+			rc.precompile(ts, source, diags, target);
 	}
 
 	@Override

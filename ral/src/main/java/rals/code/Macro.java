@@ -6,6 +6,7 @@
  */
 package rals.code;
 
+import rals.diag.DiagRecorder;
 import rals.expr.*;
 import rals.types.*;
 
@@ -21,6 +22,10 @@ public class Macro implements RALCallable {
 		name = n;
 		args = a;
 		code = c;
+	}
+
+	@Override
+	public void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags, Scripts target) {
 	}
 
 	@Override

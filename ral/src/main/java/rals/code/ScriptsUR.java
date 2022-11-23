@@ -7,7 +7,6 @@
 package rals.code;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 
 import rals.diag.DiagRecorder;
@@ -50,6 +49,10 @@ public class ScriptsUR {
 
 	public Scripts resolve(TypeSystem ts, DiagRecorder diags) {
 		Scripts scripts = new Scripts();
+
+		// This ensures macros are ready
+		for (RALCallable rc : callable.values())
+			rc.precompile(ts, this, diags, scripts);
 
 		if (installScript != null) {
 			ScriptContext installScriptCtx = new ScriptContext(ts, this, diags, ts.gAny, ts.gAny, ts.gAny, ts.gAny);

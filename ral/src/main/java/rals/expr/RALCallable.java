@@ -7,11 +7,18 @@
 package rals.expr;
 
 import rals.code.*;
+import rals.diag.DiagRecorder;
+import rals.types.TypeSystem;
 
 /**
  * Something callable (i.e. a macro or something like it)...
  */
 public interface RALCallable {
+	/**
+	 * Runs any pre-compilation required. 
+	 */
+	void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags, Scripts target);
+
 	/**
 	 * Given some arguments, converts to an expression.
 	 * See RALExpr.resolve for details on how this all works. 

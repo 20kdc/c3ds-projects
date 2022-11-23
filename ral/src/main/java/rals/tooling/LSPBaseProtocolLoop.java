@@ -8,7 +8,6 @@ package rals.tooling;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +17,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import rals.tooling.ILSPCore.LSPErrorException;
-import rals.tooling.ILSPCore.LSPMethodNotFoundException;
 
 /**
  * Language server base protocol stuff.

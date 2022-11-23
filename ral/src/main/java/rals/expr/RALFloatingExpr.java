@@ -6,31 +6,22 @@
  */
 package rals.expr;
 
-import rals.code.*;
-import rals.types.*;
+import rals.code.CompileContextNW;
+import rals.types.RALType;
 
 /**
- * Used by the inverted statement expression stuff.
+ * Floating expression, will be used for macros.
  */
-public class RALVarEH extends RALDeferredExpr {
-	public final IEHHandle handle;
-	public final RALType type;
+public class RALFloatingExpr extends RALDeferredExpr {
+	public final Object handle;
 
-	public RALVarEH(IEHHandle h, RALType ot) {
-		super(0, 1, new RALType[] {ot}, new RALType[] {ot});
+	public RALFloatingExpr(Object h, int len, RALType[] rt, RALType[] wt) {
+		super(0, len, rt, wt);
 		handle = h;
-		type = ot;
 	}
 
 	@Override
-	public String toString() {
-		return "EH[" + handle + "!" + type + "]";
-	}
-
 	public RALExprSlice getUnderlying(CompileContextNW cc) {
-		RALExprSlice ex = cc.heldExprHandles.get(handle);
-		if (ex == null)
-			throw new RuntimeException("Missing: " + this);
-		return ex;
+		return cc.module.floatingExprs.get(handle);
 	}
 }

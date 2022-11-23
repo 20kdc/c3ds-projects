@@ -7,9 +7,7 @@
 package rals.stmt;
 
 import rals.code.*;
-import rals.diag.SrcPos;
 import rals.diag.SrcRange;
-import rals.lex.*;
 
 /**
  * Represents a resolved statement inside a RAL script.

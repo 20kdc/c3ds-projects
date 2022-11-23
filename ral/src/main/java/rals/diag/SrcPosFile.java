@@ -6,8 +6,6 @@
  */
 package rals.diag;
 
-import java.io.File;
-
 import rals.parser.IDocPath;
 
 /**

@@ -9,12 +9,9 @@ package rals.expr;
 import java.util.LinkedList;
 
 import rals.code.*;
-import rals.expr.*;
 import rals.expr.RALConstant.Int;
 import rals.expr.RALConstant.Number;
-import rals.stmt.RALInlineStatement;
 import rals.types.*;
-import rals.types.RALType.Major;
 
 /**
  * Binary operators!

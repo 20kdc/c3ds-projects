@@ -11,7 +11,6 @@ import java.util.LinkedList;
 
 import rals.code.ScriptsUR;
 import rals.diag.DiagRecorder;
-import rals.hcm.DummyHCMRecorder;
 import rals.hcm.IHCMRecorder;
 import rals.types.TypeSystem;
 

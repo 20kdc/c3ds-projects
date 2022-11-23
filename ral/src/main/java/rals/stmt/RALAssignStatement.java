@@ -9,7 +9,6 @@ package rals.stmt;
 import rals.code.*;
 import rals.diag.SrcPos;
 import rals.expr.*;
-import rals.lex.*;
 
 /**
  * Assignment statement
