@@ -7,6 +7,7 @@
 package rals.code;
 
 import rals.diag.DiagRecorder;
+import rals.diag.SrcPos;
 import rals.expr.*;
 import rals.types.*;
 
@@ -14,27 +15,46 @@ import rals.types.*;
  * Macros are used to replicate functions because CAOS doesn't have a proper version of those.
  */
 public class Macro implements RALCallable {
+	public final SrcPos lineNumber;
 	public final String name;
 	public final MacroArg[] args;
 	public final RALExprUR code;
+	// precompilation state
+	public RALExprSlice precompiledCode;
+	public boolean isBeingPrecompiled;
 
-	public Macro(String n, MacroArg[] a, RALExprUR c) {
+	public Macro(SrcPos ln, String n, MacroArg[] a, RALExprUR c) {
+		lineNumber = ln;
 		name = n;
 		args = a;
 		code = c;
 	}
 
 	@Override
-	public void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags, Scripts target) {
+	public void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags) {
+		if (precompiledCode != null)
+			return;
+		if (isBeingPrecompiled)
+			throw new RuntimeException("Recursive macro compilation @ " + name + "#" + args.length);
+		isBeingPrecompiled = true;
+
+		ScriptContext msContext = new ScriptContext(ts, source, diags, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
+		ScopeContext scContext = new ScopeContext(msContext);
+		for (MacroArg arg : args)
+			scContext.scopedVariables.put(arg.name, new RALVarEH(arg, arg.type));
+
+		try {
+			precompiledCode = code.resolve(scContext);
+		} catch (Exception ex) {
+			diags.error(lineNumber, "failed resolving: ", ex);
+			precompiledCode = new RALErrorExpr("macro " + name + "#" + args.length + " failed to compile");
+		}
 	}
 
 	@Override
 	public RALExprSlice instance(final RALExprSlice a, ScopeContext sc) {
 		if (a.length != args.length)
 			throw new RuntimeException("Macro " + name + " called with " + a.length + " args, not " + args.length);
-		// Our vars are going to be used outside of this context, so we attach vars and such to the parent.
-		
-		ScopeContext macroContext = new ScopeContext(sc);
 
 		boolean[] inline = new boolean[args.length];
 		String[] names = new String[args.length];
@@ -44,33 +64,29 @@ public class Macro implements RALCallable {
 		}
 
 		VarCacher vc = new VarCacher(a, inline, names);
-		for (int i = 0; i < args.length; i++)
-			macroContext.scopedVariables.put(names[i], vc.finishedOutput.slice(i, 1));
 
-		final RALExprSlice innards = code.resolve(macroContext);
-
-		// If there are no copies, then the wrapping does nothing
-		if (vc.copies.length == 0)
-			return innards;
-
-		return new Resolved(vc, innards, name);
+		// ensure compiled, then resolve with that code
+		precompile(sc.script.typeSystem, sc.script.module, sc.script.diags);
+		return new Resolved(name, vc, precompiledCode, args);
 	}
 
 	public static final class Resolved extends RALExprSlice {
-		private final String macroName;
 		private final VarCacher vc;
-		private final RALExprSlice innards;
+		public final RALExprSlice innards;
+		public final String macroName;
+		public final MacroArg[] macroArgs;
 
-		public Resolved(VarCacher vc, RALExprSlice innards, String mn) {
+		public Resolved(String mn, VarCacher vc, RALExprSlice innards, MacroArg[] args) {
 			super(innards.length);
+			macroName = mn;
 			this.vc = vc;
 			this.innards = innards;
-			macroName = mn;
+			macroArgs = args;
 		}
 
 		@Override
 		protected RALExprSlice sliceInner(int tB, int tL) {
-			return new Resolved(vc, innards.slice(tB, tL), macroName);
+			return new Resolved(macroName, vc, innards.slice(tB, tL), macroArgs);
 		}
 
 		@Override
@@ -78,16 +94,24 @@ public class Macro implements RALCallable {
 			if (b instanceof Resolved) {
 				if (((Resolved) b).vc == vc) {
 					// this is the same instance, so share!
-					return new Resolved(vc, RALExprSlice.concat(innards, ((Resolved) b).innards), macroName);
+					return new Resolved(macroName, vc, RALExprSlice.concat(innards, ((Resolved) b).innards), macroArgs);
 				}
 			}
 			return super.tryConcatWithInner(b);
 		}
 
+		public void installMacroArgs(CompileContextNW c2) {
+			for (int i = 0; i < macroArgs.length; i++)
+				c2.heldExprHandles.put(macroArgs[i], vc.finishedOutput.slice(i, 1));
+		}
+
 		@Override
 		public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
-			vc.writeCacheCode(context);
-			innards.writeCompile(index, input, inputExactType, context);
+			try (CompileContext c2 = new CompileContext(context)) {
+				vc.writeCacheCode(c2);
+				installMacroArgs(c2);
+				innards.writeCompile(index, input, inputExactType, c2);
+			}
 		}
 
 		@Override
@@ -97,13 +121,34 @@ public class Macro implements RALCallable {
 
 		@Override
 		public void readCompileInner(RALExprSlice out, CompileContext context) {
-			vc.writeCacheCode(context);
-			innards.readCompile(out, context);
+			try (CompileContext c2 = new CompileContext(context)) {
+				vc.writeCacheCode(c2);
+				installMacroArgs(c2);
+				innards.readCompile(out, c2);
+			}
 		}
 
 		@Override
 		protected RALType readTypeInner(int index) {
 			return innards.readType(index);
+		}
+
+		@Override
+		protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
+			if (vc.copies.length != 0)
+				return null;
+			CompileContextNW c2 = new CompileContextNW(context);
+			installMacroArgs(c2);
+			return innards.getInlineCAOS(index, write, c2);
+		}
+
+		@Override
+		protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
+			if (vc.copies.length != 0)
+				return RALSpecialInline.None;
+			CompileContextNW c2 = new CompileContextNW(context);
+			installMacroArgs(c2);
+			return innards.getSpecialInline(index, c2);
 		}
 
 		@Override

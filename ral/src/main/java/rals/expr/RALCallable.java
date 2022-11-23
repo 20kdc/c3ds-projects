@@ -17,7 +17,7 @@ public interface RALCallable {
 	/**
 	 * Runs any pre-compilation required. 
 	 */
-	void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags, Scripts target);
+	void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags);
 
 	/**
 	 * Given some arguments, converts to an expression.

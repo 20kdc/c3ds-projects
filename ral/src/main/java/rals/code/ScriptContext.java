@@ -7,6 +7,9 @@
 package rals.code;
 
 import rals.diag.DiagRecorder;
+import rals.stmt.RALInlineStatement;
+import rals.stmt.RALStatement;
+import rals.stmt.RALStatementUR;
 import rals.types.RALType;
 import rals.types.TypeSystem;
 
@@ -30,5 +33,14 @@ public class ScriptContext {
 		fromType = ft;
 		p1Type = p1;
 		p2Type = p2;
+	}
+
+	public RALStatement resolveStmt(RALStatementUR v) {
+		try {
+			return v.resolve(new ScopeContext(this));
+		} catch (Exception ex) {
+			diags.error(v.lineNumber, "failed resolving: ", ex);
+			return new RALInlineStatement.Resolved(v.extent, new String[] {"STOP * RAL resolveStmt error"});
+		}
 	}
 }

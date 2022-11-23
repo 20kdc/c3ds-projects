@@ -245,12 +245,12 @@ public class Parser {
 				String name = lx.requireNextID();
 				MacroArg[] args = parseArgList(ts, lx, true);
 				RALStatementUR rs = ParserCode.parseStatement(ifc);
-				m.addMacro(name, args.length, new Macro(name, args, new RALStmtExprInverted(rets, rs)));
+				m.addMacro(name, args.length, new Macro(tkn.lineNumber, name, args, new RALStmtExprInverted(rets, rs)));
 			} else {
 				String name = lx.requireNextID();
 				MacroArg[] args = parseArgList(ts, lx, true);
 				RALExprUR rs = ParserExpr.parseExpr(ifc, false);
-				m.addMacro(name, args.length, new Macro(name, args, rs));
+				m.addMacro(name, args.length, new Macro(tkn.lineNumber, name, args, rs));
 			}
 		} else if (tkn.isKeyword("overrideOwnr")) {
 			int scrId = ParserExpr.parseConstInteger(ifc);

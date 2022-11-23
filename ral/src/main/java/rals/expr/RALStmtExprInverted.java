@@ -37,7 +37,7 @@ public class RALStmtExprInverted implements RALExprUR {
 			final IEHHandle handle = new IEHHandle() {
 				@Override
 				public String toString() {
-					return "macro retarg " + ret.name;
+					return "macro ret-arg " + ret.name;
 				}
 			};
 			handles[i] = handle;

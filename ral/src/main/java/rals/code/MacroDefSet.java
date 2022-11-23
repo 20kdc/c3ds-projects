@@ -24,9 +24,9 @@ public class MacroDefSet implements RALCallable {
 	}
 
 	@Override
-	public void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags, Scripts target) {
+	public void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags) {
 		for (RALCallable rc : map.values())
-			rc.precompile(ts, source, diags, target);
+			rc.precompile(ts, source, diags);
 	}
 
 	@Override

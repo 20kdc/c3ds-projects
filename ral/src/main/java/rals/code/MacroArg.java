@@ -11,7 +11,7 @@ import rals.types.RALType;
 /**
  * Argument/parameter to a macro.
  */
-public class MacroArg {
+public class MacroArg implements IEHHandle {
 	public final RALType type;
 	public final boolean isInline;
 	public final String name;

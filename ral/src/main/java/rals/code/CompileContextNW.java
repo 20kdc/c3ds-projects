@@ -17,19 +17,12 @@ import rals.types.*;
  * Responsible for holding VA handles.
  * Stuff got moved here so that it's possible to avoid leaking the writer to inline-related methods.
  */
-public class CompileContextNW implements AutoCloseable, IVAAllocator {
+public class CompileContextNW {
 	public final TypeSystem typeSystem;
 	public final Scripts module;
 	public final HashMap<IVAHandle, Integer> heldVAHandles = new HashMap<>();
 	public final HashMap<IEHHandle, RALExprSlice> heldExprHandles = new HashMap<>();
-	public final ScopedVAAllocator alloc;
 	public final DiagRecorder diags;
-
-	/**
-	 * Just to be sure...
-	 */
-	private int subUsers = 0;
-	private final CompileContextNW subUserTrackingParent; 
 
 	public final AtomicInteger labelAllocator;
 
@@ -45,10 +38,6 @@ public class CompileContextNW implements AutoCloseable, IVAAllocator {
 		module = m;
 		diags = d;
 		labelAllocator = new AtomicInteger();
-		subUserTrackingParent = null;
-		// create the VA allocator
-		alloc = new ScopedVAAllocator(new LinearVAAllocator());
-		alloc.ensureFree(100);
 	}
 
 	protected CompileContextNW(CompileContextNW sc) {
@@ -56,16 +45,12 @@ public class CompileContextNW implements AutoCloseable, IVAAllocator {
 		module = sc.module;
 		diags = sc.diags;
 		labelAllocator = sc.labelAllocator;
-		alloc = new ScopedVAAllocator(sc.alloc);
 		// inherit break label
 		breakLabel = sc.breakLabel;
 		breakBool = sc.breakBool;
 		// inherit handles
 		heldVAHandles.putAll(sc.heldVAHandles);
 		heldExprHandles.putAll(sc.heldExprHandles);
-		// track subusers
-		subUserTrackingParent = sc;
-		sc.subUsers++;
 	}
 
 	public void clearBreak() {
@@ -75,31 +60,6 @@ public class CompileContextNW implements AutoCloseable, IVAAllocator {
 
 	public String allocLabel() {
 		return "_RAL_" + labelAllocator.getAndIncrement();
-	}
-
-	public int allocVA(IVAHandle obj) {
-		int res = allocVA();
-		heldVAHandles.put(obj, res);
-		return res;
-	}
-
-	@Override
-	public int allocVA() {
-		return alloc.allocVA();
-	}
-
-	@Override
-	public void releaseVA(int i) {
-		alloc.releaseVA(i);
-	}
-
-	@Override
-	public void close() {
-		if (subUsers != 0)
-			throw new RuntimeException("Closing a CompileContext with sub-users");
-		if (subUserTrackingParent != null)
-			subUserTrackingParent.subUsers--;
-		alloc.close();
 	}
 
 	/**

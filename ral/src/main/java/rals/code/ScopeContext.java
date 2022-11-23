@@ -9,6 +9,9 @@ package rals.code;
 import java.util.HashMap;
 
 import rals.expr.*;
+import rals.stmt.RALInlineStatement;
+import rals.stmt.RALStatement;
+import rals.stmt.RALStatementUR;
 import rals.types.*;
 
 /**

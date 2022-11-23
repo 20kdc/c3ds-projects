@@ -65,14 +65,14 @@ public class RALInlineStatement extends RALStatementUR {
 	}
 
 	public static String compileResolvedParts(Object[] resolvedParts, CompileContextNW scope) {
-		return compileResolvedParts(resolvedParts, (CompileContext) scope, true);
+		return compileResolvedParts(resolvedParts, scope, true);
 	}
 
 	public static String compileResolvedParts(Object[] resolvedParts, CompileContext scope) {
 		return compileResolvedParts(resolvedParts, scope, false);
 	}
 
-	private static String compileResolvedParts(Object[] resolvedParts, CompileContext scope, boolean inlineOnly) {
+	private static String compileResolvedParts(Object[] resolvedParts, CompileContextNW scope, boolean inlineOnly) {
 		StringBuilder interiorWriter = new StringBuilder();
 		for (Object o : resolvedParts) {
 			if (o instanceof String) {
@@ -86,7 +86,7 @@ public class RALInlineStatement extends RALStatementUR {
 					for (int i = 0; i < re.length; i++)
 						inline[i] = re.getInlineCAOS(i, false, scope) != null;
 					VarCacher vc = new VarCacher(re, inline, null);
-					vc.writeCacheCode(scope);
+					vc.writeCacheCode((CompileContext) scope);
 					re = vc.finishedOutput;
 				}
 				for (int i = 0; i < re.length; i++) {

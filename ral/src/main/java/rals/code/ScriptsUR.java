@@ -52,11 +52,11 @@ public class ScriptsUR {
 
 		// This ensures macros are ready
 		for (RALCallable rc : callable.values())
-			rc.precompile(ts, this, diags, scripts);
+			rc.precompile(ts, this, diags);
 
 		if (installScript != null) {
 			ScriptContext installScriptCtx = new ScriptContext(ts, this, diags, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
-			scripts.installScript = resolveStmt(installScriptCtx, installScript);
+			scripts.installScript = installScriptCtx.resolveStmt(installScript);
 		}
 
 		for (Map.Entry<ScriptIdentifier, RALStatementUR> eventScript : eventScripts.entrySet()) {
@@ -72,24 +72,15 @@ public class ScriptsUR {
 				oFrom = oOwnr;
 			}
 			ScriptContext scr = new ScriptContext(ts, this, diags, oOwnr, oFrom, oP1, oP2);
-			scripts.eventScripts.put(k, resolveStmt(scr, v));
+			scripts.eventScripts.put(k, scr.resolveStmt(v));
 		}
 
 		if (removeScript != null) {
 			ScriptContext removeScriptCtx = new ScriptContext(ts, this, diags, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
-			scripts.removeScript = resolveStmt(removeScriptCtx, removeScript);
+			scripts.removeScript = removeScriptCtx.resolveStmt(removeScript);
 		}
 
 		return scripts;
-	}
-
-	private RALStatement resolveStmt(ScriptContext scr, RALStatementUR v) {
-		try {
-			return v.resolve(new ScopeContext(scr));
-		} catch (Exception ex) {
-			scr.diags.error(v.lineNumber, "failed resolving: ", ex);
-			return new RALInlineStatement.Resolved(v.extent, new String[] {"STOP * RAL resolveStmt error"});
-		}
 	}
 
 	public void addInstall(RALStatementUR parseStatement) {

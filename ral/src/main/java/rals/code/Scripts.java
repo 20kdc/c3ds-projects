@@ -26,11 +26,6 @@ public class Scripts {
 	public RALStatement removeScript;
 
 	/**
-	 * Floating expressions, essentially global expression handle values.
-	 */
-	public HashMap<Object, RALExprSlice> floatingExprs = new HashMap<>();
-
-	/**
 	 * Compiles the module's install script.
 	 */
 	public void compileInstall(OuterCompileContext ctx) {
