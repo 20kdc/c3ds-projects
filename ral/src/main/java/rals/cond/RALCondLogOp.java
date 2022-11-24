@@ -53,10 +53,10 @@ public class RALCondLogOp implements RALExprUR {
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		final RALExprSlice lE = left.resolve(scope);
 		final RALExprSlice rE = right.resolve(scope);
-		final RALCondition lC = RALCondition.coerceToCondition(lE, scope.script.typeSystem);
-		final RALCondition rC = RALCondition.coerceToCondition(rE, scope.script.typeSystem);
+		final RALCondition lC = RALCondition.coerceToCondition(lE, scope.world.types);
+		final RALCondition rC = RALCondition.coerceToCondition(rE, scope.world.types);
 
-		return new RALCondition(scope.script.typeSystem) {
+		return new RALCondition(scope.world.types) {
 			@Override
 			public String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert) {
 

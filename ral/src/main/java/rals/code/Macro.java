@@ -31,14 +31,15 @@ public class Macro implements RALCallable {
 	}
 
 	@Override
-	public void precompile(TypeSystem ts, ScriptsUR source, DiagRecorder diags) {
+	public void precompile(UnresolvedWorld world) {
 		if (precompiledCode != null)
 			return;
 		if (isBeingPrecompiled)
 			throw new RuntimeException("Recursive macro compilation @ " + name + "#" + args.length);
 		isBeingPrecompiled = true;
 
-		ScriptContext msContext = new ScriptContext(ts, source, diags, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
+		TypeSystem ts = world.types;
+		ScriptContext msContext = new ScriptContext(world, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
 		ScopeContext scContext = new ScopeContext(msContext);
 		for (MacroArg arg : args)
 			scContext.scopedVariables.put(arg.name, new RALVarEH(arg, arg.type));
@@ -46,7 +47,7 @@ public class Macro implements RALCallable {
 		try {
 			precompiledCode = code.resolve(scContext);
 		} catch (Exception ex) {
-			diags.error(lineNumber, "failed resolving: ", ex);
+			world.diags.error(lineNumber, "failed resolving: ", ex);
 			precompiledCode = new RALErrorExpr("macro " + name + "#" + args.length + " failed to compile");
 		}
 	}
@@ -66,7 +67,7 @@ public class Macro implements RALCallable {
 		VarCacher vc = new VarCacher(a, inline, names);
 
 		// ensure compiled, then resolve with that code
-		precompile(sc.script.typeSystem, sc.script.module, sc.script.diags);
+		precompile(sc.world);
 		return new Resolved(name, vc, precompiledCode, args);
 	}
 

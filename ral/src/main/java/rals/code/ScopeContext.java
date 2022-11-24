@@ -18,6 +18,7 @@ import rals.types.*;
  */
 public class ScopeContext {
 	public final ScriptContext script;
+	public final UnresolvedWorld world;
 
 	/**
 	 * Scoped variables (including inherited)
@@ -28,20 +29,22 @@ public class ScopeContext {
 
 	public ScopeContext(ScriptContext parent) {
 		script = parent;
+		world = script.world;
 		scopedVariables.put("ownr", new RALVarSI(RALSpecialInline.Ownr, parent.ownrType, false));
 		// Dynamic VMVars would be nice, but we need hard logic anyway for, say, ownrType
 		scopedVariables.put("from", new RALVarString.Fixed("from", parent.fromType, false));
-		scopedVariables.put("_it_", new RALVarString.Fixed("_it_", parent.typeSystem.gAgentNullable, false));
-		scopedVariables.put("part", new RALVarPart(parent.typeSystem.gInteger));
+		scopedVariables.put("_it_", new RALVarString.Fixed("_it_", world.types.gAgentNullable, false));
+		scopedVariables.put("part", new RALVarPart(world.types.gInteger));
 		scopedVariables.put("_p1_", new RALVarString.Fixed("_p1_", parent.p1Type, false));
 		scopedVariables.put("_p2_", new RALVarString.Fixed("_p2_", parent.p2Type, false));
-		scopedVariables.put("null", new RALVarString.Fixed("null", parent.typeSystem.gNull, false));
-		scopedVariables.put("targ", new RALVarTarg(parent.typeSystem.gAgentNullable));
-		scopedVariables.put("_", new RALDiscard(parent.typeSystem, 1));
+		scopedVariables.put("null", new RALVarString.Fixed("null", world.types.gNull, false));
+		scopedVariables.put("targ", new RALVarTarg(world.types.gAgentNullable));
+		scopedVariables.put("_", new RALDiscard(world.types, 1));
 	}
 
 	public ScopeContext(ScopeContext parent) {
 		script = parent.script;
+		world = script.world;
 		scopedVariables.putAll(parent.scopedVariables);
 	}
 

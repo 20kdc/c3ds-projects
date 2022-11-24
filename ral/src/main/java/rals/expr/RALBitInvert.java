@@ -32,8 +32,8 @@ public class RALBitInvert implements RALExprUR {
 	@Override
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		final RALExprSlice exprR = expr.resolve(scope);
-		exprR.assert1ReadType().assertImpCast(scope.script.typeSystem.gInteger);
-		final RALSlot rs = new RALSlot(scope.script.typeSystem.gInteger, RALSlot.Perm.R);
+		exprR.assert1ReadType().assertImpCast(scope.world.types.gInteger);
+		final RALSlot rs = new RALSlot(scope.world.types.gInteger, RALSlot.Perm.R);
 		return new RALExprSlice(1) {
 			@Override
 			protected void readCompileInner(RALExprSlice out, CompileContext context) {

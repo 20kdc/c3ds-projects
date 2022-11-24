@@ -55,7 +55,7 @@ public class RALAmbiguousID implements RALExprUR {
 				new RALConstant.Int(typeSystem, cl.species)
 			).resolve(context);
 		}
-		context.script.diags.error(extent, "Unknown ID " + text);
+		context.world.diags.error(extent, "Unknown ID " + text);
 		return RALExprSlice.EMPTY;
 	}
 }

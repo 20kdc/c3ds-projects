@@ -21,7 +21,7 @@ public class RALInlineExpr implements RALExprUR {
 	@Override
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		final Object[] resolved = RALInlineStatement.resolveParts(parts, scope);
-		final RALSlot slot = new RALSlot(scope.script.typeSystem.gAny, RALSlot.Perm.R);
+		final RALSlot slot = new RALSlot(scope.world.types.gAny, RALSlot.Perm.R);
 		return new RALExprSlice(1) {
 			@Override
 			protected RALSlot slotInner(int index) {

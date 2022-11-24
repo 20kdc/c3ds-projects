@@ -44,7 +44,7 @@ public class RALCondSimple implements RALExprUR {
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		final RALExprSlice lR = left.resolve(scope);
 		final RALExprSlice rR = right.resolve(scope);
-		return Resolved.of(scope.script.typeSystem, centre, lR, rR);
+		return Resolved.of(scope.world.types, centre, lR, rR);
 	}
 	
 	public static final class Resolved extends RALCondition.Clause {

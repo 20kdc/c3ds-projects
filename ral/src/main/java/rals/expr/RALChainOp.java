@@ -66,11 +66,11 @@ public class RALChainOp implements RALExprUR {
 		for (int i = 0; i < elements.length; i++) {
 			RALExprSlice slice = elements[i].resolve(scope);
 			RALType t = slice.assert1ReadType();
-			op.typeCheck(scope.script.typeSystem, t);
+			op.typeCheck(scope.world.types, t);
 			if (i == 0) {
-				typePipeline = op.startType(scope.script.typeSystem, t);
+				typePipeline = op.startType(scope.world.types, t);
 			} else {
-				typePipeline = op.stepType(scope.script.typeSystem, typePipeline, t);
+				typePipeline = op.stepType(scope.world.types, typePipeline, t);
 			}
 			allArgSlices[i] = slice;
 		}

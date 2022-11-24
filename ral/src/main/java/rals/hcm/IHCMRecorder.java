@@ -6,9 +6,17 @@
  */
 package rals.hcm;
 
+import rals.code.ScopeContext;
+import rals.stmt.*;
+
 /**
  * Hover and Completion Model flight recorder interface.
  */
 public interface IHCMRecorder {
-
+	/**
+	 * Logs a given statement resolve.
+	 * This is used to mine data about the variables and so forth in that statement.
+	 * This is called from RALStatementUR.resolve (and nowhere else)
+	 */
+	void logStatementResolve(RALStatementUR rs, ScopeContext scope);
 }

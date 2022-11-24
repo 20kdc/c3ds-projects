@@ -7,6 +7,7 @@
 package rals.code;
 
 import rals.diag.DiagRecorder;
+import rals.hcm.IHCMRecorder;
 import rals.stmt.RALInlineStatement;
 import rals.stmt.RALStatement;
 import rals.stmt.RALStatementUR;
@@ -21,14 +22,10 @@ public class ScriptContext {
 	public final RALType fromType;
 	public final RALType p1Type;
 	public final RALType p2Type;
-	public final TypeSystem typeSystem;
-	public final ScriptsUR module;
-	public final DiagRecorder diags;
+	public final UnresolvedWorld world;
 
-	public ScriptContext(TypeSystem ts, ScriptsUR m, DiagRecorder d, RALType ot, RALType ft, RALType p1, RALType p2) {
-		typeSystem = ts;
-		module = m;
-		diags = d;
+	public ScriptContext(UnresolvedWorld w, RALType ot, RALType ft, RALType p1, RALType p2) {
+		world = w;
 		ownrType = ot;
 		fromType = ft;
 		p1Type = p1;
@@ -39,7 +36,7 @@ public class ScriptContext {
 		try {
 			return v.resolve(new ScopeContext(this));
 		} catch (Exception ex) {
-			diags.error(v.lineNumber, "failed resolving: ", ex);
+			world.diags.error(v.lineNumber, "failed resolving: ", ex);
 			return new RALInlineStatement.Resolved(v.extent, new String[] {"STOP * RAL resolveStmt error"});
 		}
 	}

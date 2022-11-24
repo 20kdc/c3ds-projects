@@ -79,7 +79,7 @@ public class Main {
 			StringBuilder outText = new StringBuilder();
 			OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
 			OuterCompileContext cctxDbg = new OuterCompileContext(outText, ic.typeSystem, ic.diags, true);
-			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags);
+			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 			if (args[0].equals("compile")) {
 				resolvedCode.compile(cctx);
 			} else if (args[0].equals("compileDebug")) {
@@ -105,7 +105,7 @@ public class Main {
 			}
 			IncludeParseContext ic = Parser.run(stdLibDP, args[1]);
 			LinkedList<String> queuedRequests = new LinkedList<>();
-			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags);
+			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 			if (args[0].equals("inject")) {
 				// events
 				resolvedCode.compileEventsForInject(queuedRequests, ic.typeSystem, ic.diags);

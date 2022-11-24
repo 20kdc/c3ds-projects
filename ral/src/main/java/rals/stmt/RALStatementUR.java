@@ -31,15 +31,17 @@ public abstract class RALStatementUR {
 	 */
 	public final RALStatement resolve(ScopeContext scope) {
 		try {
+			scope.world.hcm.logStatementResolve(this, scope);
 			return resolveInner(scope);
 		} catch (Exception ex) {
-			scope.script.diags.error(extent, "statement resolve: ", ex);
+			scope.world.diags.error(extent, "statement resolve: ", ex);
 			return new RALInlineStatement.Resolved(extent, new String[] {"STOP * RAL STATEMENT RESOLVE ERROR"});
 		}
 	}
 
 	/**
 	 * Resolves the statement.
+	 * Only caller should be resolve, above.
 	 */
 	protected abstract RALStatement resolveInner(ScopeContext scope);
 }

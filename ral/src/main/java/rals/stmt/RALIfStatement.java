@@ -35,7 +35,7 @@ public class RALIfStatement extends RALStatementUR {
 	public RALStatement resolveInner(ScopeContext scope) {
 		scope = new ScopeContext(scope);
 		// scope juggling
-		final RALConstant conditionConstant = condition.resolveConst(scope.script.typeSystem);
+		final RALConstant conditionConstant = condition.resolveConst(scope.world.types);
 		ScopeContext subScope = new ScopeContext(scope);
 		if (conditionConstant != null) {
 			boolean answer = RALCondition.constToBool(conditionConstant);
@@ -58,7 +58,7 @@ public class RALIfStatement extends RALStatementUR {
 				}
 			};
 		} else {
-			final RALCondition conditionR = RALCondition.coerceToCondition(condition.resolve(subScope), scope.script.typeSystem);
+			final RALCondition conditionR = RALCondition.coerceToCondition(condition.resolve(subScope), scope.world.types);
 			final RALStatement mainBranchR = mainBranch.resolve(new ScopeContext(subScope));
 			final RALStatement elseBranchR = elseBranch != null ? elseBranch.resolve(new ScopeContext(subScope)) : null;
 			return new RALStatement(extent) {

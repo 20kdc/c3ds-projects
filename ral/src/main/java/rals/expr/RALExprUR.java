@@ -26,7 +26,7 @@ public interface RALExprUR {
 	 * Note that this doesn't generate code - it just gets all the variables into place.
 	 */
 	default RALExprSlice resolve(ScopeContext scope) {
-		RALConstant rc = resolveConst(scope.script.typeSystem);
+		RALConstant rc = resolveConst(scope.world.types);
 		if (rc != null)
 			return rc;
 		return resolveInner(scope);

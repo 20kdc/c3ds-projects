@@ -76,7 +76,7 @@ public final class RALCast implements RALExprUR {
 			RALExprSlice r = base.resolveInner(context);
 			RALType nn = r.assert1ReadType();
 			// System.out.println(nn);
-			nn = context.script.typeSystem.byNonNullable(nn);
+			nn = context.world.types.byNonNullable(nn);
 			// System.out.println(nn);
 			return Resolved.of(r, nn, false);
 		}

@@ -25,29 +25,29 @@ public class RALInstanceof implements RALExprUR {
 	@Override
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		RALExprSlice val = src.resolve(scope);
-		RALType valType = val.assert1ReadType().assertImpCast(scope.script.typeSystem.gAgentNullable);
-		boolean nullable = scope.script.typeSystem.byNullable(valType) == valType;
+		RALType valType = val.assert1ReadType().assertImpCast(scope.world.types.gAgentNullable);
+		boolean nullable = scope.world.types.byNullable(valType) == valType;
 		RALExprSlice params;
 		if (type.family == 0) {
 			// trying this on Agent?
-			return new RALConstant.Int(scope.script.typeSystem, 1);
+			return new RALConstant.Int(scope.world.types, 1);
 		} else if (type.genus == 0) {
 			params = RALExprSlice.concat(
 				val,
-				new RALConstant.Int(scope.script.typeSystem, type.family)
+				new RALConstant.Int(scope.world.types, type.family)
 			);
 		} else if (type.species == 0) {
 			params = RALExprSlice.concat(
 				val,
-				new RALConstant.Int(scope.script.typeSystem, type.family),
-				new RALConstant.Int(scope.script.typeSystem, type.genus)
+				new RALConstant.Int(scope.world.types, type.family),
+				new RALConstant.Int(scope.world.types, type.genus)
 			);
 		} else {
 			params = RALExprSlice.concat(
 				val,
-				new RALConstant.Int(scope.script.typeSystem, type.family),
-				new RALConstant.Int(scope.script.typeSystem, type.genus),
-				new RALConstant.Int(scope.script.typeSystem, type.species)
+				new RALConstant.Int(scope.world.types, type.family),
+				new RALConstant.Int(scope.world.types, type.genus),
+				new RALConstant.Int(scope.world.types, type.species)
 			);
 		}
 		String macroName = nullable ? "__ral_compiler_helper_instanceof_nullable" : "__ral_compiler_helper_instanceof";

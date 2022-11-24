@@ -27,7 +27,7 @@ public class RALCall implements RALExprUR {
 	}
 
 	public static RALExprSlice makeResolved(String name, RALExprSlice paramR, ScopeContext context) {
-		RALCallable rc = context.script.module.callable.get(name);
+		RALCallable rc = context.world.module.callable.get(name);
 		if (rc == null)
 			throw new RuntimeException("No such callable: " + name);
 		return rc.instance(paramR, context);

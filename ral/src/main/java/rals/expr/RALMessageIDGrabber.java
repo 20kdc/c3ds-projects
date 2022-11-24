@@ -27,7 +27,7 @@ public class RALMessageIDGrabber implements RALExprUR {
 		Integer id = base.lookupMSID(msgName, false);
 		if (id == null)
 			throw new RuntimeException("No message name " + msgName + " in " + base);
-		return new RALConstant.Int(scope.script.typeSystem, id);
+		return new RALConstant.Int(scope.world.types, id);
 	}
 
 }

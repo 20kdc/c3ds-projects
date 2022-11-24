@@ -11,6 +11,7 @@ import java.util.Map;
 
 import rals.diag.DiagRecorder;
 import rals.expr.RALCallable;
+import rals.hcm.IHCMRecorder;
 import rals.stmt.*;
 import rals.types.*;
 
@@ -42,15 +43,16 @@ public class ScriptsUR {
 		res.addMacro(count, c);
 	}
 
-	public Scripts resolve(TypeSystem ts, DiagRecorder diags) {
+	public Scripts resolve(TypeSystem ts, DiagRecorder diags, IHCMRecorder hcm) {
+		UnresolvedWorld world = new UnresolvedWorld(ts, this, diags, hcm);
 		Scripts scripts = new Scripts();
 
 		// This ensures macros are ready
 		for (RALCallable rc : callable.values())
-			rc.precompile(ts, this, diags);
+			rc.precompile(world);
 
 		if (installScript != null) {
-			ScriptContext installScriptCtx = new ScriptContext(ts, this, diags, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
+			ScriptContext installScriptCtx = new ScriptContext(world, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
 			scripts.installScript = installScriptCtx.resolveStmt(installScript);
 		}
 
@@ -66,12 +68,12 @@ public class ScriptsUR {
 				oOwnr = override;
 				oFrom = oOwnr;
 			}
-			ScriptContext scr = new ScriptContext(ts, this, diags, oOwnr, oFrom, oP1, oP2);
+			ScriptContext scr = new ScriptContext(world, oOwnr, oFrom, oP1, oP2);
 			scripts.eventScripts.put(k, scr.resolveStmt(v));
 		}
 
 		if (removeScript != null) {
-			ScriptContext removeScriptCtx = new ScriptContext(ts, this, diags, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
+			ScriptContext removeScriptCtx = new ScriptContext(world, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
 			scripts.removeScript = removeScriptCtx.resolveStmt(removeScript);
 		}
 

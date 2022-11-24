@@ -6,9 +6,14 @@
  */
 package rals.hcm;
 
+import rals.code.ScopeContext;
+import rals.stmt.RALStatementUR;
+
 /**
  * HCM recorder in cases where HCM recording is not wanted.
  */
 public class DummyHCMRecorder implements IHCMRecorder {
-
+	@Override
+	public void logStatementResolve(RALStatementUR rs, ScopeContext scope) {
+	}
 }

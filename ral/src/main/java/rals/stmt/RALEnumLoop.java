@@ -31,7 +31,7 @@ public class RALEnumLoop extends RALStatementUR {
 		RALExprSlice paramsR = params.resolve(scope);
 		final RALStatement loopStarter;
 		if (enumToken.equals("econ")) {
-			paramsR.assert1ReadType().assertImpCast(scope.script.typeSystem.gAgent);
+			paramsR.assert1ReadType().assertImpCast(scope.world.types.gAgent);
 			loopStarter = new RALInlineStatement.Resolved(extent, new Object[] {
 				enumToken + " ",
 				paramsR
@@ -45,9 +45,9 @@ public class RALEnumLoop extends RALStatementUR {
 					enumToken + " " + ac.classifier.family + " " + ac.classifier.genus + " " + ac.classifier.species
 				});
 			} else if (paramsR.length == 3) {
-				paramsR.readType(0).assertImpCast(scope.script.typeSystem.gInteger);
-				paramsR.readType(1).assertImpCast(scope.script.typeSystem.gInteger);
-				paramsR.readType(2).assertImpCast(scope.script.typeSystem.gInteger);
+				paramsR.readType(0).assertImpCast(scope.world.types.gInteger);
+				paramsR.readType(1).assertImpCast(scope.world.types.gInteger);
+				paramsR.readType(2).assertImpCast(scope.world.types.gInteger);
 				loopStarter = new RALInlineStatement.Resolved(extent, new Object[] {
 					enumToken + " ",
 					paramsR
