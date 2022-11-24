@@ -16,7 +16,8 @@ import rals.expr.RALExprSlice;
 import rals.types.RALType;
 
 /**
- * Snapshot of everything in scope at a specific point, including constants and classifiers.
+ * Snapshot of variables in scope at a specific point.
+ * Also includes classifiers.
  */
 public class HCMScopeSnapshot {
 	public final SrcPos takenAt;
@@ -33,10 +34,6 @@ public class HCMScopeSnapshot {
 		for (Map.Entry<String, RALExprSlice> var : sc.scopedVariables.entrySet()) {
 			String k = var.getKey();
 			contents.put(k, HCMHoverDataGenerators.varHoverData(k, var.getValue().slots()));
-		}
-		for (Map.Entry<String, RALConstant> c : sc.world.types.namedConstants.entrySet()) {
-			String k = c.getKey();
-			contents.put(k, HCMHoverDataGenerators.constHoverData(k, c.getValue()));
 		}
 	}
 }

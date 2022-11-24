@@ -161,7 +161,7 @@ public class Parser {
 			lx.requireNextKw(";");
 		} else if (tkn.isKeyword("field")) {
 			RALType fieldType = ParserType.parseType(ifc);
-			String name = lx.requireNextID();
+			String name = ParserType.parseTypeName(ifc);
 			RALType rt = ts.byName(name);
 			if (rt instanceof RALType.Agent) {
 				lx.requireNextKw(".");
