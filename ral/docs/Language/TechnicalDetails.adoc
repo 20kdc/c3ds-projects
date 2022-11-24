@@ -4,7 +4,7 @@
 
 Expressions are represented as slices (`RALExprSlice`). Slices are made up of slots.
 
-Slots may be subdivided, but if you do this then parts of the expression may be outright dropped, *including side-effects.*
+Slices may be subdivided, but if you do this then parts of the expression may be outright dropped, *including side-effects.*
 
 This mechanism is necessary for feature like macros returning multiple values, and so forth.
 
@@ -12,22 +12,33 @@ This mechanism is necessary for feature like macros returning multiple values, a
 
 *The following are [underline]##compiler guarantees##, so if the compiler violates these, it's a bug:*
 
-1. An assignment statement will *always* compile a read of the *root of the right-hand-side* expression.
+1. A compiled read does not necessarily mean code will actually be generated, if the compiler determines that the read is sufficiently pointless. Where this applies is really case-specific and subject to change, but should always be kept within the realm of "blatantly stupid NOPs". Right now, the reading side determines this, and writing a VA to Discard counts (as neither Discard nor the VA can even theoretically have side effects).
 
-2. Deliberately discarding a value with `_` will generate an uninitialized return value temporary specific to that slot (i.e. `_,_ = 1,2;` creates two temporaries), and will compile the expression (and therefore it's side-effects).
+2. An assignment statement will compile a read of the *root of the right-hand-side* expression. Initial values in a `let` statement count, and expression statements such as `1;` or `doTheThing();` count as assignment statements with discards on the left side.
 
-3. Corollary to guarantee 1: The same applies to variables created deliberately with `let`. The same *does not* apply to `alias` or inlined parameters to a `` as that's not how they work.
+3. Deliberately discarding values with `_` will generate uninitialized variables for the purpose. Therefore assignments to it will compile reads (unless they're otherwise broken).
 
-4. An expression statement such as `1;` or `doTheThing();` is exactly equal to an assignment statement with however many discard values are required on the left side. (Internally, both assignments and expression statements are considered `RALAssignStatement` so check there fore details.)
-   Therefore, guarantee 1 is in effect for expression statements.
+4. Macro non-inline parameters will compile reads of the *root* expression. The same *does not* apply to `alias` or macro inline parameters -- these are aliases, not real variables.
 
 5. An assignment statement will always compile the root expression, and a macro call (which for `someCall();` is the root expression) will always compile it's own root expression in turn.
 
-Note, however, no guarantees are made about when the compiler *will not* compile an expression's side-effects - this is because macros with no return values and empty (and thus elidable) expression slices look very much the same.
+6. When an expression is not the root, things get complicated -- for example, macro inline arguments don't even exist until they're actually used within the macro.
+
+Note, however, no guarantees are made about when the compiler *will not* compile an expression's side-effects -- this is because macros with no return values and empty (and thus elidable) expression slices look very much the same.
 
 There's a current rule in the compiler about writing single slots at a time, but this rule is potentially up for negotiation, which is why it's not included in the guarantees.
 
 In addition, statement expressions have some interesting slicing rules meant to try and reduce the amount of nonsense that goes on around macros.
+
+### Conditions
+
+Conditions are a special case of expressions. The reason they're special is because in most cases, the RAL compiler is able to directly embed a condition inside a CAOS conditional or loop.
+
+Note, however, that due to this, logical operators may not use short-circuit evaluation like other languages do, so if side effects execute is at best situation-dependent.
+
+This is important as RAL attempts to simulate more advanced boolean expression support within the framework of CAOS, which does not have advanced boolean expression support.
+
+So idioms such as `(cat != null) && catCanMeow(cat)` will not act properly (`catCanMeow(cat)` may get executed regardless of if `cat` is `null`)
 
 ### Lexer
 
