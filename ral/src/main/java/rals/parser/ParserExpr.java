@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import rals.cond.*;
 import rals.diag.SrcPos;
 import rals.expr.*;
+import rals.hcm.HCMIntent;
 import rals.lex.*;
 import rals.stmt.*;
 import rals.types.*;
@@ -180,6 +181,9 @@ public class ParserExpr {
 		TypeSystem ts = ifc.typeSystem;
 		Lexer lx = ifc.lexer;
 
+		// Add all the possible intents
+		ifc.hcm.addCompletionIntentToNextToken(HCMIntent.ID, false);
+		// Continue...
 		Token tkn = lx.requireNext();
 		if (tkn instanceof Token.Int) {
 			return new RALConstant.Int(ts, ((Token.Int) tkn).value);
@@ -188,7 +192,7 @@ public class ParserExpr {
 		} else if (tkn instanceof Token.Flo) {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
-			ifc.hcm.idReference((Token.ID) tkn);
+			ifc.hcm.setTokenHoverIntent((Token.ID) tkn, HCMIntent.ID);
 			return new RALAmbiguousID(tkn.extent, ts, ((Token.ID) tkn).text);
 		} else if (tkn instanceof Token.StrEmb) {
 			// So before we accept this, this could actually be a termination.

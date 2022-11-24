@@ -15,19 +15,25 @@ import rals.lex.Token;
  */
 public interface IHCMRecorder {
 	/**
-	 * Run for every token read.
+	 * Run for every (non-EOF) token read.
 	 */
 	void readToken(Token tkn);
 
 	/**
-	 * Marks a token as a reference to an ID.
+	 * Run for every (non-EOF) token requested by the parser. 
 	 */
-	void idReference(Token.ID tkn);
+	void parserRequestedToken(Token tkn);
 
 	/**
-	 * Marks a token as a reference to a named type.
+	 * Adds a completion intent to the next requested token.
+	 * If autoHover is true, will also set a hover intent automatically.
 	 */
-	void namedTypeReference(Token.ID tkn);
+	void addCompletionIntentToNextToken(HCMIntent intent, boolean autoHover);
+
+	/**
+	 * Sets a token's hover intent.
+	 */
+	void setTokenHoverIntent(Token.ID tkn, HCMIntent intent);
 
 	/**
 	 * Logs a given resolve.

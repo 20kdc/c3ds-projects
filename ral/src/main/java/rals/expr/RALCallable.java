@@ -7,8 +7,6 @@
 package rals.expr;
 
 import rals.code.*;
-import rals.diag.DiagRecorder;
-import rals.types.TypeSystem;
 
 /**
  * Something callable (i.e. a macro or something like it)...

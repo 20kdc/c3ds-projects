@@ -149,11 +149,17 @@ public class Lexer {
 	}
 
 	public Token next() {
-		if (tokenHistoryPtr < tokenHistory.length)
-			return tokenHistory[tokenHistoryPtr++];
+		if (tokenHistoryPtr < tokenHistory.length) {
+			Token res = tokenHistory[tokenHistoryPtr++];
+			if (res != null)
+				hcm.parserRequestedToken(res);
+			return res;
+		}
 		Token tkn = nextInner();
-		if (tkn != null)
+		if (tkn != null) {
 			hcm.readToken(tkn);
+			hcm.parserRequestedToken(tkn);
+		}
 		for (int i = 0; i < tokenHistory.length - 1; i++)
 			tokenHistory[i] = tokenHistory[i + 1];
 		tokenHistory[tokenHistory.length - 1] = tkn;

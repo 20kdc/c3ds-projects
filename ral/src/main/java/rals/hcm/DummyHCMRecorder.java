@@ -9,6 +9,7 @@ package rals.hcm;
 import rals.code.ScopeContext;
 import rals.diag.SrcRange;
 import rals.lex.Token;
+import rals.lex.Token.ID;
 
 /**
  * HCM recorder in cases where HCM recording is not wanted.
@@ -19,11 +20,15 @@ public class DummyHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
-	public void idReference(Token.ID tkn) {
+	public void parserRequestedToken(Token tkn) {
 	}
 
 	@Override
-	public void namedTypeReference(Token.ID tkn) {
+	public void addCompletionIntentToNextToken(HCMIntent intent, boolean autoHover) {
+	}
+
+	@Override
+	public void setTokenHoverIntent(ID tkn, HCMIntent intent) {
 	}
 
 	@Override

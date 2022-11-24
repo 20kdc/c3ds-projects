@@ -11,7 +11,6 @@ import java.util.Map;
 
 import rals.code.ScopeContext;
 import rals.diag.SrcPos;
-import rals.expr.RALConstant;
 import rals.expr.RALExprSlice;
 import rals.types.RALType;
 

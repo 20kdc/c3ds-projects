@@ -17,6 +17,7 @@ import rals.diag.SrcRange;
 import rals.expr.RALConstant;
 import rals.hcm.HCMStorage.HoverData;
 import rals.lex.Token;
+import rals.lex.Token.ID;
 import rals.parser.IDocPath;
 import rals.parser.IncludeParseContext;
 import rals.types.RALType;
@@ -30,8 +31,10 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	// This helps to prevent unwanted overwrites.
 	public final HashMap<Long, HCMScopeSnapshot> snapshots = new HashMap<>();
 	public final SrcPosMap<Token> lastTokenMap = new SrcPosMap<>();
-	public final HashSet<Token.ID> idReferences = new HashSet<>();
-	public final HashSet<Token.ID> typeNameReferences = new HashSet<>();
+	public final HashMap<Token.ID, HCMIntent> hoverIntents = new HashMap<>();
+	public final HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken = new HashMap<>();
+	public Token currentRequestedToken;
+	public HCMIntent autoHoverHolding;
 
 	public ActualHCMRecorder(IDocPath docPath) {
 		targetDocPath = docPath;
@@ -39,21 +42,43 @@ public class ActualHCMRecorder implements IHCMRecorder {
 
 	@Override
 	public void readToken(Token tkn) {
-		if (tkn.isInDP(targetDocPath)) {
-			lastTokenMap.putUntilEnd(tkn.extent.start, tkn);
+		if (!tkn.isInDP(targetDocPath))
+			return;
+		lastTokenMap.putUntilEnd(tkn.extent.start, tkn);
+	}
+
+	@Override
+	public void parserRequestedToken(Token tkn) {
+		HCMIntent heldAH = autoHoverHolding;
+		autoHoverHolding = null;
+		if (!tkn.isInDP(targetDocPath))
+			return;
+		if (heldAH != null)
+			if (tkn instanceof ID)
+				setTokenHoverIntent((ID) tkn, heldAH);
+	}
+
+	@Override
+	public void addCompletionIntentToNextToken(HCMIntent intent, boolean autoHover) {
+		if (currentRequestedToken == null)
+			return;
+		if (!currentRequestedToken.isInDP(targetDocPath))
+			return;
+		HashSet<HCMIntent> hs = intentsOnNextToken.get(currentRequestedToken);
+		if (hs == null) {
+			hs = new HashSet<>();
+			intentsOnNextToken.put(currentRequestedToken, hs);
 		}
+		hs.add(intent);
+		if (autoHover)
+			autoHoverHolding = intent;
 	}
 
 	@Override
-	public void idReference(Token.ID tkn) {
-		if (tkn.isInDP(targetDocPath))
-			idReferences.add(tkn);
-	}
-
-	@Override
-	public void namedTypeReference(Token.ID tkn) {
-		if (tkn.isInDP(targetDocPath))
-			typeNameReferences.add(tkn);
+	public void setTokenHoverIntent(ID tkn, HCMIntent intent) {
+		if (!tkn.isInDP(targetDocPath))
+			return;
+		hoverIntents.put(tkn, intent);
 	}
 
 	@Override
@@ -92,6 +117,6 @@ public class ActualHCMRecorder implements IHCMRecorder {
 		for (Map.Entry<String, RALConstant> nt : info.typeSystem.namedConstants.entrySet()) {
 			allNamedConstants.put(nt.getKey(), HCMHoverDataGenerators.constHoverData(nt.getKey(), nt.getValue()));
 		}
-		return new HCMStorage(snapshotsSPM, lastTokenMap, idReferences, typeNameReferences, allNamedTypes, allNamedConstants);
+		return new HCMStorage(snapshotsSPM, lastTokenMap, hoverIntents, allNamedTypes, allNamedConstants);
 	}
 }
