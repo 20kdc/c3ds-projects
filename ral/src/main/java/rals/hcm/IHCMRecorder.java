@@ -7,8 +7,8 @@
 package rals.hcm;
 
 import rals.code.ScopeContext;
+import rals.diag.SrcRange;
 import rals.lex.Token;
-import rals.stmt.*;
 
 /**
  * Hover and Completion Model flight recorder interface.
@@ -22,19 +22,18 @@ public interface IHCMRecorder {
 	/**
 	 * Marks a token as a reference to an ID.
 	 */
-	void idReference(Token tkn);
+	void idReference(Token.ID tkn);
 
 	/**
-	 * Logs a given statement resolve.
-	 * This is used to mine data about the variables and so forth in that statement.
-	 * This is called from RALStatementUR.resolve (and nowhere else)
+	 * Logs a given resolve.
+	 * This is called from:
+	 * + RALStatementUR.resolve
+	 * + Macro.precompile
 	 */
-	void statementResolvePre(RALStatementUR rs, ScopeContext scope);
+	void resolvePre(SrcRange rs, ScopeContext scope);
 
 	/**
-	 * Logs a given statement resolve.
-	 * This is used to mine data about the variables and so forth in that statement.
-	 * This is called from RALStatementUR.resolve (and nowhere else)
+	 * See resolvePre.
 	 */
-	void statementResolvePost(RALStatementUR rs, ScopeContext scope);
+	void resolvePost(SrcRange rs, ScopeContext scope);
 }

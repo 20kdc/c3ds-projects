@@ -15,6 +15,7 @@ import rals.code.*;
 import rals.cond.*;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
+import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.hcm.DummyHCMRecorder;
 import rals.lex.*;
@@ -245,12 +246,17 @@ public class Parser {
 				String name = lx.requireNextID();
 				MacroArg[] args = parseArgList(ts, lx, true);
 				RALStatementUR rs = ParserCode.parseStatement(ifc);
-				m.addMacro(name, args.length, new Macro(tkn.lineNumber, name, args, new RALStmtExprInverted(rets, rs)));
+
+				SrcRange range = lx.fromThisTokenToLast(tkn);
+				// continue
+				m.addMacro(name, args.length, new Macro(range, name, args, new RALStmtExprInverted(rets, rs)));
 			} else {
 				String name = lx.requireNextID();
 				MacroArg[] args = parseArgList(ts, lx, true);
 				RALExprUR rs = ParserExpr.parseExpr(ifc, false);
-				m.addMacro(name, args.length, new Macro(tkn.lineNumber, name, args, rs));
+
+				SrcRange range = lx.fromThisTokenToLast(tkn);
+				m.addMacro(name, args.length, new Macro(range, name, args, rs));
 			}
 		} else if (tkn.isKeyword("overrideOwnr")) {
 			int scrId = ParserExpr.parseConstInteger(ifc);

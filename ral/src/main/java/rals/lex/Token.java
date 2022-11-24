@@ -10,6 +10,7 @@ import java.util.HashSet;
 
 import rals.diag.SrcPos;
 import rals.diag.SrcRange;
+import rals.parser.IDocPath;
 
 /**
  * Text (may not be text) with a type and a position. 
@@ -53,12 +54,15 @@ public class Token {
 		keywords.add("call");
 	}
 
-	// TODO: temporary workaround.
 	public final SrcPos lineNumber;
 	public final SrcRange extent;
 	public Token(SrcRange ex) {
 		lineNumber = ex.start;
 		extent = ex;
+	}
+
+	public boolean isInDP(IDocPath docPath) {
+		return extent.isInDP(docPath);
 	}
 
 	public boolean isKeyword(String kw) {

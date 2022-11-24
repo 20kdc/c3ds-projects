@@ -6,17 +6,28 @@
  */
 package rals.diag;
 
-import org.json.JSONObject;
-
-import rals.parser.IDocPath;
-
 /**
- * Source position as it comes from an LSP (more or less).
+ * Base "common" SrcPos stuff between LSP world and RAL world - just the line/character
  */
-public class SrcPosUntranslated extends SrcPosBase {
-	public final IDocPath file;
-	public SrcPosUntranslated(IDocPath f, JSONObject jo) {
-		super(jo.getInt("line"), jo.getInt("character"));
-		file = f;
+public class SrcPosBase {
+	public final int line, character;
+
+	/**
+	 * This represents the line/character index in long form.
+	 */
+	public final long lcLong;
+
+	public SrcPosBase(int l, int c) {
+		line = l;
+		character = c;
+		lcLong = toLCLong(l, c);
+	}
+
+	/**
+	 * Translates to a long.
+	 * This is in LSP-friendly form.
+	 */
+	public static long toLCLong(int l, int c) {
+		return (((long) l) << 32L) | (c & 0xFFFFFFFFL);
 	}
 }

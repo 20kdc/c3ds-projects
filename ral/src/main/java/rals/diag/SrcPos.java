@@ -12,7 +12,7 @@ import org.json.JSONObject;
  * Position in source code.
  * This is represented in language server format.
  */
-public class SrcPos {
+public class SrcPos extends SrcPosBase {
 	/**
 	 * The file identifier of this source position.
 	 * It would be nice if this was cleaner.
@@ -24,12 +24,11 @@ public class SrcPos {
 	 * This is EXACTLY equivalent to indexes that would be passed to a charAt on the String of a StringReader.
 	 */
 	public final int globalPosition;
-	public final int line, character;
+
 	public SrcPos(SrcPosFile f, int g, int l, int c) {
+		super(l, c);
 		file = f;
 		globalPosition = g;
-		line = l;
-		character = c;
 	}
 
 	@Override
@@ -57,5 +56,13 @@ public class SrcPos {
 
 	public SrcRange toRange() {
 		return new SrcRange(this, this);
+	}
+
+	public SrcPos min(SrcPos start) {
+		return start.globalPosition < globalPosition ? start : this;
+	}
+
+	public SrcPos max(SrcPos end) {
+		return end.globalPosition > globalPosition ? end : this;
 	}
 }

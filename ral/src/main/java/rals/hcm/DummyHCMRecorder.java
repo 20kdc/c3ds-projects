@@ -7,8 +7,8 @@
 package rals.hcm;
 
 import rals.code.ScopeContext;
+import rals.diag.SrcRange;
 import rals.lex.Token;
-import rals.stmt.RALStatementUR;
 
 /**
  * HCM recorder in cases where HCM recording is not wanted.
@@ -19,14 +19,14 @@ public class DummyHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
-	public void idReference(Token tkn) {
+	public void idReference(Token.ID tkn) {
 	}
 
 	@Override
-	public void statementResolvePre(RALStatementUR rs, ScopeContext scope) {
+	public void resolvePre(SrcRange rs, ScopeContext scope) {
 	}
 
 	@Override
-	public void statementResolvePost(RALStatementUR rs, ScopeContext scope) {
+	public void resolvePost(SrcRange rs, ScopeContext scope) {
 	}
 }

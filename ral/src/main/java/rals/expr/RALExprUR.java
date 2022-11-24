@@ -29,7 +29,8 @@ public interface RALExprUR {
 		RALConstant rc = resolveConst(scope.world.types);
 		if (rc != null)
 			return rc;
-		return resolveInner(scope);
+		RALExprSlice res = resolveInner(scope);
+		return res;
 	}
 
 	/**

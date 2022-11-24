@@ -37,7 +37,9 @@ public class LanguageServer implements ILSPCore {
 		try {
 			ActualHCMRecorder hcm = new ActualHCMRecorder(docPath);
 			IncludeParseContext ipc = new IncludeParseContext(hcm, false);
+			// Need the builtins and such
 			ipc.searchPaths.add(stdLib);
+			Parser.findParseFile(ipc, null, "std/compiler_helpers.ral", null);
 
 			// Actually compile this...
 			Parser.parseFileAt(ipc, docPathSPF);

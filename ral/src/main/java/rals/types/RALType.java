@@ -28,6 +28,11 @@ public abstract class RALType {
 	}
 
 	/**
+	 * Used by tooling
+	 */
+	public abstract String getFullDescription();
+
+	/**
 	 * Can this be implicitly cast to the given type?
 	 */
 	public final boolean canImplicitlyCast(RALType other) {
@@ -171,6 +176,11 @@ public abstract class RALType {
 		}
 
 		@Override
+		public String getFullDescription() {
+			return "opaque(" + name + ")";
+		}
+
+		@Override
 		protected AgentInterface[] genInterfaces() {
 			if (parentType != null)
 				return parentType.genInterfaces();
@@ -238,9 +248,14 @@ public abstract class RALType {
 				if (!first)
 					res.append('|');
 				first = false;
-				res.append(rt.toString());
+				res.append(rt);
 			}
 			return res.toString();
+		}
+
+		@Override
+		public String getFullDescription() {
+			return toString();
 		}
 
 		@Override
@@ -370,6 +385,11 @@ public abstract class RALType {
 		public String toString() {
 			return typeName;
 		}
+
+		@Override
+		public String getFullDescription() {
+			return typeName;
+		}
 	}
 
 	/**
@@ -395,6 +415,11 @@ public abstract class RALType {
 			classifierParentAsAgent = p;
 			if (p != null)
 				addParent(p);
+		}
+
+		@Override
+		public String getFullDescription() {
+			return "classifier " + classifier.toString();
 		}
 	}
 }

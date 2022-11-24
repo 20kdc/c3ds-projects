@@ -40,6 +40,16 @@ public abstract class RALExprSlice {
 	}
 
 	/**
+	 * Returns the type and permissions of all slots in this slice.
+	 */
+	public final RALSlot[] slots() {
+		RALSlot[] slots = new RALSlot[length];
+		for (int i = 0; i < length; i++)
+			slots[i] = slot(i);
+		return slots;
+	}
+
+	/**
 	 * Returns the readable type of a given slot in this slice.
 	 * Also used to test readability (throws exception if not readable)
 	 */

@@ -1,0 +1,42 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+package rals.hcm;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import rals.code.ScopeContext;
+import rals.diag.SrcPos;
+import rals.expr.RALConstant;
+import rals.expr.RALExprSlice;
+import rals.types.RALType;
+
+/**
+ * Snapshot of everything in scope at a specific point, including constants and classifiers.
+ */
+public class HCMScopeSnapshot {
+	public final SrcPos takenAt;
+	public final HashMap<String, HCMStorage.HoverData> contents = new HashMap<>();
+
+	public HCMScopeSnapshot(SrcPos at, ScopeContext sc) {
+		takenAt = at;
+		for (Map.Entry<String, RALType> var : sc.world.types.namedTypes.entrySet()) {
+			String k = var.getKey();
+			RALType rt = var.getValue();
+			if (rt instanceof RALType.AgentClassifier)
+				contents.put(k, HCMHoverDataGenerators.typeHoverData(k, rt));
+		}
+		for (Map.Entry<String, RALExprSlice> var : sc.scopedVariables.entrySet()) {
+			String k = var.getKey();
+			contents.put(k, HCMHoverDataGenerators.varHoverData(k, var.getValue().slots()));
+		}
+		for (Map.Entry<String, RALConstant> c : sc.world.types.namedConstants.entrySet()) {
+			String k = c.getKey();
+			contents.put(k, HCMHoverDataGenerators.constHoverData(k, c.getValue()));
+		}
+	}
+}

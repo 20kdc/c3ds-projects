@@ -6,20 +6,27 @@
  */
 package rals.hcm;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import rals.code.ScopeContext;
+import rals.diag.SrcRange;
 import rals.lex.Token;
 import rals.parser.IDocPath;
 import rals.parser.IncludeParseContext;
-import rals.stmt.RALStatementUR;
 
 /**
  * HCM recorder in cases where HCM recording is wanted.
  */
 public class ActualHCMRecorder implements IHCMRecorder {
 	public final IDocPath targetDocPath;
-	public final LinkedList<Token> tokensInTargetFile = new LinkedList<>();
+	// This is stored as a HashMap and then translated later.
+	// This helps to prevent unwanted overwrites.
+	public final HashMap<Long, HCMScopeSnapshot> snapshots = new HashMap<>();
+	public final SrcPosMap<Token> lastTokenMap = new SrcPosMap<>();
+	public final HashSet<Token.ID> idReferences = new HashSet<>();
 
 	public ActualHCMRecorder(IDocPath docPath) {
 		targetDocPath = docPath;
@@ -27,27 +34,44 @@ public class ActualHCMRecorder implements IHCMRecorder {
 
 	@Override
 	public void readToken(Token tkn) {
-		if (tkn.lineNumber.file.docPath == targetDocPath)
-			tokensInTargetFile.add(tkn);
-	}
-
-	@Override
-	public void idReference(Token tkn) {
-		if (tkn.lineNumber.file.docPath == targetDocPath) {
-			// bleh
+		if (tkn.isInDP(targetDocPath)) {
+			lastTokenMap.putUntilEnd(tkn.extent.start, tkn);
 		}
 	}
 
 	@Override
-	public void statementResolvePre(RALStatementUR rs, ScopeContext scope) {
+	public void idReference(Token.ID tkn) {
+		if (tkn.isInDP(targetDocPath))
+			idReferences.add(tkn);
 	}
 
 	@Override
-	public void statementResolvePost(RALStatementUR rs, ScopeContext scope) {
+	public void resolvePre(SrcRange rs, ScopeContext scope) {
+		if (rs.isInDP(targetDocPath))
+			snapshots.put(rs.start.lcLong, new HCMScopeSnapshot(rs.start, scope));
+	}
+
+	@Override
+	public void resolvePost(SrcRange rs, ScopeContext scope) {
+		if (rs.isInDP(targetDocPath))
+			snapshots.put(rs.end.lcLong, new HCMScopeSnapshot(rs.end, scope));
 	}
 
 	public HCMStorage compile(IncludeParseContext info) {
-		HCMStorage hs = new HCMStorage();
-		return hs;
+		ArrayList<HCMScopeSnapshot> snapshotsList = new ArrayList<>(snapshots.values());
+		snapshotsList.sort(new Comparator<HCMScopeSnapshot>() {
+			@Override
+			public int compare(HCMScopeSnapshot o1, HCMScopeSnapshot o2) {
+				if (o1.takenAt.lcLong < o2.takenAt.lcLong)
+					return -1;
+				else if (o1.takenAt.lcLong > o2.takenAt.lcLong)
+					return 1;
+				return 0;
+			}
+		});
+		SrcPosMap<HCMScopeSnapshot> snapshotsSPM = new SrcPosMap<>();
+		for (HCMScopeSnapshot hss : snapshotsList)
+			snapshotsSPM.putUntilEnd(hss.takenAt, hss);
+		return new HCMStorage(snapshotsSPM, lastTokenMap, idReferences);
 	}
 }

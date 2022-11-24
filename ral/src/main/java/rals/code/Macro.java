@@ -14,7 +14,7 @@ import rals.types.*;
  * Macros are used to replicate functions because CAOS doesn't have a proper version of those.
  */
 public class Macro implements RALCallable {
-	public final SrcPos lineNumber;
+	public final SrcRange extent;
 	public final String name;
 	public final MacroArg[] args;
 	public final RALExprUR code;
@@ -22,8 +22,8 @@ public class Macro implements RALCallable {
 	public RALExprSlice precompiledCode;
 	public boolean isBeingPrecompiled;
 
-	public Macro(SrcPos ln, String n, MacroArg[] a, RALExprUR c) {
-		lineNumber = ln;
+	public Macro(SrcRange ex, String n, MacroArg[] a, RALExprUR c) {
+		extent = ex;
 		name = n;
 		args = a;
 		code = c;
@@ -44,9 +44,11 @@ public class Macro implements RALCallable {
 			scContext.scopedVariables.put(arg.name, new RALVarEH(arg, arg.type));
 
 		try {
+			world.hcm.resolvePre(extent, scContext);
 			precompiledCode = code.resolve(scContext);
+			world.hcm.resolvePost(extent, scContext);
 		} catch (Exception ex) {
-			world.diags.error(lineNumber, "failed resolving: ", ex);
+			world.diags.error(extent, "failed resolving: ", ex);
 			precompiledCode = new RALErrorExpr("macro " + name + "#" + args.length + " failed to compile");
 		}
 	}

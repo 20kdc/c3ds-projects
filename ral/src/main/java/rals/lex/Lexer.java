@@ -56,6 +56,15 @@ public class Lexer {
 		return charHistory.genLN(file);
 	}
 
+	public SrcPos endOfLastToken() {
+		back();
+		return requireNext().extent.end;
+	}
+
+	public SrcRange fromThisTokenToLast(Token tkn) {
+		return new SrcRange(tkn.extent.start, endOfLastToken());
+	}
+
 	private SrcRange completeExtent(SrcPos sp) {
 		return new SrcRange(sp, charHistory.genLN(file));
 	}
@@ -143,7 +152,8 @@ public class Lexer {
 		if (tokenHistoryPtr < tokenHistory.length)
 			return tokenHistory[tokenHistoryPtr++];
 		Token tkn = nextInner();
-		hcm.readToken(tkn);
+		if (tkn != null)
+			hcm.readToken(tkn);
 		for (int i = 0; i < tokenHistory.length - 1; i++)
 			tokenHistory[i] = tokenHistory[i + 1];
 		tokenHistory[tokenHistory.length - 1] = tkn;
