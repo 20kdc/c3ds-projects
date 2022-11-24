@@ -292,7 +292,7 @@ public class ParserExpr {
 				// well, that ends that
 				return base;
 			} else if (tkn.isKeyword("instanceof")) {
-				RALType rt = ParserType.parseType(ts, lx);
+				RALType rt = ParserType.parseType(ifc);
 				if (!(rt instanceof RALType.AgentClassifier))
 					throw new RuntimeException("instanceof requires class not " + rt);
 				base = new RALInstanceof(((RALType.AgentClassifier) rt).classifier, base);
@@ -342,7 +342,7 @@ public class ParserExpr {
 				Token tkn2 = lx.requireNext();
 				lx.back();
 				if (tkn2 instanceof Token.ID) {
-					base = RALCast.of(base, ParserType.parseType(ts, lx));
+					base = RALCast.of(base, ParserType.parseType(ifc));
 				} else {
 					base = new RALCast.Denull(base);
 				}

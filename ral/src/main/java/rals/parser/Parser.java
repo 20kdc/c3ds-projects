@@ -133,13 +133,13 @@ public class Parser {
 		Lexer lx = ifc.lexer;
 		ScriptsUR m = ifc.module;
 		if (tkn.isKeyword("class")) {
-			String name = lx.requireNextID();
+			String name = ParserType.parseTypeName(ifc);
 			Token xtkn = lx.requireNext();
 			if (xtkn.isKeyword("extends")) {
 				lx.back();
 				RALType rt = ts.byName(name);
 				if (rt instanceof RALType.AgentClassifier) {
-					parseExtendsClauses(ts, (RALType.AgentClassifier) rt, lx);
+					parseExtendsClauses(ifc, (RALType.AgentClassifier) rt);
 				} else {
 					throw new RuntimeException("No class " + name);
 				}
@@ -149,18 +149,18 @@ public class Parser {
 				int b = ParserExpr.parseConstInteger(ifc);
 				int c = ParserExpr.parseConstInteger(ifc);
 				RALType.Agent ag = ts.declareClass(new Classifier(a, b, c), name);
-				parseExtendsClauses(ts, ag, lx);
+				parseExtendsClauses(ifc, ag);
 			}
 		} else if (tkn.isKeyword("interface")) {
-			String name = lx.requireNextID();
+			String name = ParserType.parseTypeName(ifc);
 			RALType.Agent ag = ts.declareInterface(name);
-			parseExtendsClauses(ts, ag, lx);
+			parseExtendsClauses(ifc, ag);
 		} else if (tkn.isKeyword("typedef")) {
-			String name = lx.requireNextID();
-			ts.declareTypedef(name, ParserType.parseType(ts, lx));
+			String name = ParserType.parseTypeName(ifc);
+			ts.declareTypedef(name, ParserType.parseType(ifc));
 			lx.requireNextKw(";");
 		} else if (tkn.isKeyword("field")) {
-			RALType fieldType = ParserType.parseType(ts, lx);
+			RALType fieldType = ParserType.parseType(ifc);
 			String name = lx.requireNextID();
 			RALType rt = ts.byName(name);
 			if (rt instanceof RALType.Agent) {
@@ -173,7 +173,7 @@ public class Parser {
 				throw new RuntimeException("No class/interface " + name);
 			}
 		} else if (tkn.isKeyword("message")) {
-			String name = lx.requireNextID();
+			String name = ParserType.parseTypeName(ifc);
 			RALType rt = ts.byName(name);
 			if (rt instanceof RALType.Agent) {
 				// allow -> or :
@@ -187,7 +187,7 @@ public class Parser {
 				throw new RuntimeException("No class/interface " + name);
 			}
 		} else if (tkn.isKeyword("script")) {
-			String name = lx.requireNextID();
+			String name = ParserType.parseTypeName(ifc);
 			RALType typ = ts.byName(name);
 			if (!(typ instanceof RALType.Agent))
 				throw new RuntimeException("Scripts can only be defined on classes/interfaces, not " + name);
@@ -242,9 +242,9 @@ public class Parser {
 			boolean isStmtMacro = lx.requireNext().isKeyword("(");
 			lx.back();
 			if (isStmtMacro) {
-				MacroArg[] rets = parseArgList(ts, lx, false);
+				MacroArg[] rets = parseArgList(ifc, false);
 				String name = lx.requireNextID();
-				MacroArg[] args = parseArgList(ts, lx, true);
+				MacroArg[] args = parseArgList(ifc, true);
 				RALStatementUR rs = ParserCode.parseStatement(ifc);
 
 				SrcRange range = lx.fromThisTokenToLast(tkn);
@@ -252,7 +252,7 @@ public class Parser {
 				m.addMacro(name, args.length, new Macro(range, name, args, new RALStmtExprInverted(rets, rs)));
 			} else {
 				String name = lx.requireNextID();
-				MacroArg[] args = parseArgList(ts, lx, true);
+				MacroArg[] args = parseArgList(ifc, true);
 				RALExprUR rs = ParserExpr.parseExpr(ifc, false);
 
 				SrcRange range = lx.fromThisTokenToLast(tkn);
@@ -260,7 +260,7 @@ public class Parser {
 			}
 		} else if (tkn.isKeyword("overrideOwnr")) {
 			int scrId = ParserExpr.parseConstInteger(ifc);
-			ts.overrideOwnr.put(scrId, ParserType.parseType(ts, lx));
+			ts.overrideOwnr.put(scrId, ParserType.parseType(ifc));
 			lx.requireNextKw(";");
 		} else if (tkn.isKeyword("messageHook")) {
 			int scrId = ParserExpr.parseConstInteger(ifc);
@@ -288,7 +288,8 @@ public class Parser {
 		}
 	}
 
-	private static MacroArg[] parseArgList(TypeSystem ts, Lexer lx, boolean allowInline) {
+	private static MacroArg[] parseArgList(InsideFileContext ifc, boolean allowInline) {
+		Lexer lx = ifc.lexer;
 		lx.requireNextKw("(");
 		Token first = lx.requireNext();
 		if (first.isKeyword(")"))
@@ -296,7 +297,7 @@ public class Parser {
 		lx.back();
 		LinkedList<MacroArg> args = new LinkedList<>();
 		while (true) {
-			RALType typ = ParserType.parseType(ts, lx);
+			RALType typ = ParserType.parseType(ifc);
 			boolean isInline = false;
 			first = lx.requireNext();
 			if (first.isKeyword("&")) {
@@ -317,14 +318,16 @@ public class Parser {
 		}
 	}
 
-	public static void parseExtendsClauses(TypeSystem ts, RALType.Agent ag, Lexer lx) {
+	public static void parseExtendsClauses(InsideFileContext ifc, RALType.Agent ag) {
+		TypeSystem ts = ifc.typeSystem;
+		Lexer lx = ifc.lexer;
 		while (true) {
 			Token clause = lx.requireNext();
 			if (clause.isKeyword(";"))
 				break;
 			if (clause.isKeyword("extends")) {
 				while (true) {
-					String other = lx.requireNextID();
+					String other = ParserType.parseTypeName(ifc);
 					RALType rt = ts.byName(other);
 					if (rt instanceof RALType.Agent) {
 						ag.addParent((RALType.Agent) rt);

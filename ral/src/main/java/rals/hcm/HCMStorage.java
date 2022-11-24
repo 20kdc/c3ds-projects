@@ -6,6 +6,7 @@
  */
 package rals.hcm;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 import rals.diag.SrcPosUntranslated;
@@ -18,11 +19,15 @@ public class HCMStorage {
 	public final SrcPosMap<HCMScopeSnapshot> snapshots;
 	public final SrcPosMap<Token> lastTokenMap;
 	public final HashSet<Token.ID> idReferences;
+	public final HashSet<Token.ID> typeNameReferences;
+	public final HashMap<String, HoverData> allNamedTypes;
 
-	public HCMStorage(SrcPosMap<HCMScopeSnapshot> s, SrcPosMap<Token> tkn, HashSet<Token.ID> id) {
+	public HCMStorage(SrcPosMap<HCMScopeSnapshot> s, SrcPosMap<Token> tkn, HashSet<Token.ID> id, HashSet<Token.ID> tnr, HashMap<String, HoverData> ant) {
 		snapshots = s;
 		lastTokenMap = tkn;
 		idReferences = id;
+		typeNameReferences = tnr;
+		allNamedTypes = ant;
 	}
 
 	/**
@@ -38,6 +43,9 @@ public class HCMStorage {
 			if (hss == null)
 				return null;
 			return hss.contents.get(id.text);
+		} else if (typeNameReferences.contains(tkn)) {
+			Token.ID id = (Token.ID) tkn;
+			return allNamedTypes.get(id.text);
 		}
 		return null;
 	}

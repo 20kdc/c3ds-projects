@@ -25,6 +25,11 @@ public interface IHCMRecorder {
 	void idReference(Token.ID tkn);
 
 	/**
+	 * Marks a token as a reference to a named type.
+	 */
+	void namedTypeReference(Token.ID tkn);
+
+	/**
 	 * Logs a given resolve.
 	 * This is called from:
 	 * + RALStatementUR.resolve

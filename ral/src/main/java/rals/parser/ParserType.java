@@ -17,21 +17,25 @@ import rals.types.TypeSystem;
  * Type parser.
  */
 public class ParserType {
-	public static RALType parseType(TypeSystem ts, Lexer lx) {
+	public static RALType parseType(InsideFileContext ifc) {
+		TypeSystem ts = ifc.typeSystem;
+		Lexer lx = ifc.lexer;
 		LinkedList<RALType> rts = new LinkedList<>();
-		rts.add(parseTypeBranch(ts, lx));
+		rts.add(parseTypeBranch(ifc));
 		while (true) {
 			Token tkn = lx.requireNext();
 			if (!tkn.isKeyword("|")) {
 				lx.back();
 				break;
 			}
-			rts.add(parseTypeBranch(ts, lx));
+			rts.add(parseTypeBranch(ifc));
 		}
 		return ts.byUnion(rts);
 	}
-	public static RALType parseTypeBranch(TypeSystem ts, Lexer lx) {
-		String name = lx.requireNextID();
+	public static RALType parseTypeBranch(InsideFileContext ifc) {
+		TypeSystem ts = ifc.typeSystem;
+		Lexer lx = ifc.lexer;
+		String name = parseTypeName(ifc);
 		RALType rt = ts.byName(name);
 		if (rt == null)
 			throw new RuntimeException("No such type " + name);
@@ -42,5 +46,14 @@ public class ParserType {
 			lx.back();
 		}
 		return rt;
+	}
+
+	/**
+	 * Parses a type name.
+	 */
+	public static String parseTypeName(InsideFileContext ifc) {
+		Token.ID id = ifc.lexer.requireNextIDTkn();
+		ifc.hcm.namedTypeReference(id);
+		return id.text;
 	}
 }

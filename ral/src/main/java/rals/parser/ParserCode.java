@@ -55,7 +55,7 @@ public class ParserCode {
 				return new RALAliasStatement(tkn.lineNumber, id.text, res);
 			} else if (lx.optNextKw("!")) {
 				// alias x!Y;
-				RALType rt = ParserType.parseType(ts, lx);
+				RALType rt = ParserType.parseType(ifc);
 				lx.requireNextKw(";");
 				return new RALAliasStatement(tkn.lineNumber, id.text, RALCast.of(new RALAmbiguousID(id.extent, ts, id.text), rt));
 			} else {
@@ -106,7 +106,7 @@ public class ParserCode {
 			return new RALBreakFromLoop(tkn.lineNumber);
 		} else if (tkn.isKeyword("foreach")) {
 			lx.requireNextKw("("); // for flexibility in syntax
-			RALType iterOver = ParserType.parseType(ts, lx);
+			RALType iterOver = ParserType.parseType(ifc);
 			lx.requireNextKw("in");
 			String subType = lx.requireNextID();
 			RALExprUR params = ParserExpr.parseExpr(ifc, false);
@@ -115,7 +115,7 @@ public class ParserCode {
 			return new RALEnumLoop(tkn.lineNumber, iterOver, subType, params, body);
 		} else if (tkn.isKeyword("with")) {
 			boolean paren = lx.optNextKw("(");
-			RALType type = ParserType.parseType(ts, lx);
+			RALType type = ParserType.parseType(ifc);
 			if (!(type instanceof RALType.AgentClassifier))
 				throw new RuntimeException("Can only 'with' on classes");
 			Classifier cl = ((RALType.AgentClassifier) type).classifier;
@@ -238,7 +238,7 @@ public class ParserCode {
 				n = lx.requireNextID();
 				hasAnyAuto = true;
 			} else {
-				rt = ParserType.parseType(ifc.typeSystem, lx);
+				rt = ParserType.parseType(ifc);
 				n = lx.requireNextID();
 			}
 			// confirmed!

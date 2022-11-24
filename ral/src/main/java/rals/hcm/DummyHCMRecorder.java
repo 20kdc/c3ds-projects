@@ -23,6 +23,10 @@ public class DummyHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
+	public void namedTypeReference(Token.ID tkn) {
+	}
+
+	@Override
 	public void resolvePre(SrcRange rs, ScopeContext scope) {
 	}
 

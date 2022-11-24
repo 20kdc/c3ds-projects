@@ -10,12 +10,15 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import rals.code.ScopeContext;
 import rals.diag.SrcRange;
+import rals.hcm.HCMStorage.HoverData;
 import rals.lex.Token;
 import rals.parser.IDocPath;
 import rals.parser.IncludeParseContext;
+import rals.types.RALType;
 
 /**
  * HCM recorder in cases where HCM recording is wanted.
@@ -27,6 +30,7 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	public final HashMap<Long, HCMScopeSnapshot> snapshots = new HashMap<>();
 	public final SrcPosMap<Token> lastTokenMap = new SrcPosMap<>();
 	public final HashSet<Token.ID> idReferences = new HashSet<>();
+	public final HashSet<Token.ID> typeNameReferences = new HashSet<>();
 
 	public ActualHCMRecorder(IDocPath docPath) {
 		targetDocPath = docPath;
@@ -43,6 +47,12 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	public void idReference(Token.ID tkn) {
 		if (tkn.isInDP(targetDocPath))
 			idReferences.add(tkn);
+	}
+
+	@Override
+	public void namedTypeReference(Token.ID tkn) {
+		if (tkn.isInDP(targetDocPath))
+			typeNameReferences.add(tkn);
 	}
 
 	@Override
@@ -72,6 +82,9 @@ public class ActualHCMRecorder implements IHCMRecorder {
 		SrcPosMap<HCMScopeSnapshot> snapshotsSPM = new SrcPosMap<>();
 		for (HCMScopeSnapshot hss : snapshotsList)
 			snapshotsSPM.putUntilEnd(hss.takenAt, hss);
-		return new HCMStorage(snapshotsSPM, lastTokenMap, idReferences);
+		HashMap<String, HoverData> allNamedTypes = new HashMap<>();
+		for (Map.Entry<String, RALType> nt : info.typeSystem.namedTypes.entrySet())
+			allNamedTypes.put(nt.getKey(), HCMHoverDataGenerators.typeHoverData(nt.getKey(), nt.getValue()));
+		return new HCMStorage(snapshotsSPM, lastTokenMap, idReferences, typeNameReferences, allNamedTypes);
 	}
 }
