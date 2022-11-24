@@ -6,9 +6,12 @@
  */
 package rals.hcm;
 
+import java.util.LinkedList;
+
 import rals.code.ScopeContext;
-import rals.diag.SrcPosUntranslated;
+import rals.lex.Token;
 import rals.parser.IDocPath;
+import rals.parser.IncludeParseContext;
 import rals.stmt.RALStatementUR;
 
 /**
@@ -16,9 +19,23 @@ import rals.stmt.RALStatementUR;
  */
 public class ActualHCMRecorder implements IHCMRecorder {
 	public final IDocPath targetDocPath;
+	public final LinkedList<Token> tokensInTargetFile = new LinkedList<>();
 
 	public ActualHCMRecorder(IDocPath docPath) {
 		targetDocPath = docPath;
+	}
+
+	@Override
+	public void readToken(Token tkn) {
+		if (tkn.lineNumber.file.docPath == targetDocPath)
+			tokensInTargetFile.add(tkn);
+	}
+
+	@Override
+	public void idReference(Token tkn) {
+		if (tkn.lineNumber.file.docPath == targetDocPath) {
+			// bleh
+		}
 	}
 
 	@Override
@@ -29,8 +46,8 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	public void statementResolvePost(RALStatementUR rs, ScopeContext scope) {
 	}
 
-	@Override
-	public HoverData getHoverData(SrcPosUntranslated tkn) {
-		return new HoverData("This is a rubber ducky");
+	public HCMStorage compile(IncludeParseContext info) {
+		HCMStorage hs = new HCMStorage();
+		return hs;
 	}
 }

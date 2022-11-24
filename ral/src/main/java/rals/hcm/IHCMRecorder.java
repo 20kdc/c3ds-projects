@@ -7,13 +7,23 @@
 package rals.hcm;
 
 import rals.code.ScopeContext;
-import rals.diag.SrcPosUntranslated;
+import rals.lex.Token;
 import rals.stmt.*;
 
 /**
  * Hover and Completion Model flight recorder interface.
  */
 public interface IHCMRecorder {
+	/**
+	 * Run for every token read.
+	 */
+	void readToken(Token tkn);
+
+	/**
+	 * Marks a token as a reference to an ID.
+	 */
+	void idReference(Token tkn);
+
 	/**
 	 * Logs a given statement resolve.
 	 * This is used to mine data about the variables and so forth in that statement.
@@ -27,16 +37,4 @@ public interface IHCMRecorder {
 	 * This is called from RALStatementUR.resolve (and nowhere else)
 	 */
 	void statementResolvePost(RALStatementUR rs, ScopeContext scope);
-
-	/**
-	 * Gets hover information at a given point (or null for none)
-	 */
-	HoverData getHoverData(SrcPosUntranslated tkn);
-
-	public static final class HoverData {
-		public final String text;
-		public HoverData(String t) {
-			text = t;
-		}
-	}
 }

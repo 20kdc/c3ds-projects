@@ -188,6 +188,7 @@ public class ParserExpr {
 		} else if (tkn instanceof Token.Flo) {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
+			ifc.hcm.idReference(tkn);
 			return new RALAmbiguousID(tkn.extent, ts, ((Token.ID) tkn).text);
 		} else if (tkn instanceof Token.StrEmb) {
 			// So before we accept this, this could actually be a termination.

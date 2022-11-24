@@ -97,7 +97,7 @@ public class Parser {
 	 */
 	public static void parseFileInnards(IncludeParseContext ctx, IDocPath hereParent, SrcPosFile spf, Reader r) throws IOException {
 		try {
-			Lexer lx = new Lexer(spf, r, ctx.diags);
+			Lexer lx = new Lexer(spf, r, ctx.diags, ctx.hcm);
 			InsideFileContext ifc = new InsideFileContext(ctx, lx);
 			while (true) {
 				Token tkn = lx.next();

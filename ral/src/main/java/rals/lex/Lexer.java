@@ -12,6 +12,7 @@ import rals.diag.DiagRecorder;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
 import rals.diag.SrcRange;
+import rals.hcm.IHCMRecorder;
 
 /**
  * Big monolith.
@@ -42,11 +43,13 @@ public class Lexer {
 	public int levelOfStringEmbeddingEscape = 0;
 
 	public final DiagRecorder diags;
+	public final IHCMRecorder hcm;
 
-	public Lexer(SrcPosFile fn, Reader inp, DiagRecorder d) {
+	public Lexer(SrcPosFile fn, Reader inp, DiagRecorder d, IHCMRecorder h) {
 		charHistory = new CharHistory(inp, 3);
 		file = fn;
 		diags = d;
+		hcm = h;
 	}
 
 	public SrcPos genLN() {
@@ -140,6 +143,7 @@ public class Lexer {
 		if (tokenHistoryPtr < tokenHistory.length)
 			return tokenHistory[tokenHistoryPtr++];
 		Token tkn = nextInner();
+		hcm.readToken(tkn);
 		for (int i = 0; i < tokenHistory.length - 1; i++)
 			tokenHistory[i] = tokenHistory[i + 1];
 		tokenHistory[tokenHistory.length - 1] = tkn;

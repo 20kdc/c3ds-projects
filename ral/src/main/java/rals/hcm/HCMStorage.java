@@ -6,27 +6,24 @@
  */
 package rals.hcm;
 
-import rals.code.ScopeContext;
-import rals.lex.Token;
-import rals.stmt.RALStatementUR;
+import rals.diag.SrcPosUntranslated;
 
 /**
- * HCM recorder in cases where HCM recording is not wanted.
+ * Storage of HCM data (since HCM data on all active LSP files remains in memory at all times)
  */
-public class DummyHCMRecorder implements IHCMRecorder {
-	@Override
-	public void readToken(Token tkn) {
+public class HCMStorage {
+
+	/**
+	 * Gets hover information at a given point (or null for none)
+	 */
+	public HoverData getHoverData(SrcPosUntranslated tkn) {
+		return null;
 	}
 
-	@Override
-	public void idReference(Token tkn) {
-	}
-
-	@Override
-	public void statementResolvePre(RALStatementUR rs, ScopeContext scope) {
-	}
-
-	@Override
-	public void statementResolvePost(RALStatementUR rs, ScopeContext scope) {
+	public static final class HoverData {
+		public final String text;
+		public HoverData(String t) {
+			text = t;
+		}
 	}
 }

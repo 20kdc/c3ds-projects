@@ -14,25 +14,18 @@ import java.util.LinkedList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import rals.code.OuterCompileContext;
-import rals.code.Scripts;
-import rals.diag.Diag;
-import rals.diag.SrcPos;
-import rals.diag.SrcPosFile;
-import rals.diag.SrcPosUntranslated;
+import rals.code.*;
+import rals.diag.*;
 import rals.diag.Diag.Kind;
 import rals.hcm.*;
-import rals.hcm.IHCMRecorder.HoverData;
-import rals.parser.IDocPath;
-import rals.parser.IncludeParseContext;
-import rals.parser.Parser;
+import rals.parser.*;
 
 /**
  * Language server logic.
  */
 public class LanguageServer implements ILSPCore {
 	public final LSPDocRepo docRepo = new LSPDocRepo();
-	public final HashMap<IDocPath, IHCMRecorder> docHCM = new HashMap<>();
+	public final HashMap<IDocPath, HCMStorage> docHCM = new HashMap<>();
 	public final IDocPath stdLib;
 
 	public LanguageServer(IDocPath sl) {
@@ -42,7 +35,7 @@ public class LanguageServer implements ILSPCore {
 	public Diag[] getDiagnostics(IDocPath docPath) {
 		SrcPosFile docPathSPF = new SrcPosFile(null, docPath, docPath.getRootShortName());
 		try {
-			IHCMRecorder hcm = new ActualHCMRecorder(docPath);
+			ActualHCMRecorder hcm = new ActualHCMRecorder(docPath);
 			IncludeParseContext ipc = new IncludeParseContext(hcm, false);
 			ipc.searchPaths.add(stdLib);
 
@@ -53,7 +46,7 @@ public class LanguageServer implements ILSPCore {
 			scr.compile(new OuterCompileContext(new StringBuilder(), ipc.typeSystem, ipc.diags, false));
 
 			// Compilation completed, sort all the guts out
-			docHCM.put(docPath, hcm);
+			docHCM.put(docPath, hcm.compile(ipc));
 
 			LinkedList<Diag> finalDiagSet = new LinkedList<>();
 			HashSet<IDocPath> includeWarnings = new HashSet<>();
@@ -155,9 +148,9 @@ public class LanguageServer implements ILSPCore {
 			String givenURI = ident.getString("uri");
 			IDocPath docPath = docRepo.getDocPath(givenURI);
 			SrcPosUntranslated spu = new SrcPosUntranslated(docPath, params.getJSONObject("position"));
-			IHCMRecorder hcm = docHCM.get(docPath);
+			HCMStorage hcm = docHCM.get(docPath);
 			if (hcm != null) {
-				HoverData hd = hcm.getHoverData(spu);
+				HCMStorage.HoverData hd = hcm.getHoverData(spu);
 				if (hd != null) {
 					JSONObject test = new JSONObject();
 					test.put("contents", hd.text);
