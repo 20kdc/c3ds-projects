@@ -57,8 +57,13 @@ public class RALStmtExpr implements RALExprUR {
 		}
 
 		@Override
-		protected RALType readTypeInner(int index) {
-			return rExpr.readType(index);
+		protected RALType typeInner(int index) {
+			return rExpr.type(index);
+		}
+
+		@Override
+		protected RALSlotPerms permsInner(int index) {
+			return rExpr.perms(index);
 		}
 
 		@Override
@@ -67,11 +72,6 @@ public class RALStmtExpr implements RALExprUR {
 				rStmt.compile(context.writer, context);
 				rExpr.readCompile(out, context);
 			}
-		}
-
-		@Override
-		protected RALType writeTypeInner(int index) {
-			return rExpr.writeType(index);
 		}
 
 		@Override

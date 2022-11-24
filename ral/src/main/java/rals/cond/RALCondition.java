@@ -10,6 +10,7 @@ import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.expr.RALConstant;
 import rals.expr.RALExprSlice;
+import rals.expr.RALSlotPerms;
 import rals.types.RALType;
 import rals.types.TypeSystem;
 
@@ -70,8 +71,13 @@ public abstract class RALCondition extends RALExprSlice {
 	}
 
 	@Override
-	protected RALType readTypeInner(int index) {
+	protected RALType typeInner(int index) {
 		return bool;
+	}
+
+	@Override
+	protected RALSlotPerms permsInner(int index) {
+		return RALSlotPerms.R;
 	}
 
 	/**

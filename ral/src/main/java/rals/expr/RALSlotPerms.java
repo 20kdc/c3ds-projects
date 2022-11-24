@@ -6,28 +6,19 @@
  */
 package rals.expr;
 
-import rals.types.RALType;
-
 /**
- * Please do not instanceof, for the love of kittens
+ * Permissions for slots.
  */
-public abstract class RALVarBase extends RALExprSlice {
-	public final RALType type;
-	public final boolean isWritable;
+public enum RALSlotPerms {
+	None(false, false),
+	R(true, false),
+	W(false, true),
+	RW(true, true);
 
-	public RALVarBase(RALType t, boolean w) {
-		super(1);
-		type = t;
-		isWritable = w;
-	}
+	public final boolean read, write;
 
-	@Override
-	protected RALType typeInner(int index) {
-		return type;
-	}
-
-	@Override
-	protected RALSlotPerms permsInner(int index) {
-		return isWritable ? RALSlotPerms.RW : RALSlotPerms.R;
+	RALSlotPerms(boolean r, boolean w) {
+		read = r;
+		write = w;
 	}
 }

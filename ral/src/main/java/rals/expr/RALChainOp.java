@@ -77,9 +77,15 @@ public class RALChainOp implements RALExprUR {
 		final RALType finalType = typePipeline;
 		return new RALExprSlice(1) {
 			@Override
-			protected RALType readTypeInner(int index) {
+			protected RALType typeInner(int index) {
 				return finalType;
 			}
+
+			@Override
+			protected RALSlotPerms permsInner(int index) {
+				return RALSlotPerms.R;
+			}
+
 			@Override
 			protected void readCompileInner(RALExprSlice out, CompileContext context) {
 				if (out.getSpecialInline(0, context) == RALSpecialInline.VA) {

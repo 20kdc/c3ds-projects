@@ -21,22 +21,27 @@ public final class RALErrorExpr extends RALExprSlice {
 	}
 
 	@Override
-	protected RALType readTypeInner(int index) {
+	public String toString() {
+		return "err:" + this;
+	}
+
+	@Override
+	protected RALType typeInner(int index) {
 		throw new RuntimeException(errorText);
 	}
 
 	@Override
-	protected RALType writeTypeInner(int index) {
-		return readTypeInner(0);
+	protected RALSlotPerms permsInner(int index) {
+		return RALSlotPerms.None;
 	}
 
 	@Override
 	protected void readCompileInner(RALExprSlice out, CompileContext context) {
-		readTypeInner(0);
+		throw new RuntimeException(errorText);
 	}
 
 	@Override
 	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
-		readTypeInner(0);
+		throw new RuntimeException(errorText);
 	}
 }

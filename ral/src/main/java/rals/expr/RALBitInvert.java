@@ -52,9 +52,15 @@ public class RALBitInvert implements RALExprUR {
 					}
 				}
 			}
+
 			@Override
-			protected RALType readTypeInner(int index) {
+			protected RALType typeInner(int index) {
 				return scope.script.typeSystem.gInteger;
+			}
+
+			@Override
+			protected RALSlotPerms permsInner(int index) {
+				return RALSlotPerms.R;
 			}
 		};
 	}

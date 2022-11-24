@@ -110,41 +110,33 @@ public final class RALCast implements RALExprUR {
 		}
 
 		@Override
-		protected RALType readTypeInner(int index) {
-			// make sure the length is right
-			// also ensure implicit cast is possible if we want that
-			if (doImplicitCheck) {
-				expr.assert1ReadType().assertImpCast(target);
-			} else {
-				expr.assert1ReadType();
-			}
-			return target;
-		}
-
-		@Override
-		public void readCompileInner(RALExprSlice out, CompileContext context) {
-			// just to run the checks, because we have to run them late
-			readTypeInner(0);
-			// Invert ourselves so we apply to the target.
-			// This is important because it ensures we overwrite inputExactType for storage.
-			expr.readCompile(new Resolved(out, target, doImplicitCheck), context);
-		}
-
-		@Override
-		public RALType writeTypeInner(int index) {
-			// Useful for throwing assertions.
-			if (expr.length != 1)
-				throw new RuntimeException("How'd you even get here, anyway?");
-			RALType rt = expr.writeType(0);
+		protected RALType typeInner(int index) {
+			RALType rt = expr.assert1Type();
 			if (doImplicitCheck)
 				target.assertImpCast(rt);
 			return target;
 		}
 
 		@Override
+		protected RALSlotPerms permsInner(int index) {
+			if (expr.length != 1)
+				throw new RuntimeException("Expressions to RALCast must have len = 1");
+			return expr.perms(index);
+		}
+
+		@Override
+		public void readCompileInner(RALExprSlice out, CompileContext context) {
+			// just to run the checks, because we have to run them late
+			readType(0);
+			// Invert ourselves so we apply to the target.
+			// This is important because it ensures we overwrite inputExactType for storage.
+			expr.readCompile(new Resolved(out, target, doImplicitCheck), context);
+		}
+
+		@Override
 		public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
 			// trigger checks
-			writeTypeInner(0);
+			writeType(0);
 			// Overwriting inputExactType here is what turns, i.e. null|integer (major type unknown) into integer (Int).
 			// This is important for set instruction selection.
 			expr.writeCompile(0, input, doImplicitCheck ? inputExactType : target, context);

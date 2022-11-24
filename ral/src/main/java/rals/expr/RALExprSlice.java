@@ -32,12 +32,43 @@ public abstract class RALExprSlice {
 	// -- Public Wrappers --
 
 	/**
+	 * Returns the type of a given slot in this slice.
+	 */
+	public final RALType type(int index) {
+		checkSlot(index);
+		return typeInner(index);
+	}
+
+	/**
+	 * Returns the permissions of a given slot in this slice.
+	 */
+	public final RALSlotPerms perms(int index) {
+		checkSlot(index);
+		return permsInner(index);
+	}
+
+	/**
 	 * Returns the readable type of a given slot in this slice.
 	 * Also used to test readability (throws exception if not readable)
 	 */
 	public final RALType readType(int index) {
 		checkSlot(index);
-		return readTypeInner(index);
+		RALType rt = typeInner(index);
+		if (!permsInner(index).read)
+			throw new RuntimeException("Slot " + index + " of " + this + " not readable");
+		return rt;
+	}
+
+	/**
+	 * Returns the writable type of a given slot in this slice.
+	 * Also used to test writability (throws exception if not writable)
+	 */
+	public final RALType writeType(int index) {
+		checkSlot(index);
+		RALType rt = typeInner(index);
+		if (!permsInner(index).write)
+			throw new RuntimeException("Slot " + index + " of " + this + " not writable");
+		return rt;
 	}
 
 	/**
@@ -48,15 +79,6 @@ public abstract class RALExprSlice {
 		if (out.length != length)
 			throw new RuntimeException("Attempted to read " + this + " directly to " + out + " (different lengths!)");
 		getUnderlying(context).readCompileInner(out, context);
-	}
-
-	/**
-	 * Returns the writable type of a given slot in this slice.
-	 * Also used to test writability (throws exception if not writable)
-	 */
-	public final RALType writeType(int index) {
-		checkSlot(index);
-		return writeTypeInner(index);
 	}
 
 	/**
@@ -96,12 +118,21 @@ public abstract class RALExprSlice {
 	}
 
 	/**
+	 * Throws an error if the length isn't 1, then returns type(0).
+	 */
+	public final RALType assert1Type() {
+		if (length != 1)
+			throw new RuntimeException("Failed assert1Type: " + this);
+		return typeInner(0);
+	}
+
+	/**
 	 * Throws an error if the length isn't 1, then returns readType(0).
 	 */
 	public final RALType assert1ReadType() {
 		if (length != 1)
 			throw new RuntimeException("Failed assert1ReadType: " + this);
-		return readTypeInner(0);
+		return readType(0);
 	}
 
 	/**
@@ -188,11 +219,18 @@ public abstract class RALExprSlice {
 	}
 
 	/**
+	 * Returns the type of a given slot in this slice.
+	 */
+	protected RALType typeInner(int index) {
+		throw new RuntimeException("Type not supported on " + this);
+	}
+
+	/**
 	 * Returns the readable type of a given slot in this slice.
 	 * Also used to test readability (throws exception if not readable)
 	 */
-	protected RALType readTypeInner(int index) {
-		throw new RuntimeException("Read not supported on " + this);
+	protected RALSlotPerms permsInner(int index) {
+		throw new RuntimeException("Slot permissions not supported on " + this);
 	}
 
 	/**
@@ -201,14 +239,6 @@ public abstract class RALExprSlice {
 	 */
 	protected void readCompileInner(RALExprSlice out, CompileContext context) {
 		throw new RuntimeException("Read not supported on " + this);
-	}
-
-	/**
-	 * Returns the writable type of a given slot in this slice.
-	 * Also used to test writability (throws exception if not writable)
-	 */
-	protected RALType writeTypeInner(int index) {
-		throw new RuntimeException("Write not supported on " + this);
 	}
 
 	/**
@@ -261,29 +291,24 @@ public abstract class RALExprSlice {
 	 */
 	public static abstract class Deferred extends RALExprSlice {
 		public final int base;
-		public final RALType[] readTypes, writeTypes;
+		public final RALType[] types;
+		public final RALSlotPerms[] perms;
 
-		public Deferred(int b, int l, RALType[] r, RALType[] w) {
+		public Deferred(int b, int l, RALType[] t, RALSlotPerms[] p) {
 			super(l);
 			base = b;
-			readTypes = r;
-			writeTypes = w;
+			types = t;
+			perms = p;
 		}
 
 		@Override
-		protected RALType readTypeInner(int index) {
-			if (readTypes == null)
-				super.readTypeInner(index);
-			return readTypes[base + index];
+		protected RALType typeInner(int index) {
+			return types[index];
 		}
 
 		@Override
-		protected RALType writeTypeInner(int index) {
-			// Yes, this can be unchecked.
-			// This is the reason I'm so paranoid about making sure compile functions throw.
-			if (writeTypes == null)
-				super.writeTypeInner(index);
-			return writeTypes[base + index];
+		protected RALSlotPerms permsInner(int index) {
+			return perms[index];
 		}
 	}
 
@@ -317,11 +342,20 @@ public abstract class RALExprSlice {
 		}
 
 		@Override
-		protected RALType readTypeInner(int index) {
+		protected RALType typeInner(int index) {
 			if (index < a.length) {
-				return a.readTypeInner(index);
+				return a.typeInner(index);
 			} else {
-				return b.readTypeInner(index - a.length);
+				return b.typeInner(index - a.length);
+			}
+		}
+
+		@Override
+		protected RALSlotPerms permsInner(int index) {
+			if (index < a.length) {
+				return a.permsInner(index);
+			} else {
+				return b.permsInner(index - a.length);
 			}
 		}
 
@@ -331,15 +365,6 @@ public abstract class RALExprSlice {
 			RALExprSlice outBSlice = out.slice(a.length, b.length);
 			a.readCompileInner(outASlice, context);
 			b.readCompileInner(outBSlice, context);
-		}
-
-		@Override
-		protected RALType writeTypeInner(int index) {
-			if (index < a.length) {
-				return a.writeTypeInner(index);
-			} else {
-				return b.writeTypeInner(index - a.length);
-			}
 		}
 
 		@Override
@@ -412,13 +437,13 @@ public abstract class RALExprSlice {
 		}
 
 		@Override
-		protected RALType readTypeInner(int index) {
-			return source.readTypeInner(sliceBase + index);
+		protected RALType typeInner(int index) {
+			return source.typeInner(sliceBase + index);
 		}
 
 		@Override
-		protected RALType writeTypeInner(int index) {
-			return source.writeTypeInner(sliceBase + index);
+		protected RALSlotPerms permsInner(int index) {
+			return source.permsInner(sliceBase + index);
 		}
 
 		@Override

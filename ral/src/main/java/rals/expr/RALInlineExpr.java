@@ -24,9 +24,15 @@ public class RALInlineExpr implements RALExprUR {
 		final Object[] resolved = RALInlineStatement.resolveParts(parts, scope);
 		return new RALExprSlice(1) {
 			@Override
-			protected RALType readTypeInner(int index) {
+			protected RALType typeInner(int index) {
 				return scope.script.typeSystem.gAny;
 			}
+
+			@Override
+			protected RALSlotPerms permsInner(int index) {
+				return RALSlotPerms.R;
+			}
+
 			@Override
 			protected void readCompileInner(RALExprSlice out, CompileContext context) {
 				try (CompileContext c2 = new CompileContext(context)) {

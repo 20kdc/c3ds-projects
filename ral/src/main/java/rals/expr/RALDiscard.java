@@ -35,8 +35,13 @@ public class RALDiscard extends RALExprSlice implements RALExprUR {
 	}
 
 	@Override
-	protected RALType writeTypeInner(int index) {
+	protected RALType typeInner(int index) {
 		return any;
+	}
+
+	@Override
+	protected RALSlotPerms permsInner(int index) {
+		return RALSlotPerms.W;
 	}
 
 	@Override

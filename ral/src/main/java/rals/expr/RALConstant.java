@@ -45,8 +45,13 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		public abstract RALConstant.Single cast(RALType rt);
 
 		@Override
-		protected RALType readTypeInner(int index) {
+		protected RALType typeInner(int index) {
 			return type;
+		}
+
+		@Override
+		protected RALSlotPerms permsInner(int index) {
+			return RALSlotPerms.R;
 		}
 
 		@Override

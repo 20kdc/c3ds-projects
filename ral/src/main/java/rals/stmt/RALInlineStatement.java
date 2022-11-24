@@ -64,10 +64,21 @@ public class RALInlineStatement extends RALStatementUR {
 		return parts2;
 	}
 
+	/**
+	 * Compiles the parts into a continuous stream of CAOS.
+	 * If the input CAOS allows it, this is directly usable as an expression.
+	 * As a CompileContextNW has been passed, no additional code is generated.
+	 * Returns null if not possible.
+	 */
 	public static String compileResolvedParts(Object[] resolvedParts, CompileContextNW scope) {
 		return compileResolvedParts(resolvedParts, scope, true);
 	}
 
+	/**
+	 * Compiles the parts into a continuous stream of CAOS.
+	 * If the input CAOS allows it, this is directly usable as an expression.
+	 * Additional code will be written to the CompileContext as necessary.
+	 */
 	public static String compileResolvedParts(Object[] resolvedParts, CompileContext scope) {
 		return compileResolvedParts(resolvedParts, scope, false);
 	}
@@ -91,8 +102,10 @@ public class RALInlineStatement extends RALStatementUR {
 				}
 				for (int i = 0; i < re.length; i++) {
 					String inlineRepr = re.getInlineCAOS(i, false, scope);
-					if (inlineRepr == null)
+					if (inlineRepr == null) {
+						// This rejects expressions when inlineOnly = false.
 						return null;
+					}
 					if (i != 0)
 						interiorWriter.append(" ");
 					interiorWriter.append(inlineRepr);
