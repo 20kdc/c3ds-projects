@@ -8,7 +8,6 @@ package rals.expr;
 
 import rals.code.*;
 import rals.stmt.*;
-import rals.types.*;
 
 /**
  * Same basic idea as RALStmtExpr, but done differently.

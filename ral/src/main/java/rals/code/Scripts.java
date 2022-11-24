@@ -11,11 +11,8 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import rals.diag.DiagRecorder;
-import rals.expr.RALExprSlice;
 import rals.stmt.RALStatement;
-import rals.types.RALType;
-import rals.types.ScriptIdentifier;
-import rals.types.TypeSystem;
+import rals.types.*;
 
 /**
  * Represents resolved scripts (as opposed to the unresolved script soup).

@@ -11,13 +11,8 @@ import java.util.Map;
 
 import rals.diag.DiagRecorder;
 import rals.expr.RALCallable;
-import rals.stmt.RALBlock;
-import rals.stmt.RALInlineStatement;
-import rals.stmt.RALStatement;
-import rals.stmt.RALStatementUR;
-import rals.types.RALType;
-import rals.types.ScriptIdentifier;
-import rals.types.TypeSystem;
+import rals.stmt.*;
+import rals.types.*;
 
 /**
  * Represents the content of the output .cos file.
