@@ -8,6 +8,7 @@ package rals.parser;
 
 import rals.code.ScriptsUR;
 import rals.diag.DiagRecorder;
+import rals.hcm.IHCMRecorder;
 import rals.lex.Lexer;
 import rals.types.TypeSystem;
 
@@ -19,10 +20,12 @@ public class InsideFileContext {
 	public final Lexer lexer;
 	public final TypeSystem typeSystem;
 	public final ScriptsUR module;
+	public final IHCMRecorder hcm;
 	public InsideFileContext(IncludeParseContext ipc, Lexer lx) {
 		typeSystem = ipc.typeSystem;
 		module = ipc.module;
 		lexer = lx;
 		diags = ipc.diags;
+		hcm = ipc.hcm;
 	}
 }

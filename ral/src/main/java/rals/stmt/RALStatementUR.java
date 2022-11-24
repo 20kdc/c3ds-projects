@@ -31,8 +31,10 @@ public abstract class RALStatementUR {
 	 */
 	public final RALStatement resolve(ScopeContext scope) {
 		try {
-			scope.world.hcm.logStatementResolve(this, scope);
-			return resolveInner(scope);
+			scope.world.hcm.statementResolvePre(this, scope);
+			RALStatement res = resolveInner(scope);
+			scope.world.hcm.statementResolvePost(this, scope);
+			return res;
 		} catch (Exception ex) {
 			scope.world.diags.error(extent, "statement resolve: ", ex);
 			return new RALInlineStatement.Resolved(extent, new String[] {"STOP * RAL STATEMENT RESOLVE ERROR"});

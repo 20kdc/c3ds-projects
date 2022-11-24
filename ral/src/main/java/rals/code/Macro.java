@@ -6,8 +6,7 @@
  */
 package rals.code;
 
-import rals.diag.DiagRecorder;
-import rals.diag.SrcPos;
+import rals.diag.*;
 import rals.expr.*;
 import rals.types.*;
 

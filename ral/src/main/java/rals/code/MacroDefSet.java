@@ -8,9 +8,7 @@ package rals.code;
 
 import java.util.HashMap;
 
-import rals.diag.DiagRecorder;
 import rals.expr.*;
-import rals.types.TypeSystem;
 
 /**
  * A set of macro definitions.

@@ -8,12 +8,19 @@ package rals.hcm;
 
 import rals.code.ScopeContext;
 import rals.diag.SrcPosUntranslated;
+import rals.parser.IDocPath;
 import rals.stmt.RALStatementUR;
 
 /**
- * HCM recorder in cases where HCM recording is not wanted.
+ * HCM recorder in cases where HCM recording is wanted.
  */
-public class DummyHCMRecorder implements IHCMRecorder {
+public class ActualHCMRecorder implements IHCMRecorder {
+	public final IDocPath targetDocPath;
+
+	public ActualHCMRecorder(IDocPath docPath) {
+		targetDocPath = docPath;
+	}
+
 	@Override
 	public void statementResolvePre(RALStatementUR rs, ScopeContext scope) {
 	}
@@ -24,6 +31,6 @@ public class DummyHCMRecorder implements IHCMRecorder {
 
 	@Override
 	public HoverData getHoverData(SrcPosUntranslated tkn) {
-		return null;
+		return new HoverData("This is a rubber ducky");
 	}
 }

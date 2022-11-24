@@ -6,13 +6,10 @@
  */
 package rals.code;
 
-import rals.diag.DiagRecorder;
-import rals.hcm.IHCMRecorder;
 import rals.stmt.RALInlineStatement;
 import rals.stmt.RALStatement;
 import rals.stmt.RALStatementUR;
 import rals.types.RALType;
-import rals.types.TypeSystem;
 
 /**
  * General context for compilation and such.
