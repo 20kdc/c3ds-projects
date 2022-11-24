@@ -6,10 +6,8 @@
  */
 package rals.expr;
 
-import rals.code.CompileContext;
-import rals.code.ScopeContext;
-import rals.types.RALType;
-import rals.types.TypeSystem;
+import rals.code.*;
+import rals.types.*;
 
 /**
  * Bit inversion
@@ -35,6 +33,7 @@ public class RALBitInvert implements RALExprUR {
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		final RALExprSlice exprR = expr.resolve(scope);
 		exprR.assert1ReadType().assertImpCast(scope.script.typeSystem.gInteger);
+		final RALSlot rs = new RALSlot(scope.script.typeSystem.gInteger, RALSlot.Perm.R);
 		return new RALExprSlice(1) {
 			@Override
 			protected void readCompileInner(RALExprSlice out, CompileContext context) {
@@ -54,13 +53,8 @@ public class RALBitInvert implements RALExprUR {
 			}
 
 			@Override
-			protected RALType typeInner(int index) {
-				return scope.script.typeSystem.gInteger;
-			}
-
-			@Override
-			protected RALSlotPerms permsInner(int index) {
-				return RALSlotPerms.R;
+			protected RALSlot slotInner(int index) {
+				return rs;
 			}
 		};
 	}

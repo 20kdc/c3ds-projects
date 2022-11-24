@@ -84,14 +84,25 @@ public final class RALCast implements RALExprUR {
 
 	public static class Resolved extends RALExprSlice {
 		public final RALExprSlice expr;
-		public final RALType target;
+		public final RALType sourceType;
+		public final RALSlot targetSlot;
 		private final boolean doImplicitCheck;
 		private Resolved(RALExprSlice e, RALType t, boolean c) {
 			super(1);
 			expr = e;
 			if (e.length != 1)
 				throw new RuntimeException("Cannot cast " + e + " which has length of " + e.length + ".");
-			target = t;
+			RALSlot sourceSlot = e.slot(0);
+			sourceType = sourceSlot.type;
+			// translate casting to permissions
+			RALSlot.Perm adjustedPerm = sourceSlot.perms;
+			if (c) {
+				if (!t.canImplicitlyCast(sourceType))
+					adjustedPerm = adjustedPerm.denyWrite();
+				if (!sourceType.canImplicitlyCast(t))
+					adjustedPerm = adjustedPerm.denyRead();
+			}
+			targetSlot = new RALSlot(t, adjustedPerm);
 			doImplicitCheck = c;
 		}
 
@@ -106,22 +117,12 @@ public final class RALCast implements RALExprUR {
 
 		@Override
 		public String toString() {
-			return "Cast" + (doImplicitCheck ? "Imp" : "") + "[" + expr + "!" + target + "]";
+			return "Cast" + (doImplicitCheck ? "Imp" : "") + "[" + expr + "!" + targetSlot + "]";
 		}
 
 		@Override
-		protected RALType typeInner(int index) {
-			RALType rt = expr.assert1Type();
-			if (doImplicitCheck)
-				target.assertImpCast(rt);
-			return target;
-		}
-
-		@Override
-		protected RALSlotPerms permsInner(int index) {
-			if (expr.length != 1)
-				throw new RuntimeException("Expressions to RALCast must have len = 1");
-			return expr.perms(index);
+		protected RALSlot slotInner(int index) {
+			return targetSlot;
 		}
 
 		@Override
@@ -130,7 +131,7 @@ public final class RALCast implements RALExprUR {
 			readType(0);
 			// Invert ourselves so we apply to the target.
 			// This is important because it ensures we overwrite inputExactType for storage.
-			expr.readCompile(new Resolved(out, target, doImplicitCheck), context);
+			expr.readCompile(new Resolved(out, targetSlot.type, doImplicitCheck), context);
 		}
 
 		@Override
@@ -139,7 +140,7 @@ public final class RALCast implements RALExprUR {
 			writeType(0);
 			// Overwriting inputExactType here is what turns, i.e. null|integer (major type unknown) into integer (Int).
 			// This is important for set instruction selection.
-			expr.writeCompile(0, input, doImplicitCheck ? inputExactType : target, context);
+			expr.writeCompile(0, input, doImplicitCheck ? inputExactType : targetSlot.type, context);
 		}
 
 		@Override

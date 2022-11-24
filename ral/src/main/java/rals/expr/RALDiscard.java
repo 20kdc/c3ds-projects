@@ -14,14 +14,14 @@ import rals.types.*;
  * This is injected in ScopeContext alongside other "semi-keywords".
  */
 public class RALDiscard extends RALExprSlice implements RALExprUR {
-	public final RALType any;
+	public final RALSlot anySlot;
+
 	public RALDiscard(TypeSystem ts, int len) {
-		super(len);
-		any = ts.gAny;
+		this(new RALSlot(ts.gAny, RALSlot.Perm.W), len);
 	}
-	private RALDiscard(RALType a, int len) {
+	private RALDiscard(RALSlot a, int len) {
 		super(len);
-		any = a;
+		anySlot = a;
 	}
 
 	@Override
@@ -31,17 +31,12 @@ public class RALDiscard extends RALExprSlice implements RALExprUR {
 
 	@Override
 	protected RALExprSlice sliceInner(int base, int length) {
-		return new RALDiscard(any, length);
+		return new RALDiscard(anySlot, length);
 	}
 
 	@Override
-	protected RALType typeInner(int index) {
-		return any;
-	}
-
-	@Override
-	protected RALSlotPerms permsInner(int index) {
-		return RALSlotPerms.W;
+	protected RALSlot slotInner(int index) {
+		return anySlot;
 	}
 
 	@Override

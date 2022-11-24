@@ -115,13 +115,8 @@ public class Macro implements RALCallable {
 		}
 
 		@Override
-		protected RALType typeInner(int index) {
-			return innards.type(index);
-		}
-
-		@Override
-		protected RALSlotPerms permsInner(int index) {
-			return innards.perms(index);
+		protected RALSlot slotInner(int index) {
+			return innards.slot(index);
 		}
 
 		@Override

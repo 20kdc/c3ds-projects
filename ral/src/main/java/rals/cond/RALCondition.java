@@ -6,13 +6,9 @@
  */
 package rals.cond;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
-import rals.expr.RALConstant;
-import rals.expr.RALExprSlice;
-import rals.expr.RALSlotPerms;
-import rals.types.RALType;
-import rals.types.TypeSystem;
+import rals.code.*;
+import rals.expr.*;
+import rals.types.*;
 
 /**
  * Condition.
@@ -20,9 +16,11 @@ import rals.types.TypeSystem;
  */
 public abstract class RALCondition extends RALExprSlice {
 	public final RALType bool;
+	public final RALSlot boolRSlot;
 	public RALCondition(TypeSystem ts) {
 		super(1);
 		bool = ts.gBoolean;
+		boolRSlot = new RALSlot(bool, RALSlot.Perm.R);
 	}
 
 	/**
@@ -71,13 +69,8 @@ public abstract class RALCondition extends RALExprSlice {
 	}
 
 	@Override
-	protected RALType typeInner(int index) {
-		return bool;
-	}
-
-	@Override
-	protected RALSlotPerms permsInner(int index) {
-		return RALSlotPerms.R;
+	protected RALSlot slotInner(int index) {
+		return boolRSlot;
 	}
 
 	/**

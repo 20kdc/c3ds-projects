@@ -30,9 +30,11 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 
 	public static abstract class Single extends RALConstant {
 		public final RALType type;
+		public final RALSlot slot;
 		public Single(RALType r) {
 			super(1);
 			type = r;
+			slot = new RALSlot(r, RALSlot.Perm.R);
 		}
 
 		@Override
@@ -45,13 +47,8 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		public abstract RALConstant.Single cast(RALType rt);
 
 		@Override
-		protected RALType typeInner(int index) {
-			return type;
-		}
-
-		@Override
-		protected RALSlotPerms permsInner(int index) {
-			return RALSlotPerms.R;
+		protected RALSlot slotInner(int index) {
+			return slot;
 		}
 
 		@Override

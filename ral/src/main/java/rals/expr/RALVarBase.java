@@ -13,21 +13,18 @@ import rals.types.RALType;
  */
 public abstract class RALVarBase extends RALExprSlice {
 	public final RALType type;
+	public final RALSlot varSlot;
 	public final boolean isWritable;
 
 	public RALVarBase(RALType t, boolean w) {
 		super(1);
 		type = t;
 		isWritable = w;
+		varSlot = new RALSlot(type, isWritable ? RALSlot.Perm.RW : RALSlot.Perm.R);
 	}
 
 	@Override
-	protected RALType typeInner(int index) {
-		return type;
-	}
-
-	@Override
-	protected RALSlotPerms permsInner(int index) {
-		return isWritable ? RALSlotPerms.RW : RALSlotPerms.R;
+	protected RALSlot slotInner(int index) {
+		return varSlot;
 	}
 }

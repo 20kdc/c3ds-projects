@@ -17,7 +17,7 @@ public class RALVarEH extends RALExprSlice.Deferred {
 	public final RALType type;
 
 	public RALVarEH(IEHHandle h, RALType ot) {
-		super(0, 1, new RALType[] {ot}, new RALSlotPerms[] {RALSlotPerms.RW});
+		super(0, 1, new RALSlot[] {new RALSlot(ot, RALSlot.Perm.RW)});
 		handle = h;
 		type = ot;
 	}

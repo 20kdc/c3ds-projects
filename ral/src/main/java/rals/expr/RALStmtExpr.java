@@ -57,13 +57,8 @@ public class RALStmtExpr implements RALExprUR {
 		}
 
 		@Override
-		protected RALType typeInner(int index) {
-			return rExpr.type(index);
-		}
-
-		@Override
-		protected RALSlotPerms permsInner(int index) {
-			return rExpr.perms(index);
+		protected RALSlot slotInner(int index) {
+			return rExpr.slot(index);
 		}
 
 		@Override

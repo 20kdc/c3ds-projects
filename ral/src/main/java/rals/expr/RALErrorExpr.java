@@ -26,13 +26,8 @@ public final class RALErrorExpr extends RALExprSlice {
 	}
 
 	@Override
-	protected RALType typeInner(int index) {
+	protected RALSlot slotInner(int index) {
 		throw new RuntimeException(errorText);
-	}
-
-	@Override
-	protected RALSlotPerms permsInner(int index) {
-		return RALSlotPerms.None;
 	}
 
 	@Override

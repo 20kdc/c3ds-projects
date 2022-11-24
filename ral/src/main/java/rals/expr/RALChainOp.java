@@ -75,15 +75,11 @@ public class RALChainOp implements RALExprUR {
 			allArgSlices[i] = slice;
 		}
 		final RALType finalType = typePipeline;
+		final RALSlot finalSlot = new RALSlot(finalType, RALSlot.Perm.R);
 		return new RALExprSlice(1) {
 			@Override
-			protected RALType typeInner(int index) {
-				return finalType;
-			}
-
-			@Override
-			protected RALSlotPerms permsInner(int index) {
-				return RALSlotPerms.R;
+			protected RALSlot slotInner(int index) {
+				return finalSlot;
 			}
 
 			@Override

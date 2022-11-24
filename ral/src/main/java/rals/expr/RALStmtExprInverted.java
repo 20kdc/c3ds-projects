@@ -29,11 +29,11 @@ public class RALStmtExprInverted implements RALExprUR {
 		// However, we don't have our outputs yet, so we're going to need to fudge things.
 		// Besides, it's healthy! Permissions checks and all that...
 		scope = new ScopeContext(scope);
-		final RALType[] types = new RALType[rets.length];
+		final RALSlot[] types = new RALSlot[rets.length];
 		final IEHHandle[] handles = new IEHHandle[rets.length];
 		for (int i = 0; i < types.length; i++) {
 			final MacroArg ret = rets[i];
-			types[i] = ret.type;
+			types[i] = new RALSlot(ret.type, RALSlot.Perm.R);
 			final IEHHandle handle = new IEHHandle() {
 				@Override
 				public String toString() {
@@ -48,13 +48,13 @@ public class RALStmtExprInverted implements RALExprUR {
 	}
 
 	public static final class Resolved extends RALExprSlice {
-		private final RALType[] types;
+		private final RALSlot[] slots;
 		private final RALStatement innards;
 		private final IEHHandle[] handles;
 
-		public Resolved(RALType[] types, RALStatement innards, IEHHandle[] handles) {
-			super(types.length);
-			this.types = types;
+		public Resolved(RALSlot[] slots, RALStatement innards, IEHHandle[] handles) {
+			super(slots.length);
+			this.slots = slots;
 			this.innards = innards;
 			this.handles = handles;
 		}
@@ -76,13 +76,8 @@ public class RALStmtExprInverted implements RALExprUR {
 		}
 
 		@Override
-		protected RALType typeInner(int index) {
-			return types[index];
-		}
-
-		@Override
-		protected RALSlotPerms permsInner(int index) {
-			return RALSlotPerms.R;
+		protected RALSlot slotInner(int index) {
+			return slots[index];
 		}
 	}
 }

@@ -8,7 +8,6 @@ package rals.expr;
 
 import rals.code.*;
 import rals.stmt.*;
-import rals.types.*;
 
 /**
  * Inline expression
@@ -22,15 +21,11 @@ public class RALInlineExpr implements RALExprUR {
 	@Override
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		final Object[] resolved = RALInlineStatement.resolveParts(parts, scope);
+		final RALSlot slot = new RALSlot(scope.script.typeSystem.gAny, RALSlot.Perm.R);
 		return new RALExprSlice(1) {
 			@Override
-			protected RALType typeInner(int index) {
-				return scope.script.typeSystem.gAny;
-			}
-
-			@Override
-			protected RALSlotPerms permsInner(int index) {
-				return RALSlotPerms.R;
+			protected RALSlot slotInner(int index) {
+				return slot;
 			}
 
 			@Override

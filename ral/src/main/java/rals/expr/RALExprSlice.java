@@ -32,19 +32,11 @@ public abstract class RALExprSlice {
 	// -- Public Wrappers --
 
 	/**
-	 * Returns the type of a given slot in this slice.
+	 * Returns the type and permissions of a given slot in this slice.
 	 */
-	public final RALType type(int index) {
+	public final RALSlot slot(int index) {
 		checkSlot(index);
-		return typeInner(index);
-	}
-
-	/**
-	 * Returns the permissions of a given slot in this slice.
-	 */
-	public final RALSlotPerms perms(int index) {
-		checkSlot(index);
-		return permsInner(index);
+		return slotInner(index);
 	}
 
 	/**
@@ -53,10 +45,10 @@ public abstract class RALExprSlice {
 	 */
 	public final RALType readType(int index) {
 		checkSlot(index);
-		RALType rt = typeInner(index);
-		if (!permsInner(index).read)
+		RALSlot rs = slotInner(index);
+		if (!rs.perms.read)
 			throw new RuntimeException("Slot " + index + " of " + this + " not readable");
-		return rt;
+		return rs.type;
 	}
 
 	/**
@@ -65,10 +57,10 @@ public abstract class RALExprSlice {
 	 */
 	public final RALType writeType(int index) {
 		checkSlot(index);
-		RALType rt = typeInner(index);
-		if (!permsInner(index).write)
+		RALSlot rs = slotInner(index);
+		if (!rs.perms.write)
 			throw new RuntimeException("Slot " + index + " of " + this + " not writable");
-		return rt;
+		return rs.type;
 	}
 
 	/**
@@ -123,7 +115,7 @@ public abstract class RALExprSlice {
 	public final RALType assert1Type() {
 		if (length != 1)
 			throw new RuntimeException("Failed assert1Type: " + this);
-		return typeInner(0);
+		return slotInner(0).type;
 	}
 
 	/**
@@ -219,18 +211,10 @@ public abstract class RALExprSlice {
 	}
 
 	/**
-	 * Returns the type of a given slot in this slice.
+	 * Returns the information of a given slot in this slice.
 	 */
-	protected RALType typeInner(int index) {
-		throw new RuntimeException("Type not supported on " + this);
-	}
-
-	/**
-	 * Returns the readable type of a given slot in this slice.
-	 * Also used to test readability (throws exception if not readable)
-	 */
-	protected RALSlotPerms permsInner(int index) {
-		throw new RuntimeException("Slot permissions not supported on " + this);
+	protected RALSlot slotInner(int index) {
+		throw new RuntimeException("Slot not supported on " + this);
 	}
 
 	/**
@@ -291,24 +275,17 @@ public abstract class RALExprSlice {
 	 */
 	public static abstract class Deferred extends RALExprSlice {
 		public final int base;
-		public final RALType[] types;
-		public final RALSlotPerms[] perms;
+		public final RALSlot[] slots;
 
-		public Deferred(int b, int l, RALType[] t, RALSlotPerms[] p) {
+		public Deferred(int b, int l, RALSlot[] p) {
 			super(l);
 			base = b;
-			types = t;
-			perms = p;
+			slots = p;
 		}
 
 		@Override
-		protected RALType typeInner(int index) {
-			return types[index];
-		}
-
-		@Override
-		protected RALSlotPerms permsInner(int index) {
-			return perms[index];
+		protected RALSlot slotInner(int index) {
+			return slots[index];
 		}
 	}
 
@@ -342,20 +319,11 @@ public abstract class RALExprSlice {
 		}
 
 		@Override
-		protected RALType typeInner(int index) {
+		protected RALSlot slotInner(int index) {
 			if (index < a.length) {
-				return a.typeInner(index);
+				return a.slotInner(index);
 			} else {
-				return b.typeInner(index - a.length);
-			}
-		}
-
-		@Override
-		protected RALSlotPerms permsInner(int index) {
-			if (index < a.length) {
-				return a.permsInner(index);
-			} else {
-				return b.permsInner(index - a.length);
+				return b.slotInner(index - a.length);
 			}
 		}
 
@@ -437,13 +405,8 @@ public abstract class RALExprSlice {
 		}
 
 		@Override
-		protected RALType typeInner(int index) {
-			return source.typeInner(sliceBase + index);
-		}
-
-		@Override
-		protected RALSlotPerms permsInner(int index) {
-			return source.permsInner(sliceBase + index);
+		protected RALSlot slotInner(int index) {
+			return source.slotInner(sliceBase + index);
 		}
 
 		@Override
