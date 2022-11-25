@@ -67,4 +67,9 @@ public class FileDocPath implements IDocPath {
 	public String toString() {
 		return file.toString();
 	}
+
+	@Override
+	public String toLSPURI() {
+		return null;
+	}
 }

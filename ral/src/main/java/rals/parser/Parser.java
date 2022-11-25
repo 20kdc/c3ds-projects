@@ -148,17 +148,18 @@ public class Parser {
 				int a = ParserExpr.parseConstInteger(ifc);
 				int b = ParserExpr.parseConstInteger(ifc);
 				int c = ParserExpr.parseConstInteger(ifc);
-				RALType.Agent ag = ts.declareClass(new Classifier(a, b, c), name);
+				RALType.Agent ag = ts.declareClass(new Classifier(a, b, c), name, lx.genDefInfo(tkn));
 				parseExtendsClauses(ifc, ag);
 			}
 		} else if (tkn.isKeyword("interface")) {
 			String name = ParserType.parseTypeName(ifc);
-			RALType.Agent ag = ts.declareInterface(name);
+			RALType.Agent ag = ts.declareInterface(name, lx.genDefInfo(tkn));
 			parseExtendsClauses(ifc, ag);
 		} else if (tkn.isKeyword("typedef")) {
 			String name = ParserType.parseTypeName(ifc);
-			ts.declareTypedef(name, ParserType.parseType(ifc));
+			RALType ty = ParserType.parseType(ifc);
 			lx.requireNextKw(";");
+			ts.declareTypedef(name, ty, lx.genDefInfo(tkn));
 		} else if (tkn.isKeyword("field")) {
 			RALType fieldType = ParserType.parseType(ifc);
 			String name = ParserType.parseTypeName(ifc);
@@ -282,8 +283,8 @@ public class Parser {
 				ifc.diags.error(tkn.lineNumber, "unknown declaration " + tkn);
 			} else {
 				RALConstant cst = ParserExpr.parseConst(ifc);
-				ts.declareConst(name, tkn.lineNumber, cst);
 				lx.requireNextKw(";");
+				ts.declareConst(name, lx.genDefInfo(tkn), cst);
 			}
 		} else {
 			ifc.diags.error(tkn.lineNumber, "unknown declaration " + tkn);

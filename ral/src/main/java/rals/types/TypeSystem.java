@@ -10,9 +10,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 
 import rals.diag.SrcPos;
 import rals.expr.*;
+import rals.lex.DefInfo;
 import rals.types.RALType.AgentClassifier;
 import rals.types.RALType.Opaque;
 
@@ -38,7 +40,15 @@ public class TypeSystem {
 	 */
 	public final HashMap<Classifier, RALType.AgentClassifier> classifiers = new HashMap<>();
 
-	public final HashMap<String, RALType> namedTypes = new HashMap<>();
+	/**
+	 * These are all named types. To stop code from mucking around with this, it's private.
+	 */
+	private final HashMap<String, RALType> namedTypes = new HashMap<>();
+
+	/**
+	 * Named types definition points
+	 */
+	public final HashMap<String, DefInfo> namedTypesDefPoints = new HashMap<>();
 
 	/**
 	 * All agent interfaces by name.
@@ -59,7 +69,7 @@ public class TypeSystem {
 	/**
 	 * Named constants definition points
 	 */
-	public final HashMap<String, SrcPos> namedConstantsDefPoints = new HashMap<>();
+	public final HashMap<String, DefInfo.At> namedConstantsDefPoints = new HashMap<>();
 
 	/**
 	 * If these message numbers have special behaviour, add here.
@@ -87,6 +97,14 @@ public class TypeSystem {
 		gAgentNullable = byNullable(gAgent);
 		gNumber = byUnion(Arrays.asList(gFloat, gInteger));
 		namedTypes.put("num", gNumber);
+	}
+
+	public Iterable<Map.Entry<String, RALType>> getAllNamedTypes() {
+		return namedTypes.entrySet();
+	}
+
+	public DefInfo getNamedTypeDefInfo(String key) {
+		return namedTypesDefPoints.get(key);
 	}
 
 	/**
@@ -183,7 +201,7 @@ public class TypeSystem {
 	/**
 	 * Declares an agent class.
 	 */
-	public RALType.AgentClassifier declareClass(Classifier cl, String name) {
+	public RALType.AgentClassifier declareClass(Classifier cl, String name, DefInfo di) {
 		RALType ort = namedTypes.get(name);
 		RALType.AgentClassifier ag = byClassifier(cl);
 		// already declared?
@@ -193,6 +211,7 @@ public class TypeSystem {
 		checkConflictType(name);
 		checkConflictInterface(name);
 		namedTypes.put(name, ag);
+		namedTypesDefPoints.put(name, di);
 		namedInterfaces.put(name, ag.inherent);
 		ag.typeName = name;
 		return ag;
@@ -201,7 +220,7 @@ public class TypeSystem {
 	/**
 	 * Declares an agent interface.
 	 */
-	public RALType.Agent declareInterface(String name) {
+	public RALType.Agent declareInterface(String name, DefInfo di) {
 		RALType ort = namedTypes.get(name);
 		// already declared?
 		if (ort != null)
@@ -214,6 +233,7 @@ public class TypeSystem {
 		// Add Agent as a default parent, otherwise an interface can't be cast to Agent
 		ag.addParent(gAgent);
 		namedTypes.put(name, ag);
+		namedTypesDefPoints.put(name, di);
 		namedInterfaces.put(name, ag.inherent);
 		return ag;
 	}
@@ -227,15 +247,15 @@ public class TypeSystem {
 			throw new RuntimeException("Interface conflict: " + name);
 	}
 
-	public void declareConst(String name, SrcPos sp, RALConstant cst) {
+	public void declareConst(String name, DefInfo.At di, RALConstant cst) {
 		if (namedConstants.containsKey(name)) {
-			SrcPos sp2 = namedConstantsDefPoints.get(name);
+			DefInfo.At sp2 = namedConstantsDefPoints.get(name);
 			if (sp2 != null)
-				throw new RuntimeException("Constant conflict: " + name + " @ " + sp + ", last definition " + sp2);
-			throw new RuntimeException("Constant conflict: " + name + " @ " + sp);
+				throw new RuntimeException("Constant conflict: " + name + " @ " + di.srcRange.start + ", last definition " + sp2.srcRange.start);
+			throw new RuntimeException("Constant conflict: " + name + " @ " + di.srcRange.start);
 		}
 		namedConstants.put(name, cst);
-		namedConstantsDefPoints.put(name, sp);
+		namedConstantsDefPoints.put(name, di);
 	}
 
 	public AgentClassifier tryGetAsClassifier(String text) {
@@ -245,13 +265,14 @@ public class TypeSystem {
 		return null;
 	}
 
-	public void declareTypedef(String name, RALType parseType) {
+	public void declareTypedef(String name, RALType parseType, DefInfo di) {
 		RALType existing = namedTypes.get(name);
 		if (existing != null) {
 			if (existing != parseType)
 				throw new RuntimeException("Can't redeclare type " + name);
 		} else {
 			namedTypes.put(name, parseType);
+			namedTypesDefPoints.put(name, di);
 		}
 	}
 }

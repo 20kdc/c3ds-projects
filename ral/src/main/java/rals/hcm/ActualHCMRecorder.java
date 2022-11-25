@@ -170,12 +170,12 @@ public class ActualHCMRecorder implements IHCMRecorder {
 			snapshotsSPM.putUntilEnd(hss.takenAt, hss);
 
 		HashMap<String, HoverData> allNamedTypes = new HashMap<>();
-		for (Map.Entry<String, RALType> nt : info.typeSystem.namedTypes.entrySet())
-			allNamedTypes.put(nt.getKey(), HCMHoverDataGenerators.typeHoverData(nt.getKey(), nt.getValue()));
+		for (Map.Entry<String, RALType> nt : info.typeSystem.getAllNamedTypes())
+			allNamedTypes.put(nt.getKey(), HCMHoverDataGenerators.typeHoverData(nt.getKey(), nt.getValue(), info.typeSystem.getNamedTypeDefInfo(nt.getKey())));
 
 		HashMap<String, HoverData> allConstants = new HashMap<>();
 		for (Map.Entry<String, RALConstant> nt : info.typeSystem.namedConstants.entrySet()) {
-			allConstants.put(nt.getKey(), HCMHoverDataGenerators.constHoverData(nt.getKey(), nt.getValue()));
+			allConstants.put(nt.getKey(), HCMHoverDataGenerators.constHoverData(nt.getKey(), nt.getValue(), info.typeSystem.namedConstantsDefPoints.get(nt.getKey())));
 		}
 
 		HashMap<String, HoverData> allCallables = new HashMap<>();

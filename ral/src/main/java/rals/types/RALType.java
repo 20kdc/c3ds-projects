@@ -24,19 +24,8 @@ public abstract class RALType {
 	protected HashSet<RALType> influencesInterfacesOf = new HashSet<>();
 	private AgentInterface[] interfaces;
 
-	public DefInfo defInfo;
-
 	public RALType(Major mt) {
 		majorType = mt;
-	}
-
-	/**
-	 * If definition info is not already present, assigns it.
-	 * This ensures a "first wins" rule.
-	 */
-	public void assignDefInfo(DefInfo idi) {
-		if (defInfo == null)
-			defInfo = idi;
 	}
 
 	/**

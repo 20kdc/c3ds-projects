@@ -69,8 +69,9 @@ public class LanguageServer implements ILSPCore {
 					// only show one
 					if (!includeWarnings.contains(originalSource)) {
 						includeWarnings.add(originalSource);
-						String ost = originalSourceName + " contains errors";
-						finalDiagSet.add(new Diag(Diag.Kind.Error, checkMe, ost, ost));
+						String ost = originalSourceName + ": " + d.shortText;
+						String olt = originalSourceName + ": " + d.text;
+						finalDiagSet.add(new Diag(Diag.Kind.Error, checkMe, ost, olt));
 					}
 				}
 			}
@@ -149,6 +150,7 @@ public class LanguageServer implements ILSPCore {
 			caps.put("diagnosticProvider", diag);
 			// ...
 			caps.put("hoverProvider", true);
+			caps.put("definitionProvider", true);
 			// completion provider
 			JSONObject comp = new JSONObject();
 			caps.put("completionProvider", comp);
@@ -182,6 +184,8 @@ public class LanguageServer implements ILSPCore {
 				// Rest can be done here
 				if (hoverText != null) {
 					JSONObject test = new JSONObject();
+					if (hd != null && hd.defInfo != null && hd.defInfo.docComment != null)
+						hoverText += "\n" + hd.defInfo.docComment;
 					test.put("contents", hoverText);
 					return test;
 				}
@@ -202,9 +206,28 @@ public class LanguageServer implements ILSPCore {
 						test.put("label", ent.getKey());
 						HoverData hd2 = ent.getValue();
 						test.put("detail", hd2.text);
+						if (hd2.defInfo != null && hd2.defInfo.docComment != null)
+							test.put("documentation", hd2.defInfo.docComment);
 						items.put(test);
 					}
 					return items;
+				}
+			}
+			return null;
+		} else if (method.equals("textDocument/definition")) {
+			JSONObject ident = params.getJSONObject("textDocument");
+			String givenURI = ident.getString("uri");
+			IDocPath docPath = docRepo.getDocPath(givenURI);
+			SrcPosUntranslated spu = new SrcPosUntranslated(docPath, params.getJSONObject("position"));
+			HCMStorage hcm = docHCM.get(docPath);
+			if (hcm != null) {
+				HCMStorage.HoverData hd = hcm.getHoverData(spu);
+				if ((hd != null) && (hd.defInfo != null) && (hd.defInfo.srcRange != null)) {
+					SrcRange range = hd.defInfo.srcRange;
+					JSONObject test = new JSONObject();
+					test.put("uri", hd.defInfo.srcRange.file.docPath.toLSPURI());
+					test.put("range", range.toLSPRange());
+					return test;
 				}
 			}
 			return null;

@@ -25,10 +25,23 @@ public class LSPDocRepo {
 	 */
 	private HashMap<IDocPath, String> stored = new HashMap<>();
 
+	/**
+	 * This index is of Files that the LSP client has sent URIs for.
+	 * It deliberately leaks, this is in case the LSP client starts mucking around...
+	 */
+	private HashMap<File, String> uriLSPClientCanon = new HashMap<>();
+
 	private File decodeFileURI(String uri) {
 		if (uri.startsWith("file://"))
 			return new File(uri.substring(7)).getAbsoluteFile();
 		return null;
+	}
+
+	private String encodeFileURI(File file) {
+		String ovr = uriLSPClientCanon.get(file);
+		if (ovr != null)
+			return ovr;
+		return "file://" + file.getAbsolutePath();
 	}
 
 	/**
@@ -44,8 +57,10 @@ public class LSPDocRepo {
 
 	public IDocPath getDocPath(String uri) {
 		final File decodedAsFile = decodeFileURI(uri);
-		if (decodedAsFile != null)
+		if (decodedAsFile != null) {
+			uriLSPClientCanon.put(decodedAsFile, uri);
 			return new ShadowableFDP(decodedAsFile);
+		}
 		return new ExternalDP(uri);
 	}
 
@@ -88,6 +103,11 @@ public class LSPDocRepo {
 		public String getRootShortName() {
 			String base = super.getRootShortName();
 			return stored.containsKey(this) ? ("*" + base) : base;
+		}
+
+		@Override
+		public String toLSPURI() {
+			return encodeFileURI(file);
 		}
 	}
 
@@ -138,6 +158,11 @@ public class LSPDocRepo {
 
 		@Override
 		public String toString() {
+			return uri;
+		}
+
+		@Override
+		public String toLSPURI() {
 			return uri;
 		}
 	}

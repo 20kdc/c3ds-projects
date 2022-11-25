@@ -23,11 +23,11 @@ public class HCMScopeSnapshot {
 
 	public HCMScopeSnapshot(SrcPos at, ScopeContext sc) {
 		takenAt = at;
-		for (Map.Entry<String, RALType> var : sc.world.types.namedTypes.entrySet()) {
+		for (Map.Entry<String, RALType> var : sc.world.types.getAllNamedTypes()) {
 			String k = var.getKey();
 			RALType rt = var.getValue();
 			if (rt instanceof RALType.AgentClassifier)
-				contents.put(k, HCMHoverDataGenerators.typeHoverData(k, rt));
+				contents.put(k, HCMHoverDataGenerators.typeHoverData(k, rt, sc.world.types.getNamedTypeDefInfo(k)));
 		}
 		for (ScopeContext.LVar var : sc.scopedVariables.values())
 			contents.put(var.name, HCMHoverDataGenerators.varHoverData(var));

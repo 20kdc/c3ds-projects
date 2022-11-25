@@ -35,4 +35,10 @@ public interface IDocPath {
 	 * This equates to SrcPosFile.shortName for root files.
 	 */
 	String getRootShortName();
+
+	/**
+	 * Attempts to translate this to an LSP URI.
+	 * Returns null if not supported (FileDocPath does this)
+	 */
+	String toLSPURI();
 }

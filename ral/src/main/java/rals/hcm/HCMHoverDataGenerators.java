@@ -17,6 +17,7 @@ import rals.expr.RALCallable;
 import rals.expr.RALConstant;
 import rals.expr.RALSlot;
 import rals.hcm.HCMStorage.HoverData;
+import rals.lex.DefInfo;
 import rals.types.AgentInterface;
 import rals.types.RALType;
 
@@ -51,17 +52,17 @@ public class HCMHoverDataGenerators {
 		sb.append(var.name);
 		return new HCMStorage.HoverData(sb.toString(), var.definition);
 	}
-	public static HCMStorage.HoverData constHoverData(String name, RALConstant c) {
+	public static HCMStorage.HoverData constHoverData(String name, RALConstant c, DefInfo di) {
 		StringBuilder sb = new StringBuilder();
 		showSlots(sb, c.slots());
 		sb.append(" ");
 		sb.append(name);
 		sb.append(" = ");
 		sb.append(c.toString());
-		return new HCMStorage.HoverData(sb.toString(), null);
+		return new HCMStorage.HoverData(sb.toString(), di);
 	}
-	public static HoverData typeHoverData(String k, RALType rt) {
-		return new HCMStorage.HoverData(k + ": " + rt.getFullDescription(), rt.defInfo);
+	public static HoverData typeHoverData(String k, RALType rt, DefInfo defInfo) {
+		return new HCMStorage.HoverData(k + ": " + rt.getFullDescription(), defInfo);
 	}
 	private static void showCallable(StringBuilder sb, String k, RALCallable rc) {
 		if (rc instanceof MacroDefSet) {
