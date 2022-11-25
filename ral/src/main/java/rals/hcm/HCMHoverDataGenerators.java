@@ -7,10 +7,7 @@
 package rals.hcm;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import rals.code.Macro;
 import rals.code.MacroArg;

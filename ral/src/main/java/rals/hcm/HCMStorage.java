@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Map;
 
 import rals.diag.SrcPosUntranslated;
-import rals.diag.SrcRange;
 import rals.lex.Token;
 
 /**
