@@ -58,43 +58,4 @@ public class SrcRange {
 	public SrcRange expand(SrcRange other) {
 		return new SrcRange(start.min(other.start), end.max(other.end));
 	}
-
-	public Judgement check(int line, int character) {
-		long chkComp = SrcPos.toLCLong(line, character);
-		if (chkComp < start.lcLong) {
-			return Judgement.Before;
-		} else if (chkComp == start.lcLong) {
-			return Judgement.Start;
-		} else if (chkComp == end.lcLong) {
-			return Judgement.End;
-		} else if (chkComp > end.lcLong) {
-			return Judgement.After;
-		} else {
-			return Judgement.Inside;
-		}
-	}
-
-	public Judgement check(SrcPos other) {
-		if (other.file.docPath == file.docPath)
-			return check(other.line, other.character);
-		return Judgement.Irrelevant;
-	}
-
-	public Judgement check(SrcPosUntranslated other) {
-		if (other.file == file.docPath)
-			return check(other.line, other.character);
-		return Judgement.Irrelevant;
-	}
-
-	/**
-	 * Judgement of where something is inside a source range.
-	 */
-	public enum Judgement {
-		Before,
-		Start,
-		Inside,
-		End,
-		After,
-		Irrelevant
-	}
 }

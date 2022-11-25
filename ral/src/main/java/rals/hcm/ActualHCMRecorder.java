@@ -31,9 +31,11 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	// This helps to prevent unwanted overwrites.
 	public final HashMap<Long, HCMScopeSnapshot> snapshots = new HashMap<>();
 	public final SrcPosMap<Token> lastTokenMap = new SrcPosMap<>();
+	public final HashMap<Token, Token> backwardsTokenLink = new HashMap<>();
 	public final HashMap<Token.ID, HCMIntent> hoverIntents = new HashMap<>();
 	public final HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken = new HashMap<>();
 	public Token currentRequestedToken;
+	public Token lastReadToken;
 	public HCMIntent autoHoverHolding;
 
 	public ActualHCMRecorder(IDocPath docPath) {
@@ -44,11 +46,18 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	public void readToken(Token tkn) {
 		if (!tkn.isInDP(targetDocPath))
 			return;
+		// setup backwards token chain
+		// (why isn't this in Token? sort of a mixed bag of reasons. don't want to encourage Parser to use it, for one...)
+		if (lastReadToken != null)
+			backwardsTokenLink.put(tkn, lastReadToken);
+		lastReadToken = tkn;
+		// continue
 		lastTokenMap.putUntilEnd(tkn.extent.start, tkn);
 	}
 
 	@Override
 	public void parserRequestedToken(Token tkn) {
+		currentRequestedToken = tkn;
 		HCMIntent heldAH = autoHoverHolding;
 		autoHoverHolding = null;
 		if (!tkn.isInDP(targetDocPath))
@@ -60,6 +69,10 @@ public class ActualHCMRecorder implements IHCMRecorder {
 
 	@Override
 	public void addCompletionIntentToNextToken(HCMIntent intent, boolean autoHover) {
+		// always do this, just in case.
+		if (autoHover)
+			autoHoverHolding = intent;
+		// continue.
 		if (currentRequestedToken == null)
 			return;
 		if (!currentRequestedToken.isInDP(targetDocPath))
@@ -70,8 +83,6 @@ public class ActualHCMRecorder implements IHCMRecorder {
 			intentsOnNextToken.put(currentRequestedToken, hs);
 		}
 		hs.add(intent);
-		if (autoHover)
-			autoHoverHolding = intent;
 	}
 
 	@Override
@@ -117,6 +128,6 @@ public class ActualHCMRecorder implements IHCMRecorder {
 		for (Map.Entry<String, RALConstant> nt : info.typeSystem.namedConstants.entrySet()) {
 			allNamedConstants.put(nt.getKey(), HCMHoverDataGenerators.constHoverData(nt.getKey(), nt.getValue()));
 		}
-		return new HCMStorage(snapshotsSPM, lastTokenMap, hoverIntents, allNamedTypes, allNamedConstants);
+		return new HCMStorage(snapshotsSPM, lastTokenMap, backwardsTokenLink, hoverIntents, intentsOnNextToken, allNamedTypes, allNamedConstants);
 	}
 }

@@ -89,7 +89,7 @@ public class LSPBaseProtocolLoop {
 							hasReceivedShutdown = true;
 						} else {
 							try {
-								JSONObject res = core.handleRequest(m, msg.has("params") ? msg.getJSONObject("params") : null, this);
+								Object res = core.handleRequest(m, msg.has("params") ? msg.getJSONObject("params") : null, this);
 								JSONObject rsp = new JSONObject();
 								rsp.put("jsonrpc", "2.0");
 								rsp.put("id", requestResponseID);

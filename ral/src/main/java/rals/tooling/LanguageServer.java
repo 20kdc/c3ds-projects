@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,6 +19,7 @@ import rals.code.*;
 import rals.diag.*;
 import rals.diag.Diag.Kind;
 import rals.hcm.*;
+import rals.hcm.HCMStorage.HoverData;
 import rals.parser.*;
 
 /**
@@ -129,7 +131,7 @@ public class LanguageServer implements ILSPCore {
 	}
 
 	@Override
-	public JSONObject handleRequest(String method, JSONObject params, LSPBaseProtocolLoop sendback) throws LSPErrorException, IOException {
+	public Object handleRequest(String method, JSONObject params, LSPBaseProtocolLoop sendback) throws LSPErrorException, IOException {
 		if (method.equals("initialize")) {
 			// Unfortunately, Microsoft treats LSP as a "living standard", which is a really fancy way of saying
 			//  that they'll change around things and hide the old specs in commit history.
@@ -138,11 +140,17 @@ public class LanguageServer implements ILSPCore {
 			JSONObject caps = new JSONObject();
 			// Sync via sending full contents
 			caps.put("textDocumentSync", 1);
+			// diagnostic provider
 			JSONObject diag = new JSONObject();
 			diag.put("interFileDependencies", true);
 			diag.put("workspaceDiagnostics", false);
 			caps.put("diagnosticProvider", diag);
+			// ...
 			caps.put("hoverProvider", true);
+			// completion provider
+			JSONObject comp = new JSONObject();
+			caps.put("completionProvider", comp);
+			// done
 			res.put("capabilities", caps);
 			return res;
 		} else if (method.equals("textDocument/hover")) {
@@ -157,6 +165,27 @@ public class LanguageServer implements ILSPCore {
 					JSONObject test = new JSONObject();
 					test.put("contents", hd.text);
 					return test;
+				}
+			}
+			return null;
+		} else if (method.equals("textDocument/completion")) {
+			JSONObject ident = params.getJSONObject("textDocument");
+			String givenURI = ident.getString("uri");
+			IDocPath docPath = docRepo.getDocPath(givenURI);
+			SrcPosUntranslated spu = new SrcPosUntranslated(docPath, params.getJSONObject("position"));
+			HCMStorage hcm = docHCM.get(docPath);
+			if (hcm != null) {
+				Map<String, HCMStorage.HoverData> hd = hcm.getCompletion(spu);
+				if (hd != null) {
+					JSONArray items = new JSONArray();
+					for (Map.Entry<String, HCMStorage.HoverData> ent : hd.entrySet()) {
+						JSONObject test = new JSONObject();
+						test.put("label", ent.getKey());
+						HoverData hd2 = ent.getValue();
+						test.put("detail", hd2.text);
+						items.put(test);
+					}
+					return items;
 				}
 			}
 			return null;

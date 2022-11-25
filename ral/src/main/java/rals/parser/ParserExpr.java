@@ -182,7 +182,7 @@ public class ParserExpr {
 		Lexer lx = ifc.lexer;
 
 		// Add all the possible intents
-		ifc.hcm.addCompletionIntentToNextToken(HCMIntent.ID, false);
+		exprCompletionIntents(ifc);
 		// Continue...
 		Token tkn = lx.requireNext();
 		if (tkn instanceof Token.Int) {
@@ -230,6 +230,7 @@ public class ParserExpr {
 			RALBlock stmt = new RALBlock(tkn.lineNumber, false);
 			RALExprUR ret = RALExprGroupUR.of();
 			while (true) {
+				ParserCode.stmtCompletionIntents(ifc);
 				Token chk = lx.requireNext();
 				if (chk.isKeyword("}")) {
 					break;
@@ -356,5 +357,12 @@ public class ParserExpr {
 			}
 		}
 		return base;
+	}
+
+	/**
+	 * Applies expression atom completion intents.
+	 */
+	public static void exprCompletionIntents(InsideFileContext ifc) {
+		ifc.hcm.addCompletionIntentToNextToken(HCMIntent.ID, false);
 	}
 }

@@ -22,7 +22,7 @@ public interface ILSPCore {
 	/**
 	 * Handles an LSP request. Must return the response or throw an LSPErrorException.
 	 */
-	public JSONObject handleRequest(String method, JSONObject params, LSPBaseProtocolLoop sendback) throws LSPErrorException, IOException;
+	public Object handleRequest(String method, JSONObject params, LSPBaseProtocolLoop sendback) throws LSPErrorException, IOException;
 
 	@SuppressWarnings("serial")
 	public static class LSPMethodNotFoundException extends LSPErrorException {

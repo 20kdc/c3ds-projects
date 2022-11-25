@@ -37,8 +37,20 @@ public class SrcPosMap<T> {
 		if (slm == null) {
 			slm = new SrcLineMap();
 			lineMap.put(l, slm);
-			if (lastLineInMap < l)
+			if (lastLineInMap < l) {
+				// This is being put on the end.
+				// Fill up the lines coming up to here with the end filler, if any.
+				if (endFiller != null) {
+					for (int i = lastLineInMap + 1; i < l; i++) {
+						SrcLineMap add = new SrcLineMap();
+						add.reset(endFiller);
+						lineMap.put(i, add);
+					}
+				}
+				// And set the end filler here.
+				slm.reset(endFiller);
 				lastLineInMap = l;
+			}
 		}
 		return slm;
 	}

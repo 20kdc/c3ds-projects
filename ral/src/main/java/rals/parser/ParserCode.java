@@ -20,7 +20,11 @@ import rals.types.*;
  * Code parser.
  */
 public class ParserCode {
+	/**
+	 * Beware: Call stmtCompletionIntents if doing, say, "}"-checking
+	 */
 	public static RALStatementUR parseStatement(InsideFileContext ifc) {
+		stmtCompletionIntents(ifc);
 		Token tkn = ifc.lexer.requireNext();
 		try {
 			return parseStatementInnards(ifc, tkn);
@@ -35,6 +39,7 @@ public class ParserCode {
 		if (tkn.isKeyword("{")) {
 			RALBlock rb = new RALBlock(tkn.lineNumber, true);
 			while (true) {
+				stmtCompletionIntents(ifc);
 				tkn = lx.requireNext();
 				if (tkn.isKeyword("}"))
 					break;
@@ -299,5 +304,9 @@ public class ParserCode {
 				break;
 		}
 		return obj.toArray();
+	}
+
+	public static void stmtCompletionIntents(InsideFileContext ifc) {
+		ParserExpr.exprCompletionIntents(ifc);
 	}
 }
