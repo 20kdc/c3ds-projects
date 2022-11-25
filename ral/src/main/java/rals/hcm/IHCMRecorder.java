@@ -8,6 +8,8 @@ package rals.hcm;
 
 import rals.code.ScopeContext;
 import rals.diag.SrcRange;
+import rals.expr.RALExprSlice;
+import rals.expr.RALExprUR;
 import rals.lex.Token;
 
 /**
@@ -27,13 +29,29 @@ public interface IHCMRecorder {
 	/**
 	 * Adds a completion intent to the next requested token.
 	 * If autoHover is true, will also set a hover intent automatically.
+	 * This version will setup the stuff for contextual intents if params is not null.
 	 */
-	void addCompletionIntentToNextToken(HCMIntent intent, boolean autoHover);
+	void addCompletionRelIntentToNextToken(HCMIntent intent, boolean autoHover, RALExprUR... params);
+
+	/**
+	 * Adds a completion intent to the next requested token, with possible 
+	 * If autoHover is true, will also set a hover intent automatically.
+	 */
+	default void addCompletionIntentToNextToken(HCMIntent intent, boolean autoHover) {
+		addCompletionRelIntentToNextToken(intent, autoHover, (RALExprUR[]) null);
+	}
 
 	/**
 	 * Sets a token's hover intent.
 	 */
-	void setTokenHoverIntent(Token.ID tkn, HCMIntent intent);
+	void setTokenHoverRelIntent(Token.ID tkn, HCMIntent intent, RALExprUR... params);
+
+	/**
+	 * Sets a token's hover intent.
+	 */
+	default void setTokenHoverIntent(Token.ID tkn, HCMIntent intent) {
+		setTokenHoverRelIntent(tkn, intent, (RALExprUR[]) null);
+	}
 
 	/**
 	 * Logs a given resolve.
@@ -47,4 +65,10 @@ public interface IHCMRecorder {
 	 * See resolvePre.
 	 */
 	void resolvePost(SrcRange rs, ScopeContext scope);
+
+	/**
+	 * Logs an expression resolve.
+	 * This is called from RALExprUR.resolve.
+	 */
+	void onResolveExpression(RALExprUR src, RALExprSlice dst);
 }

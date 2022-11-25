@@ -10,12 +10,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 
+import rals.code.MacroDefSet;
 import rals.code.ScopeContext;
 import rals.diag.SrcRange;
 import rals.expr.RALCallable;
 import rals.expr.RALConstant;
+import rals.expr.RALExprSlice;
+import rals.expr.RALExprUR;
+import rals.hcm.HCMRelativeIntent.Anchor;
 import rals.hcm.HCMStorage.HoverData;
 import rals.lex.Token;
 import rals.lex.Token.ID;
@@ -35,6 +40,8 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	public final HashMap<Token, Token> backwardsTokenLink = new HashMap<>();
 	public final HashMap<Token.ID, HCMIntent> hoverIntents = new HashMap<>();
 	public final HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken = new HashMap<>();
+	public final HashMap<HCMRelativeIntent.Anchor, HCMRelativeIntent.Tracking> relativeIntentExprs = new HashMap<>();
+	public final HashMap<RALExprUR, LinkedList<HCMRelativeIntent.Tracking>> relativeIntentRoutingTable = new HashMap<>();
 	public Token currentRequestedToken;
 	public Token lastReadToken;
 	public HCMIntent autoHoverHolding;
@@ -69,7 +76,7 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
-	public void addCompletionIntentToNextToken(HCMIntent intent, boolean autoHover) {
+	public void addCompletionRelIntentToNextToken(HCMIntent intent, boolean autoHover, RALExprUR... params) {
 		// always do this, just in case.
 		if (autoHover)
 			autoHoverHolding = intent;
@@ -78,19 +85,44 @@ public class ActualHCMRecorder implements IHCMRecorder {
 			return;
 		if (!currentRequestedToken.isInDP(targetDocPath))
 			return;
+		// main
 		HashSet<HCMIntent> hs = intentsOnNextToken.get(currentRequestedToken);
 		if (hs == null) {
 			hs = new HashSet<>();
 			intentsOnNextToken.put(currentRequestedToken, hs);
 		}
 		hs.add(intent);
+		// params
+		if (params != null)
+			createRelIntentLink((HCMRelativeIntent) intent, currentRequestedToken, params);
 	}
 
 	@Override
-	public void setTokenHoverIntent(ID tkn, HCMIntent intent) {
+	public void setTokenHoverRelIntent(ID tkn, HCMIntent intent, RALExprUR... params) {
 		if (!tkn.isInDP(targetDocPath))
 			return;
 		hoverIntents.put(tkn, intent);
+		if (params != null) {
+			Token prev = backwardsTokenLink.get(tkn);
+			if (prev != null)
+				createRelIntentLink((HCMRelativeIntent) intent, prev, params);
+		}
+	}
+
+	/**
+	 * Links relative intents and their parameters to track them during compilation.
+	 */
+	private void createRelIntentLink(HCMRelativeIntent intent, Token prev, RALExprUR[] params) {
+		HCMRelativeIntent.Tracking trk = new HCMRelativeIntent.Tracking(params);
+		relativeIntentExprs.put(new Anchor(intent, prev), trk);
+		for (RALExprUR p : params) {
+			LinkedList<HCMRelativeIntent.Tracking> ll = relativeIntentRoutingTable.get(p);
+			if (ll == null) {
+				ll = new LinkedList<>();
+				relativeIntentRoutingTable.put(p, ll);
+			}
+			ll.add(trk);
+		}
 	}
 
 	@Override
@@ -103,6 +135,15 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	public void resolvePost(SrcRange rs, ScopeContext scope) {
 		if (rs.isInDP(targetDocPath))
 			snapshots.put(rs.end.lcLong, new HCMScopeSnapshot(rs.end, scope));
+	}
+
+	@Override
+	public void onResolveExpression(RALExprUR src, RALExprSlice dst) {
+		// Resolve relative intent contents (this contributes, i.e. macro arguments to hover data)
+		LinkedList<HCMRelativeIntent.Tracking> trkL = relativeIntentRoutingTable.get(src);
+		if (trkL != null)
+			for (HCMRelativeIntent.Tracking trk : trkL)
+				trk.contribute(src, dst);
 	}
 
 	public HCMStorage compile(IncludeParseContext info) {
@@ -125,9 +166,9 @@ public class ActualHCMRecorder implements IHCMRecorder {
 		for (Map.Entry<String, RALType> nt : info.typeSystem.namedTypes.entrySet())
 			allNamedTypes.put(nt.getKey(), HCMHoverDataGenerators.typeHoverData(nt.getKey(), nt.getValue()));
 
-		HashMap<String, HoverData> allNamedConstants = new HashMap<>();
+		HashMap<String, HoverData> allConstants = new HashMap<>();
 		for (Map.Entry<String, RALConstant> nt : info.typeSystem.namedConstants.entrySet()) {
-			allNamedConstants.put(nt.getKey(), HCMHoverDataGenerators.constHoverData(nt.getKey(), nt.getValue()));
+			allConstants.put(nt.getKey(), HCMHoverDataGenerators.constHoverData(nt.getKey(), nt.getValue()));
 		}
 
 		HashMap<String, HoverData> allCallables = new HashMap<>();
@@ -135,6 +176,25 @@ public class ActualHCMRecorder implements IHCMRecorder {
 			allCallables.put(nt.getKey(), HCMHoverDataGenerators.callableHoverData(nt.getKey(), nt.getValue()));
 		}
 
-		return new HCMStorage(snapshotsSPM, lastTokenMap, backwardsTokenLink, hoverIntents, intentsOnNextToken, allNamedTypes, allNamedConstants, allCallables);
+		HashMap<Integer, HashMap<String, HoverData>> allCallablesAV = new HashMap<>();
+		for (Map.Entry<String, MacroDefSet> nt : info.module.macroDefs.entrySet()) {
+			for (Map.Entry<Integer, RALCallable> nt2 : nt.getValue().map.entrySet()) {
+				HashMap<String, HoverData> tgt = allCallablesAV.computeIfAbsent(nt2.getKey(), (k) -> new HashMap<String, HoverData>());
+				tgt.put(nt.getKey(), HCMHoverDataGenerators.callableHoverData(nt.getKey(), nt2.getValue()));
+			}
+		}
+
+		HCMStorage res = new HCMStorage();
+		res.snapshots = snapshotsSPM;
+		res.lastTokenMap = lastTokenMap;
+		res.backwardsTokenLink = backwardsTokenLink;
+		res.hoverIntents = hoverIntents;
+		res.intentsOnNextToken = intentsOnNextToken;
+		res.allNamedTypes = allNamedTypes;
+		res.allConstants = allConstants;
+		res.allCallables = allCallables;
+		res.allCallablesAV = allCallablesAV;
+		res.relativeIntentExprs = relativeIntentExprs;
+		return res;
 	}
 }

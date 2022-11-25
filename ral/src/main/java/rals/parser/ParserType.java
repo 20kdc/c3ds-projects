@@ -8,7 +8,7 @@ package rals.parser;
 
 import java.util.LinkedList;
 
-import rals.hcm.HCMIntent;
+import rals.hcm.HCMIntents;
 import rals.lex.Lexer;
 import rals.lex.Token;
 import rals.types.RALType;
@@ -53,7 +53,7 @@ public class ParserType {
 	 * Parses a type name.
 	 */
 	public static String parseTypeName(InsideFileContext ifc) {
-		ifc.hcm.addCompletionIntentToNextToken(HCMIntent.TYPE, true);
+		ifc.hcm.addCompletionIntentToNextToken(HCMIntents.TYPE, true);
 		Token.ID id = ifc.lexer.requireNextIDTkn();
 		return id.text;
 	}

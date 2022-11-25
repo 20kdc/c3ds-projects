@@ -27,9 +27,12 @@ public interface RALExprUR {
 	 */
 	default RALExprSlice resolve(ScopeContext scope) {
 		RALConstant rc = resolveConst(scope.world.types);
-		if (rc != null)
+		if (rc != null) {
+			scope.world.hcm.onResolveExpression(this, rc);
 			return rc;
+		}
 		RALExprSlice res = resolveInner(scope);
+		scope.world.hcm.onResolveExpression(this, res);
 		return res;
 	}
 

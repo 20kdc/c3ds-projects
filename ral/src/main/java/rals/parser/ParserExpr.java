@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import rals.cond.*;
 import rals.diag.SrcPos;
 import rals.expr.*;
-import rals.hcm.HCMIntent;
+import rals.hcm.HCMIntents;
 import rals.lex.*;
 import rals.stmt.*;
 import rals.types.*;
@@ -192,7 +192,7 @@ public class ParserExpr {
 		} else if (tkn instanceof Token.Flo) {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
-			ifc.hcm.setTokenHoverIntent((Token.ID) tkn, HCMIntent.ID);
+			ifc.hcm.setTokenHoverIntent((Token.ID) tkn, HCMIntents.ID);
 			return new RALAmbiguousID(tkn.extent, ts, (Token.ID) tkn);
 		} else if (tkn instanceof Token.StrEmb) {
 			// So before we accept this, this could actually be a termination.
@@ -310,9 +310,9 @@ public class ParserExpr {
 				lx.requireNextKw(")");
 				if (base instanceof RALAmbiguousID) {
 					RALAmbiguousID rai = (RALAmbiguousID) base;
-					// Note the override of intent here - the intent retroactively becomes CALLABLE.
+					// Note the override of intent here - the intent retroactively becomes CALLABLE_ARGS.
 					if (rai.textToken != null)
-						ifc.hcm.setTokenHoverIntent(rai.textToken, HCMIntent.CALLABLE);
+						ifc.hcm.setTokenHoverRelIntent(rai.textToken, HCMIntents.CALLABLE_ARGS, group);
 					base = new RALCall(rai.text, group);
 				} else {
 					throw new RuntimeException("You can't put a call on anything but an ambiguous ID, and certainly not " + base);
@@ -367,7 +367,7 @@ public class ParserExpr {
 	 * Applies expression atom completion intents.
 	 */
 	public static void exprCompletionIntents(InsideFileContext ifc) {
-		ifc.hcm.addCompletionIntentToNextToken(HCMIntent.ID, false);
-		ifc.hcm.addCompletionIntentToNextToken(HCMIntent.CALLABLE, false);
+		ifc.hcm.addCompletionIntentToNextToken(HCMIntents.ID, false);
+		ifc.hcm.addCompletionIntentToNextToken(HCMIntents.CALLABLE, false);
 	}
 }

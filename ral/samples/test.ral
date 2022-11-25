@@ -89,6 +89,13 @@ macro add(int &a, int &b) {
 	return c;
 }
 
+// It's also possible to define multiple macros with the same name,
+//  if they have different amounts of arguments.
+macro add(int &a, int &b, int &c) {
+	// RAL also supports the boring kind of expressions.
+	return a + b + c;
+}
+
 // There is a second style of macros.
 // This style is useful for when a macro needs to modify variables in-place for efficiency.
 // In this style, the "return values" are given as explicit slots.
@@ -127,8 +134,10 @@ install {
 	& ' * --addInplace--\n';
 	addInplace(counter, 1);
 
-	& ' * --add--\n';
+	& ' * --add#2--\n';
 	counter = add(counter, 1);
+	& ' * --add#3--\n';
+	counter = add(counter, 1, 1);
 
 	// bools are strictly speaking ints (and are castable to such).
 	// But they're useful nonetheless.

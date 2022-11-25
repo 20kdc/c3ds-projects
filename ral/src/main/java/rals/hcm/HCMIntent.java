@@ -6,57 +6,21 @@
  */
 package rals.hcm;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import rals.diag.SrcPosUntranslated;
 import rals.hcm.HCMStorage.HoverData;
+import rals.lex.Token;
 
 /**
  * Indicates the intent of a token.
  */
 public abstract class HCMIntent {
 	/**
-	 * Ambiguous ID.
-	 */
-	public static final HCMIntent ID = new HCMIntent() {
-		/**
-		 * This mirrors RALAmbiguousID.
-		 */
-		@Override
-		public Map<String, HoverData> retrieve(SrcPosUntranslated sp, HCMStorage storage) {
-			HashMap<String, HoverData> map = new HashMap<>();
-			HCMScopeSnapshot snapshot = storage.snapshots.get(sp);
-			if (snapshot != null)
-				map.putAll(snapshot.contents);
-			map.putAll(storage.allConstants);
-			return map;
-		}
-	};
-
-	/**
-	 * Type.
-	 */
-	public static final HCMIntent TYPE = new HCMIntent() {
-		@Override
-		public Map<String, HoverData> retrieve(SrcPosUntranslated sp, HCMStorage storage) {
-			return storage.allNamedTypes;
-		}
-	};
-
-	/**
-	 * Macro call.
-	 */
-	public static final HCMIntent CALLABLE = new HCMIntent() {
-		@Override
-		public Map<String, HoverData> retrieve(SrcPosUntranslated sp, HCMStorage storage) {
-			return storage.allCallables;
-		}
-	};
-
-	/**
 	 * Retrieves a map.
 	 * DO NOT WRITE TO THIS MAP.
+	 * The token given is the key in intentsOnNextToken, AND MAY BE NULL.
+	 * The position given is the actual position of the cursor.
 	 */
-	public abstract Map<String, HoverData> retrieve(SrcPosUntranslated sp, HCMStorage storage);
+	public abstract Map<String, HoverData> retrieve(Token sp, SrcPosUntranslated tp, HCMStorage storage);
 }

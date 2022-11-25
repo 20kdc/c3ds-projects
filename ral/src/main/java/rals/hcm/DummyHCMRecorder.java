@@ -8,6 +8,8 @@ package rals.hcm;
 
 import rals.code.ScopeContext;
 import rals.diag.SrcRange;
+import rals.expr.RALExprSlice;
+import rals.expr.RALExprUR;
 import rals.lex.Token;
 import rals.lex.Token.ID;
 
@@ -24,11 +26,11 @@ public class DummyHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
-	public void addCompletionIntentToNextToken(HCMIntent intent, boolean autoHover) {
+	public void addCompletionRelIntentToNextToken(HCMIntent intent, boolean autoHover, RALExprUR... rel) {
 	}
 
 	@Override
-	public void setTokenHoverIntent(ID tkn, HCMIntent intent) {
+	public void setTokenHoverRelIntent(ID tkn, HCMIntent intent, RALExprUR... rel) {
 	}
 
 	@Override
@@ -37,5 +39,9 @@ public class DummyHCMRecorder implements IHCMRecorder {
 
 	@Override
 	public void resolvePost(SrcRange rs, ScopeContext scope) {
+	}
+
+	@Override
+	public void onResolveExpression(RALExprUR src, RALExprSlice dst) {
 	}
 }

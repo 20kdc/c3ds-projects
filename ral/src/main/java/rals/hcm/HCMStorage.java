@@ -17,24 +17,19 @@ import rals.lex.Token;
  * Storage of HCM data (since HCM data on all active LSP files remains in memory at all times)
  */
 public class HCMStorage {
-	public final SrcPosMap<HCMScopeSnapshot> snapshots;
-	public final SrcPosMap<Token> lastTokenMap;
-	public final HashMap<Token, Token> backwardsTokenLink;
-	public final HashMap<Token.ID, HCMIntent> hoverIntents;
-	public final HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken;
-	public final HashMap<String, HoverData> allNamedTypes;
-	public final HashMap<String, HoverData> allConstants;
-	public final HashMap<String, HoverData> allCallables;
+	// These *would* all be final, but it's getting confusing.
+	public SrcPosMap<HCMScopeSnapshot> snapshots;
+	public SrcPosMap<Token> lastTokenMap;
+	public HashMap<Token, Token> backwardsTokenLink;
+	public HashMap<Token.ID, HCMIntent> hoverIntents;
+	public HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken;
+	public HashMap<String, HoverData> allNamedTypes;
+	public HashMap<String, HoverData> allConstants;
+	public HashMap<String, HoverData> allCallables;
+	public HashMap<Integer, HashMap<String, HoverData>> allCallablesAV;
+	public HashMap<HCMRelativeIntent.Anchor, HCMRelativeIntent.Tracking> relativeIntentExprs;
 
-	public HCMStorage(SrcPosMap<HCMScopeSnapshot> s, SrcPosMap<Token> tkn, HashMap<Token, Token> b, HashMap<Token.ID, HCMIntent> id, HashMap<Token, HashSet<HCMIntent>> ci, HashMap<String, HoverData> ant, HashMap<String, HoverData> c, HashMap<String, HoverData> m) {
-		snapshots = s;
-		lastTokenMap = tkn;
-		backwardsTokenLink = b;
-		hoverIntents = id;
-		intentsOnNextToken = ci;
-		allNamedTypes = ant;
-		allConstants = c;
-		allCallables = m;
+	public HCMStorage() {
 	}
 
 	/**
@@ -47,8 +42,10 @@ public class HCMStorage {
 		} else if (tkn instanceof Token.ID) {
 			Token.ID id = (Token.ID) tkn;
 			HCMIntent hi = hoverIntents.get(id);
-			if (hi != null)
-				return hi.retrieve(tp, this).get(id.text);
+			if (hi != null) {
+				Token former = backwardsTokenLink.get(tkn);
+				return hi.retrieve(former, tp, this).get(id.text);
+			}
 			return null;
 		} else {
 			return null;
@@ -93,11 +90,11 @@ public class HCMStorage {
 		if (sz == 0)
 			return null;
 		else if (intentSet.size() == 1)
-			return intentSet.iterator().next().retrieve(spu, this);
+			return intentSet.iterator().next().retrieve(refToken, spu, this);
 		// alright, accumulate
 		HashMap<String, HoverData> accumulated = new HashMap<>();
 		for (HCMIntent hi : intentSet)
-			accumulated.putAll(hi.retrieve(spu, this));
+			accumulated.putAll(hi.retrieve(refToken, spu, this));
 		return accumulated;
 	}
 

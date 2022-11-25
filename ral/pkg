@@ -7,5 +7,5 @@ zip ../ral.zip cdsp-ral-0.666-SNAPSHOT-jar-with-dependencies.jar
 cd ../docs
 asciidoctor-pdf full.adoc -o full.pdf
 cd ..
-zip ral.zip -r docs/full.pdf include
+zip ral.zip -r docs/full.pdf include/std syntax
 
