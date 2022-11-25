@@ -35,7 +35,7 @@ public abstract class DefInfo {
 		}
 
 		public At(SrcPos lineNumber, String string) {
-			super(new SrcRange(lineNumber, lineNumber), string);
+			super(lineNumber.toRange(), string);
 		}
 	}
 }

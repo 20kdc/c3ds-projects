@@ -112,7 +112,7 @@ public class Lexer {
 					while (true) {
 						b = getNextByte();
 						if (b == -1) {
-							diags.error(at, "Unterminated block comment");
+							diags.lexParseErr(at, "Unterminated block comment");
 							break;
 						}
 						if (b == '*') {
@@ -248,7 +248,7 @@ public class Lexer {
 					// nope
 				}
 				SrcPos sp = genLN();
-				diags.error(sp, "number-like not number");
+				diags.lexParseErr(sp, "number-like not number");
 				return new Token.ID(new SrcRange(startOfToken, sp), consumeComment(), str);
 			}
 		}
@@ -300,7 +300,7 @@ public class Lexer {
 		while (true) {
 			int c2 = getNextByte();
 			if (c2 == -1) {
-				diags.error(startOfToken, "Unterminated string");
+				diags.lexParseErr(startOfToken, "Unterminated string");
 				break;
 			}
 			if (escaping) {

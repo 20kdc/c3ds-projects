@@ -16,6 +16,12 @@ import java.util.LinkedList;
 public class DiagRecorder {
 	public boolean hasFailed = false;
 	public LinkedList<Diag> diagnostics = new LinkedList<>();
+	/**
+	 * Stack frames of diag business.
+	 * Items are added/removed from this in, for example, RALStatement.resolve.
+	 * Use push/pop.
+	 */
+	private LinkedList<SrcRange> frames = new LinkedList<>();
 
 	public void diag(Diag d) {
 		if (d.kind == Diag.Kind.Error)
@@ -23,31 +29,44 @@ public class DiagRecorder {
 		diagnostics.add(d);
 	}
 
-	public void error(SrcPos where, String text) {
-		diag(new Diag(Diag.Kind.Error, where, text, text));
+	/**
+	 * Lexer/Parser errors need to use this because:
+	 * 1. they're very immediate
+	 * 2. deliberately discarding frame data in favour of the dedicated include error mechanism is important here
+	 */
+	public void lexParseErr(SrcPos sp, String text) {
+		lexParseErr(sp.toRange(), text);
 	}
 
-	public void error(SrcRange where, String text) {
-		diag(new Diag(Diag.Kind.Error, where, text, text));
+	public void lexParseErr(SrcPos sp, String text, Exception ex) {
+		lexParseErr(sp.toRange(), text, ex);
 	}
 
-	public void error(SrcPos where, Exception ex) {
-		error(where, "", ex);
+	public void lexParseErr(SrcRange sp, String text) {
+		frames.push(sp);
+		error(text);
+		frames.pop();
 	}
 
-	public void error(SrcRange where, Exception ex) {
-		error(where, "", ex);
+	public void lexParseErr(SrcRange sp, String text, Exception ex) {
+		frames.push(sp);
+		error(text, ex);
+		frames.pop();
 	}
 
-	public void error(SrcPos where, String text, Exception ex) {
-		error(new SrcRange(where, where), text, ex);
+	public void error(String text) {
+		diag(new Diag(Diag.Kind.Error, frames.toArray(new SrcRange[0]), text, text));
 	}
 
-	public void error(SrcRange where, String text, Exception ex) {
+	public void error(Exception ex) {
+		error("", ex);
+	}
+
+	public void error(String text, Exception ex) {
 		StringWriter details = new StringWriter();
 		details.append(text);
 		ex.printStackTrace(new PrintWriter(details));
-		diag(new Diag(Diag.Kind.Error, where, details.toString(), ex.getMessage()));
+		diag(new Diag(Diag.Kind.Error, frames.toArray(new SrcRange[0]), details.toString(), ex.getMessage()));
 	}
 
 	public void unwrap() {
@@ -55,12 +74,27 @@ public class DiagRecorder {
 			StringBuilder sb = new StringBuilder();
 			sb.append("Compile errors:\n");
 			for (Diag d : diagnostics) {
-				sb.append(d.location);
-				sb.append(": ");
+				for (SrcRange sr : d.frames) {
+					sb.append(sr);
+					sb.append(": ");
+				}
 				sb.append(d.text);
 				sb.append("\n");
 			}
 			throw new RuntimeException(sb.toString());
+		}
+	}
+
+	public void pushFrame(SrcRange extent) {
+		frames.push(extent);
+	}
+
+	public void popFrame(SrcRange extent) {
+		SrcRange e2 = frames.pop(); 
+		if (e2 != extent) {
+			// put it back so that things don't get worse, maybe
+			frames.push(e2);
+			throw new RuntimeException("FRAME MISMATCH IN DIAG: " + extent + " vs " + e2);
 		}
 	}
 }

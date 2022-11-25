@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
-import rals.diag.SrcPos;
 import rals.expr.*;
 import rals.lex.DefInfo;
 import rals.types.RALType.AgentClassifier;

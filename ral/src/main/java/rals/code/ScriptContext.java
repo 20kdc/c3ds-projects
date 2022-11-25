@@ -6,7 +6,6 @@
  */
 package rals.code;
 
-import rals.stmt.RALInlineStatement;
 import rals.stmt.RALStatement;
 import rals.stmt.RALStatementUR;
 import rals.types.RALType;
@@ -30,11 +29,6 @@ public class ScriptContext {
 	}
 
 	public RALStatement resolveStmt(RALStatementUR v) {
-		try {
-			return v.resolve(new ScopeContext(this));
-		} catch (Exception ex) {
-			world.diags.error(v.lineNumber, "failed resolving: ", ex);
-			return new RALInlineStatement.Resolved(v.extent, new String[] {"STOP * RAL resolveStmt error"});
-		}
+		return v.resolve(new ScopeContext(this));
 	}
 }

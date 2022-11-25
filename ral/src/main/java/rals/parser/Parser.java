@@ -15,6 +15,7 @@ import rals.code.*;
 import rals.cond.*;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
+import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.hcm.DummyHCMRecorder;
 import rals.hcm.HCMIntents;
@@ -29,7 +30,7 @@ public class Parser {
 	private static IncludeParseContext newContext(IDocPath stdlib) throws IOException {
 		IncludeParseContext ic = new IncludeParseContext(new DummyHCMRecorder(), true);
 		ic.searchPaths.add(stdlib);
-		findParseFile(ic, null, "std/compiler_helpers.ral", null);
+		findParseFile(ic, null, "std/compiler_helpers.ral");
 		return ic;
 	}
 	public static IncludeParseContext run(IDocPath stdlib, String path) throws IOException {
@@ -40,12 +41,20 @@ public class Parser {
 	}
 	public static String runCPXConnTest(IDocPath stdlib) throws IOException {
 		IncludeParseContext ic = newContext(stdlib);
-		findParseFile(ic, null, "std/cpx_connection_test.ral", null);
+		findParseFile(ic, null, "std/cpx_connection_test.ral");
 		StringBuilder sb = new StringBuilder();
 		Scripts scr = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 		scr.compileInstall(new OuterCompileContext(sb, ic.typeSystem, ic.diags, false));
 		ic.diags.unwrap();
 		return sb.toString();
+	}
+
+	/**
+	 * Finds and parses a file.
+	 * Does do the include sanity check.
+	 */
+	public static void findParseFile(IncludeParseContext ctx, IDocPath relTo, String inc) throws IOException {
+		findParseFile(ctx, relTo, inc, null);
 	}
 
 	/**
@@ -120,7 +129,7 @@ public class Parser {
 						parseDeclaration(ifc, tkn);
 					}
 				} catch (Exception ex) {
-					ctx.diags.error(tkn.lineNumber, "exception in declaration: ", ex);
+					ctx.diags.lexParseErr(tkn.lineNumber, "exception in declaration: ", ex);
 				}
 			}
 		} catch (Exception ex) {
@@ -280,14 +289,14 @@ public class Parser {
 			Token tx = lx.requireNext();
 			if (!tx.isKeyword("=")) {
 				lx.back();
-				ifc.diags.error(tkn.lineNumber, "unknown declaration " + tkn);
+				ifc.diags.lexParseErr(tkn.lineNumber, "unknown declaration " + tkn);
 			} else {
 				RALConstant cst = ParserExpr.parseConst(ifc);
 				lx.requireNextKw(";");
 				ts.declareConst(name, lx.genDefInfo(tkn), cst);
 			}
 		} else {
-			ifc.diags.error(tkn.lineNumber, "unknown declaration " + tkn);
+			ifc.diags.lexParseErr(tkn.lineNumber, "unknown declaration " + tkn);
 		}
 	}
 

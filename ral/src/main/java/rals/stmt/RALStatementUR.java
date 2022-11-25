@@ -40,15 +40,18 @@ public abstract class RALStatementUR {
 	 * Resolves the statement.
 	 */
 	public final RALStatement resolve(ScopeContext scope) {
+		scope.world.diags.pushFrame(extent);
+		RALStatement res = null;
 		try {
 			scope.world.hcm.resolvePre(extent, scope);
-			RALStatement res = resolveInner(scope);
+			res = resolveInner(scope);
 			scope.world.hcm.resolvePost(extent, scope);
-			return res;
 		} catch (Exception ex) {
-			scope.world.diags.error(extent, "statement resolve: ", ex);
-			return new RALInlineStatement.Resolved(extent, new String[] {"STOP * RAL STATEMENT RESOLVE ERROR"});
+			scope.world.diags.error("statement resolve: ", ex);
+			res = new RALInlineStatement.Resolved(extent, new String[] {"STOP * RAL STATEMENT RESOLVE ERROR"});
 		}
+		scope.world.diags.popFrame(extent);
+		return res;
 	}
 
 	/**

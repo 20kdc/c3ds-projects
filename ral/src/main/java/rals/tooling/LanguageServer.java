@@ -36,14 +36,53 @@ public class LanguageServer implements ILSPCore {
 		debugMode = dbgMode;
 	}
 
-	public Diag[] getDiagnostics(IDocPath docPath) {
+	private void figureOutWhatToDoWithDiag(LinkedList<LSPDiag> finalDiagSet, HashSet<IDocPath> includeWarnings, IDocPath docPath, Diag d) {
+		// Ok, so, first, trace through the frames to find the first point where our target file is involved.
+		// This might require lex/parse errors get special treatment though.
+		int firstTargetFileFrame = -1;
+		for (int frameIndex = 0; frameIndex < d.frames.length; frameIndex++) {
+			if (d.frames[frameIndex].file.docPath == docPath) {
+				firstTargetFileFrame = frameIndex;
+				break;
+			}
+		}
+		if (firstTargetFileFrame != -1) {
+			// It is involved, so escalate up to to there.
+			StringBuilder sb = new StringBuilder();
+			for (int frameAppend = 0; frameAppend <= firstTargetFileFrame; frameAppend++) {
+				sb.append(d.frames[frameAppend]);
+				sb.append(": ");
+			}
+			sb.append(d.shortText);
+			finalDiagSet.add(new LSPDiag(d.kind, d.frames[firstTargetFileFrame], sb.toString()));
+			return;
+		}
+		// If it's not an error, we don't care from this point on.
+		if (d.kind != Kind.Error)
+			return;
+		// Alright, now treat this like a parse error.
+		SrcRange location = d.frames[0];
+		IDocPath originalSource = location.file.docPath;
+		// set checkMe to the location of the include
+		SrcPos checkMe = location.start;
+		while (checkMe.file.includedFrom != null)
+			checkMe = checkMe.file.includedFrom;
+		// only show one
+		if (!includeWarnings.contains(originalSource)) {
+			includeWarnings.add(originalSource);
+			String ost = location.start + ": " + d.shortText;
+			finalDiagSet.add(new LSPDiag(Diag.Kind.Error, checkMe.toRange(), ost));
+		}
+	}
+
+	public LSPDiag[] getDiagnostics(IDocPath docPath) {
 		SrcPosFile docPathSPF = new SrcPosFile(null, docPath, docPath.getRootShortName());
 		try {
 			ActualHCMRecorder hcm = new ActualHCMRecorder(docPath);
 			IncludeParseContext ipc = new IncludeParseContext(hcm, false);
 			// Need the builtins and such
 			ipc.searchPaths.add(stdLib);
-			Parser.findParseFile(ipc, null, "std/compiler_helpers.ral", null);
+			Parser.findParseFile(ipc, null, "std/compiler_helpers.ral");
 
 			// Actually compile this...
 			Parser.parseFileAt(ipc, docPathSPF);
@@ -54,34 +93,18 @@ public class LanguageServer implements ILSPCore {
 			// Compilation completed, sort all the guts out
 			docHCM.put(docPath, hcm.compile(ipc));
 
-			LinkedList<Diag> finalDiagSet = new LinkedList<>();
+			LinkedList<LSPDiag> finalDiagSet = new LinkedList<>();
 			HashSet<IDocPath> includeWarnings = new HashSet<>();
 			for (Diag d : ipc.diags.diagnostics) {
-				if (d.location.file.docPath.equals(docPath)) {
-					finalDiagSet.add(d);
-				} else if (d.kind == Kind.Error) {
-					IDocPath originalSource = d.location.file.docPath;
-					String originalSourceName = d.location.file.shortName;
-					// set checkMe to the location of the include
-					SrcPos checkMe = d.location.start;
-					while (checkMe.file.includedFrom != null)
-						checkMe = checkMe.file.includedFrom;
-					// only show one
-					if (!includeWarnings.contains(originalSource)) {
-						includeWarnings.add(originalSource);
-						String ost = originalSourceName + ": " + d.shortText;
-						String olt = originalSourceName + ": " + d.text;
-						finalDiagSet.add(new Diag(Diag.Kind.Error, checkMe, ost, olt));
-					}
-				}
+				figureOutWhatToDoWithDiag(finalDiagSet, includeWarnings, docPath, d);
 			}
-			return finalDiagSet.toArray(new Diag[0]);
+			return finalDiagSet.toArray(new LSPDiag[0]);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			String msg = "diagnostics exception: " + ex.toString();
 			// whoopsie!
-			return new Diag[] {
-				new Diag(Diag.Kind.Error, new SrcPos(docPathSPF, 0, 0, 0), msg, msg)
+			return new LSPDiag[] {
+				new LSPDiag(Diag.Kind.Error, new SrcPos(docPathSPF, 0, 0, 0).toRange(), msg)
 			};
 		}
 	}
@@ -90,15 +113,9 @@ public class LanguageServer implements ILSPCore {
 		JSONObject diagsUpdate = new JSONObject();
 		diagsUpdate.put("uri", uri);
 		JSONArray diagsContent = new JSONArray();
-		Diag[] gd = getDiagnostics(docRepo.getDocPath(uri));
-		for (Diag d : gd) {
-			JSONObject diagJ = new JSONObject();
-			diagJ.put("range", d.location.toLSPRange());
-			// lite-xl needs this to not malfunction
-			diagJ.put("severity", 1);
-			diagJ.put("message", d.shortText);
-			diagsContent.put(diagJ);
-		}
+		LSPDiag[] gd = getDiagnostics(docRepo.getDocPath(uri));
+		for (LSPDiag d : gd)
+			diagsContent.put(d.toLSPDiagnostic());
 		diagsUpdate.put("diagnostics", diagsContent);
 		sendback.sendNotification("textDocument/publishDiagnostics", diagsUpdate);
 	}

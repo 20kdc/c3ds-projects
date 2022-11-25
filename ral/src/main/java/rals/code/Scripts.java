@@ -96,12 +96,8 @@ public class Scripts {
 	}
 
 	private void compile(OuterCompileContext ctx, RALStatement v, int ii) {
-		try {
-			CodeWriter cw = new CodeWriter(ctx.out, ctx.debug);
-			cw.indent = ii;
-			v.compile(cw, new CompileContext(ctx.typeSystem, this, ctx.diags, cw));
-		} catch (Exception ex) {
-			ctx.diags.error(v.extent, "failed writing code: ", ex);
-		}
+		CodeWriter cw = new CodeWriter(ctx.out, ctx.debug);
+		cw.indent = ii;
+		v.compile(cw, new CompileContext(ctx.typeSystem, this, ctx.diags, cw));
 	}
 }

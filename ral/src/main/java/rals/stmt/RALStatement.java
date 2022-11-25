@@ -26,11 +26,13 @@ public abstract class RALStatement {
 				writer.queuedCommentForNextLine = "@ " + extent;
 			}
 		}
+		context.diags.pushFrame(extent);
 		try {
 			compileInner(writer, context);
 		} catch (Exception ex) {
-			context.diags.error(extent, "statement compile: ", ex);
+			context.diags.error("stmt compile: ", ex);
 		}
+		context.diags.popFrame(extent);
 	}
 
 	/**

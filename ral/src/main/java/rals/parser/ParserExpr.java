@@ -66,7 +66,7 @@ public class ParserExpr {
 		RALExprUR expr = parseExprOrNull(ifc);
 		if (expr == null) {
 			if (must)
-				ifc.diags.error(ifc.lexer.genLN(), "expected expression");
+				ifc.diags.lexParseErr(ifc.lexer.genLN(), "expected expression");
 			return RALExprGroupUR.of();
 		}
 		return expr;

@@ -4,31 +4,41 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.diag;
+package rals.tooling;
+
+import rals.diag.SrcRange;
+
+import org.json.JSONObject;
+
+import rals.diag.Diag;
+import rals.diag.Diag.Kind;
 
 /**
- * Something went wrong?
+ * Diag, but for LSP.
  */
-public class Diag {
+public class LSPDiag {
 	public final Kind kind;
-	/**
-	 * Frames. Last is innermost frame.
-	 */
-	public final SrcRange[] frames;
+	public final SrcRange extent;
 	public final String text;
-	public final String shortText;
 
-	public Diag(Kind k, SrcRange[] f, String t, String txs) {
-		if (f.length == 0)
-			throw new RuntimeException("Diag with no stack frames: " + t);
+	public LSPDiag(Kind k, SrcRange ex, String t) {
 		kind = k;
-		frames = f;
+		extent = ex;
 		text = t;
-		shortText = txs;
 	}
 
-	public enum Kind {
-		// Error
-		Error
+	public LSPDiag(Diag d) {
+		kind = d.kind;
+		extent = d.frames[0];
+		text = d.shortText;
+	}
+
+	public JSONObject toLSPDiagnostic() {
+		JSONObject diagJ = new JSONObject();
+		diagJ.put("range", extent.toLSPRange());
+		// lite-xl needs this to not malfunction
+		diagJ.put("severity", 1);
+		diagJ.put("message", text);
+		return diagJ;
 	}
 }

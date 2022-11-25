@@ -9,6 +9,7 @@ package rals.parser;
 import java.util.LinkedList;
 
 import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.expr.RALChainOp.Op;
 import rals.lex.*;
@@ -26,12 +27,17 @@ public class ParserCode {
 	public static RALStatementUR parseStatement(InsideFileContext ifc) {
 		stmtCompletionIntents(ifc);
 		Token tkn = ifc.lexer.requireNext();
+		RALStatementUR res = null;
+		SrcRange sr = tkn.lineNumber.toRange();
+		ifc.diags.pushFrame(sr);
 		try {
-			return parseStatementInnards(ifc, tkn);
+			res = parseStatementInnards(ifc, tkn);
 		} catch (Exception ex) {
-			ifc.diags.error(tkn.lineNumber, "exception in statement: ", ex);
-			return new RALBlock(tkn.lineNumber, false);
+			ifc.diags.error("exception in statement: ", ex);
+			res = new RALBlock(tkn.lineNumber, false);
 		}
+		ifc.diags.popFrame(sr);
+		return res;
 	}
 	private static RALStatementUR parseStatementInnards(InsideFileContext ifc, Token tkn) {
 		TypeSystem ts = ifc.typeSystem;
@@ -192,7 +198,7 @@ public class ParserCode {
 				}
 				return new RALAssignStatement(tkn.lineNumber, null, call);
 			} else {
-				ifc.diags.error(sp.lineNumber, sp + " after expression statement");
+				ifc.diags.lexParseErr(sp.lineNumber, sp + " after expression statement");
 				return new RALBlock(tkn.lineNumber, false);
 			}
 		}

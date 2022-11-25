@@ -48,14 +48,16 @@ public class Macro implements RALCallable {
 		for (MacroArg arg : args)
 			scContext.setLoc(arg.name, defInfo, new RALVarEH(arg, arg.type));
 
+		world.diags.pushFrame(defInfo.srcRange);
 		try {
 			world.hcm.resolvePre(defInfo.srcRange, scContext);
 			precompiledCode = code.resolve(scContext);
 			world.hcm.resolvePost(defInfo.srcRange, scContext);
 		} catch (Exception ex) {
-			world.diags.error(defInfo.srcRange, "failed resolving: ", ex);
+			world.diags.error("failed resolving: ", ex);
 			precompiledCode = new RALErrorExpr("macro " + name + "#" + args.length + " failed to compile");
 		}
+		world.diags.popFrame(defInfo.srcRange);
 	}
 
 	@Override
