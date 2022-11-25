@@ -16,6 +16,16 @@ import rals.lex.Token;
  * Indicates the intent of a token.
  */
 public abstract class HCMIntent {
+	public final String name;
+	public HCMIntent(String n) {
+		name = n;
+	}
+
+	@Override
+	public String toString() {
+		return name;
+	}
+
 	/**
 	 * Retrieves a map.
 	 * DO NOT WRITE TO THIS MAP.

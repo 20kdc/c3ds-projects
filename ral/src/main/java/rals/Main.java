@@ -133,11 +133,11 @@ public class Main {
 			// be a little flashy with this
 			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest(stdLibDP)));
 		} else if (args[0].equals("lsp")) {
-			new LSPBaseProtocolLoop(new LanguageServer(stdLibDP)).run();
+			new LSPBaseProtocolLoop(new LanguageServer(stdLibDP, false)).run();
 		} else if (args[0].equals("lspLog")) {
 			FileOutputStream fos = new FileOutputStream(new File(ralStandardLibrary, "lsp.log"), true);
 			System.setErr(new PrintStream(fos, true, "UTF-8"));
-			new LSPBaseProtocolLoop(new LanguageServer(stdLibDP)).run();
+			new LSPBaseProtocolLoop(new LanguageServer(stdLibDP, true)).run();
 		} else {
 			printHelp();
 		}

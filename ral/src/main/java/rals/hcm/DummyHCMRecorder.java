@@ -22,7 +22,7 @@ public class DummyHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
-	public void parserRequestedToken(Token tkn) {
+	public void parserRequestedToken(Token tkn, boolean actualRequest) {
 	}
 
 	@Override

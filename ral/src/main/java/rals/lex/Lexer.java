@@ -20,8 +20,8 @@ import rals.hcm.IHCMRecorder;
 public class Lexer {
 	private CharHistory charHistory;
 
-	private int tokenHistoryPtr = 3;
-	private Token[] tokenHistory = new Token[3];
+	private int tokenHistoryPtr = 4;
+	private Token[] tokenHistory = new Token[4];
 
 	private static final String LONERS = ";[]{}(),.";
 	private static final String NUM_START = "+-0123456789";
@@ -152,18 +152,26 @@ public class Lexer {
 		if (tokenHistoryPtr < tokenHistory.length) {
 			Token res = tokenHistory[tokenHistoryPtr++];
 			if (res != null)
-				hcm.parserRequestedToken(res);
+				hcm.parserRequestedToken(res, true);
 			return res;
 		}
 		Token tkn = nextInner();
 		if (tkn != null) {
 			hcm.readToken(tkn);
-			hcm.parserRequestedToken(tkn);
+			hcm.parserRequestedToken(tkn, true);
 		}
 		for (int i = 0; i < tokenHistory.length - 1; i++)
 			tokenHistory[i] = tokenHistory[i + 1];
 		tokenHistory[tokenHistory.length - 1] = tkn;
 		return tkn;
+	}
+
+	public void back() {
+		tokenHistoryPtr--;
+		// Keep HCM in sync by updating last requested token to the one before the one we're going to return on next().
+		// Completion intents that target the token we'll return on next() therefore will anchor on the token before it.
+		// (This is expected and is how completion intents work.)
+		hcm.parserRequestedToken(tokenHistory[tokenHistoryPtr - 1], false);
 	}
 
 	private Token nextInner() {
@@ -313,10 +321,6 @@ public class Lexer {
 		} else {
 			return new Token.Str(sp, sb.toString());
 		}
-	}
-
-	public void back() {
-		tokenHistoryPtr--;
 	}
 
 	public Token requireNext() {

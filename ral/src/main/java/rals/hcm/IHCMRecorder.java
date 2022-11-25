@@ -22,9 +22,11 @@ public interface IHCMRecorder {
 	void readToken(Token tkn);
 
 	/**
-	 * Run for every (non-EOF) token requested by the parser. 
+	 * Run whenever the token requested by the parser changes.
+	 * actualRequest indicates the parser actually directly requested this token.
+	 * That is as opposed to, say, back().
 	 */
-	void parserRequestedToken(Token tkn);
+	void parserRequestedToken(Token tkn, boolean actualRequest);
 
 	/**
 	 * Adds a completion intent to the next requested token.

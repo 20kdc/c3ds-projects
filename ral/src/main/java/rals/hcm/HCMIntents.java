@@ -22,7 +22,7 @@ public class HCMIntents {
 	/**
 	 * Ambiguous ID.
 	 */
-	public static final HCMIntent ID = new HCMIntent() {
+	public static final HCMIntent ID = new HCMIntent("ID") {
 		/**
 		 * This mirrors RALAmbiguousID.
 		 */
@@ -40,7 +40,7 @@ public class HCMIntents {
 	/**
 	 * Type.
 	 */
-	public static final HCMIntent TYPE = new HCMIntent() {
+	public static final HCMIntent TYPE = new HCMIntent("TYPE") {
 		@Override
 		public Map<String, HoverData> retrieve(Token sp, SrcPosUntranslated spu, HCMStorage storage) {
 			return storage.allNamedTypes;
@@ -50,7 +50,7 @@ public class HCMIntents {
 	/**
 	 * Macro call.
 	 */
-	public static final HCMIntent CALLABLE = new HCMIntent() {
+	public static final HCMIntent CALLABLE = new HCMIntent("CALLABLE") {
 		@Override
 		public Map<String, HoverData> retrieve(Token sp, SrcPosUntranslated spu, HCMStorage storage) {
 			return storage.allCallables;
@@ -60,7 +60,7 @@ public class HCMIntents {
 	/**
 	 * Macro call, relative to arguments
 	 */
-	public static final HCMRelativeIntent CALLABLE_ARGS = new HCMRelativeIntent(1, CALLABLE) {
+	public static final HCMRelativeIntent CALLABLE_ARGS = new HCMRelativeIntent("CALLABLE_ARGS", 1, CALLABLE) {
 		@Override
 		public Map<String, HoverData> retrieveParameterized(Token sp, SrcPosUntranslated spu, HCMStorage storage, RALExprSlice[] exprs) {
 			return storage.allCallablesAV.get(exprs[0].length);
@@ -70,7 +70,7 @@ public class HCMIntents {
 	/**
 	 * Field ID, relative to target agent
 	 */
-	public static final HCMRelativeIntent FIELD_EXPR = new HCMRelativeIntent(1, null) {
+	public static final HCMRelativeIntent FIELD_EXPR = new HCMRelativeIntent("FIELD_EXPR", 1, null) {
 		@Override
 		public Map<String, HoverData> retrieveParameterized(Token sp, SrcPosUntranslated spu, HCMStorage storage, RALExprSlice[] exprs) {
 			try {

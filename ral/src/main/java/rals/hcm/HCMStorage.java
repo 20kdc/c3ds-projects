@@ -52,10 +52,7 @@ public class HCMStorage {
 		}
 	}
 
-	/**
-	 * Gets completion information at a given point (or null for none)
-	 */
-	public Map<String, HoverData> getCompletion(SrcPosUntranslated spu) {
+	private Token completionRefToken(SrcPosUntranslated spu) {
 		// Cases we need to support:
 		// tknA tknB<cursor> (i.e. let Cre<cursor> )
 		// here, we wish to use tknA's next intent
@@ -79,9 +76,47 @@ public class HCMStorage {
 			// Go back a token for our intent reference.
 			// writingToken = refToken;
 			refToken = backwardsTokenLink.get(refToken);
-			if (refToken == null)
-				return null;
 		}
+		return refToken;
+	}
+
+	/**
+	 * Debug information from hover
+	 */
+	public String hoverDebugPrefix(SrcPosUntranslated spu) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("lT:");
+		Token lt = lastTokenMap.get(spu);
+		sb.append(lt);
+		if (lt != null) {
+			sb.append(" hI:");
+			sb.append(hoverIntents.get(lt));
+		}
+		Token refToken = completionRefToken(spu);
+		sb.append(" cT:");
+		sb.append(refToken);
+		if (refToken != null) {
+			sb.append(" cI");
+			HashSet<HCMIntent> intentSet = intentsOnNextToken.get(refToken);
+			if (intentSet != null) {
+				for (HCMIntent hi : intentSet) {
+					sb.append(":");
+					sb.append(hi);
+				}
+				sb.append(";");
+			}
+		}
+		sb.append("\n");
+		return sb.toString();
+	}
+
+	/**
+	 * Gets completion information at a given point (or null for none)
+	 */
+	public Map<String, HoverData> getCompletion(SrcPosUntranslated spu) {
+		Token refToken = completionRefToken(spu);
+		if (refToken == null)
+			return null;
 		HashSet<HCMIntent> intentSet = intentsOnNextToken.get(refToken);
 		if (intentSet == null)
 			return null;

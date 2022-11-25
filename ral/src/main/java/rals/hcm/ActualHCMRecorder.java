@@ -45,6 +45,7 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	public Token currentRequestedToken;
 	public Token lastReadToken;
 	public HCMIntent autoHoverHolding;
+	public RALExprUR[] autoHoverHoldingParams;
 
 	public ActualHCMRecorder(IDocPath docPath) {
 		targetDocPath = docPath;
@@ -64,22 +65,28 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
-	public void parserRequestedToken(Token tkn) {
+	public void parserRequestedToken(Token tkn, boolean actualRequest) {
 		currentRequestedToken = tkn;
-		HCMIntent heldAH = autoHoverHolding;
-		autoHoverHolding = null;
-		if (!tkn.isInDP(targetDocPath))
-			return;
-		if (heldAH != null)
-			if (tkn instanceof ID)
-				setTokenHoverIntent((ID) tkn, heldAH);
+		if (actualRequest) {
+			HCMIntent heldAH = autoHoverHolding;
+			RALExprUR[] heldAP = autoHoverHoldingParams;
+			autoHoverHolding = null;
+			autoHoverHoldingParams = null;
+			if (!tkn.isInDP(targetDocPath))
+				return;
+			if (heldAH != null)
+				if (tkn instanceof ID)
+					setTokenHoverRelIntent((ID) tkn, heldAH, heldAP);
+		}
 	}
 
 	@Override
 	public void addCompletionRelIntentToNextToken(HCMIntent intent, boolean autoHover, RALExprUR... params) {
 		// always do this, just in case.
-		if (autoHover)
+		if (autoHover) {
 			autoHoverHolding = intent;
+			autoHoverHoldingParams = params;
+		}
 		// continue.
 		if (currentRequestedToken == null)
 			return;

@@ -29,9 +29,11 @@ public class LanguageServer implements ILSPCore {
 	public final LSPDocRepo docRepo = new LSPDocRepo();
 	public final HashMap<IDocPath, HCMStorage> docHCM = new HashMap<>();
 	public final IDocPath stdLib;
+	public final boolean debugMode;
 
-	public LanguageServer(IDocPath sl) {
+	public LanguageServer(IDocPath sl, boolean dbgMode) {
 		stdLib = sl;
+		debugMode = dbgMode;
 	}
 
 	public Diag[] getDiagnostics(IDocPath docPath) {
@@ -160,10 +162,27 @@ public class LanguageServer implements ILSPCore {
 			SrcPosUntranslated spu = new SrcPosUntranslated(docPath, params.getJSONObject("position"));
 			HCMStorage hcm = docHCM.get(docPath);
 			if (hcm != null) {
-				HCMStorage.HoverData hd = hcm.getHoverData(spu);
-				if (hd != null) {
+				String hoverText = null;
+				HCMStorage.HoverData hd = null;
+				// Text has to be done in this block
+				try {
+					if (debugMode) {
+						hoverText = hcm.hoverDebugPrefix(spu);
+						hd = hcm.getHoverData(spu);
+						if (hd != null)
+							hoverText += hd.text;
+					} else {
+						hd = hcm.getHoverData(spu);
+						if (hd != null)
+							hoverText = hd.text;
+					}
+				} catch (Exception ex) {
+					hoverText = ex.toString();
+				}
+				// Rest can be done here
+				if (hoverText != null) {
 					JSONObject test = new JSONObject();
-					test.put("contents", hd.text);
+					test.put("contents", hoverText);
 					return test;
 				}
 			}

@@ -20,7 +20,8 @@ import rals.lex.Token;
 public abstract class HCMRelativeIntent extends HCMIntent {
 	public final int expressionCount;
 	public final HCMIntent fallback;
-	public HCMRelativeIntent(int ec, HCMIntent fb) {
+	public HCMRelativeIntent(String name, int ec, HCMIntent fb) {
+		super(name);
 		expressionCount = ec;
 		fallback = fb;
 	}
