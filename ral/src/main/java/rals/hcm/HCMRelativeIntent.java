@@ -29,7 +29,7 @@ public abstract class HCMRelativeIntent extends HCMIntent {
 	public final Map<String, HoverData> retrieve(Token sp, SrcPosUntranslated spu, HCMStorage storage) {
 		Tracking ex = storage.relativeIntentExprs.get(new Anchor(this, sp));
 		if (ex == null || !ex.isFinished())
-			return fallback.retrieve(sp, spu, storage);
+			return fallback != null ? fallback.retrieve(sp, spu, storage) : null;
 		return retrieveParameterized(sp, spu, storage, ex.resolvedExpressions);
 	}
 

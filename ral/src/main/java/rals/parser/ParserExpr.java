@@ -342,6 +342,7 @@ public class ParserExpr {
 					throw new RuntimeException("You can't get the message ID of anything but an ambiguous ID, and certainly not " + base);
 				}
 			} else if (tkn.isKeyword(".")) {
+				ifc.hcm.addCompletionRelIntentToNextToken(HCMIntents.FIELD_EXPR, true, base);
 				String fieldName = lx.requireNextID();
 				base = new RALFieldAccess(base, fieldName);
 			} else if (tkn.isKeyword("!")) {

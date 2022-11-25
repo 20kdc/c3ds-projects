@@ -16,6 +16,7 @@ import rals.expr.RALCallable;
 import rals.expr.RALConstant;
 import rals.expr.RALSlot;
 import rals.hcm.HCMStorage.HoverData;
+import rals.types.AgentInterface;
 import rals.types.RALType;
 
 /**
@@ -96,5 +97,9 @@ public class HCMHoverDataGenerators {
 		StringBuilder sb = new StringBuilder();
 		showCallable(sb, k, rc);
 		return new HCMStorage.HoverData(sb.toString());
+	}
+	public static HoverData fieldHoverData(AgentInterface ai, String me) {
+		AgentInterface.OVar ov = ai.fields.get(me);
+		return new HCMStorage.HoverData(ai.nameGiver + "." + me + " (OV " + ov.slot + "): " + ov.type);
 	}
 }

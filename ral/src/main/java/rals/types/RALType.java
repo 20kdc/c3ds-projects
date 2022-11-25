@@ -295,7 +295,7 @@ public abstract class RALType {
 		/**
 		 * Inherent details about the agent.
 		 */
-		public final AgentInterface inherent = new AgentInterface();
+		public final AgentInterface inherent;
 
 		/**
 		 * Type name. Is changed by TypeSystem when a class name is declared.
@@ -315,6 +315,7 @@ public abstract class RALType {
 
 		public Agent(TypeSystem ts, String tn) {
 			super(Major.Agent);
+			inherent = new AgentInterface(this);
 			typeName = tn;
 			typeSystem = ts;
 			regenInterfaces();

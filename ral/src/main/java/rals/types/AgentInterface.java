@@ -13,6 +13,12 @@ import java.util.HashMap;
  * Notably, this is simply the point for insertion at a particular point - RALTypes make up the "full story".
  */
 public final class AgentInterface {
+	/**
+	 * toString of this is the name. Does NOT have a concrete meaning, is just used for HCM right now.
+	 * This is important as it makes Interfaces and renamed Classifiers work in HCM field/message/script lookups.
+	 */
+	public final Object nameGiver;
+
 	public final HashMap<String, Integer> messages = new HashMap<>();
 	public final HashMap<Integer, String> messagesInv = new HashMap<>();
 	public final HashMap<String, Integer> scripts = new HashMap<>();
@@ -20,7 +26,8 @@ public final class AgentInterface {
 
 	public final HashMap<String, OVar> fields = new HashMap<>();
 
-	public AgentInterface() {
+	public AgentInterface(Object n) {
+		nameGiver = n;
 	}
 
 	public static class OVar {

@@ -13,6 +13,7 @@ import rals.diag.SrcPosUntranslated;
 import rals.expr.RALExprSlice;
 import rals.hcm.HCMStorage.HoverData;
 import rals.lex.Token;
+import rals.types.AgentInterface;
 
 /**
  * All intent subclasses
@@ -63,6 +64,27 @@ public class HCMIntents {
 		@Override
 		public Map<String, HoverData> retrieveParameterized(Token sp, SrcPosUntranslated spu, HCMStorage storage, RALExprSlice[] exprs) {
 			return storage.allCallablesAV.get(exprs[0].length);
+		}
+	};
+
+	/**
+	 * Field ID, relative to target agent
+	 */
+	public static final HCMRelativeIntent FIELD_EXPR = new HCMRelativeIntent(1, null) {
+		@Override
+		public Map<String, HoverData> retrieveParameterized(Token sp, SrcPosUntranslated spu, HCMStorage storage, RALExprSlice[] exprs) {
+			try {
+				if (exprs[0].length == 1) {
+					HashMap<String, HoverData> compiled = new HashMap<>();
+					for (AgentInterface ai : exprs[0].slot(0).type.getInterfaces())
+						for (String me : ai.fields.keySet())
+							compiled.put(me, HCMHoverDataGenerators.fieldHoverData(ai, me));
+					return compiled;
+				}
+			} catch (Exception ex) {
+				// just in case - this stuff gets a bit spicy
+			}
+			return null;
 		}
 	};
 }
