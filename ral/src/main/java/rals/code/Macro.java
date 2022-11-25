@@ -6,6 +6,8 @@
  */
 package rals.code;
 
+import rals.diag.DiagRecorder;
+import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.lex.DefInfo;
 import rals.types.*;
@@ -76,18 +78,20 @@ public class Macro implements RALCallable {
 
 		// ensure compiled, then resolve with that code
 		precompile(sc.world);
-		return new Resolved(name, vc, precompiledCode, args);
+		return new Resolved(name, defInfo.srcRange, vc, precompiledCode, args);
 	}
 
 	public static final class Resolved extends RALExprSlice {
 		private final VarCacher vc;
 		public final RALExprSlice innards;
 		public final String macroName;
+		public final SrcRange macroExt;
 		public final MacroArg[] macroArgs;
 
-		public Resolved(String mn, VarCacher vc, RALExprSlice innards, MacroArg[] args) {
+		public Resolved(String mn, SrcRange me, VarCacher vc, RALExprSlice innards, MacroArg[] args) {
 			super(innards.length);
 			macroName = mn;
+			macroExt = me;
 			this.vc = vc;
 			this.innards = innards;
 			macroArgs = args;
@@ -95,7 +99,7 @@ public class Macro implements RALCallable {
 
 		@Override
 		protected RALExprSlice sliceInner(int tB, int tL) {
-			return new Resolved(macroName, vc, innards.slice(tB, tL), macroArgs);
+			return new Resolved(macroName, macroExt, vc, innards.slice(tB, tL), macroArgs);
 		}
 
 		@Override
@@ -103,7 +107,7 @@ public class Macro implements RALCallable {
 			if (b instanceof Resolved) {
 				if (((Resolved) b).vc == vc) {
 					// this is the same instance, so share!
-					return new Resolved(macroName, vc, RALExprSlice.concat(innards, ((Resolved) b).innards), macroArgs);
+					return new Resolved(macroName, macroExt, vc, RALExprSlice.concat(innards, ((Resolved) b).innards), macroArgs);
 				}
 			}
 			return super.tryConcatWithInner(b);
@@ -115,25 +119,29 @@ public class Macro implements RALCallable {
 		}
 
 		@Override
-		public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
-			try (CompileContext c2 = new CompileContext(context)) {
-				vc.writeCacheCode(c2);
-				installMacroArgs(c2);
-				innards.writeCompile(index, input, inputExactType, c2);
-			}
-		}
-
-		@Override
 		protected RALSlot slotInner(int index) {
 			return innards.slot(index);
 		}
 
 		@Override
+		public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
+				try (CompileContext c2 = new CompileContext(context)) {
+					vc.writeCacheCode(c2);
+					installMacroArgs(c2);
+					innards.writeCompile(index, input, inputExactType, c2);
+				}
+			}
+		}
+
+		@Override
 		public void readCompileInner(RALExprSlice out, CompileContext context) {
-			try (CompileContext c2 = new CompileContext(context)) {
-				vc.writeCacheCode(c2);
-				installMacroArgs(c2);
-				innards.readCompile(out, c2);
+			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
+				try (CompileContext c2 = new CompileContext(context)) {
+					vc.writeCacheCode(c2);
+					installMacroArgs(c2);
+					innards.readCompile(out, c2);
+				}
 			}
 		}
 

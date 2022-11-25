@@ -27,7 +27,8 @@ public class RALVarEH extends RALExprSlice.Deferred {
 		return "EH[" + handle + "!" + type + "]";
 	}
 
-	public RALExprSlice getUnderlying(CompileContextNW cc) {
+	@Override
+	public RALExprSlice getUnderlyingInner(CompileContextNW cc) {
 		RALExprSlice ex = cc.heldExprHandles.get(handle);
 		if (ex == null)
 			throw new RuntimeException("Missing: " + this);

@@ -112,6 +112,20 @@ public abstract class RALExprSlice {
 		return getUnderlying(context).getSpecialInlineInner(index, context);
 	}
 
+	/**
+	 * Recursively finds the underlying slice.
+	 * See getUnderlyingInner for details.
+	 */
+	protected final RALExprSlice getUnderlying(CompileContextNW context) {
+		RALExprSlice res = this;
+		while (true) {
+			RALExprSlice cmp = res.getUnderlyingInner(context);
+			if (cmp == res)
+				return res;
+			res = cmp;
+		}
+	}
+
 	// -- Public API --
 
 	@Override
@@ -197,7 +211,7 @@ public abstract class RALExprSlice {
 	 * 1. The type signature is known
 	 * 2. The expression won't exist until later
 	 */
-	protected RALExprSlice getUnderlying(CompileContextNW context) {
+	protected RALExprSlice getUnderlyingInner(CompileContextNW context) {
 		return this;
 	}
 
@@ -320,7 +334,7 @@ public abstract class RALExprSlice {
 		}
 
 		@Override
-		public RALExprSlice getUnderlying(CompileContextNW context) {
+		public RALExprSlice getUnderlyingInner(CompileContextNW context) {
 			RALExprSlice mA = a.getUnderlying(context);
 			RALExprSlice mB = b.getUnderlying(context);
 			if (mA != a || mB != b)
@@ -341,12 +355,14 @@ public abstract class RALExprSlice {
 		protected void readCompileInner(RALExprSlice out, CompileContext context) {
 			RALExprSlice outASlice = out.slice(0, a.length);
 			RALExprSlice outBSlice = out.slice(a.length, b.length);
+			// We know a/b must be underlying because getUnderying earlier checked that for us.
 			a.readCompileInner(outASlice, context);
 			b.readCompileInner(outBSlice, context);
 		}
 
 		@Override
 		protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+			// We know a/b must be underlying because getUnderying earlier checked that for us.
 			if (index < a.length) {
 				a.writeCompileInner(index, input, inputExactType, context);
 			} else {
@@ -407,7 +423,7 @@ public abstract class RALExprSlice {
 		}
 
 		@Override
-		public RALExprSlice getUnderlying(CompileContextNW cc) {
+		public RALExprSlice getUnderlyingInner(CompileContextNW cc) {
 			RALExprSlice res = source.getUnderlying(cc);
 			if (res == source)
 				return this;

@@ -97,4 +97,19 @@ public class DiagRecorder {
 			throw new RuntimeException("FRAME MISMATCH IN DIAG: " + extent + " vs " + e2);
 		}
 	}
+
+	public Scope newScope(final SrcRange extent) {
+		pushFrame(extent);
+		return new Scope() {
+			@Override
+			public void close() {
+				popFrame(extent);
+			}
+		};
+	}
+
+	public static interface Scope extends AutoCloseable {
+		@Override
+		public void close();
+	}
 }
