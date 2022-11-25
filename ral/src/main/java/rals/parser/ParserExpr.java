@@ -193,7 +193,7 @@ public class ParserExpr {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
 			ifc.hcm.setTokenHoverIntent((Token.ID) tkn, HCMIntent.ID);
-			return new RALAmbiguousID(tkn.extent, ts, ((Token.ID) tkn).text);
+			return new RALAmbiguousID(tkn.extent, ts, (Token.ID) tkn);
 		} else if (tkn instanceof Token.StrEmb) {
 			// So before we accept this, this could actually be a termination.
 			Token.StrEmb se = (Token.StrEmb) tkn;
@@ -309,7 +309,11 @@ public class ParserExpr {
 				RALExprUR group = ParserExpr.parseExpr(ifc, false);
 				lx.requireNextKw(")");
 				if (base instanceof RALAmbiguousID) {
-					base = new RALCall(((RALAmbiguousID) base).text, group);
+					RALAmbiguousID rai = (RALAmbiguousID) base;
+					// Note the override of intent here - the intent retroactively becomes CALLABLE.
+					if (rai.textToken != null)
+						ifc.hcm.setTokenHoverIntent(rai.textToken, HCMIntent.CALLABLE);
+					base = new RALCall(rai.text, group);
 				} else {
 					throw new RuntimeException("You can't put a call on anything but an ambiguous ID, and certainly not " + base);
 				}
@@ -364,5 +368,6 @@ public class ParserExpr {
 	 */
 	public static void exprCompletionIntents(InsideFileContext ifc) {
 		ifc.hcm.addCompletionIntentToNextToken(HCMIntent.ID, false);
+		ifc.hcm.addCompletionIntentToNextToken(HCMIntent.CALLABLE, false);
 	}
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import rals.code.ScopeContext;
 import rals.diag.SrcRange;
+import rals.expr.RALCallable;
 import rals.expr.RALConstant;
 import rals.hcm.HCMStorage.HoverData;
 import rals.lex.Token;
@@ -128,6 +129,12 @@ public class ActualHCMRecorder implements IHCMRecorder {
 		for (Map.Entry<String, RALConstant> nt : info.typeSystem.namedConstants.entrySet()) {
 			allNamedConstants.put(nt.getKey(), HCMHoverDataGenerators.constHoverData(nt.getKey(), nt.getValue()));
 		}
-		return new HCMStorage(snapshotsSPM, lastTokenMap, backwardsTokenLink, hoverIntents, intentsOnNextToken, allNamedTypes, allNamedConstants);
+
+		HashMap<String, HoverData> allCallables = new HashMap<>();
+		for (Map.Entry<String, RALCallable> nt : info.module.callable.entrySet()) {
+			allCallables.put(nt.getKey(), HCMHoverDataGenerators.callableHoverData(nt.getKey(), nt.getValue()));
+		}
+
+		return new HCMStorage(snapshotsSPM, lastTokenMap, backwardsTokenLink, hoverIntents, intentsOnNextToken, allNamedTypes, allNamedConstants, allCallables);
 	}
 }

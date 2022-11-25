@@ -8,6 +8,7 @@ package rals.expr;
 
 import rals.code.*;
 import rals.diag.SrcRange;
+import rals.lex.Token;
 import rals.types.*;
 
 /**
@@ -16,12 +17,22 @@ import rals.types.*;
 public class RALAmbiguousID implements RALExprUR {
 	public final TypeSystem typeSystem;
 	public final String text;
+	// OPTIONAL, as these can be synthesized.
+	public final Token.ID textToken;
 	public final SrcRange extent;
 
 	public RALAmbiguousID(SrcRange ex, TypeSystem ts, String txt) {
 		extent = ex;
 		typeSystem = ts;
 		text = txt;
+		textToken = null;
+	}
+
+	public RALAmbiguousID(SrcRange ex, TypeSystem ts, Token.ID txt) {
+		extent = ex;
+		typeSystem = ts;
+		text = txt.text;
+		textToken = txt;
 	}
 
 	@Override

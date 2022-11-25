@@ -18,6 +18,7 @@ import rals.diag.SrcPosFile;
 import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.hcm.DummyHCMRecorder;
+import rals.hcm.HCMIntent;
 import rals.lex.*;
 import rals.stmt.*;
 import rals.types.*;
@@ -243,6 +244,7 @@ public class Parser {
 			lx.back();
 			if (isStmtMacro) {
 				MacroArg[] rets = parseArgList(ifc, false);
+				ifc.hcm.addCompletionIntentToNextToken(HCMIntent.CALLABLE, true);
 				String name = lx.requireNextID();
 				MacroArg[] args = parseArgList(ifc, true);
 				RALStatementUR rs = ParserCode.parseStatement(ifc);
@@ -251,6 +253,7 @@ public class Parser {
 				// continue
 				m.addMacro(name, args.length, new Macro(range, name, args, new RALStmtExprInverted(rets, rs)));
 			} else {
+				ifc.hcm.addCompletionIntentToNextToken(HCMIntent.CALLABLE, true);
 				String name = lx.requireNextID();
 				MacroArg[] args = parseArgList(ifc, true);
 				RALExprUR rs = ParserExpr.parseExpr(ifc, false);

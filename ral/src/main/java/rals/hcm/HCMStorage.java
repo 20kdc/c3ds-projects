@@ -25,8 +25,9 @@ public class HCMStorage {
 	public final HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken;
 	public final HashMap<String, HoverData> allNamedTypes;
 	public final HashMap<String, HoverData> allConstants;
+	public final HashMap<String, HoverData> allCallables;
 
-	public HCMStorage(SrcPosMap<HCMScopeSnapshot> s, SrcPosMap<Token> tkn, HashMap<Token, Token> b, HashMap<Token.ID, HCMIntent> id, HashMap<Token, HashSet<HCMIntent>> ci, HashMap<String, HoverData> ant, HashMap<String, HoverData> c) {
+	public HCMStorage(SrcPosMap<HCMScopeSnapshot> s, SrcPosMap<Token> tkn, HashMap<Token, Token> b, HashMap<Token.ID, HCMIntent> id, HashMap<Token, HashSet<HCMIntent>> ci, HashMap<String, HoverData> ant, HashMap<String, HoverData> c, HashMap<String, HoverData> m) {
 		snapshots = s;
 		lastTokenMap = tkn;
 		backwardsTokenLink = b;
@@ -34,6 +35,7 @@ public class HCMStorage {
 		intentsOnNextToken = ci;
 		allNamedTypes = ant;
 		allConstants = c;
+		allCallables = m;
 	}
 
 	/**
@@ -46,7 +48,9 @@ public class HCMStorage {
 		} else if (tkn instanceof Token.ID) {
 			Token.ID id = (Token.ID) tkn;
 			HCMIntent hi = hoverIntents.get(id);
-			return hi.retrieve(tp, this).get(id.text);
+			if (hi != null)
+				return hi.retrieve(tp, this).get(id.text);
+			return null;
 		} else {
 			return null;
 		}

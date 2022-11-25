@@ -33,6 +33,7 @@ public abstract class HCMIntent {
 			return map;
 		}
 	};
+
 	/**
 	 * Type.
 	 */
@@ -40,6 +41,16 @@ public abstract class HCMIntent {
 		@Override
 		public Map<String, HoverData> retrieve(SrcPosUntranslated sp, HCMStorage storage) {
 			return storage.allNamedTypes;
+		}
+	};
+
+	/**
+	 * Macro call.
+	 */
+	public static final HCMIntent CALLABLE = new HCMIntent() {
+		@Override
+		public Map<String, HoverData> retrieve(SrcPosUntranslated sp, HCMStorage storage) {
+			return storage.allCallables;
 		}
 	};
 

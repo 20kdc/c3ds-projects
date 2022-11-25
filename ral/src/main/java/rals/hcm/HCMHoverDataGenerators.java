@@ -6,6 +6,16 @@
  */
 package rals.hcm;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import rals.code.Macro;
+import rals.code.MacroArg;
+import rals.code.MacroDefSet;
+import rals.expr.RALCallable;
 import rals.expr.RALConstant;
 import rals.expr.RALSlot;
 import rals.hcm.HCMStorage.HoverData;
@@ -53,5 +63,41 @@ public class HCMHoverDataGenerators {
 	}
 	public static HoverData typeHoverData(String k, RALType rt) {
 		return new HCMStorage.HoverData(k + ": " + rt.getFullDescription());
+	}
+	private static void showCallable(StringBuilder sb, String k, RALCallable rc) {
+		if (rc instanceof MacroDefSet) {
+			MacroDefSet mds = (MacroDefSet) rc;
+			LinkedList<Integer> keys = new LinkedList<>(mds.map.keySet());
+			Collections.sort(keys);
+			for (Integer ent : keys)
+				showCallable(sb, k, mds.map.get(ent));
+		} else if (rc instanceof Macro) {
+			showSlots(sb, ((Macro) rc).precompiledCode.slots());
+			sb.append(" ");
+			sb.append(k);
+			sb.append("(");
+			boolean first = true;
+			for (MacroArg ma : ((Macro) rc).args) {
+				if (!first)
+					sb.append(", ");
+				first = false;
+				sb.append(ma.type);
+				sb.append(" ");
+				if (ma.isInline)
+					sb.append("&");
+				sb.append(ma.name);
+			}
+			sb.append(")\n");
+		} else {
+			sb.append(k);
+			sb.append(": ");
+			sb.append(rc);
+			sb.append("\n");
+		}
+	}
+	public static HoverData callableHoverData(String k, RALCallable rc) {
+		StringBuilder sb = new StringBuilder();
+		showCallable(sb, k, rc);
+		return new HCMStorage.HoverData(sb.toString());
 	}
 }
