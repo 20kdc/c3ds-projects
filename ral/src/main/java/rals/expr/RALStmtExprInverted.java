@@ -7,6 +7,7 @@
 package rals.expr;
 
 import rals.code.*;
+import rals.lex.DefInfo;
 import rals.stmt.*;
 
 /**
@@ -14,10 +15,12 @@ import rals.stmt.*;
  * Instead of making statements return something, the return expressions are passed in!
  */
 public class RALStmtExprInverted implements RALExprUR {
+	public final DefInfo defInfo;
 	public final MacroArg[] rets;
 	public final RALStatementUR code;
 
-	public RALStmtExprInverted(MacroArg[] a, RALStatementUR rs) {
+	public RALStmtExprInverted(DefInfo di, MacroArg[] a, RALStatementUR rs) {
+		defInfo = di;
 		rets = a;
 		code = rs;
 	}
@@ -40,7 +43,7 @@ public class RALStmtExprInverted implements RALExprUR {
 				}
 			};
 			handles[i] = handle;
-			scope.scopedVariables.put(ret.name, new RALVarEH(handle, ret.type));
+			scope.setLoc(ret.name, defInfo, new RALVarEH(handle, ret.type));
 		}
 		final RALStatement innards = code.resolve(scope);
 		return new Resolved(types, innards, handles);

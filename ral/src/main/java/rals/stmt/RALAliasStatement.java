@@ -7,8 +7,8 @@
 package rals.stmt;
 
 import rals.code.*;
-import rals.diag.SrcPos;
 import rals.expr.*;
+import rals.lex.DefInfo;
 
 /**
  * Aliases an expression to another.
@@ -16,7 +16,7 @@ import rals.expr.*;
 public class RALAliasStatement extends RALStatementUR {
 	public String name;
 	public RALExprUR target;
-	public RALAliasStatement(SrcPos sp, String id, RALExprUR e) {
+	public RALAliasStatement(DefInfo.At sp, String id, RALExprUR e) {
 		super(sp);
 		name = id;
 		target = e;
@@ -25,7 +25,7 @@ public class RALAliasStatement extends RALStatementUR {
 	@Override
 	public RALStatement resolveInner(ScopeContext scope) {
 		final RALExprSlice exp = target.resolve(scope);
-		scope.scopedVariables.put(name, exp);
+		scope.setLoc(name, defInfo, exp);
 		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext scope) {

@@ -282,7 +282,8 @@ public class ParserExpr {
 			// return value is before the adjustment
 			// so store a temporary before the operation
 			RALBlock blk = new RALBlock(ln, false);
-			blk.content.add(new RALLetStatement(ln, new String[] {idStr}, new RALType[] {null}, inner));
+			DefInfo di = new DefInfo.At(ln, "Internal inc/dec variable. How'd you notice this?");
+			blk.content.add(new RALLetStatement(di, new String[] {idStr}, new RALType[] {null}, inner));
 			blk.content.add(mod);
 			return new RALStmtExpr(blk, id);
 		}

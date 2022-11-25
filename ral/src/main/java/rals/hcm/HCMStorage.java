@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import rals.diag.SrcPosUntranslated;
+import rals.lex.DefInfo;
 import rals.lex.Token;
 
 /**
@@ -138,8 +139,10 @@ public class HCMStorage {
 	 */
 	public static final class HoverData {
 		public final String text;
-		public HoverData(String t) {
+		public final DefInfo defInfo;
+		public HoverData(String t, DefInfo di) {
 			text = t;
+			defInfo = di;
 		}
 	}
 }

@@ -9,16 +9,27 @@ package rals.code;
 import java.util.HashMap;
 
 import rals.expr.*;
+import rals.lex.DefInfo;
 
 /**
  * A set of macro definitions.
  */
 public class MacroDefSet implements RALCallable {
 	public HashMap<Integer, RALCallable> map = new HashMap<>();
+	public int lowestCount = -1;
 	public final String name;
 
 	public MacroDefSet(String n) {
 		name = n;
+	}
+
+	@Override
+	public DefInfo getDefInfo() {
+		// return the lowest-arged one we find
+		RALCallable check = map.get(lowestCount);
+		if (check != null)
+			return check.getDefInfo();
+		return null;
 	}
 
 	@Override
@@ -38,6 +49,8 @@ public class MacroDefSet implements RALCallable {
 	public void addMacro(int count, RALCallable c) {
 		if (map.containsKey(count))
 			throw new RuntimeException(name + " already has " + count + "-arg variant");
+		if ((lowestCount == -1) || (lowestCount > count))
+			lowestCount = count;
 		map.put(count, c);
 	}
 }

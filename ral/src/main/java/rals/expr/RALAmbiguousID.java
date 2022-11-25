@@ -54,9 +54,9 @@ public class RALAmbiguousID implements RALExprUR {
 		RALConstant rc = typeSystem.namedConstants.get(text);
 		if (rc != null)
 			return rc;
-		RALExprSlice re = context.scopedVariables.get(text);
+		ScopeContext.LVar re = context.scopedVariables.get(text);
 		if (re != null)
-			return re;
+			return re.content;
 		RALType.AgentClassifier maybeClassifier = typeSystem.tryGetAsClassifier(text);
 		if (maybeClassifier != null) {
 			Classifier cl = maybeClassifier.classifier;

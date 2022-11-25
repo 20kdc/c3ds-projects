@@ -8,6 +8,8 @@ package rals.types;
 
 import java.util.HashMap;
 
+import rals.lex.DefInfo;
+
 /**
  * AgentInterface represents a set of exposed object variables and messages.
  * Notably, this is simply the point for insertion at a particular point - RALTypes make up the "full story".
@@ -33,9 +35,12 @@ public final class AgentInterface {
 	public static class OVar {
 		public final int slot;
 		public final RALType type;
-		public OVar(int s, RALType t) {
+		public final DefInfo defInfo;
+
+		public OVar(int s, RALType t, DefInfo di) {
 			slot = s;
 			type = t;
+			defInfo = di;
 		}
 	}
 }

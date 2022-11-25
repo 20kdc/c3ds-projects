@@ -56,9 +56,12 @@ public class Token {
 
 	public final SrcPos lineNumber;
 	public final SrcRange extent;
-	public Token(SrcRange ex) {
+	public String docComment;
+
+	public Token(SrcRange ex, String doc) {
 		lineNumber = ex.start;
 		extent = ex;
+		docComment = doc;
 	}
 
 	public boolean isInDP(IDocPath docPath) {
@@ -74,8 +77,8 @@ public class Token {
 
 	public static class ID extends Token {
 		public String text;
-		public ID(SrcRange ln, String tx) {
-			super(ln);
+		public ID(SrcRange ln, String dc, String tx) {
+			super(ln, dc);
 			text = tx;
 		}
 
@@ -86,8 +89,8 @@ public class Token {
 	}
 	public static class Kw extends Token {
 		public String text;
-		public Kw(SrcRange ln, String tx) {
-			super(ln);
+		public Kw(SrcRange ln, String dc, String tx) {
+			super(ln, dc);
 			text = tx;
 		}
 
@@ -98,8 +101,8 @@ public class Token {
 	}
 	public static class Str extends Token {
 		public String text;
-		public Str(SrcRange ln, String tx) {
-			super(ln);
+		public Str(SrcRange ln, String dc, String tx) {
+			super(ln, dc);
 			text = tx;
 		}
 
@@ -111,8 +114,8 @@ public class Token {
 	public static class StrEmb extends Token {
 		public String text;
 		public boolean startIsClusterEnd, endIsClusterStart;
-		public StrEmb(SrcRange ln, String tx, boolean ce, boolean cs) {
-			super(ln);
+		public StrEmb(SrcRange ln, String dc, String tx, boolean ce, boolean cs) {
+			super(ln, dc);
 			text = tx;
 			startIsClusterEnd = ce;
 			endIsClusterStart = cs;
@@ -125,8 +128,8 @@ public class Token {
 	}
 	public static class Int extends Token {
 		public int value;
-		public Int(SrcRange ln, int v) {
-			super(ln);
+		public Int(SrcRange ln, String dc, int v) {
+			super(ln, dc);
 			value = v;
 		}
 
@@ -137,8 +140,8 @@ public class Token {
 	}
 	public static class Flo extends Token {
 		public float value;
-		public Flo(SrcRange ln, float v) {
-			super(ln);
+		public Flo(SrcRange ln, String dc, float v) {
+			super(ln, dc);
 			value = v;
 		}
 

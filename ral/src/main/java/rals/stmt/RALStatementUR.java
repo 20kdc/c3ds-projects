@@ -8,22 +8,32 @@ package rals.stmt;
 
 import rals.code.*;
 import rals.diag.*;
+import rals.lex.DefInfo;
 
 /**
  * Represents an unresolved statement.
  */
 public abstract class RALStatementUR {
+	public final DefInfo defInfo;
 	public final SrcPos lineNumber;
 	public final SrcRange extent;
 
 	public RALStatementUR(SrcPos ln) {
 		lineNumber = ln;
 		extent = ln.toRange();
+		defInfo = null;
 	}
 
 	public RALStatementUR(SrcRange lr) {
 		lineNumber = lr.start;
 		extent = lr;
+		defInfo = null;
+	}
+
+	public RALStatementUR(DefInfo di) {
+		extent = di.srcRange;
+		lineNumber = extent.start;
+		defInfo = di;
 	}
 
 	/**

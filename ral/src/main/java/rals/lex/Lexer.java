@@ -35,9 +35,9 @@ public class Lexer {
 
 	/**
 	 * Last comment encountered.
-	 * Can be reset to null by caller to consume a comment.
+	 * Can be reset to null to consume a comment.
 	 */
-	public String lastComment = null;
+	private String lastComment = null;
 
 	public int levelOfStringEmbedding = 0;
 	public int levelOfStringEmbeddingEscape = 0;
@@ -52,17 +52,30 @@ public class Lexer {
 		hcm = h;
 	}
 
+	/**
+	 * Consume a comment.
+	 * This is used to assemble documentation comments.
+	 */
+	private String consumeComment() {
+		String s = lastComment;
+		lastComment = null;
+		return s;
+	}
+
 	public SrcPos genLN() {
 		return charHistory.genLN(file);
 	}
 
-	public SrcPos endOfLastToken() {
+	private Token getLastToken() {
 		back();
-		return requireNext().extent.end;
+		return requireNext();
 	}
 
-	public SrcRange fromThisTokenToLast(Token tkn) {
-		return new SrcRange(tkn.extent.start, endOfLastToken());
+	/**
+	 * Generates definition info from the range including the given start token and the last token retrieved.
+	 */
+	public DefInfo.At genDefInfo(Token tkn) {
+		return new DefInfo.At(tkn, getLastToken());
 	}
 
 	private SrcRange completeExtent(SrcPos sp) {
@@ -225,18 +238,18 @@ public class Lexer {
 				}
 				String str = sb.toString();
 				try {
-					return new Token.Int(completeExtent(startOfToken), Integer.parseInt(str));
+					return new Token.Int(completeExtent(startOfToken), consumeComment(), Integer.parseInt(str));
 				} catch (Exception ex) {
 					// nope
 				}
 				try {
-					return new Token.Flo(completeExtent(startOfToken), Float.parseFloat(str));
+					return new Token.Flo(completeExtent(startOfToken), consumeComment(), Float.parseFloat(str));
 				} catch (Exception ex) {
 					// nope
 				}
 				SrcPos sp = genLN();
 				diags.error(sp, "number-like not number");
-				return new Token.ID(new SrcRange(startOfToken, sp), str);
+				return new Token.ID(new SrcRange(startOfToken, sp), consumeComment(), str);
 			}
 		}
 		if (LONERS.indexOf(c) != -1) {
@@ -247,7 +260,7 @@ public class Lexer {
 					if (levelOfStringEmbeddingEscape > 0)
 						levelOfStringEmbeddingEscape--;
 			}
-			return new Token.Kw(completeExtent(startOfToken), Character.toString((char) c));
+			return new Token.Kw(completeExtent(startOfToken), consumeComment(), Character.toString((char) c));
 		} else if (OPERATORS.indexOf(c) != -1) {
 			StringBuilder sb = new StringBuilder();
 			sb.append((char) c);
@@ -260,7 +273,7 @@ public class Lexer {
 				sb.append((char) c);
 			}
 			String str = sb.toString();
-			return new Token.Kw(completeExtent(startOfToken), str);
+			return new Token.Kw(completeExtent(startOfToken), consumeComment(), str);
 		} else {
 			StringBuilder sb = new StringBuilder();
 			sb.append((char) c);
@@ -274,9 +287,9 @@ public class Lexer {
 			}
 			String str = sb.toString();
 			if (Token.keywords.contains(str)) {
-				return new Token.Kw(completeExtent(startOfToken), str);
+				return new Token.Kw(completeExtent(startOfToken), consumeComment(), str);
 			} else {
-				return new Token.ID(completeExtent(startOfToken), str);
+				return new Token.ID(completeExtent(startOfToken), consumeComment(), str);
 			}
 		}
 	}
@@ -317,9 +330,9 @@ public class Lexer {
 		}
 		SrcRange sp = completeExtent(startOfToken);
 		if (isEmbedding) {
-			return new Token.StrEmb(sp, sb.toString(), startIsClusterEnd, endIsClusterStart);
+			return new Token.StrEmb(sp, consumeComment(), sb.toString(), startIsClusterEnd, endIsClusterStart);
 		} else {
-			return new Token.Str(sp, sb.toString());
+			return new Token.Str(sp, consumeComment(), sb.toString());
 		}
 	}
 

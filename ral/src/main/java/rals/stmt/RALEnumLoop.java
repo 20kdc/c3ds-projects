@@ -58,7 +58,10 @@ public class RALEnumLoop extends RALStatementUR {
 		} else {
 			throw new RuntimeException("Unrecognized subtype " + enumToken);
 		}
-		scope.scopedVariables.put("targ", RALCast.Resolved.of(scope.scopedVariables.get("targ"), targType, false));
+
+		// Declare the new targ type
+		scope.regenerateTarg(lineNumber, targType);
+
 		final boolean isAdjustingLoopBodyForBreak = true;
 		final RALStatement loopBodyR = loopBody.resolve(scope);
 		// finally make it

@@ -7,9 +7,9 @@
 package rals.stmt;
 
 import rals.code.*;
-import rals.diag.SrcPos;
 import rals.diag.SrcRange;
 import rals.expr.*;
+import rals.lex.DefInfo;
 import rals.types.*;
 
 /**
@@ -22,8 +22,8 @@ public class RALLetStatement extends RALStatementUR {
 	public final RALType[] types;
 	public final RALExprUR init;
 
-	public RALLetStatement(SrcPos sp, String[] n, RALType[] t, RALExprUR i) {
-		super(sp);
+	public RALLetStatement(DefInfo di, String[] n, RALType[] t, RALExprUR i) {
+		super(di);
 		names = n;
 		types = t;
 		init = i;
@@ -54,7 +54,7 @@ public class RALLetStatement extends RALStatementUR {
 		}
 		RALVarVA[] vars = new RALVarVA[names.length];
 		for (int i = 0; i < names.length; i++) {
-			RALVarVA rvv = scope.newLocal(names[i], finalTypes[i]);
+			RALVarVA rvv = scope.newLocal(names[i], defInfo, finalTypes[i]);
 			vars[i] = rvv;
 		}
 		return new Resolved(extent, vars, initRes);

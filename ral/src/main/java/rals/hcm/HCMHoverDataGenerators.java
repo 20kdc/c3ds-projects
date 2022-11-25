@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import rals.code.Macro;
 import rals.code.MacroArg;
 import rals.code.MacroDefSet;
+import rals.code.ScopeContext;
 import rals.expr.RALCallable;
 import rals.expr.RALConstant;
 import rals.expr.RALSlot;
@@ -43,12 +44,12 @@ public class HCMHoverDataGenerators {
 			showSlot(sb, slots[0]);
 		}
 	}
-	public static HCMStorage.HoverData varHoverData(String name, RALSlot[] slots) {
+	public static HCMStorage.HoverData varHoverData(ScopeContext.LVar var) {
 		StringBuilder sb = new StringBuilder();
-		showSlots(sb, slots);
+		showSlots(sb, var.content.slots());
 		sb.append(" ");
-		sb.append(name);
-		return new HCMStorage.HoverData(sb.toString());
+		sb.append(var.name);
+		return new HCMStorage.HoverData(sb.toString(), var.definition);
 	}
 	public static HCMStorage.HoverData constHoverData(String name, RALConstant c) {
 		StringBuilder sb = new StringBuilder();
@@ -57,10 +58,10 @@ public class HCMHoverDataGenerators {
 		sb.append(name);
 		sb.append(" = ");
 		sb.append(c.toString());
-		return new HCMStorage.HoverData(sb.toString());
+		return new HCMStorage.HoverData(sb.toString(), null);
 	}
 	public static HoverData typeHoverData(String k, RALType rt) {
-		return new HCMStorage.HoverData(k + ": " + rt.getFullDescription());
+		return new HCMStorage.HoverData(k + ": " + rt.getFullDescription(), rt.defInfo);
 	}
 	private static void showCallable(StringBuilder sb, String k, RALCallable rc) {
 		if (rc instanceof MacroDefSet) {
@@ -96,10 +97,10 @@ public class HCMHoverDataGenerators {
 	public static HoverData callableHoverData(String k, RALCallable rc) {
 		StringBuilder sb = new StringBuilder();
 		showCallable(sb, k, rc);
-		return new HCMStorage.HoverData(sb.toString());
+		return new HCMStorage.HoverData(sb.toString(), rc.getDefInfo());
 	}
 	public static HoverData fieldHoverData(AgentInterface ai, String me) {
 		AgentInterface.OVar ov = ai.fields.get(me);
-		return new HCMStorage.HoverData(ai.nameGiver + "." + me + " (OV " + ov.slot + "): " + ov.type);
+		return new HCMStorage.HoverData(ai.nameGiver + "." + me + " (OV " + ov.slot + "): " + ov.type, ov.defInfo);
 	}
 }

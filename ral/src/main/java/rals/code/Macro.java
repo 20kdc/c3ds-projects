@@ -6,15 +6,15 @@
  */
 package rals.code;
 
-import rals.diag.*;
 import rals.expr.*;
+import rals.lex.DefInfo;
 import rals.types.*;
 
 /**
  * Macros are used to replicate functions because CAOS doesn't have a proper version of those.
  */
 public class Macro implements RALCallable {
-	public final SrcRange extent;
+	public final DefInfo.At defInfo;
 	public final String name;
 	public final MacroArg[] args;
 	public final RALExprUR code;
@@ -22,11 +22,16 @@ public class Macro implements RALCallable {
 	public RALExprSlice precompiledCode;
 	public boolean isBeingPrecompiled;
 
-	public Macro(SrcRange ex, String n, MacroArg[] a, RALExprUR c) {
-		extent = ex;
+	public Macro(DefInfo.At di, String n, MacroArg[] a, RALExprUR c) {
+		defInfo = di;
 		name = n;
 		args = a;
 		code = c;
+	}
+
+	@Override
+	public DefInfo getDefInfo() {
+		return defInfo;
 	}
 
 	@Override
@@ -41,14 +46,14 @@ public class Macro implements RALCallable {
 		ScriptContext msContext = new ScriptContext(world, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
 		ScopeContext scContext = new ScopeContext(msContext);
 		for (MacroArg arg : args)
-			scContext.scopedVariables.put(arg.name, new RALVarEH(arg, arg.type));
+			scContext.setLoc(arg.name, defInfo, new RALVarEH(arg, arg.type));
 
 		try {
-			world.hcm.resolvePre(extent, scContext);
+			world.hcm.resolvePre(defInfo.srcRange, scContext);
 			precompiledCode = code.resolve(scContext);
-			world.hcm.resolvePost(extent, scContext);
+			world.hcm.resolvePost(defInfo.srcRange, scContext);
 		} catch (Exception ex) {
-			world.diags.error(extent, "failed resolving: ", ex);
+			world.diags.error(defInfo.srcRange, "failed resolving: ", ex);
 			precompiledCode = new RALErrorExpr("macro " + name + "#" + args.length + " failed to compile");
 		}
 	}

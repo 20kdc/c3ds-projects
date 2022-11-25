@@ -15,7 +15,6 @@ import rals.code.*;
 import rals.cond.*;
 import rals.diag.SrcPos;
 import rals.diag.SrcPosFile;
-import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.hcm.DummyHCMRecorder;
 import rals.hcm.HCMIntents;
@@ -168,8 +167,8 @@ public class Parser {
 				lx.requireNextKw(".");
 				String fieldName = lx.requireNextID();
 				int ovSlot = ParserExpr.parseConstInteger(ifc);
-				((RALType.Agent) rt).declareField(fieldName, fieldType, ovSlot);
 				lx.requireNextKw(";");
+				((RALType.Agent) rt).declareField(fieldName, fieldType, lx.genDefInfo(tkn), ovSlot);
 			} else {
 				throw new RuntimeException("No class/interface " + name);
 			}
@@ -249,16 +248,16 @@ public class Parser {
 				MacroArg[] args = parseArgList(ifc, true);
 				RALStatementUR rs = ParserCode.parseStatement(ifc);
 
-				SrcRange range = lx.fromThisTokenToLast(tkn);
+				DefInfo.At range = lx.genDefInfo(tkn);
 				// continue
-				m.addMacro(name, args.length, new Macro(range, name, args, new RALStmtExprInverted(rets, rs)));
+				m.addMacro(name, args.length, new Macro(range, name, args, new RALStmtExprInverted(range, rets, rs)));
 			} else {
 				ifc.hcm.addCompletionIntentToNextToken(HCMIntents.CALLABLE, true);
 				String name = lx.requireNextID();
 				MacroArg[] args = parseArgList(ifc, true);
 				RALExprUR rs = ParserExpr.parseExpr(ifc, false);
 
-				SrcRange range = lx.fromThisTokenToLast(tkn);
+				DefInfo.At range = lx.genDefInfo(tkn);
 				m.addMacro(name, args.length, new Macro(range, name, args, rs));
 			}
 		} else if (tkn.isKeyword("overrideOwnr")) {

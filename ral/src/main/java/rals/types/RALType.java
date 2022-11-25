@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import rals.lex.DefInfo;
 import rals.types.AgentInterface.OVar;
 
 /**
@@ -23,8 +24,19 @@ public abstract class RALType {
 	protected HashSet<RALType> influencesInterfacesOf = new HashSet<>();
 	private AgentInterface[] interfaces;
 
+	public DefInfo defInfo;
+
 	public RALType(Major mt) {
 		majorType = mt;
+	}
+
+	/**
+	 * If definition info is not already present, assigns it.
+	 * This ensures a "first wins" rule.
+	 */
+	public void assignDefInfo(DefInfo idi) {
+		if (defInfo == null)
+			defInfo = idi;
 	}
 
 	/**
@@ -376,10 +388,10 @@ public abstract class RALType {
 		/**
 		 * Declares a field.
 		 */
-		public void declareField(String fieldName, RALType fieldType, int ovSlot) {
+		public void declareField(String fieldName, RALType fieldType, DefInfo idi, int ovSlot) {
 			if (lookupField(fieldName) != null)
 				throw new RuntimeException("Field " + fieldName + " already exists in " + this);
-			inherent.fields.put(fieldName, new OVar(ovSlot, fieldType));
+			inherent.fields.put(fieldName, new OVar(ovSlot, fieldType, idi));
 		}
 
 		@Override

@@ -50,19 +50,19 @@ public class ParserCode {
 		} else if (tkn.isKeyword("&")) {
 			return new RALInlineStatement(tkn.lineNumber, parseStringEmbed(ifc, false));
 		} else if (tkn.isKeyword("let")) {
-			return parseLetStatement(tkn.lineNumber, ifc);
+			return parseLetStatement(tkn, ifc);
 		} else if (tkn.isKeyword("alias")) {
 			Token.ID id = lx.requireNextIDTkn();
 			if (lx.optNextKw("=")) {
 				// alias x = y;
 				RALExprUR res = ParserExpr.parseExpr(ifc, true);
 				lx.requireNextKw(";");
-				return new RALAliasStatement(tkn.lineNumber, id.text, res);
+				return new RALAliasStatement(lx.genDefInfo(tkn), id.text, res);
 			} else if (lx.optNextKw("!")) {
 				// alias x!Y;
 				RALType rt = ParserType.parseType(ifc);
 				lx.requireNextKw(";");
-				return new RALAliasStatement(tkn.lineNumber, id.text, RALCast.of(new RALAmbiguousID(id.extent, ts, id.text), rt));
+				return new RALAliasStatement(lx.genDefInfo(tkn), id.text, RALCast.of(new RALAmbiguousID(id.extent, ts, id.text), rt));
 			} else {
 				throw new RuntimeException("Did not understand alias form at: " + tkn);
 			}
@@ -85,7 +85,7 @@ public class ParserCode {
 			outerBlock.content.add(body);
 			return new RALBreakableLoop(tkn.lineNumber, outerBlock);
 		} else if (tkn.isKeyword("for")) {
-			RALStatementUR init = parseLetStatement(tkn.lineNumber, ifc);
+			RALStatementUR init = parseLetStatement(tkn, ifc);
 			RALExprUR cond = ParserExpr.parseExpr(ifc, true);
 			lx.requireNextKw(";");
 			RALStatementUR adjust = parseStatement(ifc);
@@ -128,6 +128,8 @@ public class ParserCode {
 			RALExprUR var = new RALAmbiguousID(varName.extent, ts, varName.text);
 			if (paren)
 				lx.requireNextKw(")");
+			// Make this here so that the alias DefInfo doesn't cover the universe
+			DefInfo.At beforeBodyDecl = lx.genDefInfo(tkn);
 			RALStatementUR body = ParserCode.parseStatement(ifc);
 			RALStatementUR elseBranch = null;
 			Token chk = lx.requireNext();
@@ -137,7 +139,7 @@ public class ParserCode {
 				lx.back();
 			}
 			RALBlock bodyOuter = new RALBlock(tkn.lineNumber, true);
-			bodyOuter.content.add(new RALAliasStatement(tkn.lineNumber, varName.text, RALCast.of(var, type)));
+			bodyOuter.content.add(new RALAliasStatement(beforeBodyDecl, varName.text, RALCast.of(var, type)));
 			bodyOuter.content.add(body);
 			return new RALIfStatement(tkn.lineNumber, new RALInstanceof(cl, var), bodyOuter, elseBranch, false);
 		} else if (tkn.isKeyword("call")) {
@@ -214,8 +216,9 @@ public class ParserCode {
 		return new RALAssignStatement(lineNumber, target, RALChainOp.of(target, add, source));
 	}
 
-	private static RALStatementUR parseLetStatement(SrcPos lineNumber, InsideFileContext ifc) {
+	private static RALStatementUR parseLetStatement(Token firstTkn, InsideFileContext ifc) {
 		Lexer lx = ifc.lexer;
+		SrcPos lineNumber = firstTkn.lineNumber;
 
 		LinkedList<String> names = new LinkedList<>();
 		LinkedList<RALType> types = new LinkedList<>();
@@ -262,7 +265,7 @@ public class ParserCode {
 		}
 		if (hasAnyAuto && (re == null))
 			throw new RuntimeException("Cannot infer types without assignment at " + lineNumber);
-		return new RALLetStatement(lineNumber, names.toArray(new String[0]), types.toArray(new RALType[0]), re);
+		return new RALLetStatement(lx.genDefInfo(firstTkn), names.toArray(new String[0]), types.toArray(new RALType[0]), re);
 	}
 
 	public static Object[] parseStringEmbed(InsideFileContext ifc, boolean expr) {

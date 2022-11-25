@@ -11,7 +11,6 @@ import java.util.Map;
 
 import rals.code.ScopeContext;
 import rals.diag.SrcPos;
-import rals.expr.RALExprSlice;
 import rals.types.RALType;
 
 /**
@@ -30,9 +29,7 @@ public class HCMScopeSnapshot {
 			if (rt instanceof RALType.AgentClassifier)
 				contents.put(k, HCMHoverDataGenerators.typeHoverData(k, rt));
 		}
-		for (Map.Entry<String, RALExprSlice> var : sc.scopedVariables.entrySet()) {
-			String k = var.getKey();
-			contents.put(k, HCMHoverDataGenerators.varHoverData(k, var.getValue().slots()));
-		}
+		for (ScopeContext.LVar var : sc.scopedVariables.values())
+			contents.put(var.name, HCMHoverDataGenerators.varHoverData(var));
 	}
 }
