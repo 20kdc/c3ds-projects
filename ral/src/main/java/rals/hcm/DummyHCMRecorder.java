@@ -13,6 +13,7 @@ import rals.expr.RALExprSlice;
 import rals.expr.RALExprUR;
 import rals.lex.Token;
 import rals.lex.Token.ID;
+import rals.types.RALType;
 
 /**
  * HCM recorder in cases where HCM recording is not wanted.
@@ -48,5 +49,10 @@ public class DummyHCMRecorder implements IHCMRecorder {
 
 	@Override
 	public void onResolveExpression(RALExprUR src, RALExprSlice dst) {
+	}
+
+	@Override
+	public HCMIntent genMSIntent(RALType rt, boolean b) {
+		return null;
 	}
 }

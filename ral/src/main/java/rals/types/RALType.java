@@ -114,9 +114,9 @@ public abstract class RALType {
 	 */
 	public final Integer lookupMSID(String name, boolean asScript) {
 		for (AgentInterface ai : interfaces) {
-			Integer a = (asScript ? ai.scripts : ai.messages).get(name);
+			AgentInterface.MsgScr a = (asScript ? ai.scripts : ai.messages).get(name);
 			if (a != null)
-				return a;
+				return a.value;
 		}
 		return null;
 	}
@@ -345,7 +345,7 @@ public abstract class RALType {
 		/**
 		 * Declares a message or a script.
 		 */
-		public final void declareMS(String name, int id, boolean asScript) {
+		public final void declareMS(String name, int id, boolean asScript, DefInfo di) {
 			boolean asMessage = !asScript;
 			if (!typeSystem.messageHooks.contains(id)) {
 				asMessage = true;
@@ -363,13 +363,14 @@ public abstract class RALType {
 				if (lookupMSName(id, true) != null)
 					throw new RuntimeException("script " + name + " " + id + " already declared");
 			}
-		
+
+			AgentInterface.MsgScr ms = new AgentInterface.MsgScr(id, di);
 			if (asMessage) {
-				inherent.messages.put(name, id);
+				inherent.messages.put(name, ms);
 				inherent.messagesInv.put(id, name);
 			}
 			if (asScript) {
-				inherent.scripts.put(name, id);
+				inherent.scripts.put(name, ms);
 				inherent.scriptsInv.put(id, name);
 			}
 		}

@@ -21,9 +21,9 @@ public final class AgentInterface {
 	 */
 	public final Object nameGiver;
 
-	public final HashMap<String, Integer> messages = new HashMap<>();
+	public final HashMap<String, MsgScr> messages = new HashMap<>();
 	public final HashMap<Integer, String> messagesInv = new HashMap<>();
-	public final HashMap<String, Integer> scripts = new HashMap<>();
+	public final HashMap<String, MsgScr> scripts = new HashMap<>();
 	public final HashMap<Integer, String> scriptsInv = new HashMap<>();
 
 	public final HashMap<String, OVar> fields = new HashMap<>();
@@ -40,6 +40,16 @@ public final class AgentInterface {
 		public OVar(int s, RALType t, DefInfo di) {
 			slot = s;
 			type = t;
+			defInfo = di;
+		}
+	}
+
+	public static class MsgScr {
+		public final int value;
+		public final DefInfo defInfo;
+
+		public MsgScr(int v, DefInfo di) {
+			value = v;
 			defInfo = di;
 		}
 	}

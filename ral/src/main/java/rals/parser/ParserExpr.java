@@ -320,7 +320,8 @@ public class ParserExpr {
 				}
 			} else if (tkn.isKeyword(":") || tkn.isKeyword("->")) {
 				boolean isScript = tkn.isKeyword(":");
-				String msgName = lx.requireNextID();
+				// Would be nice if this could have completion, but it gets... complicated.
+				Token.ID msgName = lx.requireNextIDTkn();
 				// Determine if we might be intervening in an emit expression and cancel if so
 				if (lx.optNextKw("(")) {
 					// We *are* intervening in an emit expression, get out of here
@@ -332,7 +333,8 @@ public class ParserExpr {
 				if (base instanceof RALAmbiguousID) {
 					String typeName = ((RALAmbiguousID) base).text;
 					RALType rt = ts.byName(typeName);
-					Integer msgId = rt.lookupMSID(msgName, isScript);
+					ifc.hcm.setTokenHoverIntent(msgName, ifc.hcm.genMSIntent(rt, isScript));
+					Integer msgId = rt.lookupMSID(msgName.text, isScript);
 					if (msgId == null) {
 						String lTp = isScript ? "script" : "message";
 						String lOp = isScript ? ":" : "->";

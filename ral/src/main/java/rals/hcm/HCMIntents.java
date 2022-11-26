@@ -14,6 +14,7 @@ import rals.expr.RALExprSlice;
 import rals.hcm.HCMStorage.HoverData;
 import rals.lex.Token;
 import rals.types.AgentInterface;
+import rals.types.RALType;
 
 /**
  * All intent subclasses
@@ -87,4 +88,66 @@ public class HCMIntents {
 			return null;
 		}
 	};
+
+	/**
+	 * Message ID, relative to target agent
+	 */
+	public static final HCMRelativeIntent MESSAGE_EXPR = new MSExprRelativeIntent("MESSAGE_EXPR", false);
+
+	/**
+	 * Script ID, relative to target agent
+	 */
+	public static final HCMRelativeIntent SCRIPT_EXPR = new MSExprRelativeIntent("SCRIPT_EXPR", true);
+
+	public static HCMRelativeIntent msRelativeIntent(boolean asScript) {
+		return asScript ? SCRIPT_EXPR : MESSAGE_EXPR;
+	}
+
+	private static final class MSExprRelativeIntent extends HCMRelativeIntent {
+		public final boolean asScript;
+		public MSExprRelativeIntent(String name, boolean s) {
+			super(name, 1, null);
+			asScript = s;
+		}
+
+		@Override
+		public Map<String, HoverData> retrieveParameterized(Token sp, SrcPosUntranslated spu, HCMStorage storage, RALExprSlice[] exprs) {
+			try {
+				if (exprs[0].length == 1)
+					return MSIntent.fromType(exprs[0].slot(0).type, asScript);
+			} catch (Exception ex) {
+				// just in case - this stuff gets a bit spicy
+			}
+			return null;
+		}
+	}
+
+	public static final class MSIntent extends HCMIntent {
+		public final boolean asScript;
+		public final RALType type;
+		public MSIntent(RALType rt, boolean s) {
+			super((s ? "SCRIPT" : "MESSAGE") + "+" + rt);
+			asScript = s;
+			type = rt;
+		}
+
+		public static HashMap<String, HoverData> fromType(RALType type, boolean asScript) {
+			try {
+				HashMap<String, HoverData> compiled = new HashMap<>();
+				for (AgentInterface ai : type.getInterfaces())
+					for (Map.Entry<String, AgentInterface.MsgScr> me : (asScript ? ai.scripts : ai.messages).entrySet())
+						compiled.put(me.getKey(), HCMHoverDataGenerators.msHoverData(ai, me.getKey(), me.getValue(), asScript));
+				return compiled;
+			} catch (Exception ex) {
+				// just in case - this stuff gets a bit spicy
+			}
+			return null;
+		}
+
+		@Override
+		public Map<String, HoverData> retrieve(Token sp, SrcPosUntranslated spu, HCMStorage storage) {
+			return fromType(type, asScript);
+		}
+	}
+
 }

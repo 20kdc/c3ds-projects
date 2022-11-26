@@ -12,6 +12,7 @@ import rals.diag.SrcPos;
 import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.expr.RALChainOp.Op;
+import rals.hcm.HCMIntents;
 import rals.lex.*;
 import rals.lex.Token.StrEmb;
 import rals.stmt.*;
@@ -205,6 +206,7 @@ public class ParserCode {
 	}
 
 	private static RALExprUR parseRelativeMessageID(RALExprUR target, InsideFileContext ifc) {
+		ifc.hcm.addCompletionRelIntentToNextToken(HCMIntents.msRelativeIntent(false), true, target);
 		Token messageId = ifc.lexer.requireNext();
 		RALExprUR getMsgType;
 		if (messageId instanceof Token.ID) {

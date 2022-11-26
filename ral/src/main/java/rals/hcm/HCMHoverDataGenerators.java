@@ -109,4 +109,7 @@ public class HCMHoverDataGenerators {
 	public static HoverData includeHoverData(SrcPosFile spf) {
 		return new HCMStorage.HoverData(spf.docPath.toLSPURI(), new DefInfo.At(new SrcPos(spf, 0, 0, 0), "An included file."));
 	}
+	public static HoverData msHoverData(AgentInterface ai, String k, AgentInterface.MsgScr me, boolean asScript) {
+		return new HCMStorage.HoverData((asScript ? "script" : "message") + " " + ai.nameGiver + (asScript ? ":" : "->") + k + " " + me.value + ";", me.defInfo);
+	}
 }

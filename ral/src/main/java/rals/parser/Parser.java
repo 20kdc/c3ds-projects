@@ -189,10 +189,11 @@ public class Parser {
 				// allow -> or :
 				if (!lx.optNextKw("->"))
 					lx.requireNextKw(":");
+				ifc.hcm.addCompletionIntentToNextToken(ifc.hcm.genMSIntent(rt, false), true);
 				String msgName = lx.requireNextID();
 				int msgId = ParserExpr.parseConstInteger(ifc);
-				((RALType.Agent) rt).declareMS(msgName, msgId, false);
 				lx.requireNextKw(";");
+				((RALType.Agent) rt).declareMS(msgName, msgId, false, lx.genDefInfo(tkn));
 			} else {
 				throw new RuntimeException("No class/interface " + name);
 			}
@@ -219,6 +220,7 @@ public class Parser {
 				scriptId = ParserExpr.parseConstInteger(ifc);
 				stmt = ParserCode.parseStatement(ifc);
 			} else {
+				ifc.hcm.addCompletionIntentToNextToken(ifc.hcm.genMSIntent(typ, true), true);
 				msgName = lx.requireNextID();
 				// If this form is followed by a { then we assume it to be a declaration.
 				// Otherwise it's a constant integer.
@@ -242,7 +244,7 @@ public class Parser {
 				RALType.AgentClassifier acl = (RALType.AgentClassifier) ac; 
 				m.eventScripts.put(new ScriptIdentifier(acl.classifier, scriptId), stmt);
 			} else {
-				ac.declareMS(msgName, scriptId, true);
+				ac.declareMS(msgName, scriptId, true, lx.genDefInfo(tkn));
 			}
 		} else if (tkn.isKeyword("install")) {
 			m.addInstall(ParserCode.parseStatement(ifc));

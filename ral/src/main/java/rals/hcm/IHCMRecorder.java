@@ -12,6 +12,7 @@ import rals.diag.SrcRange;
 import rals.expr.RALExprSlice;
 import rals.expr.RALExprUR;
 import rals.lex.Token;
+import rals.types.RALType;
 
 /**
  * Hover and Completion Model flight recorder interface.
@@ -79,4 +80,11 @@ public interface IHCMRecorder {
 	 * This is called from RALExprUR.resolve.
 	 */
 	void onResolveExpression(RALExprUR src, RALExprSlice dst);
+
+	/**
+	 * Creates a message/script intent instance, OR null (but only if it'll be ignored!)
+	 */
+	default HCMIntent genMSIntent(RALType type, boolean isScript) {
+		return new HCMIntents.MSIntent(type, isScript);
+	}
 }
