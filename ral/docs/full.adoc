@@ -2,6 +2,8 @@
 :toc:
 :toclevels: 4
 
+<<<
+
 include::README.adoc[]
 
 <<<
@@ -10,20 +12,8 @@ include::Tooling.adoc[]
 
 <<<
 
-include::Language/Overview.adoc[]
+include::Language/index.adoc[]
 
 <<<
 
-include::Language/Declarations.adoc[]
-
-<<<
-
-include::Language/Expressions.adoc[]
-
-<<<
-
-include::Language/Statements.adoc[]
-
-<<<
-
-include::Language/TechnicalDetails.adoc[]
+include::Library/index.adoc[]

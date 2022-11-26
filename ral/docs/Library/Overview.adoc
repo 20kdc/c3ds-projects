@@ -1,0 +1,20 @@
+## RAL Library Reference: Overview
+
+### Structure
+
+The RAL Standard Library is a set of RAL macros and constants to help in developing agents for Creatures 3 and Docking Station. It also contains general macros and constants for the engine.
+
+The general structure of the library is laid out as so:
+
+* `include` - Root directory of where the Standard Library is installed.
+** `include/std` - The standard library itself goes here. The `std/` prefix is to prevent clashes with user installed files.
+*** `include/std/engine.ral` - Engine definitions for `Creatures Engine 2.286 (netbabel 148)`
+*** `include/std/c3ds.ral` - Common definitions between Creatures 3 and Docking Station
+*** `include/std/c3.ral` - Creatures 3 definitions
+*** `include/std/ds.ral` - Docking Station definitions
+*** `include/std/engine` - _Internals_ of `include/std/engine.ral`.
+*** `include/std/c3ds` - _Internals_ of `include/std/c3ds.ral`.
+*** `include/std/c3` - _Internals_ of `include/std/c3.ral`.
+*** `include/std/ds` - _Internals_ of `include/std/ds.ral`.
+*** `include/std/compiler_helpers.ral` - Automatically included internals of the compiler. You can think of this as being a component of the compiler.
+*** `include/std/cpx_connection_test.ral` - The RAL code that is run on `cpxConnectionTest`.

@@ -2,10 +2,10 @@
 # RAL test build packaging script
 mvn package
 rm -f ral.zip
-cd target
-zip ../ral.zip cdsp-ral-0.666-SNAPSHOT-jar-with-dependencies.jar
-cd ../docs
-asciidoctor-pdf full.adoc -o full.pdf
+cp target/cdsp-ral-0.666-SNAPSHOT-jar-with-dependencies.jar ral.jar
+zip ral.zip ral.jar ral
+cd docs
+asciidoctor-pdf full.adoc -o ../manual.pdf
 cd ..
-zip ral.zip -r docs/full.pdf include/std syntax
+zip ral.zip -r manual.pdf include/std syntax
 
