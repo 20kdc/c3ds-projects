@@ -9,33 +9,64 @@
  * 2.286c/World
  */
 
+// Deletes the world with the given index.
 macro () delw(str &w) &'delw {w}';
 
+// Loads the world with the given index.
 macro () load(str &w) &'load {w}';
 
+/*
+Returns the number of worlds.
+World indexes are from 0 (inclusive) to this number (exclusive).
+*/
 macro nwld() &'nwld'!int;
 
 // no way to distingulish forms
+/*
+Sets a password and a flag that is applied to the next world loaded.
+That is, when a world is loaded, the world password is overwritten (and the flag is unset).
+When/if that loaded world is then saved, the password is saved with it.
+*/
 macro () pswdS(str &w) &'pswd {w}';
+// Returns the password of the world with the given index.
 macro pswdI(int &w) &'pswd {w}'!str;
-
+/*
+Sets a flag to quit the game after this tick ends.
+Importantly, if the `save` flag is set, that is processed first.
+Use `inst` to ensure both flags are set within the same tick.
+*/
 macro () quit() &'quit';
-
+// Reloads a set of cached internal engine variables that are controlled by engine-defined game variables. See the "Game Variables" section of engine documentation.
 macro () rgam() &'rgam';
-
+/*
+Sets a flag to save the world after this tick ends.
+Importantly, if the `inst` flag is set, that is processed second.
+Use `inst` to ensure both flags are set within the same tick.
+*/
 macro () save() &'save';
 
+// Tints the `targ` agent with a global tint setup by `wtnt`.
 macro () tntw(int &w) &'tntw {w}';
 
+// Returns the name of the current world, "Startup" by default.
 macro wnam() &'wnam'!str;
 
+// Returns an index of the world by name, or -1 if not present.
 macro wnti(str &w) &'wnti {w}'!int;
 
 // no way to distingulish forms
+// Creates a new world with the given name.
 macro () wrldS(str &w) &'wrld {w}';
+// Given a world index, returns that world's name.
 macro wrldI(int &w) &'wrld {w}'!str;
-
+/*
+Sets global tint `i`.
+`r`/`g`/`b` control red/green/blue channels.
+`ro`/`s` are rotation/swap.
+For all values, 128 is a "do nothing" default.
+*/
 macro () wtnt(int &i, int &r, int &g, int &b, int &ro, int &s) &'wtnt {i, r, g, b, ro, s}';
 
+// Given a world index, returns that world's unique moniker.
 macro wuid() &'wuid'!str;
 

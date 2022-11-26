@@ -23,7 +23,7 @@ import rals.types.RALType.Opaque;
  */
 public class TypeSystem {
 	public final Opaque gAny = new RALType.Any();
-	public final Opaque gString = new Opaque(RALType.Major.String, "string");
+	public final Opaque gString = new Opaque(RALType.Major.String, "str");
 	public final Opaque gInteger = new Opaque(RALType.Major.Value, "int");
 	public final Opaque gBoolean = new Opaque(RALType.Major.Value, "bool");
 	public final Opaque gFloat = new Opaque(RALType.Major.Value, "float");

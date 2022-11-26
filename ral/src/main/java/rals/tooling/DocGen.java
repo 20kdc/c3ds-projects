@@ -92,11 +92,12 @@ public class DocGen {
 			String officialDefLoc = translateDefInfo(mac.defInfo);
 			if (matchesRules(officialDefLoc, r)) {
 				sb.append("#### `");
-				if (mac.precompiledCode != null)
-					HCMHoverDataGenerators.showSlots(sb, mac.precompiledCode.slots());
-				sb.append(" ");
 				sb.append(mac.name);
 				HCMHoverDataGenerators.showMacroArgs(sb, mac.args);
+				if (mac.precompiledCode != null) {
+					sb.append(": ");
+					HCMHoverDataGenerators.showSlots(sb, mac.precompiledCode.slots());
+				}
 				sb.append("`\n\n");
 				showDocBody(sb, mac.defInfo);
 			}

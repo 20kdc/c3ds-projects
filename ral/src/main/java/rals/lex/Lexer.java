@@ -129,7 +129,9 @@ public class Lexer {
 						if ((b != 13))
 							sb.append((char) b);
 					}
-					lastComment = sb.toString();
+					lastComment = sb.toString().trim();
+					if (lastComment.length() == 0)
+						lastComment = null;
 					didAnything = true;
 					continue;
 				} else if (b == '/') {
@@ -141,7 +143,9 @@ public class Lexer {
 							sb.append((char) b);
 						b = getNextByte();
 					}
-					lastComment = sb.toString();
+					lastComment = sb.toString().trim();
+					if (lastComment.length() == 0)
+						lastComment = null;
 					// ate the newline, that's alright
 					didAnything = true;
 					continue;

@@ -15,6 +15,7 @@
 */
 
 // BHVR Behaviours
+//
 BHVR_ACT_1 = 1;
 BHVR_ACT_2 = 2;
 BHVR_DEACT = 4;
@@ -23,6 +24,7 @@ BHVR_EAT = 16;
 BHVR_PICKUP = 32;
 
 // ATTR Attributes
+//
 ATTR_CARRY = 1;
 ATTR_MOUSE = 2;
 ATTR_ACTIVATE = 4;
@@ -37,12 +39,14 @@ ATTR_ROTATE = 1024;
 ATTR_PRESENCE = 2048;
 
 // WOLF Option flags
+//
 WOLF_RENDER = 1;
 WOLF_FAST = 2;
 WOLF_REFRESH = 4;
 WOLF_AUTOKILL = 8;
 
 // TYPE Types
+//
 TYPE_INT = 0;
 TYPE_FLOAT = 1;
 TYPE_STRING = 2;
@@ -55,6 +59,7 @@ TYPE_NULL = -1;
 TYPE_UNKNOWN = -2;
 
 // TINT attributes
+//
 TINT_RED = 1;
 TINT_GREEN = 2;
 TINT_BLUE = 3;
@@ -62,6 +67,7 @@ TINT_ROT = 4;
 TINT_SWAP = 5;
 
 // TIME Times
+//
 TIME_DAWN = 0;
 TIME_MORNING = 1;
 TIME_AFTERNOON = 2;
@@ -69,40 +75,47 @@ TIME_EVENING = 3;
 TIME_NIGHT = 4;
 
 // SEAN Seasons
+//
 SEAN_SPRING = 0;
 SEAN_SUMMER = 1;
 SEAN_AUTUMN = 2;
 SEAN_WINTER = 3;
 
 // SCOL Scrolling flags
+//
 SCOL_EDGE = 1;
 SCOL_KEYBOARD = 2;
 SCOL_DRAG = 4;
 SCOL_SCROLL = 8;
 
 // PRAY TEST Pray chunk codes
+//
 PRAY_TEST_NOTFOUND = 0;
 PRAY_TEST_CACHED = 1;
 PRAY_TEST_UNCOMP = 2;
 PRAY_TEST_COMP = 3;
 
 // PRAY IMPO Pray import codes
+//
 PRAY_IMPO_SUCCESS = 0;
 PRAY_IMPO_CLONED = 1;
 PRAY_IMPO_NOTFOUND = 2;
 PRAY_IMPO_ERROR = 4;
 
 // PRAY DEPS Pray dependency codes
+//
 PRAY_DEPS_SUCCESS = 0;
 PRAY_DEPS_AGENT_NOTFOUND = -1;
 PRAY_DEPS_COUNT_NOTFOUND = -2;
 
 // ORGI Organ data count specifiers
+//
 ORGI_RECEPTORS = 0;
 ORGI_EMITTERS = 1;
 ORGI_REACTIONS = 2;
 
 // ORGF Organ data float specifiers
+//
 ORGF_CLOCK = 0;
 ORGF_LIFE_FRAC = 1;
 ORGF_REPAIR = 2;
@@ -115,6 +128,7 @@ ORGF_ENERGY_COST = 8;
 ORGF_ENERGY_DMG = 9;
 
 // OOWW Moniker status
+//
 OOWW_NOTFOUND = 0;
 OOWW_GENE_REF = 1;
 OOWW_CREA_MADE = 2;
@@ -125,6 +139,7 @@ OOWW_CREA_KILLED = 6;
 OOWW_GENE_UNREF = 7;
 
 // NET: ERRA Network error codes
+//
 NET_ERRA_UNKNOWN = 0;
 NET_ERRA_OK = 1;
 NET_ERRA_OFFLINE = 2;
@@ -135,6 +150,7 @@ NET_ERRA_INTERNAL = 6;
 NET_ERRA_OUTDATED = 7;
 
 // MOVS Movement status
+//
 MOVS_AUTO = 0;
 MOVS_MOUSE = 1;
 MOVS_FLOAT = 2;
@@ -142,17 +158,20 @@ MOVS_VEHICLE = 3;
 MOVS_CARRIED = 4;
 
 // META Metaroom transitions
+//
 META_NONE = 0;
 META_FLIP = 1;
 META_BURST = 2;
 
 // JECT COS injection flags
+//
 JECT_REMOVE = 1;
 JECT_EVENT = 2;
 JECT_INSTALL = 4;
 JECT_FULL = 7;
 
 // IMSK Input event mask
+//
 IMSK_KEY_DOWN = 1;
 IMSK_KEY_UP = 2;
 IMSK_MOUSE_MOVE = 4;
@@ -162,6 +181,7 @@ IMSK_MOUSE_WHL = 32;
 IMSK_TRANS_CHAR = 64;
 
 // HIST TYPE History life event types
+//
 HIST_TYPE_BRED = 0;
 HIST_TYPE_SPLICED = 1;
 HIST_TYPE_ENGINEERED = 2;
@@ -182,11 +202,13 @@ HIST_TYPE_WARP_OUT = 16;
 HIST_TYPE_WARP_IN = 17;
 
 // HEAP Heap counts
+//
 HEAP_MEMORY = 0;
 HEAP_AGENTS = 1;
 HEAP_CREATURES = 2;
 
-// DBG// Debug string targets
+// DBG Debug string targets
+//
 DBG_INST = -1;
 DBG_LOCK = -2;
 DBG_TARG = -3;
@@ -202,6 +224,7 @@ DBG_P2 = -9;
     Stimulus IDs
 */
 
+//
 STIM_DISAPPOINT = 0;
 
 STIM_PTR_PATTED = 1;
@@ -244,6 +267,7 @@ STIM_ATE = 26;
 STIM_PORTAL = 27;
 
 // Stimuli for involuntary actions
+//
 STIM_INVOL_FLINCH = 28;
 STIM_INVOL_LAY_EGG = 29;
 STIM_INVOL_SNEEZE = 30;
@@ -265,14 +289,17 @@ STIM_PTR_NO = 42;
 STIM_CREA_NO = 43;
 
 // Actions
+//
 STIM_ATTACK = 44;
 STIM_MATE = 45;
 
 // Getting tickled
+//
 STIM_OPP_TICKLED = 46;
 STIM_SAME_TICKLED = 47;
 
 // Walking stimuli
+//
 STIM_GO_NOWHERE = 48;
 STIM_GO_IN = 49;
 STIM_GO_OUT = 50;
@@ -282,6 +309,7 @@ STIM_GO_LEFT = 53;
 STIM_GO_RIGHT = 54;
 
 // Peaked CA smell stimuli
+//
 STIM_CA_CA0 = 55;
 STIM_CA_CA1 = 56;
 STIM_CA_CA2 = 57;
