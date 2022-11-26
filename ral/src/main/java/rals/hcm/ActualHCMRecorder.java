@@ -15,6 +15,7 @@ import java.util.Map;
 
 import rals.code.MacroDefSet;
 import rals.code.ScopeContext;
+import rals.diag.SrcPosFile;
 import rals.diag.SrcRange;
 import rals.expr.RALCallable;
 import rals.expr.RALConstant;
@@ -37,6 +38,7 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	// This helps to prevent unwanted overwrites.
 	public final HashMap<Long, HCMScopeSnapshot> snapshots = new HashMap<>();
 	public final SrcPosMap<Token> lastTokenMap = new SrcPosMap<>();
+	public final HashMap<Token, HoverData> hoverTokenOverrides = new HashMap<>();
 	public final HashMap<Token, Token> backwardsTokenLink = new HashMap<>();
 	public final HashMap<Token.ID, HCMIntent> hoverIntents = new HashMap<>();
 	public final HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken = new HashMap<>();
@@ -133,6 +135,20 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
+	public void assignIncludeRange(Token first, Token last, SrcPosFile spf) {
+		if (!first.isInDP(targetDocPath))
+			return;
+		HoverData hd = HCMHoverDataGenerators.includeHoverData(spf);
+		hoverTokenOverrides.put(last, hd);
+		while (last != first) {
+			last = backwardsTokenLink.get(last);
+			if (last == null)
+				throw new RuntimeException("Ran off of the start during assignIncludeRange");
+			hoverTokenOverrides.put(last, hd);
+		}
+	}
+
+	@Override
 	public void resolvePre(SrcRange rs, ScopeContext scope) {
 		if (rs.isInDP(targetDocPath))
 			snapshots.put(rs.start.lcLong, new HCMScopeSnapshot(rs.start, scope));
@@ -194,6 +210,7 @@ public class ActualHCMRecorder implements IHCMRecorder {
 		HCMStorage res = new HCMStorage();
 		res.snapshots = snapshotsSPM;
 		res.lastTokenMap = lastTokenMap;
+		res.hoverTokenOverrides = hoverTokenOverrides;
 		res.backwardsTokenLink = backwardsTokenLink;
 		res.hoverIntents = hoverIntents;
 		res.intentsOnNextToken = intentsOnNextToken;

@@ -21,6 +21,7 @@ public class HCMStorage {
 	// These *would* all be final, but it's getting confusing.
 	public SrcPosMap<HCMScopeSnapshot> snapshots;
 	public SrcPosMap<Token> lastTokenMap;
+	public HashMap<Token, HoverData> hoverTokenOverrides;
 	public HashMap<Token, Token> backwardsTokenLink;
 	public HashMap<Token.ID, HCMIntent> hoverIntents;
 	public HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken;
@@ -38,8 +39,11 @@ public class HCMStorage {
 	 */
 	public HoverData getHoverData(SrcPosUntranslated tp) {
 		Token tkn = lastTokenMap.get(tp);
+		HoverData override = tkn != null ? hoverTokenOverrides.get(tkn) : null;
 		if (tkn == null) {
 			return null;
+		} else if (override != null) {
+			return override;
 		} else if (tkn instanceof Token.ID) {
 			Token.ID id = (Token.ID) tkn;
 			HCMIntent hi = hoverIntents.get(id);

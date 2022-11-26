@@ -118,12 +118,15 @@ public abstract class RALExprSlice {
 	 */
 	protected final RALExprSlice getUnderlying(CompileContextNW context) {
 		RALExprSlice res = this;
-		while (true) {
+		// if you somehow manage to exceed this amount of iterations by accident, then, uh, wow.
+		for (int i = 0; i < 0x10000; i++) {
 			RALExprSlice cmp = res.getUnderlyingInner(context);
 			if (cmp == res)
 				return res;
 			res = cmp;
 		}
+		context.diags.error("getUnderlying looped: " + this);
+		return res;
 	}
 
 	// -- Public API --

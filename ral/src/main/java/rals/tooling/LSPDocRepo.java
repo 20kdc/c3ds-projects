@@ -64,6 +64,10 @@ public class LSPDocRepo {
 		return new ExternalDP(uri);
 	}
 
+	public IDocPath getDocPath(File f) {
+		return new ShadowableFDP(f);
+	}
+
 	/**
 	 * This is a file that might be shadowed by the LSP client.
 	 */

@@ -7,6 +7,7 @@
 package rals.hcm;
 
 import rals.code.ScopeContext;
+import rals.diag.SrcPosFile;
 import rals.diag.SrcRange;
 import rals.expr.RALExprSlice;
 import rals.expr.RALExprUR;
@@ -54,6 +55,11 @@ public interface IHCMRecorder {
 	default void setTokenHoverIntent(Token.ID tkn, HCMIntent intent) {
 		setTokenHoverRelIntent(tkn, intent, (RALExprUR[]) null);
 	}
+
+	/**
+	 * Assigns a range of tokens as an include statement.
+	 */
+	void assignIncludeRange(Token first, Token last, SrcPosFile spf);
 
 	/**
 	 * Logs a given resolve.

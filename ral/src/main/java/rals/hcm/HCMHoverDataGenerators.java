@@ -13,6 +13,8 @@ import rals.code.Macro;
 import rals.code.MacroArg;
 import rals.code.MacroDefSet;
 import rals.code.ScopeContext;
+import rals.diag.SrcPos;
+import rals.diag.SrcPosFile;
 import rals.expr.RALCallable;
 import rals.expr.RALConstant;
 import rals.expr.RALSlot;
@@ -103,5 +105,8 @@ public class HCMHoverDataGenerators {
 	public static HoverData fieldHoverData(AgentInterface ai, String me) {
 		AgentInterface.OVar ov = ai.fields.get(me);
 		return new HCMStorage.HoverData(ai.nameGiver + "." + me + " (OV " + ov.slot + "): " + ov.type, ov.defInfo);
+	}
+	public static HoverData includeHoverData(SrcPosFile spf) {
+		return new HCMStorage.HoverData(spf.docPath.toLSPURI(), new DefInfo.At(new SrcPos(spf, 0, 0, 0), "An included file."));
 	}
 }

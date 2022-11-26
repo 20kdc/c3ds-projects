@@ -13,9 +13,7 @@ import java.util.LinkedList;
 
 import rals.code.*;
 import rals.cond.*;
-import rals.diag.SrcPos;
-import rals.diag.SrcPosFile;
-import rals.diag.SrcRange;
+import rals.diag.*;
 import rals.expr.*;
 import rals.hcm.DummyHCMRecorder;
 import rals.hcm.HCMIntents;
@@ -61,7 +59,7 @@ public class Parser {
 	 * Finds and parses a file.
 	 * Does do the include sanity check.
 	 */
-	public static void findParseFile(IncludeParseContext ctx, IDocPath relTo, String inc, SrcPos incFrom) throws IOException {
+	public static SrcPosFile findParseFile(IncludeParseContext ctx, IDocPath relTo, String inc, SrcPos incFrom) throws IOException {
 		LinkedList<IDocPath> attempts = new LinkedList<>();
 		// relative path
 		if (relTo != null) {
@@ -79,8 +77,9 @@ public class Parser {
 		for (IDocPath f : attempts) {
 			if (!f.isFile())
 				continue;
-			parseFileAt(ctx, new SrcPosFile(incFrom, f, inc));
-			return;
+			SrcPosFile res = new SrcPosFile(incFrom, f, inc);
+			parseFileAt(ctx, res);
+			return res;
 		}
 		throw new RuntimeException("Ran out of search paths trying to find " + inc + " from " + relTo + ", tried: " + attempts);
 	}
@@ -117,8 +116,9 @@ public class Parser {
 				try {
 					if (tkn.isKeyword("include")) {
 						String str = ParserExpr.parseConstString(ifc);
-						lx.requireNextKw(";");
-						findParseFile(ctx, hereParent, str, tkn.lineNumber);
+						Token endTkn = lx.requireNextKw(";");
+						SrcPosFile incSPF = findParseFile(ctx, hereParent, str, tkn.lineNumber);
+						ctx.hcm.assignIncludeRange(tkn, endTkn, incSPF);
 					} else if (tkn.isKeyword("addSearchPath")) {
 						String str = ParserExpr.parseConstString(ifc);
 						lx.requireNextKw(";");

@@ -6,6 +6,7 @@
  */
 package rals.tooling;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,8 +32,8 @@ public class LanguageServer implements ILSPCore {
 	public final IDocPath stdLib;
 	public final boolean debugMode;
 
-	public LanguageServer(IDocPath sl, boolean dbgMode) {
-		stdLib = sl;
+	public LanguageServer(File sl, boolean dbgMode) {
+		stdLib = docRepo.getDocPath(sl);
 		debugMode = dbgMode;
 	}
 
@@ -47,7 +48,7 @@ public class LanguageServer implements ILSPCore {
 			}
 		}
 		if (firstTargetFileFrame != -1) {
-			// It is involved, so escalate up to to there.
+			// It is involved, so escalate up to there.
 			StringBuilder sb = new StringBuilder();
 			for (int frameAppend = 0; frameAppend <= firstTargetFileFrame; frameAppend++) {
 				sb.append(d.frames[frameAppend]);

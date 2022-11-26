@@ -7,6 +7,7 @@
 package rals.hcm;
 
 import rals.code.ScopeContext;
+import rals.diag.SrcPosFile;
 import rals.diag.SrcRange;
 import rals.expr.RALExprSlice;
 import rals.expr.RALExprUR;
@@ -31,6 +32,10 @@ public class DummyHCMRecorder implements IHCMRecorder {
 
 	@Override
 	public void setTokenHoverRelIntent(ID tkn, HCMIntent intent, RALExprUR... rel) {
+	}
+
+	@Override
+	public void assignIncludeRange(Token first, Token last, SrcPosFile spf) {
 	}
 
 	@Override
