@@ -319,8 +319,24 @@ public class ParserExpr {
 					throw new RuntimeException("You can't put a call on anything but an ambiguous ID, and certainly not " + base);
 				}
 			} else if (tkn.isKeyword(":") || tkn.isKeyword("->")) {
+				// Message ID/Script ID.
+				// Looks like this:
+				// SomeTypeName:someScriptName
+				// SomeTypeName->someMessageName
+				// Notice this is NOT what handles emit statements.
+				// So we have to abort early if we *would* be writing an emit statement.
+				String msgTypeName = null;
+				RALType msgType = null;
+				if (base instanceof RALAmbiguousID) {
+					msgTypeName = ((RALAmbiguousID) base).text;
+					msgType = ts.byNameOpt(msgTypeName); 
+				}
 				boolean isScript = tkn.isKeyword(":");
-				// Would be nice if this could have completion, but it gets... complicated.
+				// If it's *possible* for this to not be an emit statement, supply completion.
+				// (It's only possible if the type name is valid, so the false positives won't be that bad)
+				// We have to do this now or else the parse might terminate too early.
+				ifc.hcm.addCompletionIntentToNextToken(ifc.hcm.genMSIntent(msgType, isScript), true);
+				// Now parse the message name as normal...
 				Token.ID msgName = lx.requireNextIDTkn();
 				// Determine if we might be intervening in an emit expression and cancel if so
 				if (lx.optNextKw("(")) {
@@ -330,19 +346,18 @@ public class ParserExpr {
 					lx.back(); // : / ->
 					return base;
 				}
-				if (base instanceof RALAmbiguousID) {
-					String typeName = ((RALAmbiguousID) base).text;
-					RALType rt = ts.byName(typeName);
+				if (msgType != null) {
+					RALType rt = ts.byName(msgTypeName);
 					ifc.hcm.setTokenHoverIntent(msgName, ifc.hcm.genMSIntent(rt, isScript));
 					Integer msgId = rt.lookupMSID(msgName.text, isScript);
 					if (msgId == null) {
 						String lTp = isScript ? "script" : "message";
 						String lOp = isScript ? ":" : "->";
-						throw new RuntimeException("No such " + lTp + " " + typeName + lOp + msgName);
+						throw new RuntimeException("No such " + lTp + " " + msgTypeName + lOp + msgName);
 					}
 					base = new RALConstant.Int(ts, msgId);
 				} else {
-					throw new RuntimeException("You can't get the message ID of anything but an ambiguous ID, and certainly not " + base);
+					throw new RuntimeException("Can't get message/script ID on " + base);
 				}
 			} else if (tkn.isKeyword(".")) {
 				ifc.hcm.addCompletionRelIntentToNextToken(HCMIntents.FIELD_EXPR, true, base);

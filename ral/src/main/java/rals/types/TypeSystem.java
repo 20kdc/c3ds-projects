@@ -143,6 +143,14 @@ public class TypeSystem {
 	}
 
 	/**
+	 * Gets a type by name, or null if not found.
+	 * Use with care.
+	 */
+	public RALType byNameOpt(String name) {
+		return namedTypes.get(name);
+	}
+
+	/**
 	 * Gets a union type by contents.
 	 * Note that this automatically flattens existing unions.
 	 */
