@@ -66,6 +66,21 @@ public class HCMHoverDataGenerators {
 	public static HoverData typeHoverData(String k, RALType rt, DefInfo defInfo) {
 		return new HCMStorage.HoverData(k + ": " + rt.getFullDescription(), defInfo);
 	}
+	public static void showMacroArgs(StringBuilder sb, MacroArg[] args) {
+		sb.append("(");
+		boolean first = true;
+		for (MacroArg ma : args) {
+			if (!first)
+				sb.append(", ");
+			first = false;
+			sb.append(ma.type);
+			sb.append(" ");
+			if (ma.isInline)
+				sb.append("&");
+			sb.append(ma.name);
+		}
+		sb.append(")");
+	}
 	private static void showCallable(StringBuilder sb, String k, RALCallable rc) {
 		if (rc instanceof MacroDefSet) {
 			MacroDefSet mds = (MacroDefSet) rc;
@@ -77,19 +92,8 @@ public class HCMHoverDataGenerators {
 			showSlots(sb, ((Macro) rc).precompiledCode.slots());
 			sb.append(" ");
 			sb.append(k);
-			sb.append("(");
-			boolean first = true;
-			for (MacroArg ma : ((Macro) rc).args) {
-				if (!first)
-					sb.append(", ");
-				first = false;
-				sb.append(ma.type);
-				sb.append(" ");
-				if (ma.isInline)
-					sb.append("&");
-				sb.append(ma.name);
-			}
-			sb.append(")\n");
+			showMacroArgs(sb, ((Macro) rc).args);
+			sb.append("\n");
 		} else {
 			sb.append(k);
 			sb.append(": ");

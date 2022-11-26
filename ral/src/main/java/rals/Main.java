@@ -11,12 +11,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 import rals.code.CodeWriter;
 import rals.code.OuterCompileContext;
 import rals.code.Scripts;
 import rals.parser.*;
+import rals.tooling.DocGen;
 import rals.tooling.Injector;
 import rals.tooling.LSPBaseProtocolLoop;
 import rals.tooling.LanguageServer;
@@ -138,6 +140,21 @@ public class Main {
 			FileOutputStream fos = new FileOutputStream(new File(ralStandardLibrary, "lsp.log"), true);
 			System.setErr(new PrintStream(fos, true, "UTF-8"));
 			new LSPBaseProtocolLoop(new LanguageServer(ralStandardLibrary, true)).run();
+		} else if (args[0].equals("docGen")) {
+			IncludeParseContext ic = Parser.run(stdLibDP, args[1]);
+			// We have to run the resolve here so that macros pre-compile (so we can mine out their types).
+			// But we don't actually care for the contents of the resolved output.
+			ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
+			StringBuilder sb = new StringBuilder();
+			DocGen.Rule[] rules = new DocGen.Rule[args.length - 2];
+			// insert a rule by default NOT including stdlib
+			rules[0] = new DocGen.Rule("-std/");
+			for (int i = 3; i < args.length; i++)
+				rules[i - 2] = new DocGen.Rule(args[i]);
+			DocGen.build(sb, ic, rules);
+			FileOutputStream fos = new FileOutputStream(args[2]);
+			fos.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+			fos.close();
 		} else {
 			printHelp();
 		}
@@ -154,6 +171,7 @@ public class Main {
 		System.out.println("injectRemove INPUT: Injects removal script");
 		System.out.println("lsp: Language server over standard input/output");
 		System.out.println("lspLog: Like lsp, but writes out lsp.log and shows additional LSP debug information");
+		System.out.println("docGen INPUT OUTPUT (+/-PREFIX)...: Generates AsciiDoc documentation.");
 		System.out.println("cpxConnectionTest: Test CPX connection");
 	}
 }
