@@ -153,6 +153,7 @@ public class Main {
 		System.out.println("injectEvents INPUT: Injects event scripts only");
 		System.out.println("injectRemove INPUT: Injects removal script");
 		System.out.println("lsp: Language server over standard input/output");
+		System.out.println("lspDoc: Like lsp, but writes out lsp.log and shows additional LSP debug information");
 		System.out.println("cpxConnectionTest: Test CPX connection");
 	}
 }
