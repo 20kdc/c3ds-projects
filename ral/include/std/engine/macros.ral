@@ -13,7 +13,7 @@ include "std/engine/commands/agents.ral";
 include "std/engine/commands/brain.ral";
 include "std/engine/commands/camera.ral";
 include "std/engine/commands/cd.ral";
-include "std/engine/commands/compounds.ral"; // INCOMPLETE
+include "std/engine/commands/compounds.ral";
 include "std/engine/commands/creatures.ral"; // INCOMPLETE
 include "std/engine/commands/debug.ral"; // INCOMPLETE
 include "std/engine/commands/files.ral"; // INCOMPLETE

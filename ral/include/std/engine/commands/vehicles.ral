@@ -30,7 +30,13 @@ macro () dpas(int &f, int &g, int &s) &'dpas {f, g, s}';
 
 macro () gpas(int &f, int &g, int &s, int &r) &'dpas {f, g, s, r}';
 
-macro () newVhcl(int &f, int &g, int &s, str &sprite, int &fc, int &fb, int &p) &'new: vhcl {f, g, s, sprite, fc, fb, p}';
+/*
+Creates a new vehicle agent.
+Vehicle agents are a sub-type of compound agents capable of holding other agents.
+For parameters, see `newSimp`, but also reference `newComp`.
+Be aware of the vehicle-specific `attr` and `bhvr` flags, along with `cabn`, `cabw`, `cabp`, and `cabv`.
+*/
+macro () newVhcl(int &family, int &genus, int &species, str &gallery, int &count, int &first, int &plane) &'new: vhcl {family, genus, species, gallery, count, first, plane}';
 
 macro () rpas(Agent &v, Agent &p) &'rpas {v, p}';
 macro () spas(Agent &v, Agent &p) &'spas {v, p}';

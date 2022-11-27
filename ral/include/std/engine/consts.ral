@@ -361,3 +361,27 @@ STIM_TRAVEL_DOOR = 96;
 
 STIM_PLAYED_TOY = 97;
 
+// FRMT alignment flag: Horizontal Left
+FRMT_XL = 0;
+// FRMT alignment flag: Horizontal Right
+FRMT_XR = 1;
+// FRMT alignment flag: Horizontal Centre
+FRMT_XC = 2;
+// FRMT alignment flag: Vertical Top
+FRMT_YT = 0;
+// FRMT alignment flag: Vertical Bottom
+FRMT_YB = 4;
+// FRMT alignment flag: Vertical Centre
+FRMT_YC = 8;
+/*
+FRMT: Changes how scrolling works to match a "terminal" sort of layout.
+This doesn't mean that text will start out aligned to the bottom of the screen, but page-scrolling starts at the bottom and goes up.
+Docking Station Chat is a good example of this.
+*/
+FRMT_TERMINAL = 16;
+
+// PAT: TEXT message ID: No message.
+PAT_TEXT_NONE = 0;
+// PAT: TEXT message ID: Multi-line. No message on enter, inserts newline instead.
+PAT_TEXT_MULTILINE = -1;
+

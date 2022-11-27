@@ -26,7 +26,10 @@ macro () base(int &value) &'base {value}';
 macro bhvr() &'bhvr'!int;
 macro () bhvr(int &value) &'bhvr {value}';
 
-// 'call' is a keyword
+/*
+The `call` statement that RAL has built-in syntax for, but as a macro, allowing the script ID to be dynamic.
+In case you're wondering about the name, 'call' is a keyword.
+*/
 macro () callIndirect(int &scrId, any &p1, any &p2) &'call {scrId, p1, p2}';
 
 macro carr() &'carr'!Agent?;
