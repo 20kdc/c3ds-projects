@@ -153,10 +153,10 @@ let modu = &'modu'!str;
 
 The initial scope is the set of variables available in every script.
 
-Note that these variables may be retyped with `alias` and casting.
+Two things are of note here: first, that these variables may be retyped with `alias` and casting, and second, that macros do not inherit the types from the caller.
 
-* `ownr` - Type is usually derived from the classifier of this script, except where `overrideOwnr` intervenes.
-* `from` - Type is assumed to be `any`, usually, except `overrideOwnr` changes that.
+* `ownr` - Type is usually derived from the classifier of this script, except where `overrideOwnr` intervenes. For macros, this is `any`.
+* `from` - Type is assumed to be `any`, usually, except `overrideOwnr` changes that. For macros, this is again `any`.
 * `part` - Type is `int`.
 * `_p1_` - Type is `any`.
 * `_p2_` - Type is `any`.

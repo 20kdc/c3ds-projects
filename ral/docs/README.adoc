@@ -1,4 +1,4 @@
-# RAL Manual
+## Introduction
 
 RAL is a statically typed language that compiles to CAOS. *(While "AL" can be reasonably assumed to be "Agent Language", the meaning of the R may yet come under heated debate in parlours of tea-drinking across the countryside - if they are sun-lit or not is a matter of timing, of course. Complicating this matter is the compiler's package name of `rals`, which does little to improve the situation. While theories have not yet reached the heights of "Real Agents Loath Shee", that time is probably coming, eventually.)*
 

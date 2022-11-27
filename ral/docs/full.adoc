@@ -2,6 +2,8 @@
 :toc:
 :toclevels: 4
 
+# RAL Manual
+
 <<<
 
 include::README.adoc[]
