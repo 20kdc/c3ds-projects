@@ -1,0 +1,47 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+/*
+ * 2.286c/CD
+ */
+
+// Ejects/opens the disc drive.
+macro () cdEjct() &'_cd_ ejct';
+
+/*
+Returns the average frequency in the high range (0-127 inc.)
+These frequencies are based on a 256-sample window of the left channel of presumably 44100hz data, and are represented as values from 0 to 255.
+*/
+macro cdFrqh() &'_cd_ frqh'!int;
+
+/*
+Returns the average frequency in the low range (128-255 inc.)
+These frequencies are based on a 256-sample window of the left channel of presumably 44100hz data, and are represented as values from 0 to 255.
+*/
+macro cdFrql() &'_cd_ frql'!int;
+
+/*
+Returns the average frequency in the medium range (64-191 inc.)
+These frequencies are based on a 256-sample window of the left channel of presumably 44100hz data, and are represented as values from 0 to 255.
+*/
+macro cdFrqm() &'_cd_ frqm'!int;
+
+// Starts up the CD player, and shuts down all other sound sources.
+macro () cdInit() &'_cd_ init';
+
+// Pauses the CD player, then in most cases crashes the script.
+macro () cdPaws(int &ignoreMe) &'_cd_ paws {ignoreMe}';
+
+// Starts the CD player with the given track. The second parameter is ignored.
+macro () cdPlay(int &track, int &ignored) &'_cd_ play {track}';
+
+// Shuts down the CD player, and starts up other sound sources again.
+macro () cdShut() &'_cd_ shut';
+
+// Stops the CD player.
+macro () cdStop() &'_cd_ stop';
+
