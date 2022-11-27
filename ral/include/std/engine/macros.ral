@@ -10,7 +10,7 @@
  */
 
 include "std/engine/commands/agents.ral";
-// brain not yet added
+include "std/engine/commands/brain.ral";
 include "std/engine/commands/camera.ral";
 // cd not yet added
 // compounds not yet added
