@@ -149,6 +149,13 @@ NET_ERRA_FULL = 5;
 NET_ERRA_INTERNAL = 6;
 NET_ERRA_OUTDATED = 7;
 
+// The creature was exported into the warp out buffer.
+NET_EXPO_SUCCESS = 0;
+// The planned chunk names were already found on disk.
+NET_EXPO_ALREADY_EXPORTED = 1;
+// The user hasn't logged in with the current username, so the source UIN is unknown.
+NET_EXPO_NOT_LOGGED_IN = 2;
+
 // MOVS Movement status
 //
 MOVS_AUTO = 0;
@@ -384,4 +391,14 @@ FRMT_TERMINAL = 16;
 PAT_TEXT_NONE = 0;
 // PAT: TEXT message ID: Multi-line. No message on enter, inserts newline instead.
 PAT_TEXT_MULTILINE = -1;
+
+// The Journal directory of the running world.
+FILE_DIR_WORLD = 0;
+// The Journal directory of the game.
+FILE_DIR_MAIN = 1;
+/*
+The Journal directory of the world specified by `engine_other_world`.
+Not supported by `fileGlob` or `fileJdel`.
+*/
+FILE_DIR_OTHER = 2;
 

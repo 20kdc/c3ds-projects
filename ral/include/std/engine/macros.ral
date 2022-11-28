@@ -16,14 +16,14 @@ include "std/engine/commands/cd.ral";
 include "std/engine/commands/compounds.ral";
 include "std/engine/commands/creatures.ral"; // INCOMPLETE
 include "std/engine/commands/debug.ral"; // INCOMPLETE
-include "std/engine/commands/files.ral"; // INCOMPLETE
+include "std/engine/commands/files.ral";
 // flow omitted because compiler handles it
 include "std/engine/commands/genetics.ral";
 include "std/engine/commands/history.ral"; // INCOMPLETE
 include "std/engine/commands/input.ral"; // INCOMPLETE
 include "std/engine/commands/map.ral"; // INCOMPLETE
 include "std/engine/commands/motion.ral"; // INCOMPLETE
-include "std/engine/commands/net.ral"; // INCOMPLETE
+include "std/engine/commands/net.ral";
 include "std/engine/commands/ports.ral"; // INCOMPLETE
 include "std/engine/commands/resources.ral"; // INCOMPLETE
 include "std/engine/commands/scripts.ral"; // INCOMPLETE
