@@ -29,6 +29,7 @@ public class TypeSystem {
 	public final Opaque gFloat = new Opaque(RALType.Major.Value, "float");
 	public final Opaque gNull = new Opaque(RALType.Major.Agent, "null");
 	public final Opaque gVoid = new Opaque(RALType.Major.Unknown, "void");
+	public final Opaque gBytes = new Opaque(RALType.Major.ByteString, "bytes");
 	public final RALType.AgentClassifier gAgent = new RALType.AgentClassifier(this, new Classifier(0, 0, 0), null);
 	public final RALType gAgentNullable;
 	public final RALType gNumber;
@@ -89,6 +90,7 @@ public class TypeSystem {
 		namedTypes.put("bool", gBoolean);
 		namedTypes.put("float", gFloat);
 		namedTypes.put("null", gNull);
+		namedTypes.put("bytes", gBytes);
 		// setup Agent type
 		classifiers.put(gAgent.classifier, gAgent);
 		gAgent.typeName = "Agent";

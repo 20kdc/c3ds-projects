@@ -149,7 +149,8 @@ public abstract class RALType {
 		Unknown,
 		Agent,
 		String,
-		Value;
+		Value,
+		ByteString;
 	}
 
 	/**
@@ -178,7 +179,7 @@ public abstract class RALType {
 
 		@Override
 		public String getFullDescription() {
-			return "opaque(" + name + ")";
+			return name;
 		}
 
 		@Override

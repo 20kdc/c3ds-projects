@@ -11,6 +11,7 @@ import java.util.LinkedList;
 
 import rals.cond.*;
 import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.hcm.HCMIntents;
 import rals.lex.*;
@@ -262,7 +263,18 @@ public class ParserExpr {
 			RALExprUR interior = parseExprFullAtomOrNull(ifc);
 			if (interior == null)
 				throw new RuntimeException("Bitwise NOT with no expression at " + tkn.lineNumber);
-			return new RALBitInvert(interior);
+			return new RALBitInvert(interior, false);
+		} else if (tkn.isKeyword("-")) {
+			// negate
+			RALExprUR interior = parseExprFullAtomOrNull(ifc);
+			if (interior == null)
+				throw new RuntimeException("Negate with no expression at " + tkn.lineNumber);
+			return new RALBitInvert(interior, true);
+		} else if (tkn.isKeyword("[")) {
+			// Byte string
+			RALBytesUR res = new RALBytesUR(parseExpr(ifc, false));
+			lx.requireNextKw("]");
+			return res;
 		} else {
 			lx.back();
 			return null;

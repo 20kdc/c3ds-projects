@@ -48,12 +48,12 @@ public class RALFieldAccess implements RALExprUR {
 						// alright, we're doing something complicated I see
 						try (CompileContext cc = new CompileContext(context)) {
 							// create a temporary, in which we'll store the result
-							RALVarString.Fixed rsv = cc.allocVA(slot.type);
+							RALVarVA rsv = cc.allocVA(slot.type, "RALFieldAccess result tmp");
 							String store = backupAndSet(cc);
-							rsv.writeCompile(0, CompileContext.vaToString("ov", slot.slot), slot.type, context);
-							restore(context.writer, store);
+							rsv.writeCompile(0, CompileContext.vaToString("ov", slot.slot), slot.type, cc);
+							restore(cc.writer, store);
 							// done, give it
-							out.writeCompile(0, rsv.code, slot.type, context);
+							out.writeCompile(0, rsv.getCode(cc), slot.type, cc);
 						}
 					}
 				}

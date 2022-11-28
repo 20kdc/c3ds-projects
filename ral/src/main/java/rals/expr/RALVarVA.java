@@ -35,14 +35,21 @@ public class RALVarVA extends RALVarString {
 		super.readCompileInner(out, context);
 	}
 
-	@Override
-	public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
-		if (write && !isWritable)
-			return null;
+	/**
+	 * For compatibility with the stuff that uses these directly
+	 */
+	public String getCode(CompileContextNW context) {
 		Integer i = context.heldVAHandles.get(handle);
 		if (i == null)
 			throw new RuntimeException("VA handle " + handle + " escaped containment");
 		return CompileContext.vaToString(i);
+	}
+
+	@Override
+	public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
+		if (write && !isWritable)
+			return null;
+		return getCode(context);
 	}
 
 	@Override

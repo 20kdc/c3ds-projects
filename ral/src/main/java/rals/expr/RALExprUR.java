@@ -47,8 +47,9 @@ public interface RALExprUR {
 
 	/**
 	 * Decomposites expression groups.
-	 * Used for assignment statements because of how writing works.
-	 * THIS NEEDS TO BE REMOVED IF AT ALL POSSIBLE post sliceapi
+	 * The plan was to remove this, but it's turned out to be rather useful in doing two things:
+	 * 1. Keeping constants (byte strings!!!) sane
+	 * 2. It's used by RALExprGroupUR to avoid nesting groups
 	 */
 	default RALExprUR[] decomposite() {
 		return new RALExprUR[] {this};

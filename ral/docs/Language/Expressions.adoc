@@ -8,13 +8,15 @@ RAL uses tuples as expressions for versatility, though it does not have a tuple 
 
 Constants are the simplest kind of expression.
 
-The available types of constant in RAL are numbers and strings. You might be tempted to count `null`, but that's internally an alias.
+There are four types of constant in RAL.
 
-```
-1234; // int
-"Hello!"; // str
-1234.56; // float
-```
+* Integer (`int` type): `1234`
+* Floats (`float` type): `1234.5`
+* Strings: `"Hello!"`
+* Byte-strings: `[1, 2, 3]` (These values cannot be stored, and are only for use with commands such as `anim`.)
+
+
+You might be tempted to count `null`, but that's internally an alias.
 
 ### Variable IDs
 
@@ -24,10 +26,10 @@ If a conflict occurs between a declared constant and a local variable, the decla
 
 ```
 let meh = 12;
-let result = meh + 8;
+let result = meh + 8; // 20
 ```
 
-### Operators
+### Brackets and Operators
 
 Operators are used to perform simple operations on values such as numbers and strings.
 
@@ -41,9 +43,41 @@ The bitwise operators are `~` (bitwise NOT), `&` (bitwise AND), and `|` (bitwise
 
 The comparison operators are `>=` (above or equal), `<=` (below or equal), `>` (above), `<` (below), `!=` (not equal), and `==` (equal).
 
+As for brackets, in terms of precedence (the structure when multiple operators are used in a row), anything within `()` counts as a single "atom" like an ID or a constant.
+
+Outside of that, operators separate the entire expression in a given order depending on their precedence. The precedence order (order in which the expression is cut up by operators) is:
+
+* `,`: Merges expressions into a group (see below).
+* `||`: Logical OR.
+* `&&`: Logical AND.
+* `==`, `!=`, `<=`, `>=`, `<`, `>`: Comparison operators.
+* `+`, `-`: Addition (or string concatenation) / subtraction.
+* `/`, `*`: Division and multiplication.
+* `|`, `&`: Bitwise OR/AND.
+
+If multiple operators from the same group are used in a row, then the right-most in the expression is chosen.
+
+```
+let result1 = (1 + 2) * (3 + 4);   // 21
+let result2 = 1 + 2 * 3 + 4;       // 12
+let result3 = (((1 - 1) - 1) - 1); // -2
+```
+
 #### The Secret Operator: `,`
 
 `,` is an operator which merges expressions together into a group. This is what creates the tuples, and how macros have more than one parameter.
+
+### Bitwise NOT / Negate
+
+Bitwise NOT is signified by prepending `~`.
+
+Negate is signified by prepending `-`.
+
+```
+let a = 1;
+let va = -a; // -1
+let vb = ~a; // -2
+```
 
 ### Increment/Decrement Expressions
 
@@ -52,6 +86,14 @@ Appending or prepending `++` or `--` to a variable (or something writable in gen
 If the increment/decrement is appended, then the returned value is that from before the change occurred.
 
 If it is prepended, then the returned value is from after the change occurred.
+
+```
+let a = 0;
+let b = a++; // b is 0, a is now 1
+let c = ++a; // c is 2, a is now 2
+let d = a--; // d is 2, a is now 1
+let e = --a; // e is 0, a is now 0
+```
 
 ### String Embedding
 
@@ -130,14 +172,6 @@ Macros typically use these and don't show it.
 let result = {let a = 1; let b = 2; return a + b;};
 ```
 
-### Regular Ol' Brackets
-
-While to some this may seem obvious, any expression may be surrounded by `()` in order to isolate it from other expressions structurally.
-
-```
-let result = (1 + 2) * (3 + 4);
-```
-
 ### Explicit Casts
 
 Explicit casts, written as `!` followed by something that is not an ID (indicates cast to non-nullable) or by a type (indicates cast to that type), mostly ignores the existing type of the value in favour of an overridden one.
@@ -153,13 +187,13 @@ let modu = &'modu'!str;
 
 The initial scope is the set of variables available in every script.
 
-Two things are of note here: first, that these variables may be retyped with `alias` and casting, and second, that macros do not inherit the types from the caller.
+Two things are of note here: first, that these variables may be retyped with `alias` and casting, and second, that macros do not inherit the types from the caller (this is because otherwise errors, and therefore diagnostics, are not consistent between callers).
 
 * `ownr` - Type is usually derived from the classifier of this script, except where `overrideOwnr` intervenes. For macros, this is `any`.
 * `from` - Type is assumed to be `any`, usually, except `overrideOwnr` changes that. For macros, this is again `any`.
-* `part` - Type is `int`.
+* `part` - Type is `int`. This is used with `targ` to select parts of compound agents.
 * `_p1_` - Type is `any`.
 * `_p2_` - Type is `any`.
 * `null` - Type is `null`.
-* `targ` - Type is `Agent?`.
+* `targ` - Type is `Agent?`. Many commands use this to select the target agent.
 

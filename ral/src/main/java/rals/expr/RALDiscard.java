@@ -43,8 +43,8 @@ public class RALDiscard extends RALExprSlice implements RALExprUR {
 	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
 		// We need to discard this safely, soooo
 		try (CompileContext ccr = new CompileContext(context)) {
-			RALVarString.Fixed rsv = ccr.allocVA(inputExactType);
-			rsv.writeCompile(0, input, inputExactType, context);
+			RALVarVA rsv = ccr.allocVA(inputExactType, "RALDiscard tmp");
+			rsv.writeCompile(0, input, inputExactType, ccr);
 		}
 	}
 

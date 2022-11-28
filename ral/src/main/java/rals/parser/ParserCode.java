@@ -297,7 +297,7 @@ public class ParserCode {
 						if (!se.startIsClusterEnd)
 							throw new RuntimeException("Expected inline cluster end at " + tkn2.lineNumber);
 					} else {
-						throw new RuntimeException("Unexpectedly lost in inline cluster at " + tkn2.lineNumber);
+						throw new RuntimeException("Unexpectedly lost in inline cluster at " + tkn2.lineNumber + " - expected string embedding, got " + tkn2);
 					}
 				}
 			} else {

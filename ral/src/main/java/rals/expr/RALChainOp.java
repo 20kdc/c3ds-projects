@@ -84,18 +84,23 @@ public class RALChainOp implements RALExprUR {
 
 			@Override
 			protected void readCompileInner(RALExprSlice out, CompileContext context) {
-				if (out.getSpecialInline(0, context) == RALSpecialInline.VA) {
+				// VA fastpath disabled due to bugs, see negation test.
+				// In short, the VA fastpath is causing trouble when the input contains the output VA.
+				// No good way I can think of to do this.
+				// That in mind, the in-place binops might need to be expressed differently.
+				// A dedicated superstructure covering ops might be good.
+				if (false && (out.getSpecialInline(0, context) == RALSpecialInline.VA)) {
 					// VA fastpath.
 					// Note we ONLY do this for VAs, because we're not doing an atomic write.
 					try (CompileContext cc = new CompileContext(context)) {
-						mainCompile(out, out.getInlineCAOS(0, true, context), context);
+						mainCompile(out, out.getInlineCAOS(0, true, cc), cc);
 					}
 				} else {
 					// Temporary value path
 					try (CompileContext cc = new CompileContext(context)) {
-						RALVarString.Fixed fv = cc.allocVA(finalType);
-						mainCompile(fv, fv.code, context);
-						fv.readCompile(out, context);
+						RALVarVA fv = cc.allocVA(finalType, "RALChainOp chain tmp");
+						mainCompile(fv, fv.getCode(cc), cc);
+						fv.readCompile(out, cc);
 					}
 				}
 			}
@@ -108,18 +113,18 @@ public class RALChainOp implements RALExprUR {
 				op.startCodegen(rt, outInlineW, context);
 				rt = op.startType(context.typeSystem, rt);
 				// alright, ready to go
-				RALVarString.Fixed tmpVA = null;
+				RALVarVA tmpVA = null;
 				for (int i = 1; i < allArgSlices.length; i++) {
 					RALExprSlice other = allArgSlices[i];
 					String otherInlineR = other.getInlineCAOS(0, false, context);
 					if (otherInlineR == null) {
 						if (tmpVA == null)
-							tmpVA = context.allocVA(context.typeSystem.gAny);
+							tmpVA = context.allocVA(context.typeSystem.gAny, "RALChainOp read tmp");
 						// in the interest of helping maintain sanity, let's indent this
 						context.writer.indent++;
 						other.readCompile(tmpVA, context);
 						context.writer.indent--;
-						otherInlineR = tmpVA.code;
+						otherInlineR = tmpVA.getCode(context);
 					}
 					RALType otherType = other.assert1ReadType();
 					op.stepCodegen(rt, outInlineW, otherType, otherInlineR, context);

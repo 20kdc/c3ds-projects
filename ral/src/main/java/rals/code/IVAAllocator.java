@@ -22,13 +22,4 @@ public interface IVAAllocator {
 	 * Releases a given VA.
 	 */
 	void releaseVA(int i);
-
-	/**
-	 * Allocates a VA and returns it as a RALStringVar.
-	 */
-	default RALVarString.Fixed allocVA(RALType t) {
-		int slot = allocVA();
-		String slotS = CompileContext.vaToString(slot);
-		return new RALVarString.Fixed(slotS, t, true);
-	}
 }

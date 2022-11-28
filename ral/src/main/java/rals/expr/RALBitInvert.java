@@ -14,9 +14,11 @@ import rals.types.*;
  */
 public class RALBitInvert implements RALExprUR {
 	public final RALExprUR expr;
+	public final boolean negate;
 
-	public RALBitInvert(RALExprUR interior) {
+	public RALBitInvert(RALExprUR interior, boolean n) {
 		expr = interior;
+		negate = n;
 	}
 
 	@Override
@@ -25,29 +27,35 @@ public class RALBitInvert implements RALExprUR {
 		if (rc == null)
 			return null;
 		if (rc instanceof RALConstant.Int)
-			return new RALConstant.Int(ts, ~((RALConstant.Int) rc).value);
+			return new RALConstant.Int(ts, negate ? -((RALConstant.Int) rc).value : ~((RALConstant.Int) rc).value);
+		if (negate)
+			if (rc instanceof RALConstant.Flo)
+				return new RALConstant.Flo(ts, -((RALConstant.Flo) rc).value);
 		return null;
 	}
 
 	@Override
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		final RALExprSlice exprR = expr.resolve(scope);
-		exprR.assert1ReadType().assertImpCast(scope.world.types.gInteger);
-		final RALSlot rs = new RALSlot(scope.world.types.gInteger, RALSlot.Perm.R);
+		final RALType numT = exprR.assert1ReadType();
+		numT.assertImpCast(negate ? scope.world.types.gNumber : scope.world.types.gInteger);
+		final RALSlot rs = new RALSlot(numT, RALSlot.Perm.R);
+		final String actualCmd = negate ? "negv" : "notv";
 		return new RALExprSlice(1) {
 			@Override
 			protected void readCompileInner(RALExprSlice out, CompileContext context) {
 				if (out.getSpecialInline(0, context) == RALSpecialInline.VA) {
 					// fast and good
-					super.readCompileInner(out, context);
-					context.writer.writeCode("notv " + out.getInlineCAOS(0, true, context));
+					exprR.readCompileInner(out, context);
+					context.writer.writeCode(actualCmd + " " + out.getInlineCAOS(0, true, context));
 				} else {
 					// slow and bad
 					try (CompileContext c2 = new CompileContext(context)) {
-						RALVarString.Fixed tmp = c2.allocVA(context.typeSystem.gInteger);
+						RALVarVA tmp = c2.allocVA(context.typeSystem.gInteger, "RALBitInvert slowpath tmp");
+						String tmpCode = tmp.getCode(c2);
 						exprR.readCompileInner(tmp, c2);
-						context.writer.writeCode("notv " + tmp.code);
-						out.writeCompile(0, tmp.code, tmp.type, context);
+						context.writer.writeCode(actualCmd + " " + tmpCode);
+						out.writeCompile(0, tmpCode, tmp.type, context);
 					}
 				}
 			}

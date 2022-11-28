@@ -123,6 +123,14 @@ install {
 	// Macro calls are relatively normal function if you're used to other languages.
 	outs("Your MODU says:"); outs(modu()); outs("\n");
 
+	& ' * --near final revision tests--\n';
+
+	// testing byte-strings
+	& 'anim {[1, 2, 3, 4]}';
+
+	let negationTest = 0;
+	negationTest = 5 - -negationTest;
+
 	& ' * --defining counter--\n';
 
 	// Variables may be defined using the let keyword.

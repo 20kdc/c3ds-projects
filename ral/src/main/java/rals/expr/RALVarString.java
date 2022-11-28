@@ -42,6 +42,8 @@ public class RALVarString extends RALVarBase {
 		case Value:
 			set = "setv ";
 			break;
+		case ByteString:
+			throw new RuntimeException("Major type of " + input + " (" + inputExactType + ") is ByteString, which can't be stored.");
 		default:
 			throw new RuntimeException("Unknown major type of " + input + " (" + inputExactType + ") - you will need to cast this value");
 		}
@@ -53,6 +55,10 @@ public class RALVarString extends RALVarBase {
 		writer.writeCode(set + code + " " + input);
 	}
 
+	/**
+	 * Variable with fixed code.
+	 * DO NOT use this for VAs! It breaks optimizations.
+	 */
 	public static class Fixed extends RALVarString implements RALExprUR {
 		public final String code;
 		public Fixed(String c, RALType rt, boolean w) {

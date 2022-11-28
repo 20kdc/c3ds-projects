@@ -8,6 +8,8 @@ package rals.code;
 
 import rals.diag.DiagRecorder;
 import rals.types.TypeSystem;
+import rals.types.RALType;
+import rals.expr.*;
 
 /**
  * Responsible for holding VA handles.
@@ -51,6 +53,20 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, I
 	@Override
 	public int allocVA() {
 		return alloc.allocVA();
+	}
+
+	/**
+	 * Allocates a VA and returns it as a RALVarVA.
+	 */
+	public RALVarVA allocVA(final RALType t, final String site) {
+		IVAHandle handle = new IVAHandle() {
+			@Override
+			public String toString() {
+				return "allocVA:" + t + ":" + site;
+			}
+		};
+		allocVA(handle);
+		return new RALVarVA(handle, t);
 	}
 
 	@Override

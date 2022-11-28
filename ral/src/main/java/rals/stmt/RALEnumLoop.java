@@ -74,7 +74,7 @@ public class RALEnumLoop extends RALStatementUR {
 					String endJumpLabel = cc.allocLabel();
 					String breakBool = null;
 					if (isAdjustingLoopBodyForBreak) {
-						breakBool = cc.allocVA(cc.typeSystem.gBoolean).code;
+						breakBool = cc.allocVA(cc.typeSystem.gBoolean, "RALEnumLoop break boolean").getCode(cc);
 						// initialize break bool to 0
 						writer.writeCode("setv " + breakBool + " 0");
 					}

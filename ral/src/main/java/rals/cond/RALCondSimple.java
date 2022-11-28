@@ -77,14 +77,14 @@ public class RALCondSimple implements RALExprUR {
 			String lInline = lR.getInlineCAOS(0, false, sharedContext);
 			String rInline = rR.getInlineCAOS(0, false, sharedContext);
 			if (lInline == null) {
-				RALVarString.Fixed lV = sharedContext.allocVA(lT);
+				RALVarVA lV = sharedContext.allocVA(lT, "RALCondSimple-L");
 				lR.readCompile(lV, sharedContext);
-				lInline = lV.code;
+				lInline = lV.getCode(sharedContext);
 			}
 			if (rInline == null) {
-				RALVarString.Fixed rV = sharedContext.allocVA(rT);
+				RALVarVA rV = sharedContext.allocVA(rT, "RALCondSimple-R");
 				rR.readCompile(rV, sharedContext);
-				rInline = rV.code;
+				rInline = rV.getCode(sharedContext);
 			}
 			return lInline + " " + (invert ? centre.codeInv : centre.code) + " " + rInline;
 		}

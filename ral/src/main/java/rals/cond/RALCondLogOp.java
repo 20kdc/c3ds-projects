@@ -95,9 +95,9 @@ public class RALCondLogOp implements RALExprUR {
 			}
 			private String wrapVar(CodeWriter writer, CompileContext sharedContext, RALCondition rc, boolean invert) {
 				// complex condition into var
-				RALVarString.Fixed tmp = sharedContext.allocVA(bool);
+				RALVarVA tmp = sharedContext.allocVA(bool, "RALCondLogOp tmp");
 				rc.readCompile(tmp, sharedContext);
-				return tmp.code + (invert ? " eq 0" : " ne 0");
+				return tmp.getCode(sharedContext) + (invert ? " eq 0" : " ne 0");
 			}
 
 			@Override

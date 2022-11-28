@@ -28,6 +28,12 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		return this;
 	}
 
+	/**
+	 * BIG SCARY WARNING:
+	 * Right now the difference between single constants and multiple constants is NOT checked.
+	 * Given the compiler's only just escaped a feature freeze because ANIM is kind of important,
+	 * this probably isn't going to change anytime soon.
+	 */
 	public static abstract class Single extends RALConstant {
 		public final RALType type;
 		public final RALSlot slot;
@@ -243,6 +249,38 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 			while ((right.length() > 1) && right.endsWith("0"))
 				right = right.substring(0, right.length() - 1);
 			return sign + left + "." + right;
+		}
+	}
+
+	public static class Bytes extends Single {
+		private final byte[] value;
+		public Bytes(TypeSystem ts, byte[] d) {
+			super(ts.gBytes);
+			value = d;
+		}
+
+		public Bytes(RALType rt, byte[] d) {
+			super(rt);
+			value = d;
+		}
+
+		@Override
+		public Bytes cast(RALType rt) {
+			return new Bytes(rt, value);
+		}
+
+		// don't bother with equality checks, it's not worth it
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("[ ");
+			for (byte b : value) {
+				sb.append(b & 0xFF);
+				sb.append(" ");
+			}
+			sb.append("]");
+			return sb.toString();
 		}
 	}
 }
