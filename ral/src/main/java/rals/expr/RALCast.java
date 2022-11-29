@@ -82,37 +82,42 @@ public final class RALCast implements RALExprUR {
 		}
 	}
 
-	public static class Resolved extends RALExprSlice {
+	public static class Resolved extends RALExprSlice.ThickProxy {
 		public final RALExprSlice expr;
-		public final RALType sourceType;
 		public final RALSlot targetSlot;
 		private final boolean doImplicitCheck;
-		private Resolved(RALExprSlice e, RALType t, boolean c) {
+		/**
+		 * ONLY call site of this should be Resolved.of
+		 * This constructor DOESN'T do the typechecks!!!
+		 */
+		private Resolved(RALExprSlice e, RALSlot tsl, boolean c) {
 			super(1);
 			expr = e;
-			if (e.length != 1)
-				throw new RuntimeException("Cannot cast " + e + " which has length of " + e.length + ".");
-			RALSlot sourceSlot = e.slot(0);
-			sourceType = sourceSlot.type;
-			// translate casting to permissions
-			RALSlot.Perm adjustedPerm = sourceSlot.perms;
-			if (c) {
-				if (!t.canImplicitlyCast(sourceType))
-					adjustedPerm = adjustedPerm.denyWrite();
-				if (!sourceType.canImplicitlyCast(t))
-					adjustedPerm = adjustedPerm.denyRead();
-			}
-			targetSlot = new RALSlot(t, adjustedPerm);
+			targetSlot = tsl;
 			doImplicitCheck = c;
 		}
 
 		/**
 		 * Tries to prevent layers from piling up unnecessarily.
 		 */
-		public static Resolved of(RALExprSlice e, RALType t, boolean doImplicitCheck) {
-			if (e instanceof Resolved)
-				e = ((Resolved) e).expr;
-			return new Resolved(e, t, doImplicitCheck);
+		public static Resolved of(RALExprSlice originalExpr, RALType targetType, boolean doImplicitCheck) {
+			// Start off with the early sanity checks
+			final RALSlot sourceSlot = originalExpr.slot(0);
+			if (originalExpr.length != 1)
+				throw new RuntimeException("Cannot cast " + originalExpr + " which has length of " + originalExpr.length + ".");
+			RALType sourceType = sourceSlot.type;
+			// If an implicit cast, translate casting to permissions
+			RALSlot.Perm adjustedPerm = sourceSlot.perms;
+			if (doImplicitCheck) {
+				if (!targetType.canImplicitlyCast(sourceType))
+					adjustedPerm = adjustedPerm.denyWrite();
+				if (!sourceType.canImplicitlyCast(targetType))
+					adjustedPerm = adjustedPerm.denyRead();
+			}
+			// This is the true slice, (to prevent layering casts over each other)
+			// Note this is saved until the end, as permission/type calculations need to happen with the original input
+			final RALExprSlice trueSlice = (originalExpr instanceof Resolved) ? ((Resolved) originalExpr).expr : originalExpr;
+			return new Resolved(trueSlice, new RALSlot(targetType, adjustedPerm), doImplicitCheck);
 		}
 
 		@Override
@@ -131,7 +136,19 @@ public final class RALCast implements RALExprUR {
 			readType(0);
 			// Invert ourselves so we apply to the target.
 			// This is important because it ensures we overwrite inputExactType for storage.
-			expr.readCompile(new Resolved(out, targetSlot.type, doImplicitCheck), context);
+			expr.readCompile(of(out, targetSlot.type, doImplicitCheck), context);
+		}
+
+		@Override
+		protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
+			// trigger checks
+			// in-place compile won't let us use anything other than RALVarVA, so we have to do the cast *immediately*
+			// luckily, that's fine, we just do it
+			// that in mind, confirm the type casts properly
+			RALType rt = readType(0);
+			if (doImplicitCheck)
+				rt.assertImpCast(out[0].type);
+			expr.readInplaceCompile(new RALVarVA[] {new RALVarVA(out[0].handle, rt)}, context);
 		}
 
 		@Override

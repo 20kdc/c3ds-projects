@@ -75,12 +75,27 @@ public abstract class RALExprSlice {
 
 	/**
 	 * Compiles a read of this expression slice, which writes into the given output expression slice.
+	 * When implementing, be careful to only write to out once you are done with all other calculations.
 	 * Must throw if not readable.
 	 */
 	public final void readCompile(RALExprSlice out, CompileContext context) {
 		if (out.length != length)
 			throw new RuntimeException("Attempted to read " + this + " directly to " + out + " (different lengths!)");
 		getUnderlying(context).readCompileInner(out, context);
+	}
+
+	/**
+	 * Compiles a read of this expression slice, which writes into the given output VAs.
+	 * The given VAs will be messed with in a non-atomic fashion as they are used for intermediate calculations.
+	 * As such, the given VAs have an undefined state during any expressions called from this expression.
+	 * Note that this function is extremely niche.
+	 * Overrides should only be done for a proxy or something that would otherwise have to allocate a VA.
+	 * Must throw if not readable.
+	 */
+	public final void readInplaceCompile(RALVarVA[] out, CompileContext context) {
+		if (out.length != length)
+			throw new RuntimeException("Attempted to read " + this + " directly to " + out + " (different lengths!)");
+		getUnderlying(context).readInplaceCompileInner(out, context);
 	}
 
 	/**
@@ -249,10 +264,24 @@ public abstract class RALExprSlice {
 
 	/**
 	 * Compiles a read of this expression slice, which writes into the given output expression slice.
+	 * When implementing, be careful to only write to out once you are done with all other calculations.
 	 * Must throw if not readable.
 	 */
 	protected void readCompileInner(RALExprSlice out, CompileContext context) {
 		throw new RuntimeException("Read not supported on " + this);
+	}
+
+	/**
+	 * Compiles a read of this expression slice, which writes into the given output VAs.
+	 * The given VAs will be messed with in a non-atomic fashion as they are used for intermediate calculations.
+	 * As such, the given VAs have an undefined state during any expressions called from this expression.
+	 * Note that this function is extremely niche.
+	 * Overrides should only be done for a proxy or something that would otherwise have to allocate a VA.
+	 * Must throw if not readable.
+	 */
+	protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
+		// No specific version supported, forward to readCompileInner
+		readCompileInner(concat(out), context);
 	}
 
 	/**
@@ -320,10 +349,38 @@ public abstract class RALExprSlice {
 	}
 
 	/**
+	 * "Thick" proxy.
+	 * The idea behind this class is that it forces a subclass to implement all important methods.
+	 */
+	public static abstract class ThickProxy extends RALExprSlice {
+		public ThickProxy(int l) {
+			super(l);
+		}
+
+		@Override
+		protected abstract RALSlot slotInner(int index);		
+
+		@Override
+		protected abstract void readCompileInner(RALExprSlice out, CompileContext context);
+
+		@Override
+		protected abstract void readInplaceCompileInner(RALVarVA[] out, CompileContext context);
+
+		@Override
+		protected abstract void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context);
+
+		@Override
+		protected abstract String getInlineCAOSInner(int index, boolean write, CompileContextNW context);
+
+		@Override
+		protected abstract RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context);
+	}
+
+	/**
 	 * Private as you still shouldn't instanceof this.
 	 * Note that these are forced to be right-deep.
 	 */
-	private static final class Concatenate extends RALExprSlice {
+	private static final class Concatenate extends ThickProxy {
 		final RALExprSlice a, b;
 
 		Concatenate(RALExprSlice ra, RALExprSlice rb) {
@@ -364,6 +421,17 @@ public abstract class RALExprSlice {
 			// We know a/b must be underlying because getUnderying earlier checked that for us.
 			a.readCompileInner(outASlice, context);
 			b.readCompileInner(outBSlice, context);
+		}
+
+		@Override
+		protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
+			RALVarVA[] outA = new RALVarVA[a.length];
+			RALVarVA[] outB = new RALVarVA[b.length];
+			System.arraycopy(out, 0, outA, 0, a.length);
+			System.arraycopy(out, a.length, outB, 0, b.length);
+			// We know a/b must be underlying because getUnderying earlier checked that for us.
+			a.readInplaceCompile(outA, context);
+			b.readInplaceCompile(outB, context);
 		}
 
 		@Override

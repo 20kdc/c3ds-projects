@@ -30,7 +30,7 @@ public class RALStmtExpr implements RALExprUR {
 		return new Resolved(rStmt, rExpr);
 	}
 
-	public static final class Resolved extends RALExprSlice {
+	public static final class Resolved extends RALExprSlice.ThickProxy {
 		private final RALStatement rStmt;
 		private final RALExprSlice rExpr;
 
@@ -70,11 +70,29 @@ public class RALStmtExpr implements RALExprUR {
 		}
 
 		@Override
+		protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
+			try (CompileContext cc = new CompileContext(context)) {
+				rStmt.compile(context.writer, context);
+				rExpr.readInplaceCompile(out, context);
+			}
+		}
+
+		@Override
 		protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
 			try (CompileContext cc = new CompileContext(context)) {
 				rStmt.compile(context.writer, context);
 				rExpr.writeCompile(index, input, inputExactType, context);
 			}
+		}
+
+		@Override
+		protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
+			return null;
+		}
+
+		@Override
+		protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
+			return RALSpecialInline.None;
 		}
 	}
 }

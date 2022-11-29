@@ -8,6 +8,7 @@ package rals.stmt;
 
 import rals.code.*;
 import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 import rals.expr.*;
 
 /**
@@ -29,31 +30,42 @@ public class RALAssignStatement extends RALStatementUR {
 		scope = new ScopeContext(scope);
 		final RALExprSlice targetsR = targets == null ? null : targets.resolve(scope);
 		final RALExprSlice sourceR = source.resolve(scope);
-		if (targets != null) {
-			// Type-check
-			if (targetsR.length != sourceR.length)
-				throw new RuntimeException("Targets len " + targetsR.length + " != sources len " + sourceR.length);
-			for (int i = 0; i < targetsR.length; i++)
-				sourceR.readType(i).implicitlyCastOrThrow(targetsR.writeType(i), sourceR, targetsR);
+		return new Resolved(extent, targetsR, sourceR);
+	}
+
+	public static final class Resolved extends RALStatement {
+		private final RALExprSlice targetsR;
+		private final RALExprSlice sourceR;
+
+		public Resolved(SrcRange ln, RALExprSlice targetsR, RALExprSlice sourceR) {
+			super(ln);
+			this.targetsR = targetsR;
+			this.sourceR = sourceR;
+			if (targetsR != null) {
+				// Type-check
+				if (targetsR.length != sourceR.length)
+					throw new RuntimeException("Targets len " + targetsR.length + " != sources len " + sourceR.length);
+				for (int i = 0; i < targetsR.length; i++)
+					sourceR.readType(i).implicitlyCastOrThrow(targetsR.writeType(i), sourceR, targetsR);
+			}
 		}
-		return new RALStatement(extent) {
-			@Override
-			protected void compileInner(CodeWriter writer, CompileContext cc) {
-				// Break scope here so we don't leak temporaries.
-				try (CompileContext c2 = new CompileContext(cc)) {
-					if (targetsR == null) {
-						// Assign everything to discard
-						sourceR.readCompile(new RALDiscard(c2.typeSystem, sourceR.length), c2);
-					} else {
-						sourceR.readCompile(targetsR, c2);
-					}
+
+		@Override
+		protected void compileInner(CodeWriter writer, CompileContext cc) {
+			// Break scope here so we don't leak temporaries.
+			try (CompileContext c2 = new CompileContext(cc)) {
+				if (targetsR == null) {
+					// Assign everything to discard
+					sourceR.readCompile(new RALDiscard(c2.typeSystem, sourceR.length), c2);
+				} else {
+					sourceR.readCompile(targetsR, c2);
 				}
 			}
+		}
 
-			@Override
-			public String toString() {
-				return targetsR + " = " + sourceR;
-			}
-		};
+		@Override
+		public String toString() {
+			return targetsR + " = " + sourceR;
+		}
 	}
 }

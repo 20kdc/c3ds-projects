@@ -7,13 +7,14 @@
 package rals.expr;
 
 import rals.code.CompileContext;
+import rals.code.CompileContextNW;
 import rals.types.RALType;
 
 /**
  * This expression represents an error.
  * It's useful for shuffling macro compile errors to time of use for ease of understanding.
  */
-public final class RALErrorExpr extends RALExprSlice {
+public final class RALErrorExpr extends RALExprSlice.ThickProxy {
 	public final String errorText;
 	public RALErrorExpr(String err) {
 		super(0);
@@ -38,5 +39,20 @@ public final class RALErrorExpr extends RALExprSlice {
 	@Override
 	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
 		throw new RuntimeException(errorText);
+	}
+
+	@Override
+	protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
+		throw new RuntimeException(errorText);
+	}
+
+	@Override
+	protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
+		return null;
+	}
+
+	@Override
+	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
+		return RALSpecialInline.None;
 	}
 }

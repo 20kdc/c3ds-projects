@@ -95,7 +95,7 @@ public class VarCacher {
 						context.writer.writeComment(CompileContext.vaToString(v) + ": " + names[absI]);
 				}
 			}
-			c.srcSlice.readCompile(c.varSlice, context);
+			c.srcSlice.readInplaceCompile(c.variables, context);
 		}
 	}
 
@@ -103,7 +103,6 @@ public class VarCacher {
 		public final int sourceBase;
 		public final RALVarVA[] variables;
 		public final RALExprSlice srcSlice;
-		public final RALExprSlice varSlice;
 		public Copy(int base, int length, RALExprSlice in) {
 			sourceBase = base;
 			variables = new RALVarVA[length];
@@ -117,7 +116,6 @@ public class VarCacher {
 				}, in.readType(absIndex));
 			}
 			srcSlice = in.slice(base, length);
-			varSlice = RALExprSlice.concat(variables);
 		}
 	}
 }

@@ -146,6 +146,17 @@ public class Macro implements RALCallable {
 		}
 
 		@Override
+		protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
+			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
+				try (CompileContext c2 = new CompileContext(context)) {
+					vc.writeCacheCode(c2);
+					installMacroArgs(c2);
+					innards.readInplaceCompile(out, c2);
+				}
+			}
+		}
+
+		@Override
 		protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 			if (vc.copies.length != 0)
 				return null;
