@@ -32,6 +32,7 @@ public class TypeSystem {
 	public final Opaque gBytes = new Opaque(RALType.Major.ByteString, "bytes");
 	public final RALType.AgentClassifier gAgent = new RALType.AgentClassifier(this, new Classifier(0, 0, 0), null);
 	public final RALType gAgentNullable;
+	public final RALType gStringOrNumber;
 	public final RALType gNumber;
 
 	/**
@@ -97,6 +98,7 @@ public class TypeSystem {
 		namedTypes.put("Agent", gAgent);
 		gAgentNullable = byNullable(gAgent);
 		gNumber = byUnion(Arrays.asList(gFloat, gInteger));
+		gStringOrNumber = byUnion(Arrays.asList(gNumber, gString));
 		namedTypes.put("num", gNumber);
 	}
 

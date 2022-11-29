@@ -137,21 +137,24 @@ public abstract class RALExprSlice {
 	}
 
 	/**
-	 * Throws an error if the length isn't 1, then returns type(0).
-	 */
-	public final RALType assert1Type() {
-		if (length != 1)
-			throw new RuntimeException("Failed assert1Type: " + this);
-		return slotInner(0).type;
-	}
-
-	/**
 	 * Throws an error if the length isn't 1, then returns readType(0).
 	 */
 	public final RALType assert1ReadType() {
 		if (length != 1)
 			throw new RuntimeException("Failed assert1ReadType: " + this);
 		return readType(0);
+	}
+
+	/**
+	 * Throws an error if the length isn't 1, then returns the type of the slot.
+	 * Checks permissions against a set of required permissions.
+	 */
+	public final RALType assert1With(RALSlot.Perm required) {
+		if (length != 1)
+			throw new RuntimeException("Failed assert1ReadType: " + this);
+		RALSlot rs = slotInner(0);
+		rs.perms.require(this, required);
+		return rs.type;
 	}
 
 	/**

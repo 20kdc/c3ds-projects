@@ -121,7 +121,7 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 			super(r);
 		}
 
-		protected abstract float toFloat();
+		public abstract float toFloat();
 	}
 
 	public static class Int extends Number {
@@ -136,7 +136,7 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		}
 
 		@Override
-		protected float toFloat() {
+		public float toFloat() {
 			return value;
 		}
 
@@ -178,7 +178,7 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		}
 
 		@Override
-		protected float toFloat() {
+		public float toFloat() {
 			return value;
 		}
 

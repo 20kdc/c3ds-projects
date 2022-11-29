@@ -60,5 +60,12 @@ public class RALSlot {
 				return W;
 			throw new RuntimeException("Bad deny read");
 		}
+
+		public void require(Object chk, Perm required) {
+			if (required.read && !read)
+				throw new RuntimeException("Needed read perm on: " + chk);
+			if (required.write && !write)
+				throw new RuntimeException("Needed write perm on: " + chk);
+		}
 	}
 }

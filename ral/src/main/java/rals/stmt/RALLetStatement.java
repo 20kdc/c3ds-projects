@@ -57,15 +57,17 @@ public class RALLetStatement extends RALStatementUR {
 			RALVarVA rvv = scope.newLocal(names[i], defInfo, finalTypes[i]);
 			vars[i] = rvv;
 		}
-		return new Resolved(extent, vars, initRes);
+		return new Resolved(extent, names, vars, initRes);
 	}
 
-	public class Resolved extends RALStatement {
+	public static class Resolved extends RALStatement {
+		public final String[] names;
 		public final RALVarVA[] vars;
 		public final RALExprSlice init;
 	
-		public Resolved(SrcRange sp, RALVarVA[] v, RALExprSlice i) {
+		public Resolved(SrcRange sp, String[] n, RALVarVA[] v, RALExprSlice i) {
 			super(sp);
+			names = n;
 			vars = v;
 			init = i;
 		}

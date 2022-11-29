@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import rals.diag.SrcPos;
 import rals.diag.SrcRange;
 import rals.expr.*;
-import rals.expr.RALChainOp.Op;
 import rals.hcm.HCMIntents;
 import rals.lex.*;
 import rals.lex.Token.StrEmb;
@@ -170,17 +169,17 @@ public class ParserCode {
 				lx.requireNextKw(";");
 				return new RALAssignStatement(tkn.lineNumber, target, source);
 			} else if (sp.isKeyword("+=")) {
-				return parseModAssign(tkn.lineNumber, ifc, target, RALChainOp.ADD);
+				return parseModAssign(tkn, ifc, target, RALModAssignStatement.ADD);
 			} else if (sp.isKeyword("-=")) {
-				return parseModAssign(tkn.lineNumber, ifc, target, RALChainOp.SUB);
+				return parseModAssign(tkn, ifc, target, RALModAssignStatement.SUB);
 			} else if (sp.isKeyword("*=")) {
-				return parseModAssign(tkn.lineNumber, ifc, target, RALChainOp.MUL);
+				return parseModAssign(tkn, ifc, target, RALModAssignStatement.MUL);
 			} else if (sp.isKeyword("/=")) {
-				return parseModAssign(tkn.lineNumber, ifc, target, RALChainOp.DIV);
+				return parseModAssign(tkn, ifc, target, RALModAssignStatement.DIV);
 			} else if (sp.isKeyword("|=")) {
-				return parseModAssign(tkn.lineNumber, ifc, target, RALChainOp.OR);
+				return parseModAssign(tkn, ifc, target, RALModAssignStatement.OR);
 			} else if (sp.isKeyword("&=")) {
-				return parseModAssign(tkn.lineNumber, ifc, target, RALChainOp.AND);
+				return parseModAssign(tkn, ifc, target, RALModAssignStatement.AND);
 			} else if (sp.isKeyword("->")) {
 				// MESG WRT+
 				RALExprUR getMsgType = parseRelativeMessageID(target, ifc);
@@ -218,10 +217,11 @@ public class ParserCode {
 		return getMsgType;
 	}
 
-	private static RALStatementUR parseModAssign(SrcPos lineNumber, InsideFileContext ifc, RALExprUR target, Op add) {
+	private static RALStatementUR parseModAssign(Token base, InsideFileContext ifc, RALExprUR target, RALModAssignStatement.Op add) {
 		RALExprUR source = ParserExpr.parseExpr(ifc, true);
 		ifc.lexer.requireNextKw(";");
-		return new RALAssignStatement(lineNumber, target, RALChainOp.of(target, add, source));
+		DefInfo.At di = ifc.lexer.genDefInfo(base);
+		return new RALModAssignStatement(di.srcRange, target, source, add);
 	}
 
 	private static RALStatementUR parseLetStatement(Token firstTkn, InsideFileContext ifc) {

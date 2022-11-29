@@ -43,6 +43,11 @@ public class RALBitInvert implements RALExprUR {
 		final String actualCmd = negate ? "negv" : "notv";
 		return new RALExprSlice(1) {
 			@Override
+			public String toString() {
+				return actualCmd + "[" + exprR + "]";
+			}
+
+			@Override
 			protected void readCompileInner(RALExprSlice out, CompileContext context) {
 				if (out.getSpecialInline(0, context) == RALSpecialInline.VA) {
 					// fast and good

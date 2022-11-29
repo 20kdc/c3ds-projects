@@ -21,24 +21,36 @@ public class RALInlineExpr implements RALExprUR {
 	@Override
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		final Object[] resolved = RALInlineStatement.resolveParts(parts, scope);
+		// TODO: What are game variables doing re: this
 		final RALSlot slot = new RALSlot(scope.world.types.gAny, RALSlot.Perm.R);
-		return new RALExprSlice(1) {
-			@Override
-			protected RALSlot slotInner(int index) {
-				return slot;
-			}
-
-			@Override
-			protected void readCompileInner(RALExprSlice out, CompileContext context) {
-				try (CompileContext c2 = new CompileContext(context)) {
-					out.writeCompile(0, RALInlineStatement.compileResolvedParts(resolved, c2), context.typeSystem.gAny, c2);
-				}
-			}
-			@Override
-			protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
-				return RALInlineStatement.compileResolvedParts(resolved, context);
-			}
-		};
+		return new Resolved(slot, resolved);
 	}
 
+	public static final class Resolved extends RALExprSlice {
+		private final RALSlot slot;
+		private final Object[] resolved;
+
+		public Resolved(RALSlot slot, Object[] resolved) {
+			super(1);
+			this.slot = slot;
+			this.resolved = resolved;
+		}
+
+		@Override
+		protected RALSlot slotInner(int index) {
+			return slot;
+		}
+
+		@Override
+		protected void readCompileInner(RALExprSlice out, CompileContext context) {
+			try (CompileContext c2 = new CompileContext(context)) {
+				out.writeCompile(0, RALInlineStatement.compileResolvedParts(resolved, c2), context.typeSystem.gAny, c2);
+			}
+		}
+
+		@Override
+		protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
+			return RALInlineStatement.compileResolvedParts(resolved, context);
+		}
+	}
 }

@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import rals.cond.*;
-import rals.diag.SrcPos;
 import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.hcm.HCMIntents;
@@ -75,6 +74,14 @@ public class ParserExpr {
 
 	public static RALExprUR parseExprOrNull(InsideFileContext ifc) {
 		Lexer lx = ifc.lexer;
+		// Start by getting the first token
+		// This is for extent mapping later
+		exprCompletionIntents(ifc);
+		Token firstToken = lx.next();
+		if (firstToken == null)
+			return null;
+		lx.back();
+		// Continue
 		RALExprUR firstAtom = parseExprFullAtomOrNull(ifc);
 		if (firstAtom == null)
 			return null;
@@ -106,10 +113,10 @@ public class ParserExpr {
 		// now for op processing
 		RALExprUR[] atomsArr = atoms.toArray(new RALExprUR[0]);
 		String[] opsArr = ops.toArray(new String[0]);
-		return binopProcessor(atomsArr, opsArr, 0, opsArr.length);
+		return binopProcessor(lx.genDefInfo(firstToken), atomsArr, opsArr, 0, opsArr.length);
 	}
 
-	public static RALExprUR binopProcessor(RALExprUR[] atomArr, String[] opArr, int aBase, int opCount) {
+	public static RALExprUR binopProcessor(DefInfo.At di, RALExprUR[] atomArr, String[] opArr, int aBase, int opCount) {
 		if (opCount == 0)
 			return atomArr[aBase];
 		for (String[] pCl : operatorPrecedenceGroups) {
@@ -125,10 +132,10 @@ public class ParserExpr {
 				for (String op : pCl) {
 					if (op.equals(opArr[i])) {
 						// if i == aBase then opCount needs to be 0 (LHS is just the atom directly left)
-						RALExprUR l = binopProcessor(atomArr, opArr, aBase, i - aBase);
+						RALExprUR l = binopProcessor(di, atomArr, opArr, aBase, i - aBase);
 						// if i == aBase + opCount - 1 then opCount needs to be 0 (RHS is just the atom directly right)
-						RALExprUR r = binopProcessor(atomArr, opArr, i + 1, aBase + opCount - (i + 1));
-						return binopMaker(l, opArr[i], r);
+						RALExprUR r = binopProcessor(di, atomArr, opArr, i + 1, aBase + opCount - (i + 1));
+						return binopMaker(di, l, opArr[i], r);
 					}
 				}
 			}
@@ -136,7 +143,7 @@ public class ParserExpr {
 		throw new RuntimeException("Operator not in any precedence groups: " + opArr[0]);
 	}
 
-	private static RALExprUR binopMaker(RALExprUR l, String string, RALExprUR r) {
+	private static RALExprUR binopMaker(DefInfo.At di, RALExprUR l, String string, RALExprUR r) {
 		if (string.equals(",")) {
 			return RALExprGroupUR.of(l, r);
 		} else if (string.equals("==")) {
@@ -156,17 +163,17 @@ public class ParserExpr {
 		} else if (string.equals("||")) {
 			return new RALCondLogOp(l, RALCondLogOp.Op.Or, r);
 		} else if (string.equals("+")) {
-			return RALChainOp.of(l, RALChainOp.ADD, r);
+			return RALChainOp.of(di, l, RALModAssignStatement.ADD, r);
 		} else if (string.equals("-")) {
-			return RALChainOp.of(l, RALChainOp.SUB, r);
+			return RALChainOp.of(di, l, RALModAssignStatement.SUB, r);
 		} else if (string.equals("/")) {
-			return RALChainOp.of(l, RALChainOp.DIV, r);
+			return RALChainOp.of(di, l, RALModAssignStatement.DIV, r);
 		} else if (string.equals("*")) {
-			return RALChainOp.of(l, RALChainOp.MUL, r);
+			return RALChainOp.of(di, l, RALModAssignStatement.MUL, r);
 		} else if (string.equals("&")) {
-			return RALChainOp.of(l, RALChainOp.AND, r);
+			return RALChainOp.of(di, l, RALModAssignStatement.AND, r);
 		} else if (string.equals("|")) {
-			return RALChainOp.of(l, RALChainOp.OR, r);
+			return RALChainOp.of(di, l, RALModAssignStatement.OR, r);
 		}
 		throw new RuntimeException("No handler for binop " + string);
 	}
@@ -205,6 +212,7 @@ public class ParserExpr {
 				return null;
 			// Ok, it's not. Use the same string embed parser as inline expressions use to start with.
 			Object[] objs = ParserCode.parseStringEmbed(ifc, true);
+			DefInfo.At di = lx.genDefInfo(tkn);
 			// Then convert the strings to constants.
 			RALExprUR[] total = new RALExprUR[objs.length];
 			for (int i = 0; i < total.length; i++) {
@@ -212,18 +220,19 @@ public class ParserExpr {
 				if (o instanceof String) {
 					total[i] = new RALConstant.Str(ts, (String) o);
 				} else if (o instanceof RALExprUR) {
-					total[i] = (RALExprUR) o;
+					total[i] = new RALImplicitStringifier((RALExprUR) o);
 				} else {
 					throw new RuntimeException("String embed parser isn't supposed to output this: " + o);
 				}
 			}
 			// Because we ran into the string embed in the first place, this will have at least one value.
-			return new RALChainOp(RALChainOp.ADD_STR, total);
+			// Also keep in mind RALImplicitStringifier will guarantee this turns into concatenation.
+			return new RALChainOp(di, RALModAssignStatement.ADD, total);
 		} else if (tkn.isKeyword("++") || tkn.isKeyword("--")) {
 			RALExprUR inner = parseExprAtomOrNull(ifc);
 			if (inner == null)
 				throw new RuntimeException("Looked like the setup for a pre-inc/dec, but was not :" + tkn);
-			return makeIncDec(tkn.lineNumber, ts, inner, true, tkn.isKeyword("++"));
+			return makeIncDec(tkn.extent, ts, inner, true, tkn.isKeyword("++"));
 		} else if (tkn.isKeyword("&")) {
 			return new RALInlineExpr(ParserCode.parseStringEmbed(ifc, true));
 		} else if (tkn.isKeyword("{")) {
@@ -281,20 +290,20 @@ public class ParserExpr {
 		}
 	}
 
-	private static RALExprUR makeIncDec(SrcPos ln, TypeSystem ts, RALExprUR inner, boolean pre, boolean inc) {
-		RALChainOp.Op op = inc ? RALChainOp.ADD : RALChainOp.SUB;
-		RALStatementUR mod = new RALAssignStatement(ln, inner, RALChainOp.of(inner, op, new RALConstant.Int(ts, 1)));
+	private static RALExprUR makeIncDec(SrcRange extent, TypeSystem ts, RALExprUR inner, boolean pre, boolean inc) {
+		RALModAssignStatement.Op op = inc ? RALModAssignStatement.ADD : RALModAssignStatement.SUB;
+		RALStatementUR mod = new RALModAssignStatement(extent, inner, new RALConstant.Int(ts, 1), op);
 		if (pre) {
 			// return value is after the adjustment
 			// so perform the operation on the initial value, then return what we got in the first place
 			return new RALStmtExpr(mod, inner);
 		} else {
 			String idStr = ts.newParserVariableName();
-			RALAmbiguousID id = new RALAmbiguousID(ln.toRange(), ts, idStr);
+			RALAmbiguousID id = new RALAmbiguousID(extent, ts, idStr);
 			// return value is before the adjustment
 			// so store a temporary before the operation
-			RALBlock blk = new RALBlock(ln, false);
-			DefInfo di = new DefInfo.At(ln, "Internal inc/dec variable. How'd you notice this?");
+			RALBlock blk = new RALBlock(extent.start, false);
+			DefInfo di = new DefInfo.At(extent.start, "Internal inc/dec variable. How'd you notice this?");
 			blk.content.add(new RALLetStatement(di, new String[] {idStr}, new RALType[] {null}, inner));
 			blk.content.add(mod);
 			return new RALStmtExpr(blk, id);
@@ -316,7 +325,7 @@ public class ParserExpr {
 				base = new RALInstanceof(((RALType.AgentClassifier) rt).classifier, base);
 			} else if (tkn.isKeyword("++") || tkn.isKeyword("--")) {
 				// post-inc/dec
-				base = makeIncDec(tkn.lineNumber, ts, base, false, tkn.isKeyword("++"));
+				base = makeIncDec(tkn.extent, ts, base, false, tkn.isKeyword("++"));
 			} else if (tkn.isKeyword("(")) {
 				// Call.
 				RALExprUR group = ParserExpr.parseExpr(ifc, false);

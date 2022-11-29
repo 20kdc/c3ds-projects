@@ -20,8 +20,8 @@ import rals.hcm.IHCMRecorder;
 public class Lexer {
 	private CharHistory charHistory;
 
-	private int tokenHistoryPtr = 4;
-	private Token[] tokenHistory = new Token[4];
+	private int tokenHistoryPtr = 5;
+	private Token[] tokenHistory = new Token[5];
 
 	private static final String LONERS = ";[]{}(),.";
 	private static final String NUM_START = "+-0123456789";

@@ -6,9 +6,6 @@
  */
 package rals.code;
 
-import rals.expr.RALVarString;
-import rals.types.RALType;
-
 /**
  * Allocates variable slots.
  */

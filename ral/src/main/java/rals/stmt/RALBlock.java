@@ -12,6 +12,7 @@ import rals.code.CodeWriter;
 import rals.code.CompileContext;
 import rals.code.ScopeContext;
 import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 
 /**
  * Block "statement"
@@ -33,23 +34,35 @@ public class RALBlock extends RALStatementUR {
 		for (RALStatementUR ur : content)
 			content2.add(ur.resolve(scope));
 
-		return new RALStatement(extent) {
-			@Override
-			protected void compileInner(CodeWriter writer, CompileContext cc) {
-				if (isScopeBreaking) {
-					try (CompileContext innerScope = new CompileContext(cc)) {
-						for (RALStatement rl : content2)
-							rl.compile(writer, innerScope);
-					}
-				} else {
+		return new Resolved(extent, content2, isScopeBreaking);
+	}
+
+	public static final class Resolved extends RALStatement {
+		private final LinkedList<RALStatement> content2;
+		private final boolean isScopeBreaking;
+
+		public Resolved(SrcRange ln, LinkedList<RALStatement> content2, boolean sb) {
+			super(ln);
+			this.content2 = content2;
+			isScopeBreaking = sb;
+		}
+
+		@Override
+		protected void compileInner(CodeWriter writer, CompileContext cc) {
+			if (isScopeBreaking) {
+				try (CompileContext innerScope = new CompileContext(cc)) {
 					for (RALStatement rl : content2)
-						rl.compile(writer, cc);
+						rl.compile(writer, innerScope);
 				}
+			} else {
+				for (RALStatement rl : content2)
+					rl.compile(writer, cc);
 			}
-			@Override
-			public String toString() {
-				return "{...}";
-			}
-		};
+		}
+
+		@Override
+		public String toString() {
+			return "{...}";
+		}
 	}
 }
