@@ -6,8 +6,6 @@
  */
 package rals.test;
 
-import java.text.DecimalFormat;
-
 import org.junit.Test;
 
 import rals.expr.RALConstant;
