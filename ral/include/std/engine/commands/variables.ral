@@ -11,8 +11,8 @@
 
 macro read(str &tag, int &index) &'read {tag} {index}'!str;
 
-macro game(str &key) &'game {key}';
-macro eame(str &key) &'eame {key}';
+macro game(str &key) &='game {key}';
+macro eame(str &key) &='eame {key}';
 
 macro subs(str &text, int &start, int &len) &'subs {text, start, len}'!str;
 macro vtos(num &val) &'vtos {val}'!str;

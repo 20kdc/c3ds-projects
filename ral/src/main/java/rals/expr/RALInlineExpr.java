@@ -14,15 +14,16 @@ import rals.stmt.*;
  */
 public class RALInlineExpr implements RALExprUR {
 	public final Object[] parts;
-	public RALInlineExpr(Object[] p) {
+	public final RALSlot.Perm perm;
+	public RALInlineExpr(Object[] p, RALSlot.Perm perms) {
 		parts = p;
+		perm = perms;
 	}
 
 	@Override
 	public RALExprSlice resolveInner(ScopeContext scope) {
 		final Object[] resolved = RALInlineStatement.resolveParts(parts, scope);
-		// TODO: What are game variables doing re: this
-		final RALSlot slot = new RALSlot(scope.world.types.gAny, RALSlot.Perm.R);
+		final RALSlot slot = new RALSlot(scope.world.types.gAny, perm);
 		return new Resolved(slot, resolved);
 	}
 

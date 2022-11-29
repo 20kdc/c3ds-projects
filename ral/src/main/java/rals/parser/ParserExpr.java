@@ -234,7 +234,9 @@ public class ParserExpr {
 				throw new RuntimeException("Looked like the setup for a pre-inc/dec, but was not :" + tkn);
 			return makeIncDec(tkn.extent, ts, inner, true, tkn.isKeyword("++"));
 		} else if (tkn.isKeyword("&")) {
-			return new RALInlineExpr(ParserCode.parseStringEmbed(ifc, true));
+			return new RALInlineExpr(ParserCode.parseStringEmbed(ifc, true), RALSlot.Perm.R);
+		} else if (tkn.isKeyword("&=")) {
+			return new RALInlineExpr(ParserCode.parseStringEmbed(ifc, true), RALSlot.Perm.RW);
 		} else if (tkn.isKeyword("{")) {
 			// Oh, this gets weird...
 			RALBlock stmt = new RALBlock(tkn.lineNumber, false);

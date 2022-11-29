@@ -149,13 +149,25 @@ let a, b = myOtherMacro(c, d);
 ### Inline Expressions
 
 Inline expressions are `&` followed by the syntax for a string embedding.
-However, rather than this being a real string embedding, variables are instead replaced with their CAOS variants.
+However, rather than this being a real string embedding, variables are instead replaced with references to them in CAOS.
 
 Something of a hiccup is that the type is `any` - explicit casts are particularly useful for this.
 
 ```
 let var = "important"; // doesn't need to be this convoluted, but makes a good example
 let important = &'game {var}'!float;
+```
+
+#### Inline Variables
+
+Inline variables are like inline expressions, except rather than `&`, `&=` is used.
+
+The main distinction is that they are expected to be CAOS variables rather than CAOS expressions, and therefore are writable by the CAOS `sets`/`setv`/`seta` commands.
+
+They're also still readable, just like inline expressions.
+
+```
+&= 'game "moose"' = 12; // setv game "moose" 12
 ```
 
 ### Statement Expressions
