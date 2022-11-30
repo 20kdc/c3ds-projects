@@ -28,6 +28,8 @@ public class ScopedVAAllocator implements IVAAllocator, AutoCloseable {
 	/**
 	 * Ensures the given amount of free VA slots exist.
 	 * Used for the root allocator.
+	 * This is particularly important now that fixed VA slots can be allocated,
+	 *  as the linear allocator doesn't actually do fixed slots.
 	 */
 	public void ensureFree(int amount) {
 		while (freeList.size() < amount) {
@@ -44,6 +46,19 @@ public class ScopedVAAllocator implements IVAAllocator, AutoCloseable {
 		int va = parent.allocVA();
 		allList.add(va);
 		return va;
+	}
+
+	@Override
+	public void allocVA(int i) {
+		if (allList.contains(i)) {
+			// it's already locally managed
+			if (!freeList.contains(i))
+				throw new RuntimeException("VA " + i + " already in use");
+		} else {
+			// pull from parent
+			parent.allocVA(i);
+			allList.add(i);
+		}
 	}
 
 	@Override

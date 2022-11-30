@@ -16,6 +16,11 @@ public interface IVAAllocator {
 	int allocVA();
 
 	/**
+	 * Allocates a given fixed VA number.
+	 */
+	void allocVA(int i);
+
+	/**
 	 * Releases a given VA.
 	 */
 	void releaseVA(int i);

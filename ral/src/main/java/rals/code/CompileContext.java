@@ -44,15 +44,31 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, I
 		sc.subUsers++;
 	}
 
+	@Override
+	public int allocVA() {
+		return alloc.allocVA();
+	}
+
+	@Override
+	public void allocVA(int i) {
+		alloc.allocVA(i);
+	}
+
+	/**
+	 * Allocates a VA and assigns it to the given VA handle.
+	 */
 	public int allocVA(IVAHandle obj) {
 		int res = allocVA();
 		heldVAHandles.put(obj, res);
 		return res;
 	}
 
-	@Override
-	public int allocVA() {
-		return alloc.allocVA();
+	/**
+	 * Allocates the given VA and assigns it to the given VA handle.
+	 */
+	public void allocVA(IVAHandle obj, int i) {
+		allocVA(i);
+		heldVAHandles.put(obj, i);
 	}
 
 	/**

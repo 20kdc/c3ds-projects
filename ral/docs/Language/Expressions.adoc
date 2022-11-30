@@ -127,9 +127,13 @@ scrx(Dolphin, Dolphin:chirp);
 
 Field accesses take the form of a suffix `.` followed by the ID of a field on the given agent.
 
-They allow accessing fields on objects (though it's relatively inefficient to access fields on agents not `ownr` or `targ`).
+They allow accessing fields on agents.
 
 ```
+field bool Kitten.meowing 1; // meowing is mv01 of Kitten
+
+// ... in some script somewhere ...
+
 kitten.meowing = true;
 ```
 

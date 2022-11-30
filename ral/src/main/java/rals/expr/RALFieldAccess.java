@@ -45,16 +45,11 @@ public class RALFieldAccess implements RALExprUR {
 						// Don't do this with TARG because we could in theory be victim to a switcheroo.
 						out.writeCompile(0, CompileContext.vaToString("mv", slot.slot), slot.type, context);
 					} else {
-						// alright, we're doing something complicated I see
-						try (CompileContext cc = new CompileContext(context)) {
-							// create a temporary, in which we'll store the result
-							RALVarVA rsv = cc.allocVA(slot.type, "RALFieldAccess result tmp");
-							String store = backupAndSet(cc);
-							rsv.writeCompile(0, CompileContext.vaToString("ov", slot.slot), slot.type, cc);
-							restore(cc.writer, store);
-							// done, give it
-							out.writeCompile(0, rsv.getCode(cc), slot.type, cc);
-						}
+						// use fallbackIO - this stores the agent reference in a temporary before we do the writeCompile
+						// as such, it's immune to targ switcheroo
+						fallbackIO(context, (va) -> {
+							out.writeCompile(0, va, slot.type, context);
+						});
 					}
 				}
 			}
@@ -67,42 +62,45 @@ public class RALFieldAccess implements RALExprUR {
 			}
 
 			/**
-			 * This is used for when we have a guarantee of being able to do whatever we needed to do in a simple CAOS line.
+			 * This is used for when out.writeCompile is not involved
 			 */
 			private void inlineIO(CompileContext context, Consumer<String> doTheThing) {
-				RALSpecialInline si = baseExpr.getSpecialInline(0, context);
-				if ((si == RALSpecialInline.Ownr) || (si == RALSpecialInline.Targ)) {
-					String pfx = "ov";
-					if (si == RALSpecialInline.Ownr)
-						pfx = "mv";
-					doTheThing.accept(CompileContext.vaToString(pfx, slot.slot));
-				} else {
-					// alright, we're doing something complicated I see
-					try (CompileContext cc = new CompileContext(context)) {
-						String store = backupAndSet(cc);
-						doTheThing.accept(CompileContext.vaToString("ov", slot.slot));
-						restore(cc.writer, store);
-					}
+				// try fast-path inline
+				String fullInline = getInlineCAOSInner(0, true, context);
+				if (fullInline != null) {
+					doTheThing.accept(fullInline);
+					return;
 				}
+				fallbackIO(context, doTheThing);
 			}
 
-			private String backupAndSet(CompileContext cc) {
-				String targTmpVA = CompileContext.vaToString(cc.allocVA());
-				cc.writer.writeCode("seta " + targTmpVA + " targ");
-				baseExpr.readCompile(new RALVarSI(RALSpecialInline.Targ, baseType, true), cc);
-				return targTmpVA;
-			}
-
-			private void restore(CodeWriter writer, String targTmpVA) {
-				writer.writeCode("targ " + targTmpVA);
+			/**
+			 * This is used when out.writeCompile is involved or if we can't do inline anyway
+			 */
+			private void fallbackIO(CompileContext context, Consumer<String> doTheThing) {
+				// fast-path inline failed - we need to use a temporary to hold the agent reference
+				try (CompileContext cc = new CompileContext(context)) {
+					RALVarVA va = cc.allocVA(baseType, "RALFieldAccess computed agent");
+					baseExpr.readInplaceCompile(new RALVarVA[] {va}, cc);
+					doTheThing.accept("avar " + va.getCode(cc) + " " + slot.slot);
+				}
 			}
 
 			@Override
 			public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
-				// We can't trust that targ won't be messed with unless we ensure it personally.
-				// That in mind, only translate this for OWNR.
-				if (baseExpr.getSpecialInline(0, context) == RALSpecialInline.Ownr)
-					return CompileContext.vaToString("mv", slot.slot);
+				RALSpecialInline si = baseExpr.getSpecialInline(0, context);
+				if ((si == RALSpecialInline.Ownr) || (si == RALSpecialInline.Targ)) {
+					// obvious fast-path for ownr/targ variables
+					String pfx = "ov";
+					if (si == RALSpecialInline.Ownr)
+						pfx = "mv";
+					return CompileContext.vaToString(pfx, slot.slot);
+				} else {
+					// if we can inline the agent reference, we're fine
+					String agentRefInline = baseExpr.getInlineCAOS(0, false, context);
+					if (agentRefInline != null)
+						return "avar " + agentRefInline + " " + slot.slot;
+				}
 				return null;
 			}
 

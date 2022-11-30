@@ -19,12 +19,14 @@ import rals.types.*;
  */
 public class RALLetStatement extends RALStatementUR {
 	public final String[] names;
+	public final int[] fixedAlloc;
 	public final RALType[] types;
 	public final RALExprUR init;
 
-	public RALLetStatement(DefInfo di, String[] n, RALType[] t, RALExprUR i) {
+	public RALLetStatement(DefInfo di, String[] n, int[] fa, RALType[] t, RALExprUR i) {
 		super(di);
 		names = n;
+		fixedAlloc = fa;
 		types = t;
 		init = i;
 	}
@@ -57,17 +59,19 @@ public class RALLetStatement extends RALStatementUR {
 			RALVarVA rvv = scope.newLocal(names[i], defInfo, finalTypes[i]);
 			vars[i] = rvv;
 		}
-		return new Resolved(extent, names, vars, initRes);
+		return new Resolved(extent, names, fixedAlloc, vars, initRes);
 	}
 
 	public static class Resolved extends RALStatement {
 		public final String[] names;
+		public final int[] fixedAlloc;
 		public final RALVarVA[] vars;
 		public final RALExprSlice init;
 	
-		public Resolved(SrcRange sp, String[] n, RALVarVA[] v, RALExprSlice i) {
+		public Resolved(SrcRange sp, String[] n, int[] fa, RALVarVA[] v, RALExprSlice i) {
 			super(sp);
 			names = n;
+			fixedAlloc = fa;
 			vars = v;
 			init = i;
 		}
@@ -77,7 +81,11 @@ public class RALLetStatement extends RALStatementUR {
 			// Ok, so we want to define this local in the outer environment, but carefully.
 			// In particular we want to be able to use local definitions as a cast.
 			for (int i = 0; i < vars.length; i++) {
-				scope.allocVA(vars[i].handle);
+				if (fixedAlloc[i] == -1) {
+					scope.allocVA(vars[i].handle);
+				} else {
+					scope.allocVA(vars[i].handle, fixedAlloc[i]);
+				}
 				writer.writeComment(vars[i].getInlineCAOS(0, false, scope) + ": " + vars[i].type + " " + names[i]);
 			}
 

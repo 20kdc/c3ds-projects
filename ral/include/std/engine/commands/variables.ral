@@ -9,6 +9,25 @@
  * 2.286c/Variables - INCOMPLETE
  */
 
+// Adjusts a number in-place to make it positive.
+macro () absv(num &v) &'absv {v}';
+
+// Returns an arc cosine in degrees.
+macro acos(num &v) &'acos {v}'!float;
+
+// adds handled by literally just +=
+// addv handled by literally just +=
+// andv handled by literally just &=
+
+// Returns an arc sine in degrees.
+macro asin(num &v) &'asin {v}'!float;
+
+// With `v` in degrees, returns the arc tangent
+macro atan(num &v) &'atan {v}'!float;
+
+// With `v` in degrees, returns the arc tangent
+///macro avar(Agent &a, int &i) &='atan {v}'!float;
+
 macro read(str &tag, int &index) &'read {tag} {index}'!str;
 
 macro game(str &key) &='game {key}';

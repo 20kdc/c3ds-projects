@@ -229,6 +229,7 @@ public class ParserCode {
 		SrcPos lineNumber = firstTkn.lineNumber;
 
 		LinkedList<String> names = new LinkedList<>();
+		LinkedList<Integer> allocs = new LinkedList<>();
 		LinkedList<RALType> types = new LinkedList<>();
 		RALExprUR re = null;
 		if (lx.optNextKw(";")) {
@@ -259,6 +260,10 @@ public class ParserCode {
 			}
 			// confirmed!
 			names.add(n);
+			// TODO: Fit allocs into the picture here.
+			// T says this is important for CAOS Tool debug. 
+			// Example: let Agent x@12 = ...
+			allocs.add(-1);
 			types.add(rt);
 			Token chk = lx.requireNext();
 			if (chk.isKeyword("=")) {
@@ -273,7 +278,11 @@ public class ParserCode {
 		}
 		if (hasAnyAuto && (re == null))
 			throw new RuntimeException("Cannot infer types without assignment at " + lineNumber);
-		return new RALLetStatement(lx.genDefInfo(firstTkn), names.toArray(new String[0]), types.toArray(new RALType[0]), re);
+		// no fixed-alloc for now
+		int[] allocsA = new int[names.size()];
+		for (int i = 0; i < allocsA.length; i++)
+			allocsA[i] = allocs.get(i);
+		return new RALLetStatement(lx.genDefInfo(firstTkn), names.toArray(new String[0]), allocsA, types.toArray(new RALType[0]), re);
 	}
 
 	public static Object[] parseStringEmbed(InsideFileContext ifc, boolean expr) {

@@ -21,6 +21,11 @@ public class LinearVAAllocator implements IVAAllocator {
 	}
 
 	@Override
+	public void allocVA(int i) {
+		throw new RuntimeException("Cannot perform fixed VA allocation from linear allocator");
+	}
+
+	@Override
 	public void releaseVA(int i) {
 	}
 }
