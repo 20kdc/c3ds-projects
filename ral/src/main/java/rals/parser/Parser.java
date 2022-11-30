@@ -305,23 +305,20 @@ public class Parser {
 	private static MacroArg[] parseArgList(InsideFileContext ifc, boolean allowInline) {
 		Lexer lx = ifc.lexer;
 		lx.requireNextKw("(");
-		Token first = lx.requireNext();
-		if (first.isKeyword(")"))
+		if (lx.optNextKw(")"))
 			return new MacroArg[0];
-		lx.back();
 		LinkedList<MacroArg> args = new LinkedList<>();
 		while (true) {
 			RALType typ = ParserType.parseType(ifc);
-			boolean isInline = false;
-			first = lx.requireNext();
-			if (first.isKeyword("&")) {
-				isInline = true;
-			} else {
-				lx.back();
+			RALSlot.Perm isInline = null;
+			if (lx.optNextKw("&")) {
+				isInline = RALSlot.Perm.R;
+			} else if (lx.optNextKw("&=")) {
+				isInline = RALSlot.Perm.RW;
 			}
 			String name = lx.requireNextID();
 			args.add(new MacroArg(typ, isInline, name));
-			first = lx.requireNext();
+			Token first = lx.requireNext();
 			if (first.isKeyword(")")) {
 				return args.toArray(new MacroArg[0]);
 			} else if (first.isKeyword(",")) {

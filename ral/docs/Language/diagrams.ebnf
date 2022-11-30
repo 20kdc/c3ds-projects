@@ -43,7 +43,7 @@ InstallDecl ::= "install" Stmt
 RemoveDecl ::= "remove" Stmt
 MacroDecl ::= "macro" (ArgList ID ArgList Stmt | ID ArgList Expr)
 MacroArgList ::= "(" MacroArg ("," MacroArg)* ")"
-MacroArg ::= Type "&"? ID
+MacroArg ::= Type ("&" | "&=")? ID
 
 // stmt
 

@@ -29,23 +29,23 @@ let meh = 12;
 let result = meh + 8; // 20
 ```
 
-### Brackets and Operators
+### Brackets and Binary Operators
 
-Operators are used to perform simple operations on values such as numbers and strings.
+Binary (as in two-parameter) operators are used to perform simple operations on values such as numbers and strings.
 
-The mathematical operators are `+` (add/string concatenate), `-` (subtract), `/` (divide), `*` (multiply).
+The mathematical binary operators are `+` (add/string concatenate), `-` (subtract), `/` (divide), `*` (multiply).
 
 Modulo in CAOS has specific requirements and thus in RAL has been restrained to a macro.
 
-The boolean operators are `!` (logical NOT), `&&` (logical AND), and `||` (logical OR).
+The boolean binary operators are `&&` (logical AND), and `||` (logical OR).
 
-The bitwise operators are `~` (bitwise NOT), `&` (bitwise AND), and `|` (bitwise OR).
+The bitwise binary operators are `&` (bitwise AND), and `|` (bitwise OR).
 
 The comparison operators are `>=` (above or equal), `<=` (below or equal), `>` (above), `<` (below), `!=` (not equal), and `==` (equal).
 
 As for brackets, in terms of precedence (the structure when multiple operators are used in a row), anything within `()` counts as a single "atom" like an ID or a constant.
 
-Outside of that, operators separate the entire expression in a given order depending on their precedence. The precedence order (order in which the expression is cut up by operators) is:
+Outside of that, binary operators separate the entire expression in a given order depending on their precedence. The precedence order (order in which the expression is cut up by binary operators) is:
 
 * `,`: Merges expressions into a group (see below).
 * `||`: Logical OR.
@@ -67,16 +67,21 @@ let result3 = (((1 - 1) - 1) - 1); // -2
 
 `,` is an operator which merges expressions together into a group. This is what creates the tuples, and how macros have more than one parameter.
 
-### Bitwise NOT / Negate
+### Unary Operators
 
-Bitwise NOT is signified by prepending `~`.
+Unary operators are handled when they are found at the start of an expression.
 
-Negate is signified by prepending `-`.
+The three unary operators are:
+
+* `!`: Logical NOT
+* `~`: Bitwise NOT
+* `-`: Negate
 
 ```
 let a = 1;
 let va = -a; // -1
 let vb = ~a; // -2
+let vc = !a; // 0
 ```
 
 ### Increment/Decrement Expressions

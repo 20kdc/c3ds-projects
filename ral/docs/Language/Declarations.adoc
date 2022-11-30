@@ -232,7 +232,7 @@ The syntax of an expression macro is simply `macro NAME(PARAM...) EXPRESSION`.
 
 It is polite to append a semicolon after an expression macro that is not a *statement expression*.
 
-Parameters are separated by `,` and take the form of `TYPE NAME` or `TYPE &NAME`. The presence of the `&` character, declaring the parameter as inline, is invalid (and redundant) for the return values of a statement macro, but for regular (non-return) parameters it's always valid.
+Parameters are separated by `,` and take the form of `TYPE NAME`, `TYPE &NAME`, or `TYPE &=NAME`. The presence of the `&` character, declaring the parameter as inline, is invalid (and redundant) for the return values of a statement macro, but for regular (non-return) parameters it's always valid. The `&=` variant indicates the parameter is inline and variable (it must be assignable to).
 
 Essentially, the difference is that an inline parameter is declared as if an `alias` had occurred in a scope immediately surrounding the call, while a non-inline parameter is declared as if a `let` had occurred in that same scope.
 
@@ -263,9 +263,18 @@ macro (int retVal) test2(str &text) {
 retVal = 1;
 }
 
+macro () test3(str &=text) {
+// Inline variable arguments can also effectively return values.
+text = "someText!\n";
+}
+
 install {
 test1(textWithSideEffects());
 test2(textWithSideEffects());
+// v is modified here by test3.
+let string v;
+test3(v);
+&'outs {v}'; // someText!\n
 }
 ```
 

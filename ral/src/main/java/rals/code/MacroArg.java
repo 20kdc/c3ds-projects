@@ -6,6 +6,7 @@
  */
 package rals.code;
 
+import rals.expr.RALSlot;
 import rals.types.RALType;
 
 /**
@@ -13,9 +14,9 @@ import rals.types.RALType;
  */
 public class MacroArg implements IEHHandle {
 	public final RALType type;
-	public final boolean isInline;
+	public final RALSlot.Perm isInline;
 	public final String name;
-	public MacroArg(RALType rt, boolean in, String n) {
+	public MacroArg(RALType rt, RALSlot.Perm in, String n) {
 		type = rt;
 		name = n;
 		isInline = in;
@@ -24,5 +25,11 @@ public class MacroArg implements IEHHandle {
 	@Override
 	public String toString() {
 		return "macro arg " + name;
+	}
+
+	public RALSlot.Perm computeRequiredPerms() {
+		if (isInline != null)
+			return isInline;
+		return RALSlot.Perm.R;
 	}
 }

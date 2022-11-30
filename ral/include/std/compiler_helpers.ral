@@ -8,10 +8,7 @@
 // So this embarassing little file is for stuff where it's quicker to write little bits here than in Java.
 // Especially when accounting for all the plumbing to get to the resolved expressions level.
 
-// Consts
-
-true = 1!bool;
-false = 0!bool;
+include "std/compiler_prelude.ral";
 
 /*
  * Emit

@@ -74,9 +74,18 @@ public class HCMHoverDataGenerators {
 				sb.append(", ");
 			first = false;
 			sb.append(ma.type);
+			if (ma.isInline != null) {
+				sb.append("/");
+				sb.append(ma.isInline.toString());
+			} else {
+				sb.append("/R");
+			}
 			sb.append(" ");
-			if (ma.isInline)
+			if (ma.isInline != null) {
 				sb.append("&");
+				if (ma.isInline == RALSlot.Perm.RW)
+					sb.append("&=");
+			}
 			sb.append(ma.name);
 		}
 		sb.append(")");

@@ -1,0 +1,20 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+// This file is for bits of compiler_helpers that are worth documenting.
+// Rules to get into this file:
+// 1. The code should work entirely within RAL primitives and avoid inline.
+// 2. The code should not assume a specific Creatures game or even engine version, outside of assuming RAL-internal primitives exist.
+// 3. The code should be for stuff where it'd basically be a missing obvious feature of the language otherwise.
+
+// Consts
+
+// True - the logical inverse of false.
+true = 1!bool;
+// False - the logical inverse of true.
+false = 0!bool;
+

@@ -70,8 +70,16 @@ public class Macro implements RALCallable {
 		boolean[] inline = new boolean[args.length];
 		String[] names = new String[args.length];
 		for (int i = 0; i < args.length; i++) {
-			inline[i] = args[i].isInline;
+			inline[i] = args[i].isInline != null;
 			names[i] = args[i].name;
+			// Typecheck
+			RALSlot argSlot = a.slot(i);
+			RALSlot.Perm wantedPerms = args[i].computeRequiredPerms();
+			argSlot.perms.require(this, wantedPerms);
+			if (wantedPerms.read)
+				argSlot.type.assertImpCast(args[i].type);
+			if (wantedPerms.write)
+				args[i].type.assertImpCast(argSlot.type);
 		}
 
 		VarCacher vc = new VarCacher(a, inline, names);
