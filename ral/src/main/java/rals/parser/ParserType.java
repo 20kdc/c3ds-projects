@@ -53,8 +53,16 @@ public class ParserType {
 	 * Parses a type name.
 	 */
 	public static String parseTypeName(InsideFileContext ifc) {
-		ifc.hcm.addCompletionIntentToNextToken(HCMIntents.TYPE, true);
+		typeCompletionIntents(ifc);
 		Token.ID id = ifc.lexer.requireNextIDTkn();
 		return id.text;
+	}
+
+	/**
+	 * Sets up type completion intents.
+	 * Note that you will need to override the auto-hover if it's wrong.
+	 */
+	public static void typeCompletionIntents(InsideFileContext ifc) {
+		ifc.hcm.addCompletionIntentToNextToken(HCMIntents.TYPE, true);
 	}
 }

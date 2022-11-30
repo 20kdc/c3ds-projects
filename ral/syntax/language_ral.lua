@@ -12,7 +12,7 @@
 local syntax = require("core.syntax")
 
 local ral_loners_class = "%;%[%]%{%}%(%)%,%."
-local ral_operators_breaking_class = "%<%>%=%?%!%/%*%-%+%:%&%|%^%%%~"
+local ral_operators_breaking_class = "%<%>%=%?%!%/%*%-%+%:%&%|%^%%%~%@"
 local ral_operators_class = ral_operators_breaking_class .. ""
 local ral_breakers_class = "%c%s%\"%'" .. ral_loners_class .. ral_operators_breaking_class
 

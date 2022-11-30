@@ -26,7 +26,7 @@ public class Lexer {
 	private static final String LONERS = ";[]{}(),.";
 	private static final String NUM_START = "+-0123456789";
 	private static final String NUM_BODY = "0123456789.e";
-	private static final String OPERATORS_BREAKING = "<>=?!/*-+:&|^%~";
+	private static final String OPERATORS_BREAKING = "<>=?!/*-+:&|^%~@";
 	private static final String OPERATORS_UNBREAKING = "";
 	private static final String OPERATORS = OPERATORS_BREAKING + OPERATORS_UNBREAKING;
 	private static final String BREAKERS = "\"\'" + LONERS + OPERATORS_BREAKING;

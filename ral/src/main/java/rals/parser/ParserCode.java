@@ -239,11 +239,17 @@ public class ParserCode {
 		}
 		boolean hasAnyAuto = false;
 		while (true) {
-			// work out if this is auto-typed
-			lx.requireNext();
+			// setup type completion intents
+			ParserType.typeCompletionIntents(ifc);
+			// Need to work out if this variable is auto-typed.
+			// How? Well, we know that if it's auto-typed, then it will look like this:
+			// VARNAME ("=" | "," | "@")
+			// While if it's not auto-typed, it will look like this:
+			// VARNAME
+			Token typeFirstWouldBeHere = lx.requireNext();
 			Token tmp2 = lx.requireNext();
 			// Note we don't allow auto-typed variables to even parse if there's no assignment
-			boolean isAuto = tmp2.isKeyword("=") || tmp2.isKeyword(",");
+			boolean isAuto = tmp2.isKeyword("=") || tmp2.isKeyword(",") || tmp2.isKeyword("@");
 			// Now go back on this and reparse
 			lx.back();
 			lx.back();
@@ -251,6 +257,9 @@ public class ParserCode {
 			RALType rt;
 			String n;
 			if (isAuto) {
+				// Auto-typed, so cancel the type hover intent
+				if (typeFirstWouldBeHere instanceof Token.ID)
+					ifc.hcm.setTokenHoverIntent((Token.ID) typeFirstWouldBeHere, null);
 				rt = null;
 				n = lx.requireNextID();
 				hasAnyAuto = true;
@@ -258,12 +267,13 @@ public class ParserCode {
 				rt = ParserType.parseType(ifc);
 				n = lx.requireNextID();
 			}
+			// alloc override
+			int allocId = -1;
+			if (lx.optNextKw("@"))
+				allocId = ParserExpr.parseConstInteger(ifc);
 			// confirmed!
 			names.add(n);
-			// TODO: Fit allocs into the picture here.
-			// T says this is important for CAOS Tool debug. 
-			// Example: let Agent x@12 = ...
-			allocs.add(-1);
+			allocs.add(allocId);
 			types.add(rt);
 			Token chk = lx.requireNext();
 			if (chk.isKeyword("=")) {

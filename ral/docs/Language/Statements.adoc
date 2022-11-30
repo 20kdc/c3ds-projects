@@ -27,7 +27,9 @@ A `let` statement is made up of individual variable declarations, followed optio
 
 Each variable declaration is an ID with a type possibly preceding it, for example `Agent? stinger` or `stinger`.
 
-These are separated by commas `,` and are terminated with the semicolon `;` or the assignment `=`.
+A variable definition may also have `@` followed by a number after it -- this is to force the use of a specific VA slot for the variable. _Allocating a variable that RAL has already chosen to use is an error, so allocate variables as early as possible if you're going to do this -- ideally at the beginning of a script._
+
+Variable definitions are separated by commas `,` and are terminated with the semicolon `;` or the assignment `=`.
 
 If a variable declaration does not have a type, the type is the type of what is being assigned to it.
 
@@ -37,6 +39,8 @@ let counterB = 0; // type is automatically int
 let counterC = 0.0; // type is automatically float
 // let int counterD = 0.0; // error, implicit casts float to int
 let Agent? a, Agent? b = null, null; // multiple definition
+
+let int something@5; // allocates va05 specifically
 ```
 
 image::diagram/LetStmt.png[]

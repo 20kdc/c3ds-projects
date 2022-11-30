@@ -110,11 +110,18 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	public void setTokenHoverRelIntent(ID tkn, HCMIntent intent, RALExprUR... params) {
 		if (!tkn.isInDP(targetDocPath))
 			return;
-		hoverIntents.put(tkn, intent);
-		if (params != null) {
-			Token prev = backwardsTokenLink.get(tkn);
-			if (prev != null)
-				createRelIntentLink((HCMRelativeIntent) intent, prev, params);
+		if (intent == null) {
+			// We don't remove the relative intent links, but that's fine.
+			// If the same intent comes in with different parameters, it'll reuse the Anchor.
+			// If it's a different intent, the old intent data is left hanging, which is safe enough.
+			hoverIntents.remove(tkn);
+		} else {
+			hoverIntents.put(tkn, intent);
+			if (params != null) {
+				Token prev = backwardsTokenLink.get(tkn);
+				if (prev != null)
+					createRelIntentLink((HCMRelativeIntent) intent, prev, params);
+			}
 		}
 	}
 

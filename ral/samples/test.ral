@@ -268,3 +268,11 @@ remove {
 	}
 }
 
+// Definition of exact VAs
+
+script Creature 6 {
+	let x@5 = 12;
+	let int y@6 = 12;
+	x += y;
+}
+
