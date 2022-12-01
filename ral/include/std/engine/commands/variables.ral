@@ -6,7 +6,7 @@
  */
 
 /*
- * 2.286c/Variables - INCOMPLETE
+ * 2.286c/Variables
  */
 
 // Adjusts a number in-place to make it positive.
@@ -22,18 +22,187 @@ macro acos(num &v) &'acos {v}'!float;
 // Returns an arc sine in degrees.
 macro asin(num &v) &'asin {v}'!float;
 
-// With `v` in degrees, returns the arc tangent
+// With `v` in degrees, returns the arc tangent.
 macro atan(num &v) &'atan {v}'!float;
 
-// With `v` in degrees, returns the arc tangent
-///macro avar(Agent &a, int &i) &='atan {v}'!float;
+// Variable `v` of agent `a`.
+macro avar(Agent &a, int &v) &='avar {a, v}';
 
-macro read(str &tag, int &index) &'read {tag} {index}'!str;
+// Changes character at index `i` (starts at 1) in string `a` to `c`.
+macro () char(str &=a, int &i, int &c) &='char {a, i, c}';
 
-macro game(str &key) &='game {key}';
+// With `v` in degrees, returns the cosine.
+macro cos_(num &v) &'cos_ {v}'!float;
+
+// Removes the `eame` variable with name `n`.
+macro () dele(str &n) &'dele {n}';
+
+// Removes the `game` variable with name `n`.
+macro () delg(str &n) &'delg {n}';
+
+// Removes the `name` variable with name `n` of the `targ` agent.
+macro () deln(str &n) &'deln {n}';
+
+// divv handled by literally just /=
+
+/*
+Named session variable, not saved.
+Type is `any` by default, so use a typed variant or cast it.
+*/
 macro eame(str &key) &='eame {key}';
 
+// Given an `eame` variable name, returns the next variable -- given an empty string, returns the first -- if out of variables, returns an empty string.
+macro eamn(str &key) &'eamn {key}'!str;
+
+// Ensures a number is an integer.
+macro ftoi(num &v) &'ftoi {v}'!int;
+
+/*
+Named world variable, saved with world.
+Type is `any` by default, so use a typed variant or cast it.
+*/
+macro game(str &key) &='game {key}';
+
+// Given a `game` variable name, returns the next variable -- given an empty string, returns the first -- if out of variables, returns an empty string.
+macro gamn(str &key) &'gamn {key}'!str;
+
+// Returns the name of the game (as defined by machine.cfg).
+macro gnam() &'gnam'!str;
+
+// Ensures a number is a float.
+macro itof(num &v) &'ftoi {v}'!float;
+
+// lowercases a string.
+macro lowa(str &v) &'lowa {v}'!str;
+
+/*
+Named variable on `ownr` -- see `name`.
+Type is `any` by default, so use a typed variant or cast it.
+*/
+macro mame(str &key) &='mame {key}';
+
+/*
+Provides a list of modules and the display engine type.
+Realistically you almost never need to care about this these days.
+But it's good for debugging.
+Plus, checking for `netbabel` verifies the existence of Net commands.
+*/
+macro modu() &'modu'!str;
+
+// modv handled by literally just %=
+// mulv handled by literally just *=
+
+// mvxx handled by compiler
+
+/*
+Named variable on `targ` -- see `mame`.
+Type is `any` by default, so use a typed variant or cast it.
+*/
+macro name(str &key) &='name {key}';
+
+/*
+Finds named variables on `targ`.
+The `key` variable input is altered during the iteration.
+If it's an empty string, it's changed to the name of the first variable.
+If it's the name of a variable in the list, it's changed to the name of the next variable.
+If out of variables, or unrecognized, it becomes the empty string.
+*/
+macro () namn(str &key) &='namn {key}';
+
+// negv handled by literally just -
+// notv handled by literally just ~
+// orrv handled by literally just |
+
+// ovxx handled by compiler
+
+/*
+Provides an integer between the two values, inclusive.
+There are no restrictions on how the range is expressed (i.e. order, etc.)
+*/
+macro rand(int &a, int &b) &='rand {a, b}'!int;
+
+/*
+Gets a string from the various catalogue files.
+Some background: The catalogue is made up of tags followed by strings.
+Tags are made up of multiple strings.
+These are indexed from 0 to `rean(tag) - 1`.
+*/
+macro read(str &tag, int &index) &'read {tag} {index}'!str;
+
+/*
+Reloads catalogue files.
+This is pretty much a debug command, at least in theory...
+*/
+macro () reaf() &'reaf';
+
+// Returns the amount of strings in a catalogue tag.
+macro rean(str &tag) &'rean {tag}'!int;
+
+// Returns true if a catalogue tag exists in the catalogue. Use `rean`.
+macro reaq(str &tag) &'reaq {tag}'!bool;
+
+// seta handled by compiler
+// sets handled by compiler
+// setv handled by compiler
+
+/*
+Returns the string index (beginning with 1) -- in `haystack` where `needle` is located.
+`start` is the string index in `haystack` to start the search -- instances of `haystack` before this point are ignored.
+Returns -1 if the string is not found.
+*/
+macro sins(str &haystack, int &start, str &needle) &'sins {haystack, start, needle}'!int;
+
+// With `v` in degrees, returns the sine.
+macro sin_(num &v) &'sin_ {v}'!float;
+
+// Returns the square root of `v`.
+macro sqrt(num &v) &'sqrt {v}'!float;
+
+/*
+Converts a string to a float.
+Rather permissive about what counts, but will return 0.0 if a number is outright missing.
+*/
+macro stof(str &v) &'stof {v}'!float;
+
+/*
+Converts a string to an integer.
+Rather permissive about what counts, but will return 0 if a number is outright missing.
+*/
+macro stoi(str &v) &'stoi {v}'!int;
+
+// Length of string v (amount of characters in it).
+macro strl(str &v) &'strl {v}'!int;
+
+// Extracts the part of `text` starting with string index `start` (1 is the first character), and the amount of characters `len`.
 macro subs(str &text, int &start, int &len) &'subs {text, start, len}'!str;
-macro vtos(num &val) &'vtos {val}'!str;
+
+// subv handled by compiler
+
+// With `v` in degrees, returns the tangent.
+macro tan_(num &v) &'tan_ {v}'!float;
+
+// targ handled by compiler
+
+// Returns the type of `value`. See `TYPE_` constants.
 macro type(any &value) &'type {value}'!int;
+
+// Returns a guess at the name of the operating system. Do not examine programmatically.
+macro ufos() &'ufos'!str;
+
+// UPPERCASES A STRING.
+macro uppa(str &v) &'uppa {v}'!str;
+
+// va handled by compiler
+
+// Returns the major version (usually 2)
+macro vmjr() &'vmjr'!int;
+
+// Returns the minor version (usually 286)
+macro vmnr() &'vmnr'!int;
+
+// Converts a number to a string.
+macro vtos(num &v) &'vtos {v}'!str;
+
+// _p1_ handled by compiler
+// _p2_ handled by compiler
 
