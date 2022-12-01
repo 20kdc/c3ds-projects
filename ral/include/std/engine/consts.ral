@@ -440,8 +440,19 @@ MOUS_SWAP = 2;
 // TODO: BODY_ (body parts)
 // TODO: CAGE_ (life stages)
 // TODO: CALG_ (category algorithms)
-// TODO: DIRN_ (directions, independent of the specific macro commands)
+// TODO: DIRN_ (Face directions)
 // TODO: EXPR_ (expressions)
 // TODO: DRIV_ (drives)
 // TODO: PRAY_INJT_ (injection errors)
+
+// Map direction: Left, aka `left`
+MAPD_LEFT = 0;
+// Map direction: Right, aka `rght`
+MAPD_RIGHT = 1;
+// Map direction: Up, aka `_up_`
+MAPD_UP = 2;
+// Map direction: Down, aka `down`
+MAPD_DOWN = 3;
+
+// TODO: RTYP_ (room types)
 

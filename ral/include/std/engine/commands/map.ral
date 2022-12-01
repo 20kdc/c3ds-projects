@@ -6,11 +6,188 @@
  */
 
 /*
- * 2.286c/Map - INCOMPLETE
+ * 2.286c/Map
  */
 
 include "std/engine/commands_inc.ral";
 
+/*
+Adds background `bkg` to the existing metaroom `id`.
+Backgrounds can be swapped with `bkgd`.
+*/
+macro () addb(int &id, str &bkg) &'addb {id, bkg}';
+
+// Creates a metaroom and returns the ID.
+macro addm(int &x, int &y, int &w, int &h, str &bkg) &'addm {x, y, w, h, bkg}'!int;
+
+/*
+Creates a room and returns the ID.
+Notably, `parent` is the parent metaroom of the room.
+*/
+macro addr(int &parent, int &xL, int &xR, int &yUL, int &yUR, int &yLL, int &yLR) &'addr {parent, xL, xR, yUL, yUR, yLL, yLR}'!int;
+
+// Adjusts CA `ca` (see `CA_` consts) in room `id` by `value`.
+macro () altr(int &id, int &ca, num &value) &'altr {id, ca, value}';
+
+// Returns a comma-separated list of backgrounds for metaroom `id`.
+macro bkds(int &id) &'bkds {id}'!str;
+
+/*
+Finds the category of the classifier `f, g, s`, then assigns that category CA `ca` (see `CA_` consts).
+_Creatures must have a CA assigned to them or the Wasteland glitch occurs!_
+*/
+macro () cacl(int &f, int &g, int &s, int &ca) &'cacl {f, g, s, ca}';
+
+// Resets all navigatable CAs to zero, then recalculates them from `emit`-ing agents.
+macro () calc() &'calc';
+
+// Deletes metaroom `id`.
+macro () delm(int &id) &'delm {id}';
+
+// Deletes room `id`.
+macro () delr(int &id) &'delr {id}';
+
+// Turns on/off map debug lines.
+macro () dmap(bool &v) &'dmap {v}';
+
+/*
+Updates CAs some amount of times.
+This doesn't apply in quite the same way to navigable CAs, though.
+There is also other scary weird stuff.
+*/
+macro () doca(int &c) &'doca {c}';
+
+/*
+Sets the permeability of the wall between rooms `r1` and `r2` to `p`.
+This acts as the inverse factor to agent `perm`.
+0 is completely solid, and 100 is completely non-solid.
+*/
+macro () door(int &r1, int &r2, int &p) &'door {r1, r2, p}';
+
+/*
+Gets the permeability of the wall between rooms `r1` and `r2`.
+*/
+macro door(int &r1, int &r2) &'door {r1, r2}'!int;
+
+// Returns all the metaroom IDs with spaces between.
+macro emid() &'emid'!str;
+
+/*
+Sets the `targ` agent to emit `value` amount of `ca`.
+An agent can only be emitting one CA at a time.
+*/
+macro () emit(int &ca, num &value) &'emit {ca, value}';
+
+// Returns all the room IDs in metaroom `id` with spaces between.
+macro erid(int &id) &'erid {id}'!str;
+
+// Gets the metaroom ID at the given world coordinates.
+macro gmap(num &x, num &y) &'gmap {x, y}'!int;
+
+// Gets the room ID at the given world coordinates.
+macro grap(num &x, num &y) &'grap {x, y}'!int;
+
+/*
+Gets the room ID adjacent to the room in which the given agent `a` resides.
+`d` is the direction (see `MAPD_` consts).
+*/
+macro grid(Agent &a, int &d) &'grid {a, d}'!int;
+
+/*
+Gets the room adjacent to room `id` with the highest amount of CA `ca` (see `CA_` consts).
+If `horizontal` is true, up and down are not considered.
+*/
+macro hirp(int &id, int &ca, bool &horizontal) &'hirp {id, ca, horizontal}'!int;
+
+/*
+Creates/modifies a CA link between rooms `r1` and `r2` with permability `p`.
+A CA link is intended as a portal to ensure that navigation works sensibly through doors.
+Only CAs are linked, so an actual door is required.
+*/
+macro () link(int &r1, int &r2, int &p) &'link {r1, r2, p}';
+
+// Returns the permability of a CA link between rooms `r1` and `r2`.
+macro link(int &r1, int &r2) &'link {r1, r2}'!int;
+
+/*
+Gets the room adjacent to room `id` with the lowest amount of CA `ca` (see `CA_` consts).
+If `horizontal` is true, up and down are not considered.
+*/
+macro lorp(int &id, int &ca, bool &horizontal) &'lorp {id, ca, horizontal}'!int;
+
+/*
+Sets the map width and height.
+Realistically, you should start with `mapw` and `maph` and increase them only if they do not already exceed your planned boundaries.
+*/
+macro () mapd(int &w, int &h) &'mapd {w, h}';
+
+// Returns the map width. Note that this is distinct from metaroom width/height.
+macro mapw() &'mapw'!int;
+// Deletes the entire map.
+macro () mapk() &'mapk';
+// Returns the map height. Note that this is distinct from metaroom width/height.
+macro maph() &'maph'!int;
+
+/*
+Returns the coordinates of the points of room `id`.
+This is in the form of `x y w h` -- that is, the same ordering as `addm`.
+*/
+macro mloc(int &id) &'mloc {id}'!str;
+
+/*
+Gets the `targ` agent's permability.
+*/
 macro perm() &'perm'!int;
+/*
+Sets the `targ` agent's permability to `value`.
+Permability decides collision and sight.
+Permability ranges from 1 through to 100 (inclusive).
+Higher permability makes it "larger", i.e. can go through less boundaries.
+See also `door`.
+*/
 macro () perm(int &value) &'perm {value}';
+
+// _UP_/DOWN/LEFT/RGHT: See MAPD consts
+
+/*
+Sets the CA value for room `id` (see `RTYP_` consts), CA `ca` (see `CA_` consts).
+CA values range from 0 to 1, and spread around rooms.
+*/
+macro () prop(int &id, int &ca, num &value) &'rate {id, ca, value}';
+
+// Returns the CA value for room `id` (see `RTYP_` consts), CA `ca` (see `CA_` consts).
+macro prop(int &id, int &ca) &'prop {id, ca}'!float;
+
+/*
+Sets the CA diffusion rates for room type `t` (see `RTYP_` consts), CA `ca` (see `CA_` consts).
+*/
+macro () rate(int &t, int &ca, num &gain, num &loss, num &diffusion) &'rate {t, ca, gain, loss, diffusion}';
+
+/*
+Returns the CA diffusion rates for room type `t` (see `RTYP_` consts), CA `ca` (see `CA_` consts).
+The string is of the form ` gain loss diffusion` (the space at the start is present).
+*/
+macro rate(int &t, int &ca) &'rate {t, ca}'!str;
+
+/*
+Returns the coordinates of the points of room `id`.
+This is in the form of `xL xR yUL yUR yLL yLR` -- that is, the same ordering as `addr`.
+*/
+macro rloc(int &id) &'rloc {id}'!str;
+
+/*
+Returns the room ID in which agent `a` resides.
+If there isn't a room, -1 is returned.
+*/
+macro room(Agent &a) &'room {a}'!int;
+
+// Sets the type of room `id` to `type` (see `RTYP_` consts).
+macro () rtyp(int &id, int &type) &'rtyp {id, type}';
+// Returns the type of room `id` (see `RTYP_` consts).
+macro rtyp(int &id) &'rtyp {id}'!int;
+
+// Returns the X offset from the `targ` agent's top-left corner to the centre of room `id`.
+macro torx(int &id) &'torx {id}'!float;
+// Returns the Y offset from the `targ` agent's top-left corner to the centre of room `id`.
+macro tory(int &id) &'tory {id}'!float;
 
