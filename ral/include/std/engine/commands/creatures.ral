@@ -9,3 +9,87 @@
  * 2.286c/Creatures - INCOMPLETE
  */
 
+include "std/engine/commands_inc.ral";
+
+/*
+Ages up the `targ` creature by the given amount of stages.
+Note that a creature will spend some time going through intermediate life stages before reaching the target.
+Also note that it is not possible to un-age a creature.
+*/
+macro () ages(castInt &a) &'ages {a}';
+
+/*
+`targ` creature approaches `iitt`, or a CA smell for `attn`.
+This is asynchronous, and runs until the creature either arrives or the CA pathfinder gives up.
+WARNING: This command _causes the wasteland glitch_ on skeletal creatures that do not have a smell!
+*/
+macro () appr() &'appr';
+
+/*
+`targ` creature tries to avoid `iitt`, or a CA smell for `attn`.
+This is asynchronous, and runs until the creature either arrives or the CA pathfinder gives up.
+WARNING: This command _causes the wasteland glitch_ on skeletal creatures that do not have a smell!
+*/
+macro () flee() &'flee';
+
+/*
+Sets `targ` creature as asleep if true, awake if false.
+*/
+macro () aslp(bool &a) &'aslp {a}';
+
+/*
+Gets if `targ` creature is asleep.
+*/
+macro aslp() &'aslp'!bool;
+
+/*
+Returns the attention category ID.
+This should match `iitt` (if one exists).
+*/
+macro attn() &'attn'!int;
+
+/*
+Sets a given body overlay set `s` on every part of the `targ` creature, with layer `l`.
+See `wear` for more information about this.
+`nude` resets.
+*/
+macro () body(castInt &s, castInt &l) &'body {s, l}';
+
+/*
+Returns the body overlay set on the highest layer of the given body part.
+See `BODY_` constants for part numbers.
+*/
+macro body(castInt &p) &'body {p}'!int;
+
+/*
+This is a secondary mechanism for loading large sets of CAOS files from the bootstrap directories.
+
+Firstly, beware the third parameter, `reset`.
+`reset`, if true, deletes all agents.
+
+Secondly, there is the subboot mechanism itself.
+This consists of files of the form `Bootstrap/Subboot 123/1/test.cos`.
+The first number is the `sbn`. The second number is a power of two (such as `1`, `2`, `4`...), and these are selected by the `flags` parameter.
+These flags are checked in order from 1 upwards (just keep doubling it).
+
+`test.cos` need not be the name of the CAOS files. The flag directories are loaded like any bootstrap directory would normally be -- all `.cos` files, sorted by name.
+
+This command is in the Creatures category for some unknown reason.
+*/
+macro () boot(castInt &sbn, castInt &flags, bool &reset) &'body {sbn, flags, reset}';
+
+// TODO...
+
+/*
+Sets `targ` creature as zombie if true, normal if false.
+If true, disables a number of the creature's actions.
+In particular, the creature stops being able to choose actions or say things.
+If the creature is not dead, scripts on the creature stop (unless that script ran `zomb`).
+*/
+macro () zomb(bool &a) &'aslp {a}';
+
+/*
+Gets if `targ` creature is a "zombie".
+*/
+macro zomb() &'aslp'!bool;
+

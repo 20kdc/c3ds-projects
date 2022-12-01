@@ -9,6 +9,8 @@
  * 2.286c/CD
  */
 
+include "std/engine/commands_inc.ral";
+
 // Ejects/opens the disc drive.
 macro () cdEjct() &'_cd_ ejct';
 

@@ -9,6 +9,8 @@
  * 2.286c/World
  */
 
+include "std/engine/commands_inc.ral";
+
 // Deletes the world with the given index.
 macro () delw(str &w) &'delw {w}';
 

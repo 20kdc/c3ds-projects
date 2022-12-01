@@ -9,6 +9,8 @@
  * 2.286c/Variables
  */
 
+include "std/engine/commands_inc.ral";
+
 // Adjusts a number in-place to make it positive.
 macro () absv(num &v) &'absv {v}';
 

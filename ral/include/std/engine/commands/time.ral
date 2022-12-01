@@ -9,6 +9,8 @@
  * 2.286c/Time
  */
 
+include "std/engine/commands_inc.ral";
+
 macro () buzz(int &ms) &'buzz {ms}';
 macro buzz() &'buzz'!int;
 

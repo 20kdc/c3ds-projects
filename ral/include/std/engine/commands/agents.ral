@@ -9,9 +9,11 @@
  * 2.286c/Agents
  */
 
+include "std/engine/commands_inc.ral";
+
 macro abba() &'abba'!int;
 
-macro () alph(int &alpha, int &enable) &'alph {alpha, enable}';
+macro () alph(castInt &alpha, castInt &enable) &'alph {alpha, enable}';
 
 // ANIM uses byte-strings, so must be in inline CAOS directly.
 

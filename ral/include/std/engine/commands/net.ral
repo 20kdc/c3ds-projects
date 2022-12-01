@@ -9,6 +9,8 @@
  * 2.286c/Net
  */
 
+include "std/engine/commands_inc.ral";
+
 /*
 Returns an error code from `NET: LINE`.
 See the `NET_ERRA_` constants for results.

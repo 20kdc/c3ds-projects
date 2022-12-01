@@ -9,3 +9,5 @@
  * 2.286c/Ports - INCOMPLETE
  */
 
+include "std/engine/commands_inc.ral";
+

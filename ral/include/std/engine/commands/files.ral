@@ -9,6 +9,8 @@
  * 2.286c/Files
  */
 
+include "std/engine/commands_inc.ral";
+
 /*
 This creates a "virtual file" which is opened for input, listing the contents of a given directory.
 This starts with `dir`, one of the `FILE_DIR_` constants, and appends `fn` as a "file spec" such as `*.txt`.

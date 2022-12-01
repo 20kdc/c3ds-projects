@@ -9,6 +9,8 @@
  * 2.286c/Camera
  */
 
+include "std/engine/commands_inc.ral";
+
 macro () bkgd(int &id, str &img, int &t) &'bkgd {id, img, t}';
 macro bkgd(int &id) &'bkgd {id}'!str;
 

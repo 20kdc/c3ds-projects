@@ -9,6 +9,8 @@
  * 2.286c/Genetics
  */
 
+include "std/engine/commands_inc.ral";
+
 macro () geneClon(Agent &dst, int &dstSlot, Agent &src, int &srcSlot) &'gene clon {dst, dstSlot, src, srcSlot}';
 macro () geneCros(Agent &dst, int &dstSlot, Agent &src1, int &src1Slot, Agent &src2, int &src2Slot, int &cm1, int &dm1, int &cm2, int &dm2) &'gene cros {dst, dstSlot, src1, src1Slot, src2, src2Slot, cm1, dm1, cm2, dm2}';
 macro () geneKill(Agent &victim, int &slot) &'gene kill {victim, slot}';

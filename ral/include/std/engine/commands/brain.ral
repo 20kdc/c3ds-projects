@@ -9,6 +9,8 @@
  * 2.286c/Brain
  */
 
+include "std/engine/commands_inc.ral";
+
 /*
 Adds an instinct to the `targ` creature's brain's queue, processed with `doin` or in certain states of sleep.
 Instincts are sets of fake inputs - these ones are made up of a verb ID, noun (category) ID, an amount, and a drive.

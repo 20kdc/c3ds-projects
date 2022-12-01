@@ -9,6 +9,8 @@
  * 2.286c/History - INCOMPLETE
  */
 
+include "std/engine/commands_inc.ral";
+
 macro histName(str &moniker) &'hist name {moniker}'!str;
 macro histGend(str &moniker) &'hist gend {moniker}'!int;
 macro () histWipe(str &moniker) &'hist wipe {moniker}';

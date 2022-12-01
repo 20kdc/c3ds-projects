@@ -9,6 +9,8 @@
  * 2.286c/Vehicles
  */
 
+include "std/engine/commands_inc.ral";
+
 macro () cabn(int &l, int &t, int &r, int &b) &'cabn {l, t, r, b}';
 
 macro cabb() &'cabb'!int;

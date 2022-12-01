@@ -9,6 +9,8 @@
  * 2.286c/Compounds
  */
 
+include "std/engine/commands_inc.ral";
+
 // With a text part or `null` selected, focuses the text field for editing.
 macro () fcus() &'fcus';
 

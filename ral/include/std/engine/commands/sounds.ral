@@ -9,6 +9,8 @@
  * 2.286c/Sounds
  */
 
+include "std/engine/commands_inc.ral";
+
 macro () fade() &'fade';
 
 macro () mclr(int &x, int &y) &'mclr {x, y}';

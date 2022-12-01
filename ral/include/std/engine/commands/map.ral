@@ -9,6 +9,8 @@
  * 2.286c/Map - INCOMPLETE
  */
 
+include "std/engine/commands_inc.ral";
+
 macro perm() &'perm'!int;
 macro () perm(int &value) &'perm {value}';
 

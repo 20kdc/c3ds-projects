@@ -9,6 +9,8 @@
  * 2.286c/Motion - INCOMPLETE
  */
 
+include "std/engine/commands_inc.ral";
+
 macro elas() &'elas'!int;
 macro () elas(int &value) &'elas {value}';
 macro accg() &'accg'!float;
