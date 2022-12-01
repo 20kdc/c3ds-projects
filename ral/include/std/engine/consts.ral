@@ -437,13 +437,83 @@ MOUS_LTOR = 1;
 MOUS_RTOL = 2;
 // MOUS: Combination of `MOUS_LTOR` and `MOUSE_RTOL` that swaps the buttons.
 MOUS_SWAP = 2;
-// TODO: BODY_ (body parts)
-// TODO: CAGE_ (life stages)
-// TODO: CALG_ (category algorithms)
-// TODO: DIRN_ (Face directions)
-// TODO: EXPR_ (expressions)
-// TODO: DRIV_ (drives)
-// TODO: PRAY_INJT_ (injection errors)
+
+// Body parts for WEAR/etc.
+BODY_HEAD = 0;
+BODY_BODY = 1;
+BODY_LEG_UPPER_L = 2;
+BODY_LEG_LOWER_L = 3;
+BODY_FOOT_L = 4;
+BODY_LEG_UPPER_R = 5;
+BODY_LEG_LOWER_R = 6;
+BODY_FOOT_R = 7;
+BODY_ARM_UPPER_L = 8;
+BODY_ARM_LOWER_L = 9;
+BODY_ARM_UPPER_R = 10;
+BODY_ARM_LOWER_R = 11;
+BODY_TAIL_UPPER = 12;
+BODY_TAIL_LOWER = 13;
+BODY_EAR_L = 14;
+BODY_EAR_R = 15;
+BODY_HAIR = 16;
+
+// Creature ages
+CAGE_BABY = 0;
+CAGE_CHILD = 1;
+CAGE_ADOLESCENT = 2;
+CAGE_YOUTH = 3;
+CAGE_ADULT = 4;
+CAGE_OLD = 5;
+CAGE_SENILE = 6;
+
+CALG_NEAREST_X = 0;
+CALG_RANDOM = 1;
+CALG_NEAREST_HERE = 2;
+CALG_NEAREST_GROUND = 3;
+CALG_RANDOM_NEAREST_X = 4;
+
+// Creature facing directions.
+
+// Away from the camera.
+DIRN_AWAY = 0;
+// Towards the camera.
+DIRN_TOWARDS = 1;
+DIRN_RIGHT = 2;
+DIRN_LEFT = 3;
+
+// Creature expressions
+EXPR_NORMAL = 0;
+EXPR_HAPPY = 1;
+EXPR_SAD = 2;
+EXPR_ANGRY = 3;
+EXPR_SCARED = 4;
+EXPR_SLEEPY = 5;
+
+// Drives
+DRIV_PAIN = 0;
+DRIV_HUNGER_P = 1;
+DRIV_HUNGER_C = 2;
+DRIV_HUNGER_F = 3;
+DRIV_COLD = 4;
+DRIV_HOT = 5;
+DRIV_TIRED = 6;
+DRIV_SLEEPY = 7;
+DRIV_LONELY = 8;
+DRIV_CROWDED = 9;
+DRIV_FEAR = 10;
+DRIV_BOREDOM = 11;
+DRIV_ANGER = 12;
+DRIV_FRIENDLY = 13;
+DRIV_COMFORT = 14;
+DRIV_UP = 15;
+DRIV_DOWN = 16;
+DRIV_EXIT = 17;
+DRIV_ENTER = 18;
+DRIV_WAIT = 19;
+
+PRAY_INJT_SUCCESS = 0;
+PRAY_INJT_SCRIPT_NOTFOUND = -1;
+PRAY_INJT_ERROR = -2;
 
 // Map direction: Left, aka `left`
 MAPD_LEFT = 0;
@@ -453,6 +523,4 @@ MAPD_RIGHT = 1;
 MAPD_UP = 2;
 // Map direction: Down, aka `down`
 MAPD_DOWN = 3;
-
-// TODO: RTYP_ (room types)
 
