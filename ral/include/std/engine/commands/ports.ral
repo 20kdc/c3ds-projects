@@ -6,8 +6,67 @@
  */
 
 /*
- * 2.286c/Ports - INCOMPLETE
+ * 2.286c/Ports
  */
 
 include "std/engine/commands_inc.ral";
+
+// ECON handled by compiler
+
+// Removes a (rough) random percentage of connections from/to the `targ` agent.
+macro () prtBang(int &chance) &'prt: bang {chance}';
+
+// Returns the agent to which input port `ip` of the `targ` agent is connected.
+macro prtFrma(int &ip) &'prt: frma {ip}'!Agent?;
+
+// Returns the input port (on the agent as given by `prtFrma`) to which input port `ip` of the `targ` agent is connected.
+macro prtFrom(int &ip) &'prt: from {ip}'!int;
+
+/*
+Creates a new input port on the `targ` agent.
+Ports are not Parts. Importantly, _every agent can have ports_.
+When a signal is sent to the port, `msg` is sent to the agent with a `_p1_` of the value.
+`useless` is a completely inaccessible dumping pit. It is saved, but you won't see it again.
+*/
+macro () prtInew(int &id, str &name, str &useless, int &x, int &y, int &msg) &'prt: inew {id, name, useless, x, y, msg}';
+
+// Counts the input ports on the `targ` agent.
+macro prtItot() &'prt: itot'!int;
+
+// Removes input port `ip` on the `targ` agent.
+macro () prtIzap(int &ip) &'prt: izap {ip}';
+
+// Connects output port `op` of agent `o` to input port `ip` of agent `i`.
+macro () prtJoin(Agent &o, int &op, Agent &i, int &ip) &'prt: join {o, op, i, ip}';
+
+/*
+Disconnects input/output port `p` of agent `a`.
+If the port is input or output depends on `isOutput`.
+*/
+macro () prtKrak(Agent &a, bool &isOutput, int &p) &'prt: krak {a, isOutput, p}';
+
+/*
+Gets the name of input/output port `p` of agent `a`.
+If the port is input or output depends on `isOutput`.
+*/
+macro prtName(Agent &a, bool &isOutput, int &p) &'prt: name {a, isOutput, p}'!str;
+
+/*
+Creates a new output port on the `targ` agent.
+Ports are not Parts. Importantly, _every agent can have ports_.
+`useless` is a completely inaccessible dumping pit. It is saved, but you won't see it again.
+*/
+macro () prtOnew(int &id, str &name, str &useless, int &x, int &y) &'prt: onew {id, name, useless, x, y}';
+
+// Counts the output ports on the `targ` agent.
+macro prtOtot() &'prt: otot'!int;
+
+// Removes output port `op` on the `targ` agent.
+macro () prtOzap(int &op) &'prt: ozap {op}';
+
+/*
+Sends a value via output port `op` on the `targ` agent.
+You can send any value, though informal standard is that only integers are sent.
+*/
+macro () prtSend(int &op, any &val) &'prt: send {op, val}';
 
