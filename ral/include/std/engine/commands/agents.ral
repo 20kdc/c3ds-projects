@@ -175,7 +175,9 @@ macro totl(int &family, int &genus, int &species) &'totl {family, genus, species
 
 macro touc(Agent &a, Agent &b) &'touc {a, b}'!bool;
 
-macro tran(int &x, int &y) &'tran {x, y}'!bool;
+// conflict with the other TRAN from input
+
+macro tranI(int &x, int &y) &'tran {x, y}'!bool;
 
 macro () ttar(int &family, int &genus, int &species) &'ttar {family, genus, species}';
 

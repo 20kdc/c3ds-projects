@@ -431,6 +431,12 @@ SOUL_MOOD = 7;
 // Life faculty: performs aging, auto-DEADs creatures if certain loci trigger
 SOUL_LIFE = 8;
 
+// MOUS: Flag that maps the left mouse button to perform the right mouse button's action.
+MOUS_LTOR = 1;
+// MOUS: Flag that maps the right mouse button to perform the left mouse button's action.
+MOUS_RTOL = 2;
+// MOUS: Combination of `MOUS_LTOR` and `MOUSE_RTOL` that swaps the buttons.
+MOUS_SWAP = 2;
 // TODO: BODY_ (body parts)
 // TODO: CAGE_ (life stages)
 // TODO: CALG_ (category algorithms)
