@@ -13,7 +13,7 @@ include "std/engine/commands_inc.ral";
 
 macro abba() &'abba'!int;
 
-macro () alph(castInt &alpha, castInt &enable) &'alph {alpha, enable}';
+macro () alph(int &alpha, int &enable) &'alph {alpha, enable}';
 
 // ANIM uses byte-strings, so must be in inline CAOS directly.
 
@@ -122,7 +122,11 @@ macro pcls(Agent? &n, int &f, int &g, int &s) &'pcls {n, f, g, s}'!Agent?;
 macro plne() &'plne'!int;
 macro () plne(int &a) &'plne {a}';
 
-macro pntr() &'pntr'!Pointer;
+/*
+Returns the pointer agent, also known as the hand.
+Not cast to Pointer as Pointer's classifier can be per-game.
+*/
+macro pntr() &'pntr'!Agent;
 
 // POSB below
 

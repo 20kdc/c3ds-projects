@@ -7,11 +7,7 @@
 
 // Stuff used by command macros
 
-// Compiler definitely needs to have it's type system refactored
-
-/*
-Informational typedef.
-This is used for CAOS integer parameters, which are auto-cast to int.
-*/
-typedef castInt num;
+// castInt removed -- the philosophy that spawned it
+//  implied all the bool-taking commands would need
+//  to take castBool or something and that's just dumb
 

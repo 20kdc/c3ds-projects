@@ -402,3 +402,28 @@ Not supported by `fileGlob` or `fileJdel`.
 */
 FILE_DIR_OTHER = 2;
 
+// Sensory faculty: feeds inputs to Brain faculty
+SOUL_SENS = 0;
+// Brain faculty: processes SVRules in neurons/dendrites
+SOUL_MIND = 1;
+// Motor faculty: moves creature, runs action scripts
+SOUL_MOTR = 2;
+// Linguistic faculty: random saying of stuff
+SOUL_LANG = 3;
+// Biochemical faculty: processes chemicals, updates loci
+SOUL_CHEM = 4;
+// Reproductive faculty: processes ovulate/gamate/pregnancy loci
+SOUL_MATE = 5;
+// Expressive faculty: blinks eyes/updates facial expression
+SOUL_LIKE = 6;
+// Music faculty: doesn't even have update logic
+SOUL_MOOD = 7;
+// Life faculty: performs aging, auto-DEADs creatures if certain loci trigger
+SOUL_LIFE = 8;
+
+// TODO: BODY_ (body parts)
+// TODO: CAGE_ (life stages)
+// TODO: CALG_ (category algorithms)
+// TODO: DIRN_ (directions, independent of the specific macro commands)
+// TODO: EXPR_ (expressions)
+

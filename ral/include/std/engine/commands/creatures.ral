@@ -16,7 +16,7 @@ Ages up the `targ` creature by the given amount of stages.
 Note that a creature will spend some time going through intermediate life stages before reaching the target.
 Also note that it is not possible to un-age a creature.
 */
-macro () ages(castInt &a) &'ages {a}';
+macro () ages(int &a) &'ages {a}';
 
 /*
 `targ` creature approaches `iitt`, or a CA smell for `attn`.
@@ -43,7 +43,7 @@ Gets if `targ` creature is asleep.
 macro aslp() &'aslp'!bool;
 
 /*
-Returns the attention category ID.
+Returns the attention category ID for the `targ` creature.
 This should match `iitt` (if one exists).
 */
 macro attn() &'attn'!int;
@@ -53,13 +53,13 @@ Sets a given body overlay set `s` on every part of the `targ` creature, with lay
 See `wear` for more information about this.
 `nude` resets.
 */
-macro () body(castInt &s, castInt &l) &'body {s, l}';
+macro () body(int &s, int &l) &'body {s, l}';
 
 /*
 Returns the body overlay set on the highest layer of the given body part.
 See `BODY_` constants for part numbers.
 */
-macro body(castInt &p) &'body {p}'!int;
+macro body(int &p) &'body {p}'!int;
 
 /*
 This is a secondary mechanism for loading large sets of CAOS files from the bootstrap directories.
@@ -76,7 +76,327 @@ These flags are checked in order from 1 upwards (just keep doubling it).
 
 This command is in the Creatures category for some unknown reason.
 */
-macro () boot(castInt &sbn, castInt &flags, bool &reset) &'body {sbn, flags, reset}';
+macro () boot(int &sbn, int &flags, bool &reset) &'body {sbn, flags, reset}';
+
+/*
+Officially considers the `targ` creature as having been born.
+This will throw an error if it has already been born.
+*/
+macro () born() &'born';
+
+/*
+Returns the variant of the `targ` creature.
+Variants are between 1 and 8 inclusive, and genes can be locked to specific variants.
+*/
+macro bvar() &'bvar'!int;
+
+/*
+Returns true if the `targ` creature is in reach of `iitt`.
+*/
+macro byit() &'byit'!bool;
+
+/*
+Returns the life stage of the `targ` creature, see `CAGE_` constants.
+*/
+macro cage() &'cage'!int;
+
+/*
+Changes the `targ` creature's method `m` for picking which agent of category `cat` to pay attention to.
+Check `CALG_` constants for methods.
+*/
+macro () calg(int &cat, int &m) &'calg {cat, m}';
+
+/*
+Returns the `targ` creature's method for picking which agent of category `cat` to pay attention to.
+Check `CALG_` constants for results.
+*/
+macro calg(int &cat) &'calg {cat}'!int;
+
+/*
+Adjusts the `targ` creature's chemical `c` by `a`.
+Note that chemical levels are bounded between `0.0` and `1.0`.
+*/
+macro () chem(int &c, float &a) &'chem {c, a}';
+
+/*
+Returns the amount of the `targ` creature's chemical `c`.
+Note that chemical levels are bounded between `0.0` and `1.0`.
+*/
+macro chem(int &c) &'calg {c}'!float;
+
+/*
+Returns true if the agent `c` is a valid creature.
+This includes checking that it is not null.
+*/
+macro crea(Agent? &c) &'calg {c}'!bool;
+
+// no way to distingulish forms
+
+/*
+Kills the `targ` creature.
+*/
+macro () deadC() &'dead';
+
+/*
+Returns true if the `targ` creature is dead.
+*/
+macro deadI() &'dead'!bool;
+
+/*
+Returns the planned verb ID for the `targ` creature.
+*/
+macro decn() &'decn'!int;
+
+// Returns the X position of the down foot of the `targ` creature.
+macro dftx() &'dftx'!float;
+
+// Returns the Y position of the down foot of the `targ` creature.
+macro dfty() &'dfty'!float;
+
+/*
+Makes the `targ` creature face a specific direction.
+See `DIRN_` constants.
+*/
+macro () dirn(int &i) &'dirn {i}';
+
+/*
+Gets the `targ` creature's facing direction.
+See `DIRN_` constants.
+*/
+macro dirn() &'dirn'!int;
+
+/*
+Stops involuntary actions on `targ` creature.
+Note that this is meant to be run from within the involuntary action script, hence its name.
+*/
+macro () done() &'done';
+
+/*
+If `d` is true, makes the `targ` creature go to sleep and "dream".
+"Dreaming" is a fancy term for processing instincts.
+See `adin` for an explanation of what those are.
+If `d` is false, stops the dreaming (but may not wake the creature up).
+*/
+macro () drea(bool &d) &'drea {d}';
+
+/*
+Returns true if the `targ` creature is "dreaming".
+"Dreaming" is a fancy term for processing instincts.
+See `adin` for an explanation of what those are.
+*/
+macro drea() &'drea'!bool;
+
+/*
+Adjusts drive chemical `d` (as a drive ID) in the `targ` creature by the amount `a`.
+What makes this distinct from `chem` is that the adjustment performs brain feedback, like a `stim` would.
+And what makes this distinct from `stim` is that the adjustment isn't controlled by genetics.
+As such, this has a severe chance to fry Norn brains.
+*/
+macro () driv(int &d, float &a) &'driv {d, a}';
+
+// Gets the level of the drive chemical `d` (as a drive ID) in the `targ` creature.
+macro driv(int &d) &'driv {d}'!float;
+
+// exclamation mark? really?
+
+// Gets the ID of the `targ` creature's most needy drive.
+macro drvX() &'drv!'!int;
+
+/*
+Gets the facial expression index of the `targ` creature.
+See `EXPR_` constants.
+*/
+macro expr() &'expr'!int;
+
+/*
+Sets the facial expression index of the `targ` creature.
+See `EXPR_` constants.
+*/
+macro () face(int &e) &'face {e}';
+
+/*
+Returns the pose ID for the `targ` creature's face.
+This is meant to be used with `faceStr`.
+_As this value has return-type-dependent behaviour, RAL will always generate an intermediate variable._
+*/
+macro faceInt() {
+	let x = &'face'!int;
+	return x;
+}
+
+/*
+Returns the gallery for the `targ` creature's face.
+This is meant to be used with `faceInt`.
+_As this value has return-type-dependent behaviour, RAL will always generate an intermediate variable._
+*/
+macro faceStr() {
+	let x = &'face'!str;
+	return x;
+}
+
+/*
+Each neuron in the `forf` lobe is a memory cell for a specific agent.
+(These are always creatures and the hand. Anything else, including null, makes no change.)
+In each neuron, index 3 indicates if that cell is the one relevant to the current interaction.
+This command changes which creature is selected.
+It doesn't add creatures to the allocation, though.
+If the creature is not present in the memory cells, then nothing is selected.
+*/
+macro () forf(Agent? &c) &'forf {c}';
+
+/*
+Adjusts the `targ` creature's hair's tidiness by `c`.
+This is a relative change, mind.
+There are three stages of tidiness: messy, somewhere in the middle, and tidy.
+Therefore, `-2` will always make the hair as messy as possible.
+And `2` will always make the hair as tidy as possible.
+*/
+macro () hair(int &c) &'hair {c}';
+
+/*
+Returns the creature holding hands with the pointer, if any.
+This is a relative change, mind.
+There are three stages of tidiness: messy, somewhere in the middle, and tidy.
+Therefore, `-2` will always make the hair as messy as possible.
+And `2` will always make the hair as tidy as possible.
+*/
+macro hhld() &'hhld'!Agent?;
+
+/*
+Theoretically, this is supposed to injure a creature's organs.
+In practice, it's not really effective in a single use.
+You might have more luck performing `injr` once per tick.
+Special organ values are 0 for the body organ, and -1 for random.
+Realistically, organ injury is effectively the appendix of the game's code.
+It probably served a function, some time ago...
+*/
+macro () injr(int &o, float &v) &'injr {o, v}';
+
+// what are all these things in the names
+
+/*
+Returns the amount of instincts the `targ` creature hasn't processed yet.
+(A good solution to having unprocessed instincts is to make the creature dream.)
+*/
+macro insH() &'ins#'!int;
+
+/*
+Makes the `targ` creature express their disposition towards agent `c`.
+`c` must be a creature or the pointer agent, or nothing happens.
+This is as measured by the `forf` lobe, as usual.
+There are a few odd rules to this, also -- Grendels will never state a good opinion of any creature that is not another Grendel.
+*/
+macro () like(Agent? &v) &'like {v}';
+
+/*
+Looks up the sprite of a given creature part.
+This is done with the same rules as are used for creatures themselves.
+`part` is a body part (`BODY_` consts)
+`g` is the genus
+`s` is the species
+`a` is the life stage (`CAGE_` consts)
+`v` is the variant (1 through 8 inclusive).
+*/
+macro limb(int &part, int &g, int &s, int &a, int &v) &'limb {part, g, s, a, v}'!str;
+
+/*
+Writes a locus in the `targ` creature.
+A locus is a persistent floating-point value, usually used for communications between the faculties and genetics.
+*/
+macro () loci(int &t, int &o, int &ti, int &i, float &v) &'loci {t, o, ti, i, v}';
+
+/*
+Reads a locus in the `targ` creature.
+A locus is a persistent floating-point value, usually used for communications between the faculties and genetics.
+*/
+macro loci(int &t, int &o, int &ti, int &i) &'loci {t, o, ti, i}'!float;
+
+/*
+On the `targ` agent, delays an involuntary action ID `a` for some time.
+This is an absolute limit, as opposed to genetic limits which can theoretically break with sufficient mutation/other tampering.
+This limit is specified as a random number between `mi` and `ma`, inclusive, which themselves are integers between 0 and 255, inclusive.
+*/
+macro () ltcy(int &a, int &mi, int &ma) &'ltcy {a, mi, ma}';
+
+/*
+Ok, so, this is a really specifically unintuitive command to describe.
+
+The basic idea of this command is that it's responsible for natural pregnancies.
+It works between the `targ` creature and that `targ` creature's object of attention.
+
+It checks that the `iitt` exists, is of the same family and genus as `targ`, and is female.
+If it's not a creature at this point, an exception is thrown.
+It then checks if both creatures are fertile, and finally does the random "does anything actually happen" check.
+
+If that passes, the results are hopefully obvious.
+
+This command is a bit hard to make do anything unintended, but there is a lack of any classifier check on the `targ` agent.
+So, do your own maths as to how to use that.
+*/
+macro () mate() &'mate';
+
+// Alias for `soul(SOUL_MIND, d)`
+macro () mind(bool &d) &'mind {d}';
+
+// Alias for `soul(SOUL_MIND)`
+macro mind() &'mind'!bool;
+
+// Alias for `soul(SOUL_MOTR, d)`
+macro () motr(bool &d) &'motr {d}';
+
+// Alias for `soul(SOUL_MOTR)`
+macro motr() &'motr'!bool;
+
+// Moves the `targ` creature such that it's down foot is at the given position.
+macro () mvft(int &x, int &y) &'mvft {x, y}';
+
+// TODO...
+
+// Returns the `targ` creature's number of organs, including the body organ (0).
+macro orgn() &'orgn'!int;
+
+/*
+So for whatever reason, this command dumps all the dendrites in a tract.
+Not the neurons or lobe layout.
+Just the dendrites.
+This seems to have something to do with the old Palm PDAs.
+Still makes no sense though.
+*/
+macro () plmd(int &ti, str &f) &'plmd {ti, f}';
+
+/*
+So for whatever reason, this takes a dump created by `plmd` and loads it.
+*/
+macro () plmu(int &ti, str &f) &'plmu {ti, f}';
+
+// Makes the `targ` creature express their need.
+macro () sayn() &'sayn';
+
+// Gets the agent `targ` creature considers "it" for category {c}.
+macro seen(int &c) &'seen {c}'!Agent?;
+
+// Sets if a faculty of the `targ` creature (see `SOUL_` constants) is being processed.
+macro () soul(int &i, bool &p) &'soul {i, p}';
+
+// Returns if a faculty of the `targ` creature (see `SOUL_` constants) is being processed.
+macro soul(int &i) &'soul {i}'!bool;
+
+/*
+Writes `v` into `targ` creature's brain's lobe `l` (the 4-character name) neuron `i`'s input.
+Typically used by sensory expansion lobes.
+*/
+macro () spnl(str &l, int &i, num &v) &'spnl {l, i, v}';
+
+// Runs a tick of a faculty (see `SOUL_` constants) of the `targ` creature.
+macro () step(int &i) &'step {i}';
+
+// TODO...
+
+// Returns the X position of the up foot of the `targ` creature.
+macro uftx() &'uftx'!float;
+
+// Returns the Y position of the up foot of the `targ` creature.
+macro ufty() &'ufty'!float;
 
 // TODO...
 
