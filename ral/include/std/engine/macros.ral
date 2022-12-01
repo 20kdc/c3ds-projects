@@ -14,7 +14,7 @@ include "std/engine/commands/brain.ral";
 include "std/engine/commands/camera.ral";
 include "std/engine/commands/cd.ral";
 include "std/engine/commands/compounds.ral";
-include "std/engine/commands/creatures.ral"; // INCOMPLETE
+include "std/engine/commands/creatures.ral";
 include "std/engine/commands/debug.ral"; // INCOMPLETE
 include "std/engine/commands/files.ral";
 // flow omitted because compiler handles it
@@ -25,7 +25,7 @@ include "std/engine/commands/map.ral"; // INCOMPLETE
 include "std/engine/commands/motion.ral"; // INCOMPLETE
 include "std/engine/commands/net.ral";
 include "std/engine/commands/ports.ral"; // INCOMPLETE
-include "std/engine/commands/resources.ral"; // INCOMPLETE
+include "std/engine/commands/resources.ral";
 include "std/engine/commands/scripts.ral"; // INCOMPLETE
 include "std/engine/commands/sounds.ral";
 include "std/engine/commands/time.ral";

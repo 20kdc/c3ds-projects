@@ -122,11 +122,8 @@ macro pcls(Agent? &n, int &f, int &g, int &s) &'pcls {n, f, g, s}'!Agent?;
 macro plne() &'plne'!int;
 macro () plne(int &a) &'plne {a}';
 
-/*
-Returns the pointer agent, also known as the hand.
-Not cast to Pointer as Pointer's classifier can be per-game.
-*/
-macro pntr() &'pntr'!Agent;
+// Returns the pointer agent, also known as the hand.
+macro pntr() &'pntr'!Pointer;
 
 // POSB below
 

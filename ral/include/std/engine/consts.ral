@@ -107,6 +107,16 @@ PRAY_IMPO_ERROR = 4;
 PRAY_DEPS_SUCCESS = 0;
 PRAY_DEPS_AGENT_NOTFOUND = -1;
 PRAY_DEPS_COUNT_NOTFOUND = -2;
+/*
+A dependency attribute was not found.
+This is split into two groups, each covering the amount of dependencies.
+To show how this works, here's the layout for 2 dependencies:
+-3: Dependency 0, string missing
+-4: Dependency 1, string missing
+-5: Dependency 0, type missing
+-6: Dependency 1, type missing
+*/
+PRAY_DEPS_ATTR_NOTFOUND = -3;
 
 // ORGI Organ data count specifiers
 //
@@ -398,7 +408,7 @@ FILE_DIR_WORLD = 0;
 FILE_DIR_MAIN = 1;
 /*
 The Journal directory of the world specified by `engine_other_world`.
-Not supported by `fileGlob` or `fileJdel`.
+Not supported by `fileGlob`, `fileJdel`, `netMake`, or `prayMake`.
 */
 FILE_DIR_OTHER = 2;
 
@@ -426,4 +436,6 @@ SOUL_LIFE = 8;
 // TODO: CALG_ (category algorithms)
 // TODO: DIRN_ (directions, independent of the specific macro commands)
 // TODO: EXPR_ (expressions)
+// TODO: DRIV_ (drives)
+// TODO: PRAY_INJT_ (injection errors)
 

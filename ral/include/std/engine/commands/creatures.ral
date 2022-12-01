@@ -6,7 +6,7 @@
  */
 
 /*
- * 2.286c/Creatures - INCOMPLETE
+ * 2.286c/Creatures
  */
 
 include "std/engine/commands_inc.ral";
@@ -116,7 +116,7 @@ macro calg(int &cat) &'calg {cat}'!int;
 Adjusts the `targ` creature's chemical `c` by `a`.
 Note that chemical levels are bounded between `0.0` and `1.0`.
 */
-macro () chem(int &c, float &a) &'chem {c, a}';
+macro () chem(int &c, num &a) &'chem {c, a}';
 
 /*
 Returns the amount of the `targ` creature's chemical `c`.
@@ -191,8 +191,9 @@ Adjusts drive chemical `d` (as a drive ID) in the `targ` creature by the amount 
 What makes this distinct from `chem` is that the adjustment performs brain feedback, like a `stim` would.
 And what makes this distinct from `stim` is that the adjustment isn't controlled by genetics.
 As such, this has a severe chance to fry Norn brains.
+Note that `ownr` is considered as the source, which can matter for learning (especially in synchronous learning mode).
 */
-macro () driv(int &d, float &a) &'driv {d, a}';
+macro () driv(int &d, num &a) &'driv {d, a}';
 
 // Gets the level of the drive chemical `d` (as a drive ID) in the `targ` creature.
 macro driv(int &d) &'driv {d}'!float;
@@ -270,7 +271,7 @@ Special organ values are 0 for the body organ, and -1 for random.
 Realistically, organ injury is effectively the appendix of the game's code.
 It probably served a function, some time ago...
 */
-macro () injr(int &o, float &v) &'injr {o, v}';
+macro () injr(int &o, num &v) &'injr {o, v}';
 
 // what are all these things in the names
 
@@ -303,7 +304,7 @@ macro limb(int &part, int &g, int &s, int &a, int &v) &'limb {part, g, s, a, v}'
 Writes a locus in the `targ` creature.
 A locus is a persistent floating-point value, usually used for communications between the faculties and genetics.
 */
-macro () loci(int &t, int &o, int &ti, int &i, float &v) &'loci {t, o, ti, i, v}';
+macro () loci(int &t, int &o, int &ti, int &i, num &v) &'loci {t, o, ti, i, v}';
 
 /*
 Reads a locus in the `targ` creature.
@@ -350,7 +351,70 @@ macro motr() &'motr'!bool;
 // Moves the `targ` creature such that it's down foot is at the given position.
 macro () mvft(int &x, int &y) &'mvft {x, y}';
 
-// TODO...
+/*
+Creates a new "Creature Agent".
+There are all sorts of interesting caveats to these, but in theory it's a creature without any of the locomotion.
+In practice, because it has no built-in locomotion, it expects scripts to help it navigate. (See the cragNavTarget scripts.)
+See `newSimp` and `newCrea` for how this fits together.
+*/
+macro () newCrag(int &family, Agent &geneSrc, int &geneSrcSlot, int &s, int &v, str &gallery, int &count, int &first, int &plane) &'new: crag {family, geneSrc, geneSrcSlot, s, v, gallery, count, first, plane}';
+
+/*
+Creates a new creature.
+The classifier's family is `family`, the species is `s` (sex) (but this can be 0 for random), and the genus is from the genetics.
+The variant is `v` (or random if it's 0).
+`geneSrc` and `geneSrcSlot` are the source for the genetics. The genetics are _moved_ from this source to the creature, not copied.
+The new creature ends up in `targ`.
+*/
+macro () newCrea(int &family, Agent &geneSrc, int &geneSrcSlot, int &s, int &v) &'new: crea {family, geneSrc, geneSrcSlot, s, v}';
+
+/*
+Creates a new creature, but asynchronously.
+See `newCrea` for everything.
+*/
+macro () newc(int &family, Agent &geneSrc, int &geneSrcSlot, int &s, int &v) &'newc {family, geneSrc, geneSrcSlot, s, v}';
+
+/*
+Sets the creature selected by the player.
+This triggers the Agent:selectionChanged script on everything.
+*/
+macro () norn(Agent? &c) &'norn {c}';
+
+// Returns the creature selected by the player, if any.
+macro norn() &'norn'!Agent?;
+
+// Removes all overlays from the `targ` creature (see `body`, `wear`).
+macro () nude() &'nude';
+
+// See `ordrWrit`. However, it is applied to all creatures that hear `ownr`.
+macro () ordrShou(str &txt) &'ordr shou {txt}';
+// See `ordrShou`, but based on sight rather than hearing.
+macro () ordrSign(str &txt) &'ordr sign {txt}';
+// See `ordrShou`, but based on touch rather than hearing.
+macro () ordrTact(str &txt) &'ordr tact {txt}';
+/*
+Forces the creature `c` to hear the sentence `txt`.
+Rather useful in conjunction with the word learning syntax:
+
+`(learn|perfect) (noun|verb|drive|qualifier|special|personal|nice_drive) ID WORD`
+
+For example, `perfect noun 3 seed`.
+*/
+macro () ordrWrit(Agent &c, str &txt) &'ordr writ {c, txt}';
+
+/*
+Returns an organ property of the `targ` creature (see `ORGF_` constants).
+There are `orgn` organs, starting at 0.
+Importantly, this is not a constant amount, it's variable due to genetics.
+*/
+macro orgf(int &o, int &f) &'orgf {o, f}'!float;
+
+/*
+Returns an organ property of the `targ` creature (see `ORGI_` constants).
+There are `orgn` organs, starting at 0.
+Importantly, this is not a constant amount, it's variable due to genetics.
+*/
+macro orgi(int &o, int &f) &'orgi {o, f}'!int;
 
 // Returns the `targ` creature's number of organs, including the body organ (0).
 macro orgn() &'orgn'!int;
@@ -390,7 +454,43 @@ macro () spnl(str &l, int &i, num &v) &'spnl {l, i, v}';
 // Runs a tick of a faculty (see `SOUL_` constants) of the `targ` creature.
 macro () step(int &i) &'step {i}';
 
-// TODO...
+// See `stimWrit`. However, the stimulus is applied to all creatures that hear `ownr`.
+macro () stimShou(int &stim, num &weight) &'stim shou {stim, weight}';
+// See `stimShou`, but based on sight rather than hearing.
+macro () stimSign(int &stim, num &weight) &'stim sign {stim, weight}';
+// See `stimShou`, but based on touch rather than hearing.
+macro () stimTact(int &stim, num &weight) &'stim tact {stim, weight}';
+/*
+Executes stimulus `stim` (see `STIM_` constants) of weight `weight` on creature `c`.
+Note that `ownr` is considered as the source, which can matter for learning (especially in synchronous learning mode).
+A weight of 0 has the chemical effects of a weight of 1, but with learning disabled.
+*/
+macro () stimWrit(Agent &c, int &stim, num &weight) &'stim writ {c, stim, weight}';
+
+// See `swayWrit`. However, the stimulus is applied to all creatures that hear `ownr`.
+macro () swayShou(int &d1, num &v1, int &d2, num &v2, int &d3, num &v3, int &d4, num &v4) &'sway shou {d1, v1, d2, v2, d3, v3, d4, v4}';
+// See `swayShou`, but based on sight rather than hearing.
+macro () swaySign(int &d1, num &v1, int &d2, num &v2, int &d3, num &v3, int &d4, num &v4) &'sway sign {d1, v1, d2, v2, d3, v3, d4, v4}';
+// See `swayShou`, but based on touch rather than hearing.
+macro () swayTact(int &d1, num &v1, int &d2, num &v2, int &d3, num &v3, int &d4, num &v4) &'sway tact {d1, v1, d2, v2, d3, v3, d4, v4}';
+/*
+You can think of this as an extension of the `driv` command.
+It creates essentially a fake stimulus, adjusting four drives at once.
+*/
+macro () swayWrit(Agent &c, int &d1, num &v1, int &d2, num &v2, int &d3, num &v3, int &d4, num &v4) &'sway writ {c, d1, v1, d2, v2, d3, v3, d4, v4}';
+
+/*
+Age in ticks `targ` has lived (at least according to `born`).
+There's a few caveats to this, the main one being that it's measured in 4-tick increments.
+It also stops ticking when the creature dies.
+*/
+macro tage() &'tage'!int;
+
+/*
+Makes `targ` creature reach out towards `iitt`.
+This is asynchronous.
+*/
+macro () touc() &'touc';
 
 // Returns the X position of the up foot of the `targ` creature.
 macro uftx() &'uftx'!float;
@@ -398,7 +498,52 @@ macro uftx() &'uftx'!float;
 // Returns the Y position of the up foot of the `targ` creature.
 macro ufty() &'ufty'!float;
 
-// TODO...
+/*
+Sets `targ` creature as unconscious if true, normal if false.
+If true, this disables some of the functionality `zomb` does, but not as much.
+It is worth noting that this is distinct from sleeping or dreaming.
+*/
+macro () uncs(bool &a) &'uncs {a}';
+
+/*
+Gets if `targ` creature is unconscious.
+It is worth noting that this is distinct from sleeping or dreaming.
+*/
+macro uncs() &'uncs'!bool;
+
+/*
+See `urgeWrit`. However, the urge is applied to all creatures that hear `ownr`.
+Also, the `noun` is set to that of `ownr`.
+*/
+macro () urgeShou(num &nWeight, int &verb, num &weight) &'urge shou {nWeight, verb, weight}';
+// See `urgeShou`, but based on sight rather than hearing.
+macro () urgeSign(num &nWeight, int &verb, num &weight) &'urge sign {nWeight, verb, weight}';
+// See `urgeShou`, but based on touch rather than hearing.
+macro () urgeTact(num &nWeight, int &verb, num &weight) &'urge tact {nWeight, verb, weight}';
+/*
+The `noun` and `verb` parts of this are effectively separate, but use the same logic.
+If a weight is above 1.0, an override is set on that half. Setting -1 this way deactivates the override.
+Otherwise, merely sets the respective lobe input.
+`noun` is a category, and `verb` is a verb ID, as usual.
+*/
+macro () urgeWrit(Agent &c, int &noun, num &nWeight, int &verb, num &vWeight) &'urge writ {c, noun, nWeight, verb, vWeight}';
+
+// Overwrites `targ` creature's vocabulary with that of the current language.
+macro () vocb() &'vocb';
+
+/*
+Makes `targ` creature start walking, with whatever gait is currently considered appropriate.
+Importantly, `targ` creature may not stop walking...
+*/
+macro () walk() &'walk';
+
+/*
+Sets a given body overlay set `s` on part `p` (see `BODY_` consts) of the `targ` creature, with layer `l`.
+Layer 0 is the "regular body" layer, so overwriting this is probably a bad idea.
+Higher layer numbers display over lower ones.
+`nude` resets.
+*/
+macro () wear(int &p, int &s, int &l) &'wear {p, s, l}';
 
 /*
 Sets `targ` creature as zombie if true, normal if false.
@@ -406,10 +551,10 @@ If true, disables a number of the creature's actions.
 In particular, the creature stops being able to choose actions or say things.
 If the creature is not dead, scripts on the creature stop (unless that script ran `zomb`).
 */
-macro () zomb(bool &a) &'aslp {a}';
+macro () zomb(bool &a) &'zomb {a}';
 
 /*
 Gets if `targ` creature is a "zombie".
 */
-macro zomb() &'aslp'!bool;
+macro zomb() &'zomb'!bool;
 
