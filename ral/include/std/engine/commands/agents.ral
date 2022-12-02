@@ -11,22 +11,67 @@
 
 include "std/engine/commands_inc.ral";
 
+/*
+Returns the first frame number as used to create the `part` of the `targ` agent.
+The formula for the actual sprite frame number is `abba() + base() + pose()`.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro abba() &'abba'!int;
 
-macro () alph(int &alpha, int &enable) &'alph {alpha, enable}';
+/*
+Sets the alpha of the `part` of the `targ` agent.
+(If `part` is -1, this is applied to all parts.)
+Alpha is measured in what might be considered "reverse".
+256 is invisible, and 0 is fully visible, though you shouldn't use these values in practice because alpha blending is slow. Disable alpha blending instead.
+The `enable` flag controls if any alpha blending is done at all.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
+macro () alph(int &alpha, bool &enable) &'alph {alpha, enable}';
 
-// ANIM uses byte-strings, so must be in inline CAOS directly.
+/*
+Sets the animation of the `part` of the `targ` agent.
+Animations are written as byte-strings.
+Each byte represents what is effectively a `pose` call.
+A byte of 255 indicates the animation loops - if that is followed by another byte, that byte specifies the (0-based) index to restart from, otherwise it restarts from the beginning.
+If you need a dynamic animation, look into `anms`.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
+macro () anim(bytes &anim) &'anim {anim}';
 
+/*
+Sets the animation of the `part` of the `targ` agent.
+The animation is specified as a set of space-separated integers in the `anim` string.
+Each value represents what is effectively a `pose` call.
+A value of 255 indicates the animation loops - if that is followed by another value, that value specifies the (0-based) index to restart from, otherwise it restarts from the beginning.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro () anms(str &anim) &'anms {anim}';
 
-macro attr() &'attr'!int;
+/*
+Sets attributes of the `targ` agent.
+Bitwise OR together `ATTR_` consts.
+*/
 macro () attr(int &value) &'attr {value}';
+// Gets attributes of the `targ` agent.
+macro attr() &'attr'!int;
 
-macro base() &'base'!int;
+/*
+Sets the base of the `part` of the `targ` agent.
+The formula for the actual sprite frame number is `abba() + base() + pose()`.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro () base(int &value) &'base {value}';
+// Gets the base of the `part` of the `targ` agent.
+macro base() &'base'!int;
 
-macro bhvr() &'bhvr'!int;
+/*
+Sets the behaviour flags of the `targ` agent.
+These flags control what actions creatures can perform.
+Bitwise OR together `BHVR_` consts.
+*/
 macro () bhvr(int &value) &'bhvr {value}';
+// Gets the behaviour flags of the `targ` agent.
+macro bhvr() &'bhvr'!int;
 
 /*
 The `call` statement that RAL has built-in syntax for, but as a macro, allowing the script ID to be dynamic.
@@ -34,162 +79,389 @@ In case you're wondering about the name, 'call' is a keyword.
 */
 macro () callIndirect(int &scrId, any &p1, any &p2) &'call {scrId, p1, p2}';
 
+/*
+Returns the agent holding the `targ` agent.
+Realistically, this is either a vehicle, a creature, or the hand (`pntr`).
+*/
 macro carr() &'carr'!Agent?;
 
+/*
+Gets the category ID of `targ`.
+See `CATA_` consts.
+Returns -1 if no category has been assigned.
+See also `cati` and `cato`.
+*/
 macro cata() &'cata'!int;
 
+/*
+Returns the category ID of the classifier `f, g, s`.
+See `CATA_` consts.
+Returns -1 if no category has been assigned.
+*/
 macro cati(int &f, int &g, int &s) &'cati {f, g, s}'!int;
 
+/*
+Overrides the category ID of the `targ` agent to `c`.
+See `CATA_` consts.
+If the override is set to -1, then the override doesn't count.
+*/
 macro () cato(int &c) &'cato {c}';
 
+/*
+Returns a name for category `c`.
+See `CATA_` consts.
+An empty string is returned on failure.
+*/
 macro catx(int &c) &'catx {c}'!str;
 
+/*
+Returns the `targ` agent's `clac` message number.
+-2 is returned if `clik` was used to configure the agent.
+*/
 macro clac() &'clac'!int;
 
+/*
+Returns a property about the `targ` agent's `clik` state.
+If `clac` was used to configure the agent, always returns -2.
+Otherwise, see `CLIK_` consts for the property numbers.
+*/
 macro clik(int &c) &'clik {c}'!int;
 
-macro () core(num &a, num &b, num &c, num &d) &'core {a, b, c, d}';
+/*
+Sets the `targ` agent's physics bounding box to `up, down, left, right`.
+This defaults to the bounding box of the sprite, but can be set arbitrarily.
+Note that the width is `right - left` and the height is `bottom - top`.
+If the bounding box would have negative width or height, the numbers are re-ordered.
+Finally, note that these are relative to `posl` and `post` (the top-left corner of the sprite).
+*/
+macro () core(num &up, num &down, num &left, num &right) &'core {up, down, left, right}';
 
-macro () dcor(int &a) &'dcor {a}';
+// Enables/disables showing the `targ` agent's physical bounding box on-screen.
+macro () dcor(bool &a) &'dcor {a}';
 
-macro disq(Agent &a) &'disq {a}'!float;
+/*
+Returns the Euclidean distance between the `targ` agent and the `other` agent squared (see `sqrt` if you do not want the squared distance).
+*/
+macro disq(Agent &other) &'disq {other}'!float;
 
+/*
+Theoretically, forces `targ` agent to drop `held` agent.
+Practically, `engine_pointerCanCarryObjectsBetweenMetaRooms` for some reason stops `drop` from working on `pntr` period, and using `drop` on a vehicle will cause a random single passenger to be dropped.
+*/
 macro () drop() &'drop';
 
-macro () dsee(int &a) &'dsee {a}';
+/*
+Enables/disables a global debug overlay.
+If an agent can be seen by any creature, it has a white border.
+If an agent is the `iitt` of any creature, it has a red border.
+*/
+macro () dsee(bool &a) &'dsee {a}';
 
 // ENUM, ESEE, ETCH handled by compiler
 
+// Get the `targ` agent's X floating offset. See `flto`.
 macro fltx() &'fltx'!float;
+// Get the `targ` agent's Y floating offset. See `flto`.
 macro flty() &'flty'!float;
 
+// Get the `targ` agent's family, a part of the classifier `fmly(), gnus(), spcs()`.
 macro fmly() &'fmly'!int;
 
+/*
+Set the `part of the `targ` agent's animation speed.
+This is used for `anim`, and can be from 1 to 255.
+Contrary to how it sounds, higher values are lower speed (the speed is divided, so 2 is half speed, 3 is 1/3rd speed).
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro () frat(int &a) &'frat {a}';
 
 // FROM handled by compiler
 
+/*
+Changes the `targ` creature's current gait.
+Gaits are genetic, and usually selected by biochemistry.
+So this is really a debug command in disguise.
+*/
 macro () gait(int &a) &'gait {a}';
 
+/*
+Changes the gallery (spritesheet name) and first image (`abba`) for the `part` of the `targ` agent.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro () gall(str &a, int &b) &'gall {a, b}';
+/*
+Returns the spritesheet name of the `part` of the `targ` agent.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro gall() &'gall'!str;
 
+// Get the `targ` agent's genus, a part of the classifier `fmly(), gnus(), spcs()`.
 macro gnus() &'gnus'!int;
 
-macro hand() &'hand'!str;
+// Sets the player's name, or, formally, the name of the Hand.
 macro () hand(str &value) &'hand {value}';
 
+// This is the name the player chose, or, formally, the name of the Hand.
+macro hand() &'hand'!str;
+
+/*
+Returns an agent held by the `targ` agent, if any.
+This works for the Pointer, creatures, and vehicles.
+However, if multiple objects are held by a vehicle, a random object is chosen.
+*/
 macro held() &'held'!Agent?;
 
+// Gets the visual height of the `targ` agent's root part's current sprite frame.
 macro hght() &'hght'!int;
 
+// Gets the agent that the `targ` creature has attention on.
 macro iitt() &'iitt'!Agent?;
 
+/*
+Returns the global input events the `targ` agent receives.
+This is a bitfield made up of `IMSK_` constants.
+*/
 macro imsk() &'imsk'!int;
 
+// Deletes any agent except the pointer (the pointer's immortal).
 macro () kill(Agent &value) &'kill {value}';
 
-macro () mesgWrit(Agent &value, int &msgId) &'mesg writ {value, msgId}';
-macro () mesgWrtP(Agent &value, int &msgId, any &p1, any &p2, int &delay) &'mesg writ {value, msgId, p1, p2, delay}';
+/*
+Sends a message to agent `a` with message `msgId`.
+This is equivalent to `mesgWrtP(a, msgId, 0, 0, 0);`.
+*/
+macro () mesgWrit(Agent &a, int &msgId) &'mesg writ {a, msgId}';
+/*
+Sends a message to agent `a` with message `msgId`, parameters `p1` and `p2`, and a delay of `delay` ticks.
+Note that you may want to use the emit syntax instead: `someAgent->someMessage(p1, p2) after delay;`
+Also note that messages are not immediate.
+*/
+macro () mesgWrtP(Agent &a, int &msgId, any &p1, any &p2, int &delay) &'mesg writ {a, msgId, p1, p2, delay}';
 
-macro mira() &'mira'!int;
-macro () mira(int &a) &'mira {a}';
+// Sets if the `targ` agent is horizontally mirrored.
+macro () mira(bool &a) &'mira {a}';
+// Gets if the `targ` agent is horizontally mirrored.
+macro mira() &'mira'!bool;
 
-macro mows() &'mows'!int;
+// Gets if `totl 2 6 1` is under 14.
+macro mows() &'mows'!bool;
 
+// Gets the `targ` creature's world mouth X position.
 macro mthx() &'mthx'!float;
+// Gets the `targ` creature's world mouth Y position.
 macro mthy() &'mthy'!float;
 
+/*
+Returns the next agent matching (possibly wildcard) classifier `f, g, s` after `prev`.
+This will only ever return `null` if no matching agents exist, period.
+Otherwise, if there's anything wrong with `prev`, the first agent of the type is returned.
+Above all else, though, beware that this is the least efficient method of iterating through agents -- especially if wildcards are involved.
+*/
 macro ncls(Agent? &prev, int &f, int &g, int &s) &'ncls {prev, f, g, s}'!Agent?;
 
-macro () newSimp(int &family, int &genus, int &species, str &gallery, int &count, int &first, int &plane) &'new: simp {family, genus, species, gallery, count, first, plane}';
+/*
+Creates a simple agent with classifier `f, g, s`.
+(See the "Agents and Parts" manual chapter regarding what the types of agents are about.)
+`gallery` is the sprite file to use, minus the `.s16` / `.c16` extension. (_Please ensure that sprite filenames are lowercase on disk. It helps with compatibility._)
+`first` is the `abba` of the agent.
+(The formula for a sprite's frame number is `abba() + base() + pose()`.)
+`count` is the amount of frames. This is mainly used to limit the amount of the sprite file that is copied for tint effects.
+
+`targ` is set to the new agent.
+
+Finally, in Docking Station, the "constructor" script (10) is started immediately on the agent if present.
+*/
+macro () newSimp(int &f, int &g, int &s, str &gallery, int &count, int &first, int &plane) &'new: simp {f, g, s, gallery, count, first, plane}';
 
 // NEXT is handled by compiler
 
+/*
+Stops the `targ` creature holding hands with the pointer.
+This is important because while holding hands, the creature is "locked" to the pointer, so the creature cannot be teleported/etc.
+*/
 macro () nohh() &'nohh';
 
 // NULL is handled by compiler
 
+/*
+Asynchronous command to wait until the `anim` is over. If the `anim` is never over (say, looping), it doesn't finish until explicitly terminated.
+*/
 macro () over() &'over';
 
 // OWNR is handled by compiler
 
-macro paus() &'paus'!int;
-macro () paus(int &a) &'paus {a}';
+/*
+Pauses or unpauses the `targ` agent.
+This can have interesting side effects if misused.
+In general you should combine this with `wpau`.
+*/
+macro () paus(bool &a) &'paus {a}';
+// Returns true if the `targ` agent has been paused.
+macro paus() &'paus'!bool;
 
+// See `ncls`. This works in reverse.
 macro pcls(Agent? &n, int &f, int &g, int &s) &'pcls {n, f, g, s}'!Agent?;
 
-macro plne() &'plne'!int;
+/*
+Sets the plane of the `targ` agent.
+This is part `0`'s part, not any others.
+*/
 macro () plne(int &a) &'plne {a}';
+/*
+Gets the plane of the `targ` agent.
+This is part `0`'s part, not any others.
+*/
+macro plne() &'plne'!int;
 
-// Returns the pointer agent, also known as the hand.
+// Returns the Pointer. There's only one, it cannot be killed, and some call it... the hand.
 macro pntr() &'pntr'!Pointer;
 
 // POSB below
 
-macro pose() &'pose'!int;
+/*
+Sets the pose of the `part` of the `targ` agent.
+The formula for the actual sprite frame number is `abba() + base() + pose()`.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro () pose(int &value) &'pose {value}';
+// Gets the pose of the `part` of the `targ` agent.
+macro pose() &'pose'!int;
 
 // POS, in alphabetical order B.LRTXY
-// Top-left
+// Returns the X of the top-left of the `targ` agent's root sprite's bounding box.
 macro posl() &'posl'!float;
+// Returns the Y of the top-left of the `targ` agent's root sprite's bounding box.
 macro post() &'post'!float;
 // Bottom-right
+// Returns the X of the bottom-right of the `targ` agent's root sprite's bounding box.
 macro posr() &'posr'!float;
+// Returns the Y of the bottom-right of the `targ` agent's root sprite's bounding box.
 macro posb() &'posb'!float;
 // Centre
+// Returns the X of the centre of the `targ` agent's root sprite's bounding box.
 macro posx() &'posx'!float;
+// Returns the Y of the centre of the `targ` agent's root sprite's bounding box.
 macro posy() &'posy'!float;
 
-macro puhl(int &p, int &xy) &'puhl {p, xy}'!int;
+/*
+Sets the position of the pick-up handle for the `targ` agent.
+This is specific to `p`, a frame number relative to `abba` (not `abba() + base()`) for part 0.
+*/
 macro () puhl(int &p, int &x, int &y) &'puhl {p, x, y}';
+/*
+Gets the X or Y of the pick-up handle for the `targ` agent.
+This is specific to `p`, a frame number relative to `abba` (not `abba() + base()`) for part 0.
+See `PUHL_` consts for `xy`.
+*/
+macro puhl(int &p, int &xy) &'puhl {p, xy}'!int;
 
-macro pupt(int &p, int &xy) &'pupt {p, xy}'!int;
+/*
+Sets the spot the `targ` agent holds other agents by.
+This is specific to `p`, a frame number relative to `abba` (not `abba() + base()`) for part 0.
+*/
 macro () pupt(int &p, int &x, int &y) &'pupt {p, x, y}';
+/*
+Gets the X or Y of the spot the `targ` agent holds other agents by.
+This is specific to `p`, a frame number relative to `abba` (not `abba() + base()`) for part 0.
+See `PUHL_` consts for `xy`.
+*/
+macro pupt(int &p, int &xy) &'pupt {p, xy}'!int;
 
-macro rnge() &'rnge'!float;
+// Sets the sight, hearing, and collision check range of the `targ` agent.
 macro () rnge(num &a) &'rnge {a}';
+// Gets the sight, hearing, and collision check range of the `targ` agent.
+macro rnge() &'rnge'!float;
 
-macro () rtar(int &family, int &genus, int &species) &'rtar {family, genus, species}';
+// Sets `targ` to a random agent that matches the classifier `f, g, s`, or if none exists, sets `targ` to `null`.
+macro () rtar(int &f, int &g, int &s) &'rtar {f, g, s}';
 
+// Returns true if `a` can see `b`.
 macro seee(Agent &a, Agent &b) &'seee {a, b}'!bool;
 
-macro () show(int &a) &'show {a}';
+// Visually hides or shows the `targ` agent. Importantly, in terms of game logic, or even click detection, this doesn't matter. It's just visual.
+macro () show(bool &a) &'show {a}';
 
+// Get the `targ` agent's species, a part of the classifier `fmly(), gnus(), spcs()`.
 macro spcs() &'spcs'!int;
 
-macro () star(int &family, int &genus, int &species) &'star {family, genus, species}';
+// Sets `targ` to a random agent that both matches the classifier `f, g, s` and that `ownr` can see, or if none exists, sets `targ` to `null`.
+macro () star(int &f, int &g, int &s) &'star {f, g, s}';
 
 // TARG is handled by compiler
 
+// This is a companion to `core`. It checks to see if increasing the bounding box size would cause a collision with walls or the floor.
 macro tcor(num &a, num &b, num &c, num &d) &'tcor {a, b, c, d}'!bool;
 
-macro tick() &'tick'!int;
+/*
+Sets the built-in timer of the `targ` agent, which calls script 9 (timer) every (however many ticks you set).
+If 0, the timer's turned off.
+*/
 macro () tick(int &a) &'tick {a}';
+// Returns the `tick` setting of the `targ` agent.
+macro tick() &'tick'!int;
 
+/*
+Tints the current frame of the `part` of the `targ` agent.
+Importantly, other frames cease to exist.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro () tino(int &r, int &g, int &b, int &ro, int &s) &'tino {r, g, b, ro, s}';
+/*
+Tints the `part` of the `targ` agent.
+Importantly, this is done by making an internal copy of the sprite gallery. (See also `ucln`.)
+The tinting is performed using red, green, blue, rotation, and swap values, like in creature genetics.
+128 is roughly a "no change" value.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro () tint(int &r, int &g, int &b, int &ro, int &s) &'tint {r, g, b, ro, s}';
+// Returns a tint attribute of the `targ` creature (yes, this must be of a creature). See `TINT_` consts.
 macro tint(int &a) &'tint {a}'!int;
 
-macro totl(int &family, int &genus, int &species) &'totl {family, genus, species}'!int;
+// Gets the total amount of agents matching the classifier `f, g, s`.
+macro totl(int &f, int &g, int &s) &'totl {f, g, s}'!int;
 
+/*
+Returns true if agents `a` and `b` touch.
+Agents are defined as touching by if their part 0 sprite bounding boxes overlap.
+(Implied in this is that a change of `pose` can change if they're touching.)
+*/
 macro touc(Agent &a, Agent &b) &'touc {a, b}'!bool;
 
 // conflict with the other TRAN from input
 
+// Checks if the given world position is touching the `targ` agent. This is done by the same rules as mouse clicks.
 macro tranI(int &x, int &y) &'tran {x, y}'!bool;
 
-macro () ttar(int &family, int &genus, int &species) &'ttar {family, genus, species}';
+// Sets `targ` to a random agent that both matches the classifier `f, g, s` and that `ownr` touches, or if none exists, sets `targ` to `null`.
+macro () ttar(int &f, int &g, int &s) &'ttar {f, g, s}';
 
-macro twin(Agent &o, int &n) &'twin {o, n}'!Agent;
+/*
+Copies agent `o`, returning the copy.
+This shouldn't be done too carelessly, but it's neat on simple stuff like the Portable Empathic Vendor.
+Importantly, the copy retains the same VM state.
+`nullVars` nulls all agent references in the copy, which may require use of `stpt` to correct issues with (although if you're not assuming agents are dying under your nose whenever you aren't `inst`ing I don't know what to tell you).
+*/
+macro twin(Agent &o, bool &nullAVars) &'twin {o, nullAVars}'!Agent;
 
+/*
+Effectively untints the `part` of the `targ` agent.
+(See the "Agents and Parts" manual chapter regarding `targ` and `part`.)
+*/
 macro () ucln() &'ucln';
 
-macro visi(int &a) &'visi {a}'!bool;
+// Checks if the `targ` agent is visible to the main camera (`all == false`) or any camera (`all == true``). This check includes parts of compound agents.
+macro visi(bool &all) &'visi {all}'!bool;
 
+// Gets the visual width of the `targ` agent's root part's current sprite frame.
 macro wdth() &'wdth'!int;
 
-macro wild(int &f, int &g, int &s, str &ts, int &ofs) &'wild {f, g, s, ts, ofs}'!str;
+/*
+Checks the catalogue entries to find a classifier `f, g, s`.
+This includes checking the parent 0 entries when necessary.
+Essentially, given, say, "Test" as the prefix and 1, 2, 3 as the classifier, catalogue entries `PREFIX 1 2 3`, `PREFIX 1 2 0`, `PREFIX 1 0 0`, and `PREFIX 0 0 0` would be checked.
+The offset is as usual an offset to `read` from.
+*/
+macro wild(int &f, int &g, int &s, str &prefix, int &ofs) &'wild {f, g, s, prefix, ofs}'!str;
 
 // _IT_ is handled by compiler
 

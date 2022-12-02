@@ -81,6 +81,7 @@ local ral_symbols = {
 	["bool"] = "keyword2",
 	["float"] = "keyword2",
 	["num"] = "keyword2",
+	["bytes"] = "keyword2",
 	-- can be a variable name or a type...
 	["null"] = "literal",
 	-- compiler helpers

@@ -524,3 +524,21 @@ MAPD_UP = 2;
 // Map direction: Down, aka `down`
 MAPD_DOWN = 3;
 
+// Error or none value for returned categories.
+CATA_NONE = -1;
+
+/*
+CLIK state number: 1, 2 or 3.
+Also equal to the relevant `CLIK_MSG` constant.
+*/
+CLIK_STATE = 0;
+// First CLIK action message number.
+CLIK_MSG1 = 1;
+// Second CLIK action message number.
+CLIK_MSG2 = 2;
+// Third CLIK action message number.
+CLIK_MSG3 = 3;
+
+PUHL_X = 1;
+PUHL_Y = 2;
+
