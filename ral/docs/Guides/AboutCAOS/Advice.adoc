@@ -1,0 +1,19 @@
+## Crash Course On CAOS For New Users: A Final Bit Of Advice
+
+// DIRECTION: Don't have infinite time to write all this.
+// Point to other resources.
+
+* If you don't know what a command or expression does, translate, say, `NEW: SIMP` into `newSimp` and check elsewhere in this manual.
+
+* If this manual doesn't have anything, or you can't find it, or this manual sucks, get a copy of the CAOS Categorical And Alphabetical Documentation. You can generate it using CAOS Tool, _or_ via typing the following into the CAOS Command Line:
+
+```
+> file oope 1 "alphabetical.html" 0 dbg: html 0 file oclo
+OK
+> file oope 1 "categorical.html" 0 dbg: html 1 file oclo
+OK
+```
+
+Then check your `Docking Station/Journal` directory.
+
+* If that is not enough, start looking for other resources. There's been 20 years of research, _someone_ probably wrote _something_ about what you're looking for information on.

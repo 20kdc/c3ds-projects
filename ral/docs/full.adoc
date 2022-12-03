@@ -10,11 +10,15 @@ include::README.adoc[]
 
 <<<
 
-include::Guides/Vending/index.adoc[]
+include::Install.adoc[]
 
 <<<
 
 include::Guides/AboutCAOS/index.adoc[]
+
+<<<
+
+include::Guides/Vending/index.adoc[]
 
 <<<
 

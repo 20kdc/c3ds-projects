@@ -1,0 +1,11 @@
+## Vending Machine Tutorial: Required Knowledge
+
+// DIRECTION: Wall of fire
+
+Before proceeding, you should have enough knowledge of CAOS that you can feasibly write your own agents.
+
+The Crash Course On CAOS For New Users is intended to help start that, but if you're new to programming entirely, you might want to work on your CAOS knowledge before proceeding.
+
+Continuing regardless won't bite, but if you're ever asking "But why would you do this?" then you probably haven't worked with CAOS long enough.
+
+In addition, you *must* have followed the RAL/CPX Installation Guide. This is not optional -- while CPX support is optional (you can inject the files via some other method), a functioning RAL installation is required to compile RAL files into CAOS code.

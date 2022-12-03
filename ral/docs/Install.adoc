@@ -1,0 +1,137 @@
+## RAL/CPX Installation Guide
+
+// DIRECTION: If someone has a RAL source code file, they should be able to inject it.
+
+First of all, the assumption is that you are receiving this file with _at least_ the following other files:
+
+* `README.md`: Licenses, general description of things.
+* `COPYING.txt`: Licenses.
+* `COPYING-godot.txt`: Licenses.
+* `caosproxy`: Directory.
+** `caosprox.exe`: Contains the CAOS Proxy, used to connect RAL to the game.
+* `ral`: Directory.
+** `ral.jar`: Contains the RAL compiler.
+** `ral`: For Linux and Mac OS X users.
+** `ral.cmd`: For Windows users.
+* `creature-monitor-gd-export`: Directory, contains a tool that may be useful as an alternative CAOS command line if nothing else.
+
+There are other necessary files, but this should give you an idea of what to look for.
+
+### Java Installation
+
+You need to install Java. Any Minecraft player who isn't playing the Bedrock versions has this, but it might not be globally installed, and if it's not globally installed it doesn't count.
+
+Before you potentially waste time, open your local Terminal or Command Prompt or etc. and attempt the command `java -version`.
+
+You should receive output that looks vaguely like this:
+
+```
+openjdk 17.0.4 2022-07-19
+OpenJDK Runtime Environment (build 17.0.4+8-Ubuntu-122.04)
+OpenJDK 64-Bit Server VM (build 17.0.4+8-Ubuntu-122.04, mixed mode, sharing)
+```
+
+_If you don't get an error and you have a Java version above or equal to 8, RAL will work and you can skip installing Java: You already have it._
+
+At present, a good source is https://adoptium.net/en-GB/temurin/releases/ . You do _not_ need a JDK (but may prefer to have it if you wish to go into developing Java applications in the future), and you do _not_ (but may prefer to have) need a version higher than Java 8.
+
+You _absolutely must ensure that Java is added to your PATH._
+
+You will know if Java is in your PATH as (after possibly a logout and login) the above `java --version` command will function.
+
+Per-OS:
+
+* For the Windows installer, installing to PATH is the default. You'd have to mess things up for it not to install to PATH.
+* For Linux, you're better off grabbing a `java` package from your distribution.
+* For Mac OS X, please use the `.pkg` version -- I have a hunch it is more likely to install to PATH. (This is not tested.)
+
+### Check RAL Starts!
+
+From your Terminal / Command Prompt window, you must now `cd` to the RAL directory.
+
+I'm not going to describe everything about `cd` here, just know that `cd ..` goes out one directory, `cd somewhere` goes into the directory `somewhere`, and on Windows you need to explicitly change drives before using `cd`. (Changing drives is achieved by typing `C:` or `D:` or such on it's own line.)
+
+Within the RAL directory, run `./ral`, as so:
+
+(This should work on any operating system, but Linux is shown here.)
+
+```
+20kdc@Magnus:/media/modus/Sync2/repositories/c3ds-projects/ral$ ./ral
+RAL Compiler
+Standard Library Directory: /media/modus/Sync2/repositories/c3ds-projects/ral/include
+compile INPUT OUTPUT: Compiles INPUT and writes CAOS to OUTPUT
+compileDebug INPUT OUTPUT: Same as compile, but with added compiler debug information
+compileInstall INPUT OUTPUT: Same as compile, but only the install script
+compileEvents INPUT OUTPUT: Same as compile, but only the event scripts
+compileRemove INPUT OUTPUT: Same as compile, but only the remove script (without rscr prefix!)
+inject INPUT: Injects event scripts and install script
+injectEvents INPUT: Injects event scripts only
+injectRemove INPUT: Injects removal script
+lsp: Language server over standard input/output
+lspLog: Like lsp, but writes out lsp.log and shows additional LSP debug information
+docGen INPUT OUTPUT (+/-PREFIX)...: Generates AsciiDoc documentation.
+cpxConnectionTest: Test CPX connection
+```
+
+_If you receive something like this text, and do not receive an error or warning about the standard library, then your RAL installation is working properly._
+
+### CPX (CAOS Proxy)
+
+CPX, or the CAOS Proxy, or `caosprox.exe`, is a program which allows connecting programs to the game's shared-memory port that couldn't otherwise access it. Java is one of those languages.
+
+_Important: The CAOS Proxy is not compatible with certain Windows firewall and antivirus products. If stuff goes wrong, you probably need to add an exclusion for the CAOS Proxy. It might be necessary to add an exclusion for Java, but please avoid this unless it actually does make stuff work, as RAL is not the only thing that uses Java._
+
+Starting the CAOS Proxy is simple: Run `caosprox.exe`.
+
+Linux users: Use Wine. (If you are using the Linux version of Docking Station, run `cpxciesv.py` instead.)
+
+Mac OS X users: Use Wine, or start `caosprox.exe` in your virtual machine. If you are starting `caosprox.exe` in a virtual machine, and you wish to use RAL outside that virtual machine, then you may need to use `caosprox.exe loud 0.0.0.0`. _This will enable remote access to the CAOS Proxy, and should therefore only be done if you're sure servers hosted on the virtual machine can't be accessed outside of your system._ You will then need to set the `CPX_HOST` and `CPX_PORT` environment variables on the system you wish to run RAL from. _If you don't like this, stop using a system that went to a different processor architecture and broke support for stuff. There is nothing I can do to help you, so don't ask._
+
+Stopping the CAOS Proxy can be done via the tray icon that appears in the bottom-right.
+
+Testing the CAOS Proxy is also relatively simple, with `ral cpxConnectionTest`:
+
+```
+20kdc@Magnus:/media/modus/Sync2/repositories/c3ds-projects/ral$ ./ral cpxConnectionTest
+RAL Compiler
+Standard Library Directory: /media/modus/Sync2/repositories/c3ds-projects/ral/include
+include: std/compiler_helpers.ral
+include: std/compiler_prelude.ral
+include: std/cpx_connection_test.ral
+CPX connection OK - connected to Docking Station
+Engine version 2.286
+Modules OriginalDisplay DirectX (sillymodule 1, netbabel 148)
+```
+
+If you don't see `CPX connection OK`, RAL was probably unable to connect to the CPX server.
+
+_If you are connecting to Creatures 3, the script will not show the modules. This is because Creatures 3 uses an older version of the engine._
+
+### Injecting With RAL
+
+Using `./ral inject someRALFile.ral`, you can inject a RAL file. If there are errors in the code, they are shown.
+
+There are variants to this command that only inject particular parts (see the Tooling Reference or RAL's own internal help).
+
+Alternatively, you can run `./raljector`, which allows quickly re-injecting a file from a window.
+
+### Compiling With RAL
+
+Using `./ral compile someRALFile.ral someCosFile.cos`, you can compile.
+
+There are variants to this command that only compile particular parts (see the Tooling Reference or RAL's own internal help).
+
+_In particular, you can compile the Remove script into a separate file._
+
+### Things To Check
+
+You are expected to be able to save the following RAL code as a file, inject it, and see the results:
+
+```
+install {
+    rtar(SpeechBubbleFactory);
+	with SpeechBubbleFactory targ {
+		targ->speechBubble("Golly, this is a speech bubble!", pntr());
+	}
+}
+```

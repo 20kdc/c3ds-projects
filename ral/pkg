@@ -3,10 +3,10 @@
 mvn package
 rm -f ral.zip
 cp target/cdsp-ral-0.666-SNAPSHOT-jar-with-dependencies.jar ral.jar
-zip ral.zip ral.jar ral
 java -jar ral.jar docGen docs/all.ral docs/Library/gen.adoc +std/ -std/compiler_helpers.ral
 cd docs
 asciidoctor-pdf full.adoc -o ../manual.pdf
 asciidoctor -a data-uri -b html full.adoc -o ../manual.html
 cd ..
+zip ral.zip ral.jar ral
 zip ral.zip -r manual.pdf manual.html include/std syntax

@@ -1,6 +1,129 @@
-## Crash Course On CAOS For New Users: Scripts And A Talking Lemon
+## Crash Course On CAOS For New Users: Scripts & A Talking Lemon
 
 // DIRECTION: Still using the CAOS command line, on-road the user into making a talking lemon.
 // Try to make the lemon stateful using MVs.
+// Classifier allocated for this is 2 24 8802
 
-TODO: This onroads users to how scripts work and stuff
+Now that you know the basics of CAOS, it's time to move onto actually putting an agent into the world and giving it some behaviour. How?
+
+### Putting The Lemon In The World
+
+First, get ahold of a lemon. The Lemon Pod, located to the top-left of the Norn Meso, is a good source of them.
+
+Second, we need to find out what the spritesheet name and starting frame are.
+
+While the mouse is over a lemon...
+
+```
+> targ hots outs gall
+ds lemon pod
+> targ hots outv abba
+30
+```
+
+_These don't change, but it's useful to know these exist nonetheless._
+
+The first output is referring to `Docking Station/Images/ds lemon pod.c16`.
+
+The second output is referring to frame 30 of that file.
+
+Finally, we need to create the lemon.
+
+You can use Control-Shift-X to show X and Y coordinates underneath the Hand.
+
+This guide will use `631 9158` as the coordinates.
+
+```
+> new: simp 2 24 8802 "ds lemon pod" 1 30 8000
+OK
+```
+This creates the "lemon" in the world, but a position has not been given.
+
+```
+> rtar 2 24 8802 mvsf 631 9158
+OK
+```
+
+This selects the lemon using `rtar`, which sets `targ` to a random instance of classifier `2 24 8802` (of which there should only be one right now).
+
+It then places it using `mvsf`, which places the lemon near the target coordinates, trying to avoid intersection with walls.
+
+Rather than using `rtar 2 24 8802`, you can instead use `targ hots` while hovering the mouse over the lemon, but this is likely to cause accidents if you aim in the wrong place.
+
+### Giving The Lemon Physics
+
+```
+> rtar 2 24 8802 perm 100 attr 199
+OK
+```
+
+_If you instead receive "Invalid map location (..., ...)", consider moving the lemon to somewhere that is within the normal bounds of the game world._
+
+The lemon should now slowly drop to the floor... and potentially start bouncing a lot.
+
+```
+> rtar 2 24 8802 aero 10 accg 2
+OK
+```
+
+And that should make it stop bouncing.
+
+### Making It Talk
+
+Now that we have an agent that we want to do stuff to, let's try actually, well, doing something to it.
+
+```
+> rtar 1 2 10 mesg wrt+ targ 126 "Hello! I'm a talking lemon!" hots 0
+OK
+```
+
+Breaking it down into it's constituent commands, we have:
+
+* `rtar 1 2 10`: Selects the Speech Bubble Factory, an agent which produces speech bubbles.
+* `mesg wrt+ targ 126 "Hello! I'm a talking lemon!" hots 0`: Sends message 126 "Make Speech Bubble" to the Speech Bubble Factory (as `targ`), with parameters `"Hello, I'm a talking lemon!"` (the text) and `hots` (the speaking agent, in this case whatever's under the pointer). Important to note is that everything after `mesg wrt+` is a valid expression.
+
+### Attaching A Script
+
+This is the part where what is arguably just a random object becomes a talking lemon.
+
+```
+> scrp 2 24 8802 1 rtar 1 2 10 mesg wrt+ targ 126 "Hello! I'm a talking lemon!" ownr 0 endm
+OK
+```
+
+And now just click the lemon, and it will say its line.
+
+Breaking this down into it's constituent components, we have:
+
+* `scrp 2 24 8802 1`: This begins script 1 on classifer `2 24 8802`.
+* `rtar 1 2 10`: Selects the Speech Bubble Factory, an agent which produces speech bubbles.
+* `mesg wrt+ targ 126 "Hello! I'm a talking lemon!" ownr 0`: Sends message 126 "Make Speech Bubble" to the Speech Bubble Factory (as `targ`), with parameters `"Hello, I'm a talking lemon!"` (the text) and `ownr` (the speaking agent, in this case `ownr`).
+* `endm`: This ends the script.
+
+Some further notes:
+
+* When a script is executing on an agent, `ownr` is the agent that the script is executing on.
+* Script number 1 is also known as Activate 1.
+* Scripts do not have to be defined in order.
+* Script definitions are installed _before any other code in a CAOS file._
+* Script definitions are installed to the world for any agent that matches the classifier -- i.e. if you were to follow the steps above to create this lemon again on the same world, it would already have the script.
+
+### Past This Point, Use CAOS Tool!
+
+Past this point you should install CAOS Tool if you have not already.
+
+The examples have been given via CAOS Command Line so that you do not need additional tooling, but CAOS Command Line does not make a good development environment.
+
+### Machine Variables (MVs)
+
+todo
+
+### Conditionals
+
+todo
+
+### Things To Check
+
+* Make the lemon randomly say one of multiple lines.
+* Use a Constructor script to set `perm`, `attr`, `aero`, and `accg` of a lemon.
+** The Constructor script, script 10, is automatically run on creation of an agent.

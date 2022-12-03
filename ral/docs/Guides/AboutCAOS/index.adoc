@@ -17,3 +17,11 @@ include::SATalkLemon.adoc[]
 <<<
 
 include::Agents.adoc[]
+
+<<<
+
+include::Packaging.adoc[]
+
+<<<
+
+include::Advice.adoc[]

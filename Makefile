@@ -12,6 +12,7 @@ rel: COPYING.txt README.md CREDITS.txt
 	echo "r`date +%s`" > release-id.txt
 	echo "Linux host:" $(HOST_LINUX) >> release-id.txt
 	echo "Godot available:" $(HOST_GODOT) >> release-id.txt
+	echo "Java/Maven available:" $(HOST_JAVA) >> release-id.txt
 	echo "git status:" >> release-id.txt
 	git status >> release-id.txt
 	echo "Latest commit:" >> release-id.txt
@@ -25,6 +26,10 @@ include caosproxy/index.mk
 
 ifeq ($(HOST_GODOT),1)
 	include creature-monitor-gd-export/index.mk
+endif
+
+ifeq ($(HOST_JAVA),1)
+	include ral/index.mk
 endif
 
 # Stuff that has compilation steps that require Linux.

@@ -17,8 +17,38 @@ macro vmnr() &'vmnr'!int;
 install {
 	outs(
 		'CPX connection OK - connected to {gnam()}\n' +
-		'Engine version {vmjr()}.{vmnr()}\n' +
-		'Modules {modu()}'
+		'Engine version {vmjr()}.{vmnr()}\n'
 	);
+	if vmjr() == 1 {
+		if vmnr() == 147 {
+			outs("Identified as Creatures 3 (Unpatched).\n");
+		} else if vmnr() == 158 {
+			outs("Identified as Creatures 3 Update 1.\n");
+		} else if vmnr() == 162 {
+			outs("Identified as Creatures 3 Update 2.\n");
+		} else {
+			outs("Unidentified Creatures 3-era version. Consult Creatures Discord immediately.\n");
+		}
+	} else if vmjr() == 2 {
+		// 2.106 (Creatures Playground Demo) will freeze the CPX injector.
+		// Given 2.106's other security features, this was probably on purpose.
+		// Don't bother identifying it.
+		if vmnr() == 286 {
+			outs("Identified as Docking Station, Build 195.\n");
+		} else if vmnr() == 296 {
+			outs("Identified as Linux or Exodus Docking Station. Expect agent installation problems.\n");
+		} else {
+			outs("Unidentified Adventures, Playground, or Docking Station-era version.\nNot all versions of this kind have been recorded in the CPX Connection Test.\n");
+		}
+	}
+	let str report;
+	let res = &'caos 1 1 0 0 "outs \\"Modules \\" outs modu" 0 1 {report}'!str;
+	// detect errors and handle gracefully
+	if (res == "***") || (res == "###") {
+		outs('Modules not available. This is expected if the game predates Docking Station.\nDetails:\n{report}\n');
+	} else {
+		outs(res);
+		outs("\n");
+	}
 }
 
