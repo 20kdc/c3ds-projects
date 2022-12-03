@@ -1,0 +1,144 @@
+## Crash Course On CAOS For New Users: The Environment
+
+The environment in which CAOS code runs is a complicated one, made up of many moving parts.
+
+* The _Scriptorium_, the database of all scripts.
+* The _Catalogue_, a combination of a translation database and variable control.
+* The _Agents_, objects in the world -- but also creatures!
+* The _Map_, the layout of metarooms and rooms.
+* The _PRAY System_, used for exchangable data.
+* The _Warp_, the online connectivity of Docking Station.
+
+### Scriptorium
+
+The Scriptorium is a database of scripts, indexed by family, genus, species, and script number.
+
+For any given combination of these values, there can be a *script* -- a snippet of CAOS code which can be started by the engine, or sometimes other agents, to handle some event.
+
+When a script is not available for a given family/genus/species combination (known as a *classifier*), it's checked if it exists for the combination with species 0, then genus and species 0, then family, genus, and species 0.
+
+For example, script 10 on classifier `4 2 1` is checked for as `4 2 1 10`, then `4 2 0 10`, then `4 0 0 10`, then `0 0 0 10`.
+
+### Catalogue
+
+The Catalogue is those files in `Docking Station/Catalogue`. They are text files, which look much like this:
+
+```
+TAG "wub jukebox track reviews"
+# 0
+"there is no track 00"
+"where'd the main theme go"
+"this doesn't quite fit the original track, but it does better, so"
+"which track is this supposed to be again? it has something to it, but, er..."
+"finally a return to form"
+# 5
+"actually good"
+"sorta veers off"
+"ooookay"
+"i see this is very hit or miss"
+"this is fun ig, not like there even was much of a track here originally"
+# 10
+"good to see this one retained it's identity, if any track could be called iconic..."
+"this title is a cop-out. who owns SE again? but that said, it's a good track"
+"everything seems a bit weirdly shifted, not bad though"
+"this one was always weird, but this does seem a different kinda weird"
+"this is nice though"
+# 15
+"really nice! and, uh, an entirely different track"
+"this is a track I recognize perfectly... and it doesn't match the name given. wtf?"
+"a nice ending to a mostly good remake album with some what moments"
+```
+
+A full description of the Catalogue format will _not_ be given here, but it is important to know that:
+
+* These named `TAG` sections can contain any number of strings (sets of text).
+* The position of those strings is important relative to other strings.
+* The `#` comments aren't needed, but they're really useful to keep track of things.
+* The engine, and CAOS, tends to use these for translatable text and configuration of "basic stuff".
+
+### Agents
+
+Agents are objects. They come in several flavours:
+
+* Simple Agents, aka `SIMP`, have a single sprite.
+* Compound Agents, aka `COMP`, have a base sprite (like `SIMP`) but can have multiple different parts. Parts are added with the `PAT:` command series, and the part that is being manipulated is selected using the `PART` command.
+* "Skeletal Creatures", aka `CREA`, are your nornal fuzzy friends.
+* Creature Agents, aka `CRAG`, seem to be someone's pet abomination that ended up falling in the codebase sometime during Docking Station's development or lifespan. They're literally creatures without a skeleton. To even use them effectively you need to give them a separate family number, due to the way Creatures set their genus/species based on genetics.
+* Vehicle Agents, aka `VHCL`, are Compound Agents that have a "cabin" (a single area they can store things in, up to and including creatures).
+* The Pointer Agent is a Simple Agent with added bits. It's created by the engine, can never die, and is connected to the mouse pointer. Two-way.
+
+All Agents are expected to either live on the map or be floating. What they definitely should _not_ be doing is hanging out outside of the map under any circumstance (although static agents are "allowed" to do it, they probably shouldn't).
+
+Agent sprites are stored in `.s16` and `.c16` files, in the `Images` directory.
+
+### Map
+
+The Map is the flat 2D world in which Agents usually live (except for UI, but even then, they're still considered to _have_ map positions, but they're floating relative to the camera).
+
+The Map is made up of *metarooms*. Metarooms are rectangular (or square) sections of the Map.
+
+A metaroom needs a background -- these are stored in `.blk` files, in the `Backgrounds` directory.
+
+The metarooms then have *rooms* within them, which are irregular rectangles. In particular, the vertical line of the rectangle must be vertical, but the horizontal lines need not be.
+
+### PRAY System
+
+The PRAY system is responsible for managing a floating set of resources, known as PRAY chunks.
+
+PRAY chunks have a name, a 4-letter type, and a blob of arbitrary data.
+
+PRAY chunks are stored in PRAY files (`.agent`, `.creature`, `.warp`...).
+Moreover, multiple PRAY chunks can be stored per file.
+
+Some PRAY chunks are filled with tags -- this is the familiar name/value format.
+
+PRAY chunks are written in two ways:
+
+* By a PRAY compiler from PRAY source code
+* By the game itself under some circumstances (blueprints, exported creatures...)
+** This is done using `PRAY MAKE` or `NET: MAKE`. The process still involves PRAY source code, however.
+
+PRAY source code looks like this:
+```
+# Nobody's ever seen this not be "en-GB". Some PRAY compilers even require it to be that exact value...
+"en-GB"
+
+# A "group" chunk is based on tags.
+group DSAG "Giant Frog"
+# There are two types of value in PRAY, integer and string.
+"Agent Sprite First Image" 0
+"Agent Type" 0
+"Agent Animation File" "giant_frog.c16"
+"Agent Animation Gallery" "giant_frog"
+"Agent Animation String" "0"
+"Agent Description" "A giant frog."
+
+"Dependency Count" 1
+
+"Dependency 1" "giant_frog.c16"
+"Dependency Category 1" 2
+
+"Script Count" 1
+# "@" allows embedding a file as a string.
+"Script 1" @ "giant_frog.cos"
+"Remove script" @ "giant_frog_del.cos"
+
+# An "inline" chunk simply has the contents of a file.
+inline FILE "giant_frog.c16" "giant_frog.c16"
+```
+
+Again, while these are all sorted into PRAY files, as far as CAOS is concerned, each chunk is a separate PRAY resource.
+
+### Warp
+
+Those of you who have read the Creatures Wiki know that the Warp operates by the exchange of PRAY files. What is not said there is what exactly this _means_.
+
+The answer is that it is _extremely literal._ Files are quite literally placed in the `Docking Station/Users/yourusername/Warp Out` directory, then sent online (and deleted from the computer). The file, once received, arrives at `Docking Station/Users/yourusername/Warp In`.
+
+These files are in the very same PRAY format used by agents, with information about the sender or receiver written in the name of the file. If you manage to catch one before the game deletes it (or if the world is paused when you receive a file), you can actually decompile these using a PRAY decompiler.
+
+(However, attempting to decompile a creature will give you more or less what you would get for any exported creature. This is still useful information to know if you need to rescue a creature from some form of Warp malfunction.)
+
+The `NET: MAKE` (from PRAY source code) and `NET: EXPO` (warp creature) commands transmit PRAY files this way.
+
+Received files simply appear as PRAY resources when the next `PRAY REFR` occurs.

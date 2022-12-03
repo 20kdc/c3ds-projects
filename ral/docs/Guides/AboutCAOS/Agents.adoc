@@ -1,0 +1,3 @@
+## Crash Course On CAOS For New Users: Agents and Parts
+
+TODO: This is important because stdlib manual cares

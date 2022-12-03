@@ -1,0 +1,52 @@
+## Crash Course On CAOS For New Users: What CAOS, and Which?
+
+CAOS is a programming language used by the Creatures series of games.
+
+It comes in three iterations for the three main Creatures games: Creatures 1 CAOS, Creatures 2 CAOS, and Creatures 3 CAOS.
+
+However, RAL only targets Creatures 3/Docking Station CAOS, so that is what will be covered here.
+
+There is a good reason for this: Firstly, the different CAOS versions are mostly incompatible with each other and secondly, there are major limitations to early CAOS.
+
+### The Limitations Of Early CAOS
+
+Creatures 1 CAOS:
+
+* Effectively doesn't have strings (they cannot be stored or manipulated).
+* Agents can store exactly one agent reference each, `OBJP`. (Not even enough for LISP-style linked lists...)
+* Agents can store 3 integer variables each, `OBV0`, `OBV1`, and `OBV2`.
+* There are 10 script variables, `VAR0` through `VAR9`.
+* Classifier numbers and script numbers are 8-bit (0-255) -- collisions are likely.
+* There is no `GOTO` (To explain, RAL uses `GOTO` to implement workarounds for missing CAOS features.)
+* Above all else, this iteration of CAOS is simply meant as a way to give unique-ish behaviours to simple objects. Even if complex computations were done in it, they don't provide a utility to the end user.
+
+_Simply put, C1 CAOS is not really salvagable as a basis for a general programming language._
+
+Creatures 2, meanwhile:
+
+* Still doesn't have strings.
+* Has 100 object variables, as `OV00` through `OV99`.
+* Can actually store agent references in them now.
+* Also has 100 script variables, as `VA00` through `VA99`.
+* Still no `GOTO`.
+* The species and script number components have been bumped up to 16-bit.
+* CAOS is still playing second fiddle to hard-coded game logic. Hence, "Blackboard Objects", "Lift Objects", "Call Button Objects"...
+
+_C2 CAOS might be salvagable, but RAL would suffer in functionality if it attempted to support C2._
+
+Creatures 3:
+
+* Has strings and string manipulation functions.
+* Variables can store agents, strings, floats, and integers.
+* Has `GOTO`.
+* Above all else, as all in-game UI is written in CAOS, CAOS by necessity had to be given the power to actually perform at least some of the logic that in-game UI requires. In practice, this lead to a great expansion in what CAOS can be used for.
+
+### Modern CAOS, and why you need to know about CAOS anyway
+
+Creatures 3's CAOS, inside, resembles modern game scripting languages such as Lua, though it has it's differences (for those interested: the "coroutines" are tied directly into agents, no garbage collection).
+
+The main thing one can say about Creatures 3 CAOS is that a good language was within their grasp, but they either did not understand what they had or had a lack of context.
+
+Part of RAL's goal relies on the distinction between the CAOS language's written form (i.e. what someone writing code in CAOS types to achieve a certain goal), and the capabilities available to it (what someone experienced with CAOS can make CAOS do).
+
+RAL code, ultimately, is turned into CAOS code, and RAL design decisions are based on that premise -- therefore, to understand RAL, you must understand CAOS.

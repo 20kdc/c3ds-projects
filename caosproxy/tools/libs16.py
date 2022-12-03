@@ -1164,7 +1164,7 @@ if __name__ == "__main__":
 			# dither
 			for i in range(3):
 				dither_channel(vpil.width, vpil.height, data[i], bits[i], cdmode)
-			dither_channel(vpil.width, vpil.height, data[3], abits[3], admode)
+			dither_channel(vpil.width, vpil.height, data[3], bits[3], admode)
 			# convert
 			data_total = []
 			for i in range(vpil.width * vpil.height):

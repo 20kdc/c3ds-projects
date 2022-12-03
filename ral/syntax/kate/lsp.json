@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"ral": {
+			"command": ["/home/20kdc/Documents/Sync2/repositories/c3ds-projects/ral", "lsp"],
+			"highlightingModeRegex": "^RAL$"
+		}
+	}
+}
+

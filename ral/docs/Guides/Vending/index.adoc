@@ -1,0 +1,3 @@
+// DIRECTION: Assuming the user has gone through the Crash Course In CAOS and nothing else, walk them through making a coin, a fruit, and finally a vending machine.
+// Supply sprites/etc.
+TODO: `Guides/Vending/index.adoc`

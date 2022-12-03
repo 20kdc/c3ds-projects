@@ -10,6 +10,18 @@ include::README.adoc[]
 
 <<<
 
+include::Guides/Vending/index.adoc[]
+
+<<<
+
+include::Guides/AboutCAOS/index.adoc[]
+
+<<<
+
+include::Guides/ToolingPointers.adoc[]
+
+<<<
+
 include::Tooling.adoc[]
 
 <<<

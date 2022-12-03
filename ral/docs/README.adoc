@@ -10,7 +10,6 @@ As such, this manual is intended to be written in distinct sections:
 
 * The **Vending Machine Tutorial** is for the more tutorial-oriented student, running through the creation of a set of agents: a coin, a fruit, and finally a vending machine. Course materials will be supplied.
 * The *Crash Course On CAOS For New Users* is a quick introduction to how Creatures 3/Docking Station's CAOS programming language, to which RAL compiles, works. __This is essential reading to understand RAL if you are new to Creatures 3/Docking Station agent programming. In particular, most RAL documentation assumes you have a basic working knowledge of CAOS, and therefore concepts described here are treated as "obvious" elsewhere.__
-** todo: needs to contain "Agents and Parts" chapter for ABBA and stuff to reference
 * The *Booklet Of Tooling Pointers* points at tools that are typically paired with RAL to create a more complete agent development environment.
 * The *Tooling Reference* covers how to use the RAL compiler to compile RAL source code into CAOS, alongside other tasks.
 * The *Language Reference* covers RAL as a language, and constructs universal to the compiler.

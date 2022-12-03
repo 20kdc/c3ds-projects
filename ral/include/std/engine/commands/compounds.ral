@@ -11,7 +11,10 @@
 
 include "std/engine/commands_inc.ral";
 
-// With a text part or `null` selected, focuses the text field for editing.
+/*
+With a text part selected, focuses the text field for editing.
+With `null` selected, unfocuses.
+*/
 macro () fcus() &'fcus';
 
 /*

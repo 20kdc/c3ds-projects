@@ -1,0 +1,6 @@
+## Crash Course On CAOS For New Users: Basic Concepts & The CAOS Command Line
+
+// DIRECTION: Teach users how the CAOS command line works and the underlying structure of the system that it's built on.
+// They should understand how commands and expressions work by the end of this chapter.
+
+TODO: This onroads users to actual use of CAOS

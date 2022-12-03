@@ -1,0 +1,6 @@
+## Crash Course On CAOS For New Users: Scripts And A Talking Lemon
+
+// DIRECTION: Still using the CAOS command line, on-road the user into making a talking lemon.
+// Try to make the lemon stateful using MVs.
+
+TODO: This onroads users to how scripts work and stuff

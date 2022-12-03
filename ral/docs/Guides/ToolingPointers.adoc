@@ -1,0 +1,64 @@
+## Booklet of Tooling Pointers
+
+The following are various tools of relevance to use with RAL (for more tools, please just look at the Creatures Wiki):
+
+### Editing
+
+* lite-xl: https://lite-xl.com/
+** Function: Very lightweight text editor, has LSP support with a plugin.
+** Pros: If you already have the LSP client plugin installed, setup is basically just copying some stuff into your config and copying the language highlighting file.
+** Cons: Too mercurial. Needs to stabilize. The version I have is a tad crashy. Installing the LSP client plugin is annoying.
+
+*Big scary warning: a proper highlighting file hasn't been written for Kate yet. The current one is just what is necessary to make the LSP work properly.*
+
+* Kate: https://kate-editor.org/
+** Function: Decently lightweight text editor with LSP support.
+** Pros: Works with RAL's LSP with relatively little configuration:
+*** Step 1. Copy `syntax/kate/ral.xml` to `AppData\Local\org.kde.syntax-highlighting\syntax`
+*** Step 2. Enable the LSP Client and External Tools plugins, apply, and close the settings window
+*** Step 3. Re-open the settings, and in the LSP Client settings, in User Server Settings, copy in the contents of `syntax/kate/lsp.json` from your RAL distribution and adjust for the location of your RAL installation (and change `ral", "lsp` to `ral.cmd", "lsp` if on Windows)
+*** Step 4. In the External Tools settings, add a tool with these settings:
+**** Executable: `your/path/to/ral/ral` (add `.cmd` if on Windows)
+**** Arguments: `inject %{Document:FileName}`
+**** Output: Display in Pane
+**** Editor Command: `ral-inject` (this allows pressing F7 and typing `ral-inject`)
+*** Step 5. Repeat Step 4 with any other RAL commands.
+** Cons: The RAL install process, though less painful than having to write a VSCode extension, could be better
+
+*Note that any sensible LSP-compatible text editor can be used with RAL. Despite being the originator of the Language Server Protocol, VSCode is not sensible -- in particular, it's inability to simply allow a user to enable an LSP server.*
+
+### Build/Conversion
+
+#### Graphical
+
+* SG's Spritist: https://github.com/zenzoa/spritist
+** Function: Sprite converter.
+** Pros: Nice UI.
+** Cons: Considers your RAM sticks tasty delectable treats. Your hard disk, also. The sprite conversion can't dither.
+* Jagent: https://sourceforge.net/projects/jagent/
+** Function: PRAY compiler/decompiler, sprite converter.
+** Pros: If you can run RAL, you can run this. Very small. Also acts as a command-line PRAY builder.
+** Cons: The sprite conversion can't dither.
+
+#### Command-Line
+
+* openc2e 0.2: https://github.com/openc2e/openc2e/releases/tag/v0.2
+** Function: Contains a PRAY compiler and decompiler.
+** Pros: Doesn't require Wine (for Mac/Linux users) and it's convenient to have `praydumper` on-tap sometimes.
+** Cons: None relating to the relevant functions here.
+* libs16.py: Part of c3ds-projects, which you are reading a part of right now...
+** Function: Sprite and background conversion.
+** Pros: Can dither (if you ask it to).
+** Cons: Awkward to use unless you put it in your PATH, sometimes buggy, always slow. Best used as part of a Makefile. Requires Python 3 and PIL installed.
+
+### Debugging
+
+// this won't accept RAL, but it's still got it's uses
+* CAOS Tool: https://creatures.wiki/CAOS_Tool
+** Function: Write CAOS, inject it, simple as that.
+** Pros: Easier to work with than the CAOS Command Line.
+** Cons: Likes to fail to recognize valid syntax.
+* CAOS Debugger: https://creatures.wiki/CAOS_Debugger
+** Function: Keeping an eye on script execution in real-time.
+** Pros: Can monitor all the various debug things.
+** Cons: Buggy, crashy, and not the nicest to use.
