@@ -20,6 +20,7 @@ The following are various tools of relevance to use with RAL (for more tools, pl
 *** Step 4. In the External Tools settings, add a tool with these settings:
 **** Executable: `your/path/to/ral/ral` (add `.cmd` if on Windows)
 **** Arguments: `inject %{Document:FileName}`
+**** Save: Current Document
 **** Output: Display in Pane
 **** Editor Command: `ral-inject` (this allows pressing F7 and typing `ral-inject`)
 *** Step 5. Repeat Step 4 with any other RAL commands.

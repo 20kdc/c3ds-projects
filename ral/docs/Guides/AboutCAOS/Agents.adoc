@@ -1,3 +1,99 @@
 ## Crash Course On CAOS For New Users: Agents and Parts
 
-TODO: This is important because stdlib manual cares
+*Agents* are the main kind of "thing" in Creatures 3 and Docking Station.
+
+Things that are agents:
+
+* Lemons.
+* Norns.
+* UI panels.
+* The lemon vendor.
+* Static foreground elements. (They need to be agents to have a plane other than simply "the far background".)
+
+Things that are not agents:
+
+* A button on the Comms screen. (This is a *part* of a compound agent.)
+* In most cases, static background elements. (Not that they can't be agents, but they're usually part of the metaroom's background file.)
+
+There are different kinds of agents, that will be documented below.
+
+### Simple Agents
+
+*Simple* agents are made up of a single sprite.
+
+Created with `NEW: SIMP`.
+
+### Compound Agents
+
+*Compound* agents are made up of parts, where part 0 is the root part (created with the agent).
+
+Each part has it's own sprite (or sprites).
+
+The current part is selected using the `PART` command -- for example, `part 0` selects the root part. `PART` is similar to `TARG`, and in commands that manipulate parts, the two often must be used together.
+
+An example of this:
+
+```
+targ va00 * select the target
+part 2 * select part 2
+pose 5 * set part 2's pose to 5
+```
+
+Note that the `targ` and `part` commands here need not be in this order. As long as `part` and `targ` have been set to the correct values by the time any command using them runs, it will work.
+
+Created with `NEW: COMP`.
+
+The different kinds of parts are:
+
+#### Dull Part
+
+*Dull* parts are additional sprites on a compound agent.
+
+Created with `PAT: DULL`.
+
+#### Button Part
+
+*Button* parts are used for buttons.
+
+Created with `PAT: BUTT`.
+
+#### Text Part
+
+*Text* parts are used for writable text fields.
+
+Created with `PAT: TEXT`.
+
+#### Fixed Text Part
+
+*Fixed Text* parts are used for read-only text fields.
+
+Created with `PAT: FIXD`.
+
+#### Camera Part
+
+A camera part shows a view elsewhere on the Map.
+
+Created with `PAT: CMRA`.
+
+#### Graph Part
+
+A graph part shows a graph.
+
+Created with `PAT: GRPH`.
+
+### Vehicle Agents
+
+*Vehicle* agents are Compound agents, but they have a cabin.
+
+The cabin can be resized, and can store any number and type of other agents (unless configured to have a passenger limit).
+
+Created with `NEW: VHCL`.
+
+### Creatures
+
+*Creature* agents are split into two kinds, Skeletal (aka `CREA`) and non-Skeletal (aka `CRAG`).
+
+Skeletal creatures are the ones you know and want to pet. Few people particularly know or care about non-skeletal creatures.
+
+For now, knowing how to create these isn't strictly critical knowledge, especially as the process is rather specific in any case (look at the egg CAOS, perhaps).
+
