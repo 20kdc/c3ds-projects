@@ -50,7 +50,7 @@ public class RALBlock extends RALStatementUR {
 		@Override
 		protected void compileInner(CodeWriter writer, CompileContext cc) {
 			if (isScopeBreaking) {
-				try (CompileContext innerScope = new CompileContext(cc, extent.start)) {
+				try (CompileContext innerScope = new CompileContext(cc)) {
 					for (RALStatement rl : content2)
 						rl.compile(writer, innerScope);
 				}

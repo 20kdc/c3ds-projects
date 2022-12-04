@@ -22,15 +22,22 @@ public abstract class RALStatement {
 	public final void compile(CodeWriter writer, CompileContext context) {
 		if (writer.queuedCommentForNextLine == null)
 			writer.queuedCommentForNextLine = writer.debug.createQueuedComment(this);
-		if (writer.debug.shouldGenerateSites())
-			writer.queuedSiteForNextLine = new DebugSite(context.parentDebugSite, extent.start.toUntranslated(), context);
+		// Push diags/debug
+		DebugSite savedSite = context.currentDebugSite;
+		if (writer.debug.shouldGenerateSites()) {
+			context.currentDebugSite = new DebugSite(savedSite, extent.start.toUntranslated(), context);
+			writer.queuedSiteForNextLine = context.currentDebugSite;
+		}
 		context.diags.pushFrame(extent);
+		// Actually compile
 		try {
 			compileInner(writer, context);
 		} catch (Exception ex) {
 			context.diags.error("stmt compile: ", ex);
 		}
+		// Pop diags/debug
 		context.diags.popFrame(extent);
+		context.currentDebugSite = savedSite;
 	}
 
 	/**

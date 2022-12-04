@@ -39,13 +39,6 @@ public class SrcPos extends SrcPosBase {
 	/**
 	 * Translates this to a Language Server Protocol UTF-16 range.
 	 */
-	public JSONObject toLSPPosition() {
-		return new JSONObject("{\"line\":" + line + ",\"character\":" + character + "}"); 
-	}
-
-	/**
-	 * Translates this to a Language Server Protocol UTF-16 range.
-	 */
 	public JSONObject toLSPRange() {
 		JSONObject range = new JSONObject();
 		JSONObject pos = toLSPPosition();

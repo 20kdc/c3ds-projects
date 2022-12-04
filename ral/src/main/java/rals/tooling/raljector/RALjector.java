@@ -12,10 +12,12 @@ import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.Timer;
 
 import rals.Main;
 import rals.code.ScriptSection;
 import rals.debug.DummyDebugRecorder;
+import rals.debug.FullDebugRecorder;
 import rals.parser.IDocPath;
 
 /**
@@ -25,16 +27,18 @@ import rals.parser.IDocPath;
 public class RALjector extends JFrame {
 	// UI
 	public final InjectStatusFrame injectFrame;
+	public final DebuggerDialog debugFrame;
 	public final JButton[] mainButtons;
 	// Variables
 	public final IDocPath stdLibDP;
 	public File currentFile;
-	public GameStateTracker debugState;
+	public final GameStateTracker debugState = new GameStateTracker();
 	public boolean injectWithDebugInfo;
 	// UI Variables
 	public final String[] mainButtonTexts = {
 			"File: NONE",
 			"Debug Info: OFF",
+			"Open Debugger",
 			"Collapse Buttons",
 			"Inject Install/Events",
 			"Install",
@@ -44,6 +48,7 @@ public class RALjector extends JFrame {
 	public final String[] smallButtonTexts = {
 			"FIL",
 			"Db0",
+			"Dbg",
 			"Xpd",
 			"I/E",
 			"I",
@@ -57,6 +62,10 @@ public class RALjector extends JFrame {
 		super("RALjector");
 		stdLibDP = std;
 		injectFrame = new InjectStatusFrame(this);
+		debugFrame = new DebuggerDialog(debugState);
+		new Timer(250, (a) -> {
+			debugState.update();
+		}).start();
 		mainButtons = new JButton[mainButtonTexts.length];
 		final Runnable[] actions = new Runnable[] {
 				() -> {
@@ -72,6 +81,9 @@ public class RALjector extends JFrame {
 				() -> {
 					injectWithDebugInfo = !injectWithDebugInfo;
 					updateTexts();
+				},
+				() -> {
+					debugFrame.setVisible(true);
 				},
 				() -> {
 					isSmall = !isSmall;
@@ -122,11 +134,16 @@ public class RALjector extends JFrame {
 	}
 
 	private void injectUI(ScriptSection... sections) {
+		if (debugState.doNotInject()) {
+			injectFrame.injectTextArea.setText("Cannot inject: busy (open debugger!)");
+			injectFrame.setVisible(true);
+			return;
+		}
 		StringBuilder sb = new StringBuilder();
 		if (currentFile == null) {
 			sb.append("No file!");
 		} else {
-			if (Main.inject(sb, stdLibDP, currentFile, new DummyDebugRecorder(), sections)) {
+			if (Main.inject(sb, stdLibDP, currentFile, injectWithDebugInfo ? new FullDebugRecorder() : new DummyDebugRecorder(), sections)) {
 				sb.append("\nInject successful.");
 			} else {
 				sb.append("\nInject failed.");

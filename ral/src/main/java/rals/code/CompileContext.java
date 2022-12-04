@@ -29,12 +29,13 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, I
 
 	/**
 	 * BEWARE: CAN BE NULL (especially if shouldGenerateSites is false)
+	 * Also, this is managed on-stack.
 	 */
-	public final DebugSite parentDebugSite;
+	public DebugSite currentDebugSite;
 
 	public CompileContext(TypeSystem ts, Scripts m, DiagRecorder d, CodeWriter cw) {
 		super(ts, m, d);
-		parentDebugSite = null;
+		currentDebugSite = null;
 		writer = cw;
 		// create the VA allocator
 		alloc = new ScopedVAAllocator(new LinearVAAllocator());
@@ -45,16 +46,8 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, I
 	}
 
 	public CompileContext(CompileContext sc) {
-		this(sc, null);
-	}
-
-	public CompileContext(CompileContext sc, SrcPos dbgPos) {
 		super(sc);
-		if (dbgPos != null) {
-			parentDebugSite = sc.writer.debug.shouldGenerateSites() ? new DebugSite(sc.parentDebugSite, dbgPos.toUntranslated(), sc) : null;
-		} else {
-			parentDebugSite = sc.parentDebugSite;
-		}
+		currentDebugSite = sc.currentDebugSite;
 		writer = sc.writer;
 		alloc = new ScopedVAAllocator(sc.alloc);
 		// track subusers

@@ -134,7 +134,7 @@ public class Macro implements RALCallable {
 		@Override
 		public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
 			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
-				try (CompileContext c2 = new CompileContext(context, macroExt.start)) {
+				try (CompileContext c2 = new CompileContext(context)) {
 					vc.writeCacheCode(c2);
 					installMacroArgs(c2);
 					innards.writeCompile(index, input, inputExactType, c2);
@@ -145,7 +145,7 @@ public class Macro implements RALCallable {
 		@Override
 		public void readCompileInner(RALExprSlice out, CompileContext context) {
 			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
-				try (CompileContext c2 = new CompileContext(context, macroExt.start)) {
+				try (CompileContext c2 = new CompileContext(context)) {
 					vc.writeCacheCode(c2);
 					installMacroArgs(c2);
 					innards.readCompile(out, c2);
@@ -156,7 +156,7 @@ public class Macro implements RALCallable {
 		@Override
 		protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
 			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
-				try (CompileContext c2 = new CompileContext(context, macroExt.start)) {
+				try (CompileContext c2 = new CompileContext(context)) {
 					vc.writeCacheCode(c2);
 					installMacroArgs(c2);
 					innards.readInplaceCompile(out, c2);

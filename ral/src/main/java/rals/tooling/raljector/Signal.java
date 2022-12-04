@@ -4,28 +4,21 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.diag;
+package rals.tooling.raljector;
 
-import org.json.JSONObject;
-
-import rals.parser.IDocPath;
+import java.util.HashSet;
+import java.util.function.Consumer;
 
 /**
- * Source position as it comes from an LSP (more or less).
+ * Don't even ask
  */
-public class SrcPosUntranslated extends SrcPosBase {
-	public final IDocPath file;
-	public SrcPosUntranslated(IDocPath f, int l, int c) {
-		super(l, c);
-		file = f;
+public final class Signal<T> {
+	public HashSet<Consumer<T>> listeners = new HashSet<>();
+	public void add(Consumer<T> ctl) {
+		listeners.add(ctl);
 	}
-	public SrcPosUntranslated(IDocPath f, JSONObject jo) {
-		super(jo.getInt("line"), jo.getInt("character"));
-		file = f;
-	}
-
-	@Override
-	public String toString() {
-		return file.getRootShortName() + ":" + line + "," + character;
+	public void fire(T o) {
+		for (Consumer<T> ct : listeners)
+			ct.accept(o);
 	}
 }

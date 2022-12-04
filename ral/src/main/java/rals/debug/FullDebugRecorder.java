@@ -10,16 +10,21 @@ import rals.code.CodeWriter;
 import rals.code.CompileContext;
 
 /**
- * Does the commenting
+ * Lots of stuff here...
  */
 public class FullDebugRecorder extends CommentingDebugRecorder {
 	public FullDebugRecorder() {
-		super(false);
+		super(true);
+	}
+
+	@Override
+	public boolean shouldGenerateSites() {
+		return true;
 	}
 
 	@Override
 	public void saveSiteAndCreateMarker(CodeWriter caller, DebugSite ds) {
-		caller.writeCode("sets va99 \"Blue!\"");
+		caller.writeCode("sets va99 \"" + ds.encode() + "\"");
 	}
 
 	@Override

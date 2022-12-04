@@ -6,10 +6,18 @@
  */
 package rals.debug;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import rals.code.CompileContext;
 import rals.code.IVAHandle;
@@ -27,13 +35,6 @@ public class DebugSite {
 	public DebugSite(DebugSite p, SrcPosUntranslated loc, CompileContext cc) {
 		parent = p;
 		location = loc;
-		if (parent != null) {
-			for (int i = 0; i < vaNames.length; i++)
-				vaNames[i] = parent.vaNames[i];
-		} else {
-			for (int i = 0; i < vaNames.length; i++)
-				vaNames[i] = CompileContext.vaToString(i);
-		}
 		for (Map.Entry<IVAHandle, Integer> lv : cc.heldVAHandles.entrySet())
 			vaNames[lv.getValue()] = lv.getKey().toString();
 	}
@@ -47,7 +48,8 @@ public class DebugSite {
 		location = new SrcPosUntranslated(new FileDocPath(new File(jo.getString("file"))), jo.getInt("line"), jo.getInt("character"));
 		for (int i = 0; i < vaNames.length; i++) {
 			String df = CompileContext.vaToString(i);
-			vaNames[i] = jo.getString(df);
+			if (jo.has(df))
+				vaNames[i] = jo.getString(df);
 		}
 	}
 
@@ -60,8 +62,34 @@ public class DebugSite {
 		jo.put("character", location.character);
 		for (int i = 0; i < vaNames.length; i++) {
 			String df = CompileContext.vaToString(i);
-			jo.put(df, vaNames[i]);
+			if (vaNames[i] != null)
+				jo.put(df, vaNames[i]);
 		}
 		return jo;
+	}
+
+	public String encode() {
+		byte[] data = toJSON().toString().getBytes(StandardCharsets.UTF_8);
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			GZIPOutputStream gos = new GZIPOutputStream(baos);
+			gos.write(data);
+			gos.close();
+			data = baos.toByteArray();
+		} catch (Exception e2) {
+			throw new RuntimeException(e2);
+		}
+		return Base64.getEncoder().encodeToString(data);
+	}
+
+	public static DebugSite tryDecode(String string) {
+		try {
+			byte[] data = Base64.getDecoder().decode(string);
+			try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(data))) {
+				return new DebugSite(new JSONObject(new JSONTokener(new InputStreamReader(gis, StandardCharsets.UTF_8))));
+			}
+		} catch (Exception ex) {
+			return null;
+		}
 	}
 }

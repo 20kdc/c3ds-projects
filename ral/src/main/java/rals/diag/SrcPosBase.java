@@ -6,6 +6,8 @@
  */
 package rals.diag;
 
+import org.json.JSONObject;
+
 /**
  * Base "common" SrcPos stuff between LSP world and RAL world - just the line/character
  */
@@ -21,6 +23,13 @@ public class SrcPosBase {
 		line = l;
 		character = c;
 		lcLong = toLCLong(l, c);
+	}
+
+	/**
+	 * Translates this to a Language Server Protocol UTF-16 range.
+	 */
+	public JSONObject toLSPPosition() {
+		return new JSONObject("{\"line\":" + line + ",\"character\":" + character + "}"); 
 	}
 
 	/**
