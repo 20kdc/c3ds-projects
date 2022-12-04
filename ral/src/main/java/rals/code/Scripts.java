@@ -65,7 +65,7 @@ public class Scripts {
 	/**
 	 * Compiles a section of this module to a set of requests.
 	 */
-	public void compileSectionForInject(LinkedList<String> queuedRequests, ScriptSection k) {
+	public void compileSectionForInject(LinkedList<String> queuedRequests, DebugType dt, ScriptSection k) {
 		RALStatement stmt;
 		switch (k) {
 		case Install:
@@ -77,7 +77,7 @@ public class Scripts {
 				StringBuilder outText = new StringBuilder();
 				outText.append(k2.toScrpLine());
 				outText.append('\n');
-				compileEventContents(new OuterCompileContext(outText, false), k2);
+				compileEventContents(new OuterCompileContext(outText, dt), k2);
 				queuedRequests.add(outText.toString());
 			}
 			return;
@@ -90,7 +90,7 @@ public class Scripts {
 		StringBuilder outText = new StringBuilder();
 		outText.append("execute\n");
 		if (stmt != null)
-			compile(new OuterCompileContext(outText, false), stmt, 0);
+			compile(new OuterCompileContext(outText, dt), stmt, 0);
 		queuedRequests.add(outText.toString());
 	}
 

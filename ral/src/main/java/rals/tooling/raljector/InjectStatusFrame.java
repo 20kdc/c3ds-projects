@@ -4,16 +4,23 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.code;
+package rals.tooling.raljector;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 
 /**
- * This is used for all the stuff Scripts always wants.
+ * Injection status.
  */
-public class OuterCompileContext {
-	public final StringBuilder out;
-	public final DebugType debug;
-	public OuterCompileContext(StringBuilder ot, DebugType dbg) {
-		out = ot;
-		debug = dbg;
+@SuppressWarnings("serial")
+public class InjectStatusFrame extends JDialog {
+	public final JTextPane injectTextArea = new JTextPane();
+	public InjectStatusFrame(JFrame jf) {
+		super(jf, "Inject");
+		setSize(400, 300);
+		injectTextArea.setEditable(false);
+		setContentPane(new JScrollPane(injectTextArea));
 	}
 }

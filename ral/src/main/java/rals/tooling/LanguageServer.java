@@ -89,7 +89,7 @@ public class LanguageServer implements ILSPCore {
 			Parser.parseFileAt(ipc, docPathSPF);
 			Scripts scr = ipc.module.resolve(ipc.typeSystem, ipc.diags, ipc.hcm);
 			// This shouldn't really be necessary, but do it to be safe.
-			scr.compile(new OuterCompileContext(new StringBuilder(), false));
+			scr.compile(new OuterCompileContext(new StringBuilder(), DebugType.None));
 
 			// Compilation completed, sort all the guts out
 			docHCM.put(docPath, hcm.compile(ipc));

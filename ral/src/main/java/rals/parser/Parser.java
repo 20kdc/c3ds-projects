@@ -42,7 +42,7 @@ public class Parser {
 		findParseFile(ic, null, "std/cpx_connection_test.ral");
 		StringBuilder sb = new StringBuilder();
 		Scripts scr = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
-		scr.compileInstall(new OuterCompileContext(sb, false));
+		scr.compileInstall(new OuterCompileContext(sb, DebugType.None));
 		ic.diags.unwrap();
 		return sb.toString();
 	}

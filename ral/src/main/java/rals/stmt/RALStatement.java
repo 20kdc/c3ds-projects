@@ -20,10 +20,12 @@ public abstract class RALStatement {
 
 	public final void compile(CodeWriter writer, CompileContext context) {
 		if (writer.queuedCommentForNextLine == null) {
-			if (writer.shouldWriteStatementDetails) {
-				writer.queuedCommentForNextLine = "@ " + extent + " " + this;
-			} else {
-				writer.queuedCommentForNextLine = "@ " + extent;
+			if (writer.debugType.writeLineComments) {
+				if (writer.debugType.writeDetailedLineComments) {
+					writer.queuedCommentForNextLine = "@ " + extent + " " + this;
+				} else {
+					writer.queuedCommentForNextLine = "@ " + extent;
+				}
 			}
 		}
 		context.diags.pushFrame(extent);

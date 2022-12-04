@@ -7,13 +7,19 @@
 package rals.code;
 
 /**
- * This is used for all the stuff Scripts always wants.
+ * Debugging control options
  */
-public class OuterCompileContext {
-	public final StringBuilder out;
-	public final DebugType debug;
-	public OuterCompileContext(StringBuilder ot, DebugType dbg) {
-		out = ot;
-		debug = dbg;
+public enum DebugType {
+	None(false, false, false),
+	ShortComments(true, false, false),
+	LongComments(true, true, false),
+	DebugSites(true, true, true);
+
+	public final boolean writeLineComments, writeDetailedLineComments, writeDebugSites;
+
+	DebugType(boolean a, boolean b, boolean c) {
+		writeLineComments = a;
+		writeDetailedLineComments = b;
+		writeDebugSites = c;
 	}
 }

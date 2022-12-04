@@ -20,11 +20,11 @@ public class CodeWriter {
 	private StringBuilder writer;
 	public int indent;
 	public String queuedCommentForNextLine = null;
-	public final boolean shouldWriteStatementDetails;
+	public final DebugType debugType;
 
-	public CodeWriter(StringBuilder outText, boolean dbg) {
+	public CodeWriter(StringBuilder outText, DebugType dbg) {
 		writer = outText;
-		shouldWriteStatementDetails = dbg;
+		debugType = dbg;
 	}
 
 	private void writeIndent() {

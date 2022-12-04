@@ -9,115 +9,130 @@ package rals.tooling.raljector;
 import java.awt.FileDialog;
 import java.awt.GridLayout;
 import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.text.JTextComponent;
 
 import rals.Main;
+import rals.code.DebugType;
 import rals.code.ScriptSection;
 import rals.parser.IDocPath;
 
 /**
  * GUI tool for injection and stuff.
  */
-public class RALjector {
-	public static void run(final IDocPath stdLibDP) {
-		final JButton[] mainButtons = new JButton[6];
-		final String[] mainButtonTexts = {
-				"File: NONE",
-				"Collapse Buttons",
-				"Inject Install/Events",
-				"Install",
-				"Events",
-				"Remove"
-		};
-		final String[] smallButtonTexts = {
-				"FIL",
-				"Xpd",
-				"I/E",
-				"I",
-				"E",
-				"R"
-		};
-		final JFrame jf = new JFrame("RALjector");
-		final JDialog injectFrame = new JDialog(jf, "Inject");
-		injectFrame.setSize(400, 300);
-		final JTextPane injectTextArea = new JTextPane();
-		injectTextArea.setEditable(false);
-		injectFrame.setContentPane(new JScrollPane(injectTextArea));
-		final AtomicBoolean isSmall = new AtomicBoolean(false);
-		final Runnable updateTexts = () -> {
-			boolean nowSmall = isSmall.get();
-			for (int i = 0; i < mainButtons.length; i++)
-				mainButtons[i].setText(nowSmall ? smallButtonTexts[i] : mainButtonTexts[i]);
-		};
-		final AtomicReference<File> fileRef = new AtomicReference<>();
+@SuppressWarnings("serial")
+public class RALjector extends JFrame {
+	// UI
+	public final InjectStatusFrame injectFrame;
+	public final JButton[] mainButtons;
+	// Variables
+	public final IDocPath stdLibDP;
+	public File currentFile;
+	public GameStateTracker debugState;
+	public boolean injectWithDebugInfo;
+	// UI Variables
+	public final String[] mainButtonTexts = {
+			"File: NONE",
+			"Debug Info: OFF",
+			"Collapse Buttons",
+			"Inject Install/Events",
+			"Install",
+			"Events",
+			"Remove"
+	};
+	public final String[] smallButtonTexts = {
+			"FIL",
+			"Db0",
+			"Xpd",
+			"I/E",
+			"I",
+			"E",
+			"R",
+			"D"
+	};
+	public boolean isSmall;
+
+	public RALjector(final IDocPath std) {
+		super("RALjector");
+		stdLibDP = std;
+		injectFrame = new InjectStatusFrame(this);
+		mainButtons = new JButton[mainButtonTexts.length];
 		final Runnable[] actions = new Runnable[] {
 				() -> {
-					FileDialog fd = new FileDialog(jf);
+					FileDialog fd = new FileDialog(RALjector.this);
 					fd.setFile("*.ral");
 					fd.setVisible(true);
 					File[] fs = fd.getFiles();
 					if (fs.length == 1) {
-						fileRef.set(fs[0]);
-						mainButtonTexts[0] = "File: " + fs[0].getName();
-						updateTexts.run();
+						currentFile = fs[0];
+						updateTexts();
 					}
 				},
 				() -> {
-					isSmall.set(!isSmall.get());
-					updateTexts.run();
-					jf.pack();
+					injectWithDebugInfo = !injectWithDebugInfo;
+					updateTexts();
 				},
 				() -> {
-					injectUI(injectFrame, injectTextArea, stdLibDP, fileRef, ScriptSection.Events, ScriptSection.Install);
+					isSmall = !isSmall;
+					updateTexts();
+					pack();
 				},
 				() -> {
-					injectUI(injectFrame, injectTextArea, stdLibDP, fileRef, ScriptSection.Install);
+					injectUI(ScriptSection.Events, ScriptSection.Install);
 				},
 				() -> {
-					injectUI(injectFrame, injectTextArea, stdLibDP, fileRef, ScriptSection.Events);
+					injectUI(ScriptSection.Install);
 				},
 				() -> {
-					injectUI(injectFrame, injectTextArea, stdLibDP, fileRef, ScriptSection.Remove);
+					injectUI(ScriptSection.Events);
 				},
+				() -> {
+					injectUI(ScriptSection.Remove);
+				}
 		};
-		jf.setTitle("RALjector");
-		jf.setLayout(new GridLayout(0, 1));
-		jf.setAlwaysOnTop(true);
+		setTitle("RALjector");
+		setLayout(new GridLayout(0, 1));
+		setAlwaysOnTop(true);
 		for (int i = 0; i < mainButtons.length; i++) {
 			final int iF = i;
-			mainButtons[i] = new JButton(mainButtonTexts[i]);
+			mainButtons[i] = new JButton("?");
 			mainButtons[i].addActionListener((a) -> {
 				actions[iF].run();
 			});
-			jf.add(mainButtons[i]);
+			add(mainButtons[i]);
 		}
-		jf.pack();
-		jf.setLocationByPlatform(true);
-		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		jf.setVisible(true);
+		updateTexts();
+		pack();
+		setLocationByPlatform(true);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setVisible(true);
 	}
 
-	private static void injectUI(JDialog jf, JTextComponent text, IDocPath stdLibDP, AtomicReference<File> f, ScriptSection... sections) {
-		File fRes = f.get();
+	public void updateTexts() {
+		if (currentFile != null) {
+			mainButtonTexts[0] = "File: " + currentFile.getName();
+		} else {
+			mainButtonTexts[0] = "File: NONE";
+		}
+		mainButtonTexts[1] = "Debug Info: " + (injectWithDebugInfo ? "ON" : "OFF");
+		smallButtonTexts[1] = "DI" + (injectWithDebugInfo ? "1" : "0");
+		for (int i = 0; i < mainButtons.length; i++)
+			mainButtons[i].setText(isSmall ? smallButtonTexts[i] : mainButtonTexts[i]);
+	}
+
+	private void injectUI(ScriptSection... sections) {
 		StringBuilder sb = new StringBuilder();
-		if (fRes == null) {
+		if (currentFile == null) {
 			sb.append("No file!");
 		} else {
-			if (Main.inject(sb, stdLibDP, fRes, sections)) {
+			if (Main.inject(sb, stdLibDP, currentFile, injectWithDebugInfo ? DebugType.DebugSites : DebugType.None, sections)) {
 				sb.append("\nInject successful.");
 			} else {
 				sb.append("\nInject failed.");
 			}
 		}
-		text.setText(sb.toString());
-		jf.setVisible(true);
+		injectFrame.injectTextArea.setText(sb.toString());
+		injectFrame.setVisible(true);
 	}
 }

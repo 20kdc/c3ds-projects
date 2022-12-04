@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 import rals.code.CodeWriter;
+import rals.code.DebugType;
 import rals.code.OuterCompileContext;
 import rals.code.ScriptSection;
 import rals.code.Scripts;
@@ -84,8 +85,8 @@ public class Main {
 			File outFile = new File(args[2]);
 			IncludeParseContext ic = Parser.run(stdLibDP, new File(args[1]));
 			StringBuilder outText = new StringBuilder();
-			OuterCompileContext cctx = new OuterCompileContext(outText, false);
-			OuterCompileContext cctxDbg = new OuterCompileContext(outText, true);
+			OuterCompileContext cctx = new OuterCompileContext(outText, DebugType.ShortComments);
+			OuterCompileContext cctxDbg = new OuterCompileContext(outText, DebugType.LongComments);
 			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 			if (args[0].equals("compile")) {
 				resolvedCode.compile(cctx);
@@ -113,13 +114,13 @@ public class Main {
 			StringBuilder sb = new StringBuilder();
 			boolean ok = false;
 			if (args[0].equals("inject")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), ScriptSection.Events, ScriptSection.Install);
+				ok = inject(sb, stdLibDP, new File(args[1]), DebugType.None, ScriptSection.Events, ScriptSection.Install);
 			} else if (args[0].equals("injectInstall")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), ScriptSection.Install);
+				ok = inject(sb, stdLibDP, new File(args[1]), DebugType.None, ScriptSection.Install);
 			} else if (args[0].equals("injectEvents")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), ScriptSection.Events);
+				ok = inject(sb, stdLibDP, new File(args[1]), DebugType.None, ScriptSection.Events);
 			} else if (args[0].equals("injectRemove")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), ScriptSection.Remove);
+				ok = inject(sb, stdLibDP, new File(args[1]), DebugType.None, ScriptSection.Remove);
 			} else {
 				throw new RuntimeException("?");
 			}
@@ -153,19 +154,19 @@ public class Main {
 			fos.write(sb.toString().getBytes(StandardCharsets.UTF_8));
 			fos.close();
 		} else if (args[0].equals("raljector")) {
-			RALjector.run(stdLibDP);
+			new RALjector(stdLibDP);
 		} else {
 			printHelp();
 		}
 	}
 
-	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, ScriptSection... sections) {
+	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, DebugType di, ScriptSection... sections) {
 		try {
 			IncludeParseContext ic = Parser.run(stdLibDP, f);
 			LinkedList<String> queuedRequests = new LinkedList<>();
 			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 			for (ScriptSection s : sections)
-				resolvedCode.compileSectionForInject(queuedRequests, s);
+				resolvedCode.compileSectionForInject(queuedRequests, di, s);
 			String res = ic.diags.unwrapToString();
 			if (res != null) {
 				sb.append("Compile failed:\n");
