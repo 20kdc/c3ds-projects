@@ -18,9 +18,17 @@ import rals.types.*;
  * Represents resolved scripts (as opposed to the unresolved script soup).
  */
 public class Scripts {
+	public final TypeSystem typeSystem;
+	public final DiagRecorder diags;
+
 	public RALStatement installScript;
 	public HashMap<ScriptIdentifier, RALStatement> eventScripts = new HashMap<>();
 	public RALStatement removeScript;
+
+	public Scripts(TypeSystem ts, DiagRecorder d) {
+		typeSystem = ts;
+		diags = d;
+	}
 
 	/**
 	 * Compiles the module's install script.
@@ -37,7 +45,7 @@ public class Scripts {
 		for (Map.Entry<ScriptIdentifier, RALStatement> eventScript : eventScripts.entrySet()) {
 			ScriptIdentifier k = eventScript.getKey();
 			ctx.out.append(" * ");
-			RALType.AgentClassifier type = ctx.typeSystem.byClassifier(k.classifier);
+			RALType.AgentClassifier type = typeSystem.byClassifier(k.classifier);
 			ctx.out.append(type.typeName);
 			String msgName = type.lookupMSName(k.script, true);
 			if (msgName != null) {
@@ -55,17 +63,35 @@ public class Scripts {
 	}
 
 	/**
-	 * Compiles the module's event scripts to a set of requests.
+	 * Compiles a section of this module to a set of requests.
 	 */
-	public void compileEventsForInject(LinkedList<String> requests, TypeSystem ts, DiagRecorder diags) {
-		for (Map.Entry<ScriptIdentifier, RALStatement> eventScript : eventScripts.entrySet()) {
-			ScriptIdentifier k = eventScript.getKey();
-			StringBuilder outText = new StringBuilder();
-			outText.append(k.toScrpLine());
-			outText.append('\n');
-			compileEventContents(new OuterCompileContext(outText, ts, diags, false), k);
-			requests.add(outText.toString());
+	public void compileSectionForInject(LinkedList<String> queuedRequests, ScriptSection k) {
+		RALStatement stmt;
+		switch (k) {
+		case Install:
+			stmt = installScript;
+			break;
+		case Events:
+			for (Map.Entry<ScriptIdentifier, RALStatement> eventScript : eventScripts.entrySet()) {
+				ScriptIdentifier k2 = eventScript.getKey();
+				StringBuilder outText = new StringBuilder();
+				outText.append(k2.toScrpLine());
+				outText.append('\n');
+				compileEventContents(new OuterCompileContext(outText, false), k2);
+				queuedRequests.add(outText.toString());
+			}
+			return;
+		case Remove:
+			stmt = removeScript;
+			break;
+		default:
+			throw new RuntimeException("Unknown GlobalScriptKind " + k);
 		}
+		StringBuilder outText = new StringBuilder();
+		outText.append("execute\n");
+		if (stmt != null)
+			compile(new OuterCompileContext(outText, false), stmt, 0);
+		queuedRequests.add(outText.toString());
 	}
 
 	/**
@@ -98,6 +124,6 @@ public class Scripts {
 	private void compile(OuterCompileContext ctx, RALStatement v, int ii) {
 		CodeWriter cw = new CodeWriter(ctx.out, ctx.debug);
 		cw.indent = ii;
-		v.compile(cw, new CompileContext(ctx.typeSystem, this, ctx.diags, cw));
+		v.compile(cw, new CompileContext(typeSystem, this, diags, cw));
 	}
 }

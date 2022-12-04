@@ -10,18 +10,23 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 import rals.code.CodeWriter;
 import rals.code.OuterCompileContext;
+import rals.code.ScriptSection;
 import rals.code.Scripts;
+import rals.diag.DiagRecorder;
 import rals.parser.*;
 import rals.tooling.DocGen;
 import rals.tooling.Injector;
 import rals.tooling.LSPBaseProtocolLoop;
 import rals.tooling.LanguageServer;
+import rals.tooling.raljector.RALjector;
 
 /**
  * The RAL compiler.
@@ -77,10 +82,10 @@ public class Main {
 				return;
 			}
 			File outFile = new File(args[2]);
-			IncludeParseContext ic = Parser.run(stdLibDP, args[1]);
+			IncludeParseContext ic = Parser.run(stdLibDP, new File(args[1]));
 			StringBuilder outText = new StringBuilder();
-			OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
-			OuterCompileContext cctxDbg = new OuterCompileContext(outText, ic.typeSystem, ic.diags, true);
+			OuterCompileContext cctx = new OuterCompileContext(outText, false);
+			OuterCompileContext cctxDbg = new OuterCompileContext(outText, true);
 			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 			if (args[0].equals("compile")) {
 				resolvedCode.compile(cctx);
@@ -95,53 +100,45 @@ public class Main {
 			} else {
 				throw new RuntimeException("?");
 			}
-			ic.diags.unwrap();
+			unwrapCalmly(ic.diags);
 			FileOutputStream fos = new FileOutputStream(outFile);
 			fos.write(outText.toString().getBytes(CodeWriter.CAOS_CHARSET));
 			fos.close();
 			System.out.println("Compile completed");
-		} else if (args[0].equals("inject") || args[0].equals("injectEvents") || args[0].equals("injectRemove")) {
+		} else if (args[0].equals("inject") || args[0].equals("injectInstall") || args[0].equals("injectEvents") || args[0].equals("injectRemove")) {
 			if (args.length != 2) {
 				printHelp();
 				return;
 			}
-			IncludeParseContext ic = Parser.run(stdLibDP, args[1]);
-			LinkedList<String> queuedRequests = new LinkedList<>();
-			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
+			StringBuilder sb = new StringBuilder();
+			boolean ok = false;
 			if (args[0].equals("inject")) {
-				// events
-				resolvedCode.compileEventsForInject(queuedRequests, ic.typeSystem, ic.diags);
-				// install
-				StringBuilder outText = new StringBuilder();
-				outText.append("execute\n");
-				OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
-				resolvedCode.compileInstall(cctx);
-				queuedRequests.add(outText.toString());
+				ok = inject(sb, stdLibDP, new File(args[1]), ScriptSection.Events, ScriptSection.Install);
+			} else if (args[0].equals("injectInstall")) {
+				ok = inject(sb, stdLibDP, new File(args[1]), ScriptSection.Install);
 			} else if (args[0].equals("injectEvents")) {
-				resolvedCode.compileEventsForInject(queuedRequests, ic.typeSystem, ic.diags);
+				ok = inject(sb, stdLibDP, new File(args[1]), ScriptSection.Events);
 			} else if (args[0].equals("injectRemove")) {
-				StringBuilder outText = new StringBuilder();
-				outText.append("execute\n");
-				OuterCompileContext cctx = new OuterCompileContext(outText, ic.typeSystem, ic.diags, false);
-				resolvedCode.compileRemove(cctx);
-				queuedRequests.add(outText.toString());
+				ok = inject(sb, stdLibDP, new File(args[1]), ScriptSection.Remove);
 			} else {
 				throw new RuntimeException("?");
 			}
-			ic.diags.unwrap();
-			for (String req : queuedRequests)
-				System.out.println(Injector.cpxRequest(req));
+			System.out.print(sb.toString());
+			if (!ok)
+				System.exit(1);
 		} else if (args[0].equals("cpxConnectionTest")) {
 			// be a little flashy with this
 			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest(stdLibDP)));
 		} else if (args[0].equals("lsp")) {
-			new LSPBaseProtocolLoop(new LanguageServer(ralStandardLibrary, false)).run();
+			new LSPBaseProtocolLoop(new LanguageServer(ralStandardLibrary, false), false).run();
 		} else if (args[0].equals("lspLog")) {
 			FileOutputStream fos = new FileOutputStream(new File(ralStandardLibrary, "lsp.log"), true);
 			System.setErr(new PrintStream(fos, true, "UTF-8"));
-			new LSPBaseProtocolLoop(new LanguageServer(ralStandardLibrary, true)).run();
+			new LSPBaseProtocolLoop(new LanguageServer(ralStandardLibrary, true), true).run();
+		} else if (args[0].equals("lspLoud")) {
+			new LSPBaseProtocolLoop(new LanguageServer(ralStandardLibrary, true), true).run();
 		} else if (args[0].equals("docGen")) {
-			IncludeParseContext ic = Parser.run(stdLibDP, args[1]);
+			IncludeParseContext ic = Parser.run(stdLibDP, new File(args[1]));
 			// We have to run the resolve here so that macros pre-compile (so we can mine out their types).
 			// But we don't actually care for the contents of the resolved output.
 			ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
@@ -155,8 +152,47 @@ public class Main {
 			FileOutputStream fos = new FileOutputStream(args[2]);
 			fos.write(sb.toString().getBytes(StandardCharsets.UTF_8));
 			fos.close();
+		} else if (args[0].equals("raljector")) {
+			RALjector.run(stdLibDP);
 		} else {
 			printHelp();
+		}
+	}
+
+	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, ScriptSection... sections) {
+		try {
+			IncludeParseContext ic = Parser.run(stdLibDP, f);
+			LinkedList<String> queuedRequests = new LinkedList<>();
+			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
+			for (ScriptSection s : sections)
+				resolvedCode.compileSectionForInject(queuedRequests, s);
+			String res = ic.diags.unwrapToString();
+			if (res != null) {
+				sb.append("Compile failed:\n");
+				sb.append(res);
+				return false;
+			}
+			for (String req : queuedRequests) {
+				sb.append(Injector.cpxRequest(req));
+				sb.append("\n");
+			}
+			return true;
+		} catch (Exception ex) {
+			sb.append("-- Error --\n");
+			StringWriter sw = new StringWriter();
+			ex.printStackTrace(new PrintWriter(sw));
+			sb.append(sw);
+			return false;
+		}
+	}
+
+	private static void unwrapCalmly(DiagRecorder diags) {
+		String res = diags.unwrapToString();
+		if (res != null) {
+			System.out.println("Compile failed:");
+			System.out.print(res);
+			System.exit(1);
+			return;
 		}
 	}
 
@@ -167,11 +203,14 @@ public class Main {
 		System.out.println("compileEvents INPUT OUTPUT: Same as compile, but only the event scripts");
 		System.out.println("compileRemove INPUT OUTPUT: Same as compile, but only the remove script (without rscr prefix!)");
 		System.out.println("inject INPUT: Injects event scripts and install script");
+		System.out.println("injectInstall INPUT: Injects install script only");
 		System.out.println("injectEvents INPUT: Injects event scripts only");
 		System.out.println("injectRemove INPUT: Injects removal script");
 		System.out.println("lsp: Language server over standard input/output");
 		System.out.println("lspLog: Like lsp, but writes out lsp.log and shows additional LSP debug information");
+		System.out.println("lspLoud: Like lsp, but sends debug information to standard error and shows additional LSP debug information");
 		System.out.println("docGen INPUT OUTPUT (+/-PREFIX)...: Generates AsciiDoc documentation.");
 		System.out.println("cpxConnectionTest: Test CPX connection");
+		System.out.println("raljector: RALjector GUI");
 	}
 }

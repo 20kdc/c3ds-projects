@@ -45,7 +45,7 @@ public class ScriptsUR {
 
 	public Scripts resolve(TypeSystem ts, DiagRecorder diags, IHCMRecorder hcm) {
 		UnresolvedWorld world = new UnresolvedWorld(ts, this, diags, hcm);
-		Scripts scripts = new Scripts();
+		Scripts scripts = new Scripts(ts, diags);
 
 		// This ensures macros are ready
 		for (RALCallable rc : callable.values())

@@ -69,10 +69,16 @@ public class DiagRecorder {
 		diag(new Diag(Diag.Kind.Error, frames.toArray(new SrcRange[0]), details.toString(), ex.getMessage()));
 	}
 
-	public void unwrap() {
+	public String unwrapToString() {
 		if (hasFailed) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("Compile errors:\n");
+			for (Diag d : diagnostics) {
+				sb.append(d.frames[0]);
+				sb.append(": ");
+				sb.append(d.shortText);
+				sb.append("\n");
+			}
+			sb.append("\n -- Long Versions... --\n\n");
 			for (Diag d : diagnostics) {
 				for (SrcRange sr : d.frames) {
 					sb.append(sr);
@@ -81,8 +87,15 @@ public class DiagRecorder {
 				sb.append(d.text);
 				sb.append("\n");
 			}
-			throw new RuntimeException(sb.toString());
+			return sb.toString();
 		}
+		return null;
+	}
+
+	public void unwrap() {
+		String s = unwrapToString();
+		if (s != null)
+			throw new RuntimeException("Compile errors:\n" + s);
 	}
 
 	public void pushFrame(SrcRange extent) {

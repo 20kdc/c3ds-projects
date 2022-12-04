@@ -31,10 +31,10 @@ public class Parser {
 		findParseFile(ic, null, "std/compiler_helpers.ral");
 		return ic;
 	}
-	public static IncludeParseContext run(IDocPath stdlib, String path) throws IOException {
+	public static IncludeParseContext run(IDocPath stdlib, File path) throws IOException {
 		IncludeParseContext ic = newContext(stdlib);
-		IDocPath init = new FileDocPath(new File(path));
-		parseFileAt(ic, new SrcPosFile(null, init, path));
+		IDocPath init = new FileDocPath(path);
+		parseFileAt(ic, new SrcPosFile(null, init, path.getName()));
 		return ic;
 	}
 	public static String runCPXConnTest(IDocPath stdlib) throws IOException {
@@ -42,7 +42,7 @@ public class Parser {
 		findParseFile(ic, null, "std/cpx_connection_test.ral");
 		StringBuilder sb = new StringBuilder();
 		Scripts scr = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
-		scr.compileInstall(new OuterCompileContext(sb, ic.typeSystem, ic.diags, false));
+		scr.compileInstall(new OuterCompileContext(sb, false));
 		ic.diags.unwrap();
 		return sb.toString();
 	}

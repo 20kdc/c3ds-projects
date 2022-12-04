@@ -23,14 +23,15 @@ import rals.tooling.ILSPCore.LSPErrorException;
  */
 public class LSPBaseProtocolLoop {
 	public boolean hasReceivedShutdown = false;
+	// Optional!
 	public final PrintWriter err;
 	public final ILSPCore core;
 	public final DataInputStream dis;
 	public final PrintStream out;
 
-	public LSPBaseProtocolLoop(ILSPCore c) {
+	public LSPBaseProtocolLoop(ILSPCore c, boolean dbgMode) {
 		dis = new DataInputStream(System.in);
-		err = new PrintWriter(System.err);
+		err = dbgMode ? new PrintWriter(System.err) : null;
 		out = System.out;
 		core = c;
 	}
@@ -39,8 +40,10 @@ public class LSPBaseProtocolLoop {
 	 * Runs the language server.
 	 */
 	public void run() throws IOException {
-		err.println(" -- LanguageServer started @ " + new Date() + " -- ");
-		err.flush();
+		if (err != null) {
+			err.println(" -- LanguageServer started @ " + new Date() + " -- ");
+			err.flush();
+		}
 		while (true) {
 			// check for EOF
 			int cl = -1;
@@ -66,10 +69,12 @@ public class LSPBaseProtocolLoop {
 			dis.readFully(data);
 			String dataStr = new String(data, StandardCharsets.UTF_8);
 
-			// dump input
-			err.print("IN: ");
-			err.println(dataStr);
-			err.flush();
+			if (err != null) {
+				// dump input
+				err.print("IN: ");
+				err.println(dataStr);
+				err.flush();
+			}
 
 			// continue parsing
 			JSONTokener jt = new JSONTokener(dataStr);
@@ -144,11 +149,13 @@ public class LSPBaseProtocolLoop {
 	}
 
 	private void sendObj(PrintStream out, JSONObject rsp) throws IOException {
-		// dump output
-		err.print("OUT: ");
-		rsp.write(err, 1, 0);
-		err.println();
-		err.flush();
+		if (err != null) {
+			// dump output
+			err.print("OUT: ");
+			rsp.write(err, 1, 0);
+			err.println();
+			err.flush();
+		}
 		// send
 		byte[] data = rsp.toString().getBytes(StandardCharsets.UTF_8);
 		out.print("Content-Length: " + data.length + "\r\n\r\n");

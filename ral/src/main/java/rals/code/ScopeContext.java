@@ -42,9 +42,9 @@ public class ScopeContext {
 		DefInfo dPrt = new DefInfo.Builtin("part is an implicit parameter to CAOS commands that may operate on compounds.");
 		setLoc("part", dPrt, new RALVarPart(world.types.gInteger));
 		DefInfo dPm1 = new DefInfo.Builtin("_p1_ is a parameter. The engine can set it for some scripts, or it can be controlled by the sender of a message.");
-		setLoc("_p1_", dPm1, new RALVarString.Fixed("_p1_", parent.p1Type, false));
+		setLoc("_p1_", dPm1, new RALVarString.Fixed("_p1_", parent.p1Type, true));
 		DefInfo dPm2 = new DefInfo.Builtin("_p2_ is a parameter. The engine can set it for some scripts, or it can be controlled by the sender of a message.");
-		setLoc("_p2_", dPm2, new RALVarString.Fixed("_p2_", parent.p2Type, false));
+		setLoc("_p2_", dPm2, new RALVarString.Fixed("_p2_", parent.p2Type, true));
 		DefInfo dNul = new DefInfo.Builtin("null is an agent reference that does not actually reference an agent.");
 		setLoc("null", dNul, new RALVarString.Fixed("null", world.types.gNull, false));
 		DefInfo dDsc = new DefInfo.Builtin("_, or discard, is a fake variable which tells RAL to dispose of a value.");

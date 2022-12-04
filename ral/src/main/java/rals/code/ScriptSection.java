@@ -7,13 +7,10 @@
 package rals.code;
 
 /**
- * This is used for all the stuff Scripts always wants.
+ * This is silly, but less silly than using a bool for this.
  */
-public class OuterCompileContext {
-	public final StringBuilder out;
-	public final boolean debug;
-	public OuterCompileContext(StringBuilder ot, boolean dbg) {
-		out = ot;
-		debug = dbg;
-	}
+public enum ScriptSection {
+	Install,
+	Events,
+	Remove;
 }
