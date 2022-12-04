@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import rals.debug.IDebugRecorder;
 import rals.diag.DiagRecorder;
 import rals.stmt.RALStatement;
 import rals.types.*;
@@ -65,7 +66,7 @@ public class Scripts {
 	/**
 	 * Compiles a section of this module to a set of requests.
 	 */
-	public void compileSectionForInject(LinkedList<String> queuedRequests, DebugType dt, ScriptSection k) {
+	public void compileSectionForInject(LinkedList<String> queuedRequests, IDebugRecorder dt, ScriptSection k) {
 		RALStatement stmt;
 		switch (k) {
 		case Install:

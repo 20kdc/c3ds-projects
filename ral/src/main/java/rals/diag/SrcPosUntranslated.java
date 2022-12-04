@@ -15,6 +15,10 @@ import rals.parser.IDocPath;
  */
 public class SrcPosUntranslated extends SrcPosBase {
 	public final IDocPath file;
+	public SrcPosUntranslated(IDocPath f, int l, int c) {
+		super(l, c);
+		file = f;
+	}
 	public SrcPosUntranslated(IDocPath f, JSONObject jo) {
 		super(jo.getInt("line"), jo.getInt("character"));
 		file = f;

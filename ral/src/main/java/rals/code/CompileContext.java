@@ -6,7 +6,9 @@
  */
 package rals.code;
 
+import rals.debug.DebugSite;
 import rals.diag.DiagRecorder;
+import rals.diag.SrcPos;
 import rals.types.TypeSystem;
 import rals.types.RALType;
 import rals.expr.*;
@@ -25,18 +27,34 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, I
 	private int subUsers = 0;
 	private final CompileContext subUserTrackingParent;
 
+	/**
+	 * BEWARE: CAN BE NULL (especially if shouldGenerateSites is false)
+	 */
+	public final DebugSite parentDebugSite;
+
 	public CompileContext(TypeSystem ts, Scripts m, DiagRecorder d, CodeWriter cw) {
 		super(ts, m, d);
+		parentDebugSite = null;
 		writer = cw;
 		// create the VA allocator
 		alloc = new ScopedVAAllocator(new LinearVAAllocator());
 		alloc.ensureFree(100);
+		cw.debug.initializeRootCC(this);
 		// track subusers
 		subUserTrackingParent = null;
 	}
 
 	public CompileContext(CompileContext sc) {
+		this(sc, null);
+	}
+
+	public CompileContext(CompileContext sc, SrcPos dbgPos) {
 		super(sc);
+		if (dbgPos != null) {
+			parentDebugSite = sc.writer.debug.shouldGenerateSites() ? new DebugSite(sc.parentDebugSite, dbgPos.toUntranslated(), sc) : null;
+		} else {
+			parentDebugSite = sc.parentDebugSite;
+		}
 		writer = sc.writer;
 		alloc = new ScopedVAAllocator(sc.alloc);
 		// track subusers

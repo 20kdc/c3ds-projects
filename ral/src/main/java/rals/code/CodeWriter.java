@@ -8,6 +8,9 @@ package rals.code;
 
 import java.nio.charset.Charset;
 
+import rals.debug.DebugSite;
+import rals.debug.IDebugRecorder;
+
 /**
  * It's that thing that does the stuff!
  */
@@ -20,11 +23,12 @@ public class CodeWriter {
 	private StringBuilder writer;
 	public int indent;
 	public String queuedCommentForNextLine = null;
-	public final DebugType debugType;
+	public DebugSite queuedSiteForNextLine = null;
+	public final IDebugRecorder debug;
 
-	public CodeWriter(StringBuilder outText, DebugType dbg) {
+	public CodeWriter(StringBuilder outText, IDebugRecorder dbg) {
 		writer = outText;
-		debugType = dbg;
+		debug = dbg;
 	}
 
 	private void writeIndent() {
@@ -37,6 +41,11 @@ public class CodeWriter {
 			String qc = queuedCommentForNextLine;
 			queuedCommentForNextLine = null;
 			writeComment(qc);
+		}
+		if (queuedSiteForNextLine != null) {
+			DebugSite ds = queuedSiteForNextLine;
+			queuedSiteForNextLine = null;
+			debug.saveSiteAndCreateMarker(this, ds);
 		}
 	}
 

@@ -4,18 +4,26 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.code;
+package rals.debug;
 
-import rals.debug.IDebugRecorder;
+import rals.code.CodeWriter;
+import rals.code.CompileContext;
 
 /**
- * This is used for all the stuff Scripts always wants.
+ * Does the commenting
  */
-public class OuterCompileContext {
-	public final StringBuilder out;
-	public final IDebugRecorder debug;
-	public OuterCompileContext(StringBuilder ot, IDebugRecorder dbg) {
-		out = ot;
-		debug = dbg;
+public class FullDebugRecorder extends CommentingDebugRecorder {
+	public FullDebugRecorder() {
+		super(false);
+	}
+
+	@Override
+	public void saveSiteAndCreateMarker(CodeWriter caller, DebugSite ds) {
+		caller.writeCode("sets va99 \"Blue!\"");
+	}
+
+	@Override
+	public void initializeRootCC(CompileContext compileContext) {
+		compileContext.allocVA(99);
 	}
 }

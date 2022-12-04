@@ -13,10 +13,10 @@ import java.util.LinkedList;
 
 import rals.code.*;
 import rals.cond.*;
+import rals.debug.*;
 import rals.diag.*;
 import rals.expr.*;
-import rals.hcm.DummyHCMRecorder;
-import rals.hcm.HCMIntents;
+import rals.hcm.*;
 import rals.lex.*;
 import rals.stmt.*;
 import rals.types.*;
@@ -42,7 +42,7 @@ public class Parser {
 		findParseFile(ic, null, "std/cpx_connection_test.ral");
 		StringBuilder sb = new StringBuilder();
 		Scripts scr = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
-		scr.compileInstall(new OuterCompileContext(sb, DebugType.None));
+		scr.compileInstall(new OuterCompileContext(sb, new DummyDebugRecorder()));
 		ic.diags.unwrap();
 		return sb.toString();
 	}

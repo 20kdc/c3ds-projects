@@ -7,6 +7,7 @@
 package rals.stmt;
 
 import rals.code.*;
+import rals.debug.DebugSite;
 import rals.diag.SrcRange;
 
 /**
@@ -19,15 +20,10 @@ public abstract class RALStatement {
 	}
 
 	public final void compile(CodeWriter writer, CompileContext context) {
-		if (writer.queuedCommentForNextLine == null) {
-			if (writer.debugType.writeLineComments) {
-				if (writer.debugType.writeDetailedLineComments) {
-					writer.queuedCommentForNextLine = "@ " + extent + " " + this;
-				} else {
-					writer.queuedCommentForNextLine = "@ " + extent;
-				}
-			}
-		}
+		if (writer.queuedCommentForNextLine == null)
+			writer.queuedCommentForNextLine = writer.debug.createQueuedComment(this);
+		if (writer.debug.shouldGenerateSites())
+			writer.queuedSiteForNextLine = new DebugSite(context.parentDebugSite, extent.start.toUntranslated(), context);
 		context.diags.pushFrame(extent);
 		try {
 			compileInner(writer, context);

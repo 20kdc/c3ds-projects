@@ -14,8 +14,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 
 import rals.Main;
-import rals.code.DebugType;
 import rals.code.ScriptSection;
+import rals.debug.DummyDebugRecorder;
 import rals.parser.IDocPath;
 
 /**
@@ -126,7 +126,7 @@ public class RALjector extends JFrame {
 		if (currentFile == null) {
 			sb.append("No file!");
 		} else {
-			if (Main.inject(sb, stdLibDP, currentFile, injectWithDebugInfo ? DebugType.DebugSites : DebugType.None, sections)) {
+			if (Main.inject(sb, stdLibDP, currentFile, new DummyDebugRecorder(), sections)) {
 				sb.append("\nInject successful.");
 			} else {
 				sb.append("\nInject failed.");

@@ -65,4 +65,8 @@ public class SrcPos extends SrcPosBase {
 	public SrcPos max(SrcPos end) {
 		return end.globalPosition > globalPosition ? end : this;
 	}
+
+	public SrcPosUntranslated toUntranslated() {
+		return new SrcPosUntranslated(file.docPath, line, character);
+	}
 }

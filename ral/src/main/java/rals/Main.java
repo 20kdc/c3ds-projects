@@ -17,10 +17,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 import rals.code.CodeWriter;
-import rals.code.DebugType;
 import rals.code.OuterCompileContext;
 import rals.code.ScriptSection;
 import rals.code.Scripts;
+import rals.debug.CommentingDebugRecorder;
+import rals.debug.DummyDebugRecorder;
+import rals.debug.IDebugRecorder;
 import rals.diag.DiagRecorder;
 import rals.parser.*;
 import rals.tooling.DocGen;
@@ -85,8 +87,8 @@ public class Main {
 			File outFile = new File(args[2]);
 			IncludeParseContext ic = Parser.run(stdLibDP, new File(args[1]));
 			StringBuilder outText = new StringBuilder();
-			OuterCompileContext cctx = new OuterCompileContext(outText, DebugType.ShortComments);
-			OuterCompileContext cctxDbg = new OuterCompileContext(outText, DebugType.LongComments);
+			OuterCompileContext cctx = new OuterCompileContext(outText, new CommentingDebugRecorder(false));
+			OuterCompileContext cctxDbg = new OuterCompileContext(outText, new CommentingDebugRecorder(true));
 			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 			if (args[0].equals("compile")) {
 				resolvedCode.compile(cctx);
@@ -113,14 +115,15 @@ public class Main {
 			}
 			StringBuilder sb = new StringBuilder();
 			boolean ok = false;
+			DummyDebugRecorder ddr = new DummyDebugRecorder();
 			if (args[0].equals("inject")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), DebugType.None, ScriptSection.Events, ScriptSection.Install);
+				ok = inject(sb, stdLibDP, new File(args[1]), ddr, ScriptSection.Events, ScriptSection.Install);
 			} else if (args[0].equals("injectInstall")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), DebugType.None, ScriptSection.Install);
+				ok = inject(sb, stdLibDP, new File(args[1]), ddr, ScriptSection.Install);
 			} else if (args[0].equals("injectEvents")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), DebugType.None, ScriptSection.Events);
+				ok = inject(sb, stdLibDP, new File(args[1]), ddr, ScriptSection.Events);
 			} else if (args[0].equals("injectRemove")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), DebugType.None, ScriptSection.Remove);
+				ok = inject(sb, stdLibDP, new File(args[1]), ddr, ScriptSection.Remove);
 			} else {
 				throw new RuntimeException("?");
 			}
@@ -160,7 +163,7 @@ public class Main {
 		}
 	}
 
-	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, DebugType di, ScriptSection... sections) {
+	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, IDebugRecorder di, ScriptSection... sections) {
 		try {
 			IncludeParseContext ic = Parser.run(stdLibDP, f);
 			LinkedList<String> queuedRequests = new LinkedList<>();
