@@ -1,0 +1,4 @@
+#!/bin/sh
+SCRIPT_PATH="`readlink -e $0`"
+SCRIPT_DIR="`dirname "$SCRIPT_PATH"`"
+java -jar "$SCRIPT_DIR/ral.jar" raljector
