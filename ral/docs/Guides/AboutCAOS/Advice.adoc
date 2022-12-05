@@ -3,6 +3,73 @@
 // DIRECTION: Don't have infinite time to write all this.
 // Point to other resources.
 
+### Packaging CAOS For `.agents` Files
+
+This is a very quick part, as other resources exist for this, but:
+
+* 1. Get a PRAY compiler. (See the "Booklet Of Tooling Pointers" section.)
+* 2. Modify this template:
+
+```
+"en-GB"
+
+(- The "Example Docking Station Agent" name is what will show up in-game in Docking Station. -)
+group DSAG "Example Docking Station Agent"
+(- Type of agent. This is required for injection, but it's not really meaningful. -)
+"Agent Type" 0
+(- The file the sprite is from (automatically installed like Dependency lines to show the icon) -)
+"Agent Animation File" "example_agent_sprite.c16"
+(- Sprite as you would pass to NEW: SIMP or such. -)
+"Agent Animation Gallery" "example_agent_sprite"
+(- Animation as in ANMS command. -)
+"Agent Animation String" "0"
+"Agent Description" "This text describes the agent in the Agent Injector."
+
+(- The number of dependencies. -)
+"Dependency Count" 2
+
+(-
+    Dependencies must be numbered from 1 onwards.
+    Categories indicate where to install the file:
+    1: Sounds
+    2: Images
+    3: Genetics
+    4: Body Data
+    5: Overlays
+    6: Backgrounds
+    7: Catalogue
+    10: My Creatures
+    11: My Agents
+-)
+
+"Dependency 1" "example_agent_sprite.c16"
+"Dependency Category 1" 2
+
+"Dependency 2" "example_agent_catalogue.catalogue"
+"Dependency Category 2" 7
+
+(- The number of scripts. -)
+
+"Script Count" 1
+
+(- The first script. -)
+"Script 1" @ "example_agent.cos"
+
+(- The remove script. There's only one. Note that this is run as if it was an install script, so this should not be put into an rscr block or anything. -)
+"Remove script" @ "example_agent_del.cos"
+
+(- These lines embed files into the .agent file. -)
+(- If the files are not embedded, then if the user doesn't have them, the agent will not be injected. -)
+
+inline FILE "example_agent_sprite.c16" "example_agent_sprite.c16"
+
+inline FILE "example_agent_catalogue.catalogue" "example_agent_catalogue.catalogue"
+```
+
+Hopefully that's enough.
+
+### Command / Expression References
+
 * If you don't know what a command or expression does, translate, say, `NEW: SIMP` into `newSimp` and check elsewhere in this manual.
 
 * If this manual doesn't have anything, or you can't find it, or this manual sucks, get a copy of the CAOS Categorical And Alphabetical Documentation. You can generate it using CAOS Tool, _or_ via typing the following into the CAOS Command Line:

@@ -1,7 +1,7 @@
 ## Crash Course On CAOS For New Users: Scripts & A Talking Lemon
 
 // DIRECTION: Still using the CAOS command line, on-road the user into making a talking lemon.
-// Try to make the lemon stateful using MVs.
+// Bring up MVs, but conditionals are going to need CAOS Tool
 // Classifier allocated for this is 2 24 8802
 
 Now that you know the basics of CAOS, it's time to move onto actually putting an agent into the world and giving it some behaviour. How?
@@ -108,22 +108,30 @@ Some further notes:
 * Script definitions are installed _before any other code in a CAOS file._
 * Script definitions are installed to the world for any agent that matches the classifier -- i.e. if you were to follow the steps above to create this lemon again on the same world, it would already have the script.
 
-### Past This Point, Use CAOS Tool!
+### Machine Variables (MVs) and Object Variables (OVs)
 
-Past this point you should install CAOS Tool if you have not already.
+Every agent has 100 stored variables, known as Object Variables. This allows storing values outside of the current script.
 
-The examples have been given via CAOS Command Line so that you do not need additional tooling, but CAOS Command Line does not make a good development environment.
+Like `va` variables, they range from `ov00` to `ov99`, and on a newly created agent, start as the number `0`.
 
-### Machine Variables (MVs)
+Some of these variables, such as `ov60` and `ov61`, are reserved for the game's internal use.
 
-todo
+Referring to these variables with the `ov` prefix refers to the variables in the `targ` agent, while referring to them with the `mv` prefix refers to the variables in the `ownr` agent. The variables themselves are in the same place in the agent, it's just that `mv00` and `ov00` look at `ownr` and `targ` respectively.
 
-### Conditionals
+To see, run these two CAOS scripts (assuming you have exactly one talking lemon)
 
-todo
+```
+rtar 2 24 8802
+sets ov01 "Some value!"
+```
+
+```
+rtar 2 24 8802
+outs ov01
+```
 
 ### Things To Check
 
-* Make the lemon randomly say one of multiple lines.
+* Make the lemon say a message held in one of its machine variables.
 * Use a Constructor script to set `perm`, `attr`, `aero`, and `accg` of a lemon.
 ** The Constructor script, script 10, is automatically run on creation of an agent.

@@ -135,6 +135,7 @@ public abstract class RALType {
 
 	/**
 	 * Lookup a field by name.
+	 * Returns null if it does not exist.
 	 */
 	public final OVar lookupField(String name) {
 		for (AgentInterface ai : interfaces) {

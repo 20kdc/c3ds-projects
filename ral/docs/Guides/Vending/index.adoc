@@ -1,7 +1,7 @@
 // DIRECTION: Assuming the user has gone through:
 // RAL Installation Guide
 // Crash Course In CAOS
-// And nothing else, walk them through making a coin, a fruit, and finally a vending machine.
+// And nothing else, get them through to making a vending machine.
 // Supply sprites/etc.
 
 <<<
@@ -10,4 +10,4 @@ include::Warnings.adoc[]
 
 <<<
 
-include::EverythingElse.adoc[]
+include::Conversion.adoc[]

@@ -13,7 +13,6 @@ First of all, the assumption is that you are receiving this file with _at least_
 ** `ral.jar`: Contains the RAL compiler.
 ** `ral`: For Linux and Mac OS X users.
 ** `ral.cmd`: For Windows users.
-* `creature-monitor-gd-export`: Directory, contains a tool that may be useful as an alternative CAOS command line if nothing else.
 
 There are other necessary files, but this should give you an idea of what to look for.
 
@@ -113,7 +112,7 @@ Using `./ral inject someRALFile.ral`, you can inject a RAL file. If there are er
 
 There are variants to this command that only inject particular parts (see the Tooling Reference or RAL's own internal help).
 
-Alternatively, you can run `./raljector`, which allows quickly re-injecting a file from a window.
+Alternatively, you can run `./raljector`, a GUI which allows quickly re-injecting a file from a window.
 
 ### Compiling With RAL
 
@@ -128,6 +127,8 @@ _In particular, you can compile the Remove script into a separate file._
 You are expected to be able to save the following RAL code as a file, inject it, and see the results:
 
 ```
+include "std/c3ds.ral";
+
 install {
     rtar(SpeechBubbleFactory);
 	with SpeechBubbleFactory targ {

@@ -2,6 +2,17 @@
 
 *Agents* are the main kind of "thing" in Creatures 3 and Docking Station.
 
+Agents have a _classifier_, made up of a family, genus, and species.
+
+Classifiers have a hierarchy to them, based on substituting various fields with 0:
+
+* `0 0 0`
+** `1 0 0`
+*** `1 2 0`
+**** `1 2 3`
+
+If a script isn't in a given classifier, the equivalent script from a parent classifier will be used (if there is a script there).
+
 Things that are agents:
 
 * Lemons.

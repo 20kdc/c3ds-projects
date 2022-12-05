@@ -90,6 +90,8 @@ This is an example of the use of *variables*, specifically `va00`.
 
 The `vaXX` variables -- `va00` through `va99` -- can store any values during the execution of a script. Unfortunately, the CAOS Command Line loses the contents of all variables between lines (because it executes those lines immediately), so the example had to be written all in one line.
 
+These variables start set to the number `0`.
+
 Breaking the example down into it's components, there are:
 
 * `setv va00 6`

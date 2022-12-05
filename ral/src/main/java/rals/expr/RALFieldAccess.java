@@ -28,7 +28,8 @@ public class RALFieldAccess implements RALExprUR {
 		final RALExprSlice baseExpr = base.resolve(scope);
 		final RALType baseType = baseExpr.assert1ReadType().assertImpCast(scope.world.types.gAgent);
 		final AgentInterface.OVar slot = baseType.lookupField(field);
-
+		if (slot == null)
+			throw new RuntimeException("Unknown field " + baseType + "." + field);
 		return new RALVarBase(slot.type, true) {
 
 			@Override

@@ -183,12 +183,16 @@ public class Main {
 			}
 			return true;
 		} catch (Exception ex) {
-			sb.append("-- Error --\n");
-			StringWriter sw = new StringWriter();
-			ex.printStackTrace(new PrintWriter(sw));
-			sb.append(sw);
+			exceptionIntoSB(sb, ex);
 			return false;
 		}
+	}
+
+	public static void exceptionIntoSB(StringBuilder sb, Exception ex) {
+		sb.append("-- Error --\n");
+		StringWriter sw = new StringWriter();
+		ex.printStackTrace(new PrintWriter(sw));
+		sb.append(sw);
 	}
 
 	private static void unwrapCalmly(DiagRecorder diags) {

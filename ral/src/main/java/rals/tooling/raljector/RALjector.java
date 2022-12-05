@@ -15,10 +15,15 @@ import javax.swing.JFrame;
 import javax.swing.Timer;
 
 import rals.Main;
+import rals.code.OuterCompileContext;
 import rals.code.ScriptSection;
+import rals.code.Scripts;
 import rals.debug.DummyDebugRecorder;
 import rals.debug.FullDebugRecorder;
+import rals.debug.IDebugRecorder;
 import rals.parser.IDocPath;
+import rals.parser.IncludeParseContext;
+import rals.parser.Parser;
 
 /**
  * GUI tool for injection and stuff.
@@ -44,7 +49,8 @@ public class RALjector extends JFrame {
 			"Inject Install/Events",
 			"Install",
 			"Events",
-			"Remove"
+			"Remove",
+			"View CAOS"
 	};
 	public final String[] smallButtonTexts = {
 			"FIL",
@@ -55,7 +61,8 @@ public class RALjector extends JFrame {
 			"I",
 			"E",
 			"R",
-			"D"
+			"D",
+			"VC"
 	};
 	public boolean isSmall;
 
@@ -102,6 +109,29 @@ public class RALjector extends JFrame {
 				},
 				() -> {
 					injectUI(ScriptSection.Remove);
+				},
+				() -> {
+					if (currentFile == null) {
+						debugState.displayMessageToUser.fire("No file!");
+						return;
+					}
+					StringBuilder sb = new StringBuilder();
+					try {
+						IncludeParseContext ipc = Parser.run(std, currentFile);
+						Scripts scr = ipc.module.resolve(ipc.typeSystem, ipc.diags, ipc.hcm);
+						StringBuilder finishedCode = new StringBuilder();
+						scr.compile(new OuterCompileContext(finishedCode, getDebugRecorder()));
+						String errors = scr.diags.unwrapToString();
+						if (errors != null) {
+							sb.append("Compile errors:\n");
+							sb.append(errors);
+							sb.append("\n\nUnfinished code:\n");
+						}
+						sb.append(finishedCode.toString());
+					} catch (Exception e) {
+						Main.exceptionIntoSB(sb, e);
+					}
+					debugState.displayMessageToUser.fire(sb.toString());
 				}
 		};
 		setTitle("RALjector");
@@ -120,6 +150,10 @@ public class RALjector extends JFrame {
 		setLocationByPlatform(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
+	}
+
+	private IDebugRecorder getDebugRecorder() {
+		return injectWithDebugInfo ? new FullDebugRecorder() : new DummyDebugRecorder();
 	}
 
 	public void updateTexts() {

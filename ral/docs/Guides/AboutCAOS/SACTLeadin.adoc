@@ -1,0 +1,155 @@
+## Crash Course On CAOS For New Users: CAOS Tool, Conditionals, And Interruption
+
+// DIRECTION: The user should understand all basics of .cos files at the end of this.
+
+Past this point you should install CAOS Tool if you have not already.
+
+See: https://creatures.wiki/CAOS_Tool
+
+The examples have been given via CAOS Command Line so that you do not need additional tooling, but CAOS Command Line does not make a good development environment.
+
+### A Quick Intro To CAOS Tool
+
+Assuming you've installed CAOS Tool, open it, and create a new file.
+
+In it, write:
+
+```
+ * An asterisk, outside of a string, begins a comment. Comments are ignored by CAOS.
+ * Comments end at the end of a line, so if you want a multi-line comment, add more asterisks.
+include::TalkingLemonCTHead.cos[]
+scrp 2 24 8802 1
+    rtar 1 2 10
+    mesg wrt+ targ 126 "Hello! I'm a talking lemon!" ownr 0
+endm
+
+include::TalkingLemonCTFooter.cos[]
+```
+
+Save this somewhere -- it will be modified in further exercises.
+
+Most of this is more or less the code already shown, with a few changes:
+
+* Because `new: simp` sets the created agent as `targ`, and since the install script (the top part) runs all at once rather than the line-by-line entry of the CAOS Command Line, it's no longer necessary to `rtar` the created lemon repeatedly.
+* The event script (the `scrp 2 24 8802 1` script) is in the middle.
+* The bottom part, the `rscr` part, is new.
+
+`rscr` defines the remove script, which is used to clean up the changes made by the file:
+
+* `enum 2 24 8802` repeats the code inside for each talking lemon, with `targ` changed to be that talking lemon.
+* `kill targ` deletes the lemon.
+* `next` ends the `enum` loop.
+* `scrx 2 24 8802 1` removes the `2 24 8802 1` script from the scriptorium.
+
+In the Inject menu, there are some options:
+
+```
+Inject Install Script
+Inject Event Scripts
+Inject Install Script And Event Scripts
+ ---
+Inject Remove Script
+```
+
+Since you likely already have a talking lemon in the world, you should inject the remove script, then inject the install and event scripts.
+
+Notably, injecting the install and event scripts injects the event scripts _first_, followed by the install script -- this is important, as the install script may assume the event scripts have already been injected.
+
+### Conditionals
+
+Introducing the Machine Variables previously mentioned into the script, the lemon can be made to say two lines.
+
+Replace the `scrp 2 24 8802 1` script with the following, and inject the event script:
+
+```
+scrp 2 24 8802 1
+    doif mv00 = 0
+        sets va00 "Hello! I'm a talking lemon!"
+        setv mv00 1
+    elif mv00 = 1
+        sets va00 "Oh no, not again..."
+        setv mv00 0
+    else
+        sets va00 "You ought not to see this..."
+        setv mv00 0
+    endi
+    rtar 1 2 10
+    mesg wrt+ targ 126 va00 ownr 0
+endm
+```
+
+Most of these you have already seen, but the new construct here is `doif`.
+
+`doif` will choose different parts of the code to run based on conditions.
+
+Conditions are:
+
+* Pairs of expressions with a condition type (such as `=`) in the middle.
+* A series of those with `and` or `or` glued into the middle.
+
+The left and right expressions must be of the same type (number/string/agent reference), but otherwise any expressions work.
+
+A `doif` block is made up of a number of clauses.
+
+Clauses are checked in-order, and the first clause to match contains the code that actually runs.
+
+The first clause is the `doif` itself (which starts the block, so you can't have more than one `doif` clause in a block).
+
+Then there can be `elif` clauses, and finally there can be an `else` clause.
+
+An `elif` clause is basically a `doif`, but it's not the first clause (since a `doif` itself would start a new `doif` block).
+
+`else`, meanwhile, is a clause for when no other clause applies.
+
+Finally, `endi` ends the `doif` block entirely.
+
+### Interruption, And Why It's A Problem
+
+Update the script again, as so:
+
+```
+scrp 2 24 8802 1
+    doif mv00 = 0
+        sets va00 "Hello! I'm a talking lemon!"
+        setv mv00 2
+        wait 15
+        setv mv00 1
+    elif mv00 = 1
+        sets va00 "Oh no, not again..."
+        setv mv00 2
+        wait 15
+        setv mv00 0
+    else
+        sets va00 "You ought not to see this..."
+        setv mv00 0
+    endi
+    rtar 1 2 10
+    mesg wrt+ targ 126 va00 ownr 0
+endm
+```
+
+Inject this, and then click on the lemon twice, quickly.
+The text "You ought not to see this..." will appear.
+This is because the lemon was interrupted during it's wait, and thus the `setv mv00 0` never occurred.
+
+This is a particularly contrived example, but explains the need for `lock` (which prevents the script being interrupted until an `unlk` occurs, at the cost of any received messages being lost), and `inst` (which, until a `wait` or other asynchronous command, causes execution to be effectively instant, and which cannot be interrupted).
+
+It is critically important to note: Simply avoiding `wait`, `over` and other asynchronous commands does _not_ prevent your scripts from being interrupted! Unless your script has used `inst` (and has not deactivated it with an asynchronous command or `slow`) or `lock` (and has not deactivated it with `unlk`), the script can be interrupted.
+
+Another thing to be wary of is that when `inst` is not active, other agents effectively run in parallel to yours (even if `lock` is used).
+
+### Final CAOS
+
+```
+include::TalkingLemonCTHead.cos[]
+include::TalkingLemonScriptFinal.cos[]
+include::TalkingLemonCTFooter.cos[]
+```
+
+### Things To Check
+
+* Check the CAOS Documentation, which CAOS Tool can provide a copy of (or see the Advice chapter in the event that you have been using some replacement for CAOS Tool, and thus were unable to get a copy of the CAOS Documentation).
+** Can you make the lemon randomly say one of several different lines? (see: `RAND`)
+*** Can you prevent the lemon repeating the same line twice in a row?
+* Use a Constructor script to set `perm`, `attr`, `aero`, and `accg` of a lemon rather than the install script.
+** The Constructor script, script 10, is automatically run on creation of an agent. _This is not supported in Creatures 3._
