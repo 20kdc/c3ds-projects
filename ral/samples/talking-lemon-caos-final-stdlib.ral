@@ -1,34 +1,24 @@
 // Include C3/DS definitions.
 include "std/c3ds.ral";
 
-/*
-You can include files near the current file.
-If the file is in the same directory, simply refer to it by name, say "abc.ral".
-If the file is in the parent directory, refer to it as follows: "../abc.ral".
-If the file is in a subdirectory, then refer to it as, say, "somedir/abc.ral".
-Note that as far as RAL includes go, the sub-directory name of "std" is reserved for RAL's standard library.
-*/
-include "talking-lemon-caos-final-finished-interface.ral";
+class TalkingLemon 2 24 8802;
 
 // Value indicates the current speech line of the talking lemon.
 field int TalkingLemon.line 0;
 
 install {
-	newTalkingLemon();
+	// Create the talking lemon
+	// Note that TalkingLemon expands to 2 24 8802.
+	// Macro call: NAME(EXPRESSION...)
+	// newSimp is a macro that translates to NEW: SIMP.
+	// The rest of the macros used here follow the same pattern.
+	newSimp(TalkingLemon, "ds lemon pod", 1, 30, 8000);
 	// Move it to the Meso
 	mvsf(631, 9158);
-}
-
-/*
-One of the *Things To Check* from the Crash Course On CAOS For New Users was to move the attribute setup to a constructor script.
-A solution for that in CAOS has been intentionally omitted from this manual.
-However, it'll become an obstruction if delayed any longer.
-It would also be valid to move this code into the newTalkingLemon macro.
-*/
-script TalkingLemon:init {
-	inst();
 	// Set attributes
 	perm(100);
+	// | is an operator which bitwise ORs together flags.
+	// RAL will handle certain expressions on constants during compilation when possible, so this still compiles to "attr 199".
 	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_ACTIVATE | ATTR_MOUSE | ATTR_CARRY);
 	aero(10);
 	accg(2);

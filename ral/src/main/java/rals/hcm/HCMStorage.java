@@ -75,6 +75,15 @@ public class HCMStorage {
 			// but let's not.
 			return null;
 		}
+		if ((refToken instanceof Token.Kw) && (spu.lcLong == refToken.extent.start.lcLong)) {
+			// We're at the start of a keyword. This probably means we're in a case like this:
+			// attr(<HERE>);
+			// Note that we are still quite capable of running into an ID *after* that,
+			// if we're in the case of:
+			// attr(SOMEID<HERE>);
+			// In this case, we go back to SOMEID, then we need to go back a token again for our intent ref.
+			refToken = backwardsTokenLink.get(refToken);
+		}
 		if ((refToken instanceof Token.ID) && (spu.lcLong <= refToken.extent.end.lcLong)) {
 			// We're inside or at the end of refToken, which is an ID.
 			// Therefore, we're writing it!

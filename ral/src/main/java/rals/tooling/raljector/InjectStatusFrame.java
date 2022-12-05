@@ -24,6 +24,7 @@ public class InjectStatusFrame extends JDialog {
 		setContentPane(new JScrollPane(injectTextArea));
 		gst.displayMessageToUser.add((st) -> {
 			injectTextArea.setText(st);
+			injectTextArea.setCaretPosition(0);
 			setVisible(true);
 		});
 	}

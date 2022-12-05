@@ -12,8 +12,12 @@ include::Warnings.adoc[]
 
 <<<
 
-include::Conversion.adoc[]
+include::SAConversion.adoc[]
 
 <<<
 
 include::Types.adoc[]
+
+<<<
+
+include::SAVendingMachine.adoc[]

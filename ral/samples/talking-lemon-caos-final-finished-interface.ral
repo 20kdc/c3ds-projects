@@ -1,0 +1,17 @@
+// Include C3/DS definitions.
+include "std/c3ds.ral";
+
+// This file describes the Talking Lemon so that other, future chapters can refer to it.
+// Since you, the reader, are supposed to be experimenting, future chapters will not assume much about the Talking Lemon.
+// However, the two definitions here need to exist and work at least roughly as they do now.
+
+class TalkingLemon 2 24 8802;
+
+/*
+Macro to create a Talking Lemon simply.
+This is a "statement macro" definition.
+This has the form: macro (RETURN-ARGS) name(ARGS) STATEMENT
+Macros will be explained in further detail in later chapters.
+*/
+macro () newTalkingLemon() newSimp(TalkingLemon, "ds lemon pod", 1, 30, 8000);
+

@@ -103,7 +103,7 @@ Breaking the example down into it's components, there are:
 
 `setv` is a command that writes a number into a variable, alongside it's counterparts `seta` (agent reference) and `sets` (string).
 
-`mulv` is a command that multiplies a variable by some expression.
+`mulv` is a command that multiplies a variable by some expression. Similarly, `addv`, `subv`, and `divv` exist, to add, subtract, and divide respectively.
 
 It is important to note two things:
 

@@ -13,7 +13,7 @@ install {
 	newSimp(TalkingLemon, "ds lemon pod", 1, 30, 8000);
 	mvsf(631, 9158);
 	perm(100);
-	attr(199);
+	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_ACTIVATE | ATTR_MOUSE | ATTR_CARRY);
 	aero(10);
 	accg(2);
 }
