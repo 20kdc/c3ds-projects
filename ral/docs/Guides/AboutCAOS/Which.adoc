@@ -1,4 +1,4 @@
-## Crash Course On CAOS For New Users: What CAOS, and Which?
+### What CAOS, and Which?
 
 CAOS is a programming language used by the Creatures series of games.
 
@@ -8,7 +8,7 @@ However, RAL only targets Creatures 3/Docking Station CAOS, so that is what will
 
 There is a good reason for this: Firstly, the different CAOS versions are mostly incompatible with each other and secondly, there are major limitations to early CAOS.
 
-### The Limitations Of Early CAOS
+#### The Limitations Of Early CAOS
 
 Creatures 1 CAOS:
 
@@ -41,7 +41,7 @@ Creatures 3:
 * Has `GOTO`.
 * Above all else, as all in-game UI is written in CAOS, CAOS by necessity had to be given the power to actually perform at least some of the logic that in-game UI requires. In practice, this lead to a great expansion in what CAOS can be used for.
 
-### Modern CAOS, and why you need to know about CAOS anyway
+#### Modern CAOS, and why you need to know about CAOS anyway
 
 Creatures 3's CAOS, inside, resembles modern game scripting languages such as Lua, though it has it's differences (for those interested: the "coroutines" are tied directly into agents, no garbage collection).
 

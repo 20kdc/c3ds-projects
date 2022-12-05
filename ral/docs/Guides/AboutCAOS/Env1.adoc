@@ -1,4 +1,4 @@
-## Crash Course On CAOS For New Users: The Environment
+### The Environment
 
 The environment in which CAOS code runs is a complicated one, made up of many moving parts.
 
@@ -9,7 +9,7 @@ The environment in which CAOS code runs is a complicated one, made up of many mo
 * The _PRAY System_, used for exchangable data.
 * The _Warp_, the online connectivity of Docking Station.
 
-### Scriptorium
+#### Scriptorium
 
 The Scriptorium is a database of scripts, indexed by family, genus, species, and script number.
 
@@ -19,7 +19,7 @@ When a script is not available for a given family/genus/species combination (kno
 
 For example, script 10 on classifier `4 2 1` is checked for as `4 2 1 10`, then `4 2 0 10`, then `4 0 0 10`, then `0 0 0 10`.
 
-### Catalogue
+#### Catalogue
 
 The Catalogue is those files in `Docking Station/Catalogue`. They are text files, which look much like this:
 
@@ -56,7 +56,7 @@ A full description of the Catalogue format will _not_ be given here, but it is i
 * The `#` comments aren't needed, but they're really useful to keep track of things.
 * The engine, and CAOS, tends to use these for translatable text and configuration of "basic stuff".
 
-### Agents
+#### Agents
 
 Agents are objects. They come in several flavours:
 
@@ -71,7 +71,7 @@ All Agents are expected to either live on the map or be floating. What they defi
 
 Agent sprites are stored in `.s16` and `.c16` files, in the `Images` directory.
 
-### Map
+#### Map
 
 The Map is the flat 2D world in which Agents usually live (except for UI, but even then, they're still considered to _have_ map positions, but they're floating relative to the camera).
 
@@ -81,7 +81,7 @@ A metaroom needs a background -- these are stored in `.blk` files, in the `Backg
 
 The metarooms then have *rooms* within them, which are irregular rectangles. In particular, the vertical line of the rectangle must be vertical, but the horizontal lines need not be.
 
-### PRAY System
+#### PRAY System
 
 The PRAY system is responsible for managing a floating set of resources, known as PRAY chunks.
 
@@ -129,7 +129,7 @@ inline FILE "giant_frog.c16" "giant_frog.c16"
 
 Again, while these are all sorted into PRAY files, as far as CAOS is concerned, each chunk is a separate PRAY resource.
 
-### Warp
+#### Warp
 
 Those of you who have read the Creatures Wiki know that the Warp operates by the exchange of PRAY files. What is not said there is what exactly this _means_.
 

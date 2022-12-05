@@ -1,0 +1,123 @@
+### Types: What, why, how?
+
+// DIRECTION: Salt prevention
+
+So you may have noticed four instances so far of the use of _types_ in RAL.
+
+* `field *int* *TalkingLemon*.line 0;`
+* `script *TalkingLemon*:act1 {`
+* `let *str* text;`
+* `(targ!*SpeechBubbleFactory*)`
+
+You might be wondering why RAL requires you to have types, when CAOS does not.
+
+The answer is simple: Having types allows for more contextual information, which helps prevent mistakes.
+
+Small examples of this are in CAOS (and this is partially responsible for why it is not possible to simply remove types from RAL).
+
+However, there are a number of specific ways in which this occurs.
+
+#### CAOS Types
+
+So the following line has an interesting property:
+```
+sets va00 va01
+```
+
+This line implicitly requires that the user know the type of `va01` is a string.
+
+There is no single command in CAOS that copies a value from one variable to another (like `va01` to `va00` here) without knowing the CAOS type (number, string, agent reference).
+
+Because of this, RAL needs to know the CAOS type of anything that RAL is writing into a CAOS variable. As such, RAL keeps track of the CAOS type of any given RAL type.
+
+#### Bad Use Of Variable Types
+
+Take the following CAOS code for instance:
+
+```
+* Do something funny
+sets va00 "6"
+outv va00
+```
+
+Note that before the code is actually run:
+
+* `sets` is receiving the type it asked for, and so it is valid CAOS.
+* `outv` cannot predict the value of `va00`, so it is valid CAOS.
+
+_But in combination, the two commands will in fact produce a runtime error._
+
+Now let us attempt this in RAL.
+
+```
+include::../../../samples/manual-types-error-example.ral[]
+```
+
+Attempting to View CAOS in RALjector will give you this result:
+
+```
+Compile errors:
+manual-types-error-example.ral:5,(2 .. 2): Cannot cast str to int|float
+```
+
+Simply put, RAL will not allow `outv(x);` on a string.
+
+There are, of course, ways to override this.
+
+The cast suffix, `!` (followed by a type) gives the intent that while RAL may believe the value to be of one type, it is in fact another.
+
+It is ideal to avoid casts, but due to the type of `targ` changing a lot, avoiding casts is not really reasonable.
+
+As such, if you really wanted to produce a runtime error this way, you could use `outv(x!num);` or so forth.
+
+#### Fields And Messages
+
+Another useful attribute of types is when it comes to agents.
+
+There are many kinds of agent, but as far as CAOS types go, they are one-size-fits-all.
+Despite the many ways in which a `null` agent reference can cause an error, agent references that can contain `null` are identical to places which cannot.
+
+In addition, which fields exist on an agent is specific to the classifier of that agent.
+
+The first part of this problem is solved by RAL having nullable types. `Agent?`, also known as `Agent | null`, is a type that may be Agent or may be null.
+
+The second part of this problem is solved by fields being declared on specific agent types, and RAL only accepting fields which exist on a given agent.
+
+Messages, as used in `mesgWrit`, or via the emit syntax `RECV\->MESSAGE([P1[, P2]]) [after TICKS]`, can also be agent-dependent. The solution here is identical to that of fields.
+
+#### Completion
+
+Types allow tooling around RAL, such as the RAL Language Server, to provide accurate information about specific fields and messages when requested.
+
+This information is built up out of the structure formed by the previous elements.
+
+#### Inconsistent CAOS Behaviour
+
+CAOS can do very weird things depending on the specific types involved in a calculation.
+
+In particular, CAOS will use integer division if and only if both parameters are integers. If either is a float, the result is a float and uses floating-point division. This can change the result severely.
+
+#### What are the built-in types?
+
+Built-in Types:
+
+* `int`: Integer, like `1` or `-2` or `0`.
+* `float`: Float, like `1.0` or `-2.0` or `0` or `3.14159`.
+* `bool`: Boolean (can be written to `int`)
+* `str`: String, like `"Hello world!"`
+* `Agent`: Classifier `0 0 0`, which covers all agents.
+* `null`: Type specific to `null`.
+* `any`: Unknown type. Cannot be stored without casting.
+
+Built-in Union Types (Unions are types that can be more than one actual type at runtime):
+
+* `num`: `float | int` (can be either)
+* `Agent?`: `Agent | null` (the `?` suffix works in most, but not all, places types can be specified)
+
+Note that the following implicit casts (casts you do not have to write, as the new type is considered as containing the previous type) apply:
+
+* Any type that is a member of a union can be implicitly cast to that union.
+* Any union such that every member in it can be implicitly cast to a second union may be implicitly cast to that second union.
+* `bool` can be implicitly cast to `int` (and thus `num`).
+* Any type can be implicitly cast to `any`, but storing it gets complicated and may require explicit casts. It's possible to have a variable of type `any`, but it is complicated to transfer values from it to somewhere else.
+

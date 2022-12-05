@@ -1,4 +1,4 @@
-## Vending Machine Tutorial: Required Knowledge
+### Required Knowledge
 
 // DIRECTION: Wall of fire
 

@@ -6,8 +6,14 @@
 
 <<<
 
+## An Introduction To RAL
+
 include::Warnings.adoc[]
 
 <<<
 
 include::Conversion.adoc[]
+
+<<<
+
+include::Types.adoc[]

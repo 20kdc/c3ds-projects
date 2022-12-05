@@ -45,6 +45,8 @@ script TalkingLemon:act1 {
 	// targ is now SpeechBubbleFactory.
 	// RAL is not aware that targ is SpeechBubbleFactory, so we have to cast it here.
 	// Casting is of the form EXPRESSION!typeName, and causes RAL to treat it as if of the given type.
+	// Note that mesgWrtP exists, but the emit statement is more convenient.
+	// Emit statements have this form: EXPRESSION->message([p1[, p2]]) [after EXPRESSION];
 	(targ!SpeechBubbleFactory)->speechBubble("Hello! I'm a talking lemon!", ownr);
 }
 

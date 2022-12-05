@@ -1,4 +1,4 @@
-## Crash Course On CAOS For New Users: Agents and Parts
+### Agents and Parts
 
 *Agents* are the main kind of "thing" in Creatures 3 and Docking Station.
 
@@ -28,13 +28,13 @@ Things that are not agents:
 
 There are different kinds of agents, that will be documented below.
 
-### Simple Agents
+#### Simple Agents
 
 *Simple* agents are made up of a single sprite.
 
 Created with `NEW: SIMP`.
 
-### Compound Agents
+#### Compound Agents
 
 *Compound* agents are made up of parts, where part 0 is the root part (created with the agent).
 
@@ -56,43 +56,43 @@ Created with `NEW: COMP`.
 
 The different kinds of parts are:
 
-#### Dull Part
+##### Dull Part
 
 *Dull* parts are additional sprites on a compound agent.
 
 Created with `PAT: DULL`.
 
-#### Button Part
+##### Button Part
 
 *Button* parts are used for buttons.
 
 Created with `PAT: BUTT`.
 
-#### Text Part
+##### Text Part
 
 *Text* parts are used for writable text fields.
 
 Created with `PAT: TEXT`.
 
-#### Fixed Text Part
+##### Fixed Text Part
 
 *Fixed Text* parts are used for read-only text fields.
 
 Created with `PAT: FIXD`.
 
-#### Camera Part
+##### Camera Part
 
 A camera part shows a view elsewhere on the Map.
 
 Created with `PAT: CMRA`.
 
-#### Graph Part
+##### Graph Part
 
 A graph part shows a graph.
 
 Created with `PAT: GRPH`.
 
-### Vehicle Agents
+#### Vehicle Agents
 
 *Vehicle* agents are Compound agents, but they have a cabin.
 
@@ -100,7 +100,7 @@ The cabin can be resized, and can store any number and type of other agents (unl
 
 Created with `NEW: VHCL`.
 
-### Creatures
+#### Creatures
 
 *Creature* agents are split into two kinds, Skeletal (aka `CREA`) and non-Skeletal (aka `CRAG`).
 

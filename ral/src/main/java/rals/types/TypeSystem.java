@@ -25,7 +25,7 @@ public class TypeSystem {
 	public final Opaque gAny = new RALType.Any();
 	public final Opaque gString = new Opaque(RALType.Major.String, "str");
 	public final Opaque gInteger = new Opaque(RALType.Major.Value, "int");
-	public final Opaque gBoolean = new Opaque(RALType.Major.Value, "bool");
+	public final Opaque gBoolean = new Opaque(RALType.Major.Value, "bool", gInteger);
 	public final Opaque gFloat = new Opaque(RALType.Major.Value, "float");
 	public final Opaque gNull = new Opaque(RALType.Major.Agent, "null");
 	public final Opaque gVoid = new Opaque(RALType.Major.Unknown, "void");

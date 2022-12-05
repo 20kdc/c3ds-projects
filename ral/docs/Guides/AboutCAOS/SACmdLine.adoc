@@ -1,4 +1,4 @@
-## Crash Course On CAOS For New Users: Basic Concepts & The CAOS Command Line
+### Basic Concepts & The CAOS Command Line
 
 // DIRECTION: Teach users how the CAOS command line works and the underlying structure of the system that it's built on.
 // They should understand how commands and expressions work by the end of this chapter.
@@ -19,7 +19,7 @@ _The CAOS Command Line._
 
 Here, you can type any CAOS that does not contain asynchronous commands. *Asynchronous* (aka *blocking*) commands are those commands that take more than one frame (1/50th of a second) to execute.
 
-### What Are Commands?
+#### What Are Commands?
 
 All CAOS is made up of a list of commands.
 
@@ -44,7 +44,7 @@ In the third line, two commands are on the same line, running `outs` and then `o
 
 CAOS only cares about newlines in relation to comments. However, the CAOS Command Line differs somewhat in that pressing Enter executes the line _immediately_, and therefore a line must contain a complete command or series of commands.
 
-### What Are Expressions?
+#### What Are Expressions?
 
 ```
 > outs modu
@@ -79,7 +79,7 @@ Original
 
 Here, `outs` is being passed the string expression `subs modu 1 8`. The output of this expression is `"Original"`, which is then output.
 
-### What Are Variables?
+#### What Are Variables?
 
 ```
 > setv va00 6 mulv va00 7 outv va00
@@ -110,7 +110,7 @@ It is important to note two things:
 * These variables can hold any value of the kinds described above -- numbers, strings, and agent references.
 * Variables are expressions, but not all expressions are variables.
 
-### Things To Check
+#### Things To Check
 
 You should attempt to write a complex mathematical expression as a list of CAOS commands.
 

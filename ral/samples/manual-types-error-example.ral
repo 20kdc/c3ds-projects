@@ -1,0 +1,7 @@
+include "std/c3ds.ral";
+
+install {
+	let x = "6";
+	outv(x);
+}
+

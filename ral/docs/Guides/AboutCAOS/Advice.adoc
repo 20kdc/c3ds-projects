@@ -1,9 +1,9 @@
-## Crash Course On CAOS For New Users: A Final Bit Of Advice
+### A Final Bit Of Advice
 
 // DIRECTION: Don't have infinite time to write all this.
 // Point to other resources.
 
-### Packaging CAOS For `.agents` Files
+#### Packaging CAOS For `.agents` Files
 
 This is a very quick part, as other resources exist for this, but:
 
@@ -68,7 +68,7 @@ inline FILE "example_agent_catalogue.catalogue" "example_agent_catalogue.catalog
 
 Hopefully that's enough.
 
-### Command / Expression References
+#### Command / Expression References
 
 * If you don't know what a command or expression does, translate, say, `NEW: SIMP` into `newSimp` and check elsewhere in this manual.
 

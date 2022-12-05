@@ -1,4 +1,4 @@
-## Crash Course On CAOS For New Users: Scripts & A Talking Lemon
+### Scripts & A Talking Lemon
 
 // DIRECTION: Still using the CAOS command line, on-road the user into making a talking lemon.
 // Bring up MVs, but conditionals are going to need CAOS Tool
@@ -6,7 +6,7 @@
 
 Now that you know the basics of CAOS, it's time to move onto actually putting an agent into the world and giving it some behaviour. How?
 
-### Putting The Lemon In The World
+#### Putting The Lemon In The World
 
 First, get ahold of a lemon. The Lemon Pod, located to the top-left of the Norn Meso, is a good source of them.
 
@@ -50,7 +50,7 @@ It then places it using `mvsf`, which places the lemon near the target coordinat
 
 Rather than using `rtar 2 24 8802`, you can instead use `targ hots` while hovering the mouse over the lemon, but this is likely to cause accidents if you aim in the wrong place.
 
-### Giving The Lemon Physics
+#### Giving The Lemon Physics
 
 ```
 > rtar 2 24 8802 perm 100 attr 199
@@ -68,7 +68,7 @@ OK
 
 And that should make it stop bouncing.
 
-### Making It Talk
+#### Making It Talk
 
 Now that we have an agent that we want to do stuff to, let's try actually, well, doing something to it.
 
@@ -82,7 +82,7 @@ Breaking it down into it's constituent commands, we have:
 * `rtar 1 2 10`: Selects the Speech Bubble Factory, an agent which produces speech bubbles.
 * `mesg wrt+ targ 126 "Hello! I'm a talking lemon!" hots 0`: Sends message 126 "Make Speech Bubble" to the Speech Bubble Factory (as `targ`), with parameters `"Hello, I'm a talking lemon!"` (the text) and `hots` (the speaking agent, in this case whatever's under the pointer). Important to note is that everything after `mesg wrt+` is a valid expression.
 
-### Attaching A Script
+#### Attaching A Script
 
 This is the part where what is arguably just a random object becomes a talking lemon.
 
@@ -108,7 +108,7 @@ Some further notes:
 * Script definitions are installed _before any other code in a CAOS file._
 * Script definitions are installed to the world for any agent that matches the classifier -- i.e. if you were to follow the steps above to create this lemon again on the same world, it would already have the script.
 
-### Machine Variables (MVs) and Object Variables (OVs)
+#### Machine Variables (MVs) and Object Variables (OVs)
 
 Every agent has 100 stored variables, known as Object Variables. This allows storing values outside of the current script.
 
@@ -130,7 +130,7 @@ rtar 2 24 8802
 outs ov01
 ```
 
-### Things To Check
+#### Things To Check
 
 * Make the lemon say a message held in one of its machine variables.
 * Use a Constructor script to set `perm`, `attr`, `aero`, and `accg` of a lemon.

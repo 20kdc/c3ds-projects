@@ -1,4 +1,4 @@
-## Vending Machine Tutorial: From CAOS To RAL
+### From CAOS To RAL
 
 // DIRECTION: Start dissecting the parts of the converted Talking Lemon.
 
@@ -31,7 +31,7 @@ The first concepts we have to learn when translating to RAL are:
 * You need to explicitly reserve any variable you wish to use.
 ** This part will get easier shortly.
 
-### Fields, Variables, And Conditions
+#### Fields, Variables, And Conditions
 
 RAL has it's own syntax for fields, variables, and conditions.
 
@@ -71,7 +71,7 @@ script TalkingLemon 1 {
 }
 ```
 
-### foreach
+#### foreach
 
 The remove script can be improved as well.
 
@@ -95,7 +95,7 @@ remove {
 }
 ```
 
-### The RAL Standard Library
+#### The RAL Standard Library
 
 The RAL Standard Library contains RAL definitions for many CAOS commands and expressions.
 

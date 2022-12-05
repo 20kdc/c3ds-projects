@@ -41,6 +41,8 @@ The tools with which the user may construct types are as follows:
 * Unions - Written as `A | B`, unions are not the most useful of tools, as there's no good way to get a value out of them except via an explicit cast.
 ** A very specific type of union suffix, `| null`, can be written as the shortened form `?`.
     As such, `Agent?` is internally exactly equal to `Agent | null`, and thus such can and will appear in error messages.
+** Any union A where all member types can be implicitly cast to type B can as a whole be implicitly cast to type B.
+** Anything that can be implicitly cast to a member of a union can be implicitly cast to that union.
 
 The syntax for specifying types is summarized by this diagram:
 

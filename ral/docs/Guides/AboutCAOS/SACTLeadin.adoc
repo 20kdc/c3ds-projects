@@ -1,4 +1,4 @@
-## Crash Course On CAOS For New Users: CAOS Tool, Conditionals, And Interruption
+### CAOS Tool, Conditionals, And Interruption
 
 // DIRECTION: The user should understand all basics of .cos files at the end of this.
 
@@ -8,7 +8,7 @@ See: https://creatures.wiki/CAOS_Tool
 
 The examples have been given via CAOS Command Line so that you do not need additional tooling, but CAOS Command Line does not make a good development environment.
 
-### A Quick Intro To CAOS Tool
+#### A Quick Intro To CAOS Tool
 
 Assuming you've installed CAOS Tool, open it, and create a new file.
 
@@ -55,7 +55,7 @@ Since you likely already have a talking lemon in the world, you should inject th
 
 Notably, injecting the install and event scripts injects the event scripts _first_, followed by the install script -- this is important, as the install script may assume the event scripts have already been injected.
 
-### Conditionals
+#### Conditionals
 
 Introducing the Machine Variables previously mentioned into the script, the lemon can be made to say two lines.
 
@@ -103,7 +103,7 @@ An `elif` clause is basically a `doif`, but it's not the first clause (since a `
 
 Finally, `endi` ends the `doif` block entirely.
 
-### Interruption, And Why It's A Problem
+#### Interruption, And Why It's A Problem
 
 Update the script again, as so:
 
@@ -138,7 +138,7 @@ It is critically important to note: Simply avoiding `wait`, `over` and other asy
 
 Another thing to be wary of is that when `inst` is not active, other agents effectively run in parallel to yours (even if `lock` is used).
 
-### Final CAOS
+#### Final CAOS
 
 ```
 include::TalkingLemonCTHead.cos[]
@@ -146,7 +146,7 @@ include::TalkingLemonScriptFinal.cos[]
 include::TalkingLemonCTFooter.cos[]
 ```
 
-### Things To Check
+#### Things To Check
 
 * Check the CAOS Documentation, which CAOS Tool can provide a copy of (or see the Advice chapter in the event that you have been using some replacement for CAOS Tool, and thus were unable to get a copy of the CAOS Documentation).
 ** Can you make the lemon randomly say one of several different lines? (see: `RAND`)
