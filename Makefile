@@ -8,8 +8,9 @@ INTERMEDIATES := release-id.txt
 
 all:
 
+# Release (Full)
 rel: COPYING.txt README.md CREDITS.txt
-	echo "r`date +%s`" > release-id.txt
+	echo "r`date +%s` (Full)" > release-id.txt
 	echo "Linux host:" $(HOST_LINUX) >> release-id.txt
 	echo "Godot available:" $(HOST_GODOT) >> release-id.txt
 	echo "Java/Maven available:" $(HOST_JAVA) >> release-id.txt
@@ -18,8 +19,21 @@ rel: COPYING.txt README.md CREDITS.txt
 	echo "Latest commit:" >> release-id.txt
 	git log HEAD^..HEAD >> release-id.txt
 	rm -f release.zip
-	zip release.zip $^
+	zip -r release.zip $^
 	zip release.zip release-id.txt
+
+# Release (SDK)
+rel-sdk: COPYING.txt README.md CREDITS.txt
+	echo "r`date +%s` (SDK)" > release-id.txt
+	echo "Linux host:" $(HOST_LINUX) >> release-id.txt
+	echo "Java/Maven available:" $(HOST_JAVA) >> release-id.txt
+	echo "git status:" >> release-id.txt
+	git status >> release-id.txt
+	echo "Latest commit:" >> release-id.txt
+	git log HEAD^..HEAD >> release-id.txt
+	rm -f sdk.zip
+	zip -r sdk.zip $^
+	zip sdk.zip release-id.txt
 
 include colour-depth-fix/index.mk
 include caosproxy/index.mk

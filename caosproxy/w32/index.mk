@@ -1,5 +1,5 @@
 all: caosproxy/caosprox.exe caosproxy/cpxinvrt.exe
-rel: caosproxy/caosprox.exe caosproxy/cpxinvrt.exe
+CAOSPROX_REL += caosproxy/caosprox.exe caosproxy/cpxinvrt.exe
 
 INTERMEDIATES += caosproxy/caosprox.exe caosproxy/cpxinvrt.exe caosproxy/w32/caospres.o
 

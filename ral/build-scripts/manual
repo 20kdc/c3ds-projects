@@ -1,0 +1,7 @@
+#!/bin/sh
+# Another RAL build script
+java -jar ral.jar docGen docs/all.ral docs/Library/gen.adoc +std/ -std/compiler_helpers.ral || exit
+cd docs
+asciidoctor-pdf full.adoc -o ../manual.pdf || exit
+asciidoctor -a data-uri -b html full.adoc -o ../manual.html || exit
+

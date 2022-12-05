@@ -1,0 +1,5 @@
+#!/bin/sh
+# RAL build script
+mvn package || exit
+cp target/cdsp-ral-0.666-SNAPSHOT-jar-with-dependencies.jar ral.jar
+
