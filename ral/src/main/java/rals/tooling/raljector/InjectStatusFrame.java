@@ -16,11 +16,15 @@ import javax.swing.JTextPane;
  */
 @SuppressWarnings("serial")
 public class InjectStatusFrame extends JDialog {
-	public final JTextPane injectTextArea = new JTextPane();
-	public InjectStatusFrame(JFrame jf) {
+	private final JTextPane injectTextArea = new JTextPane();
+	public InjectStatusFrame(JFrame jf, GameStateTracker gst) {
 		super(jf, "Inject");
 		setSize(400, 300);
 		injectTextArea.setEditable(false);
 		setContentPane(new JScrollPane(injectTextArea));
+		gst.displayMessageToUser.add((st) -> {
+			injectTextArea.setText(st);
+			setVisible(true);
+		});
 	}
 }

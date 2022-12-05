@@ -8,7 +8,6 @@ package rals.code;
 
 import rals.debug.DebugSite;
 import rals.diag.DiagRecorder;
-import rals.diag.SrcPos;
 import rals.types.TypeSystem;
 import rals.types.RALType;
 import rals.expr.*;

@@ -34,23 +34,23 @@ public class DebuggerDialog extends JFrame {
 	public ProcessedDebugFrame processedFrame;
 	public final Signal<ProcessedDebugFrame[]> newPDFSet = new Signal<>();
 	public final Signal<ProcessedDebugFrame> newPDF = new Signal<>();
-	public DebuggerDialog(final GameStateTracker debugState) {
-		super();
+	public final GameStateTracker debugState;
+	public DebuggerConsolePane debuggerConsole;
+	public FilterLibMode filterLib = FilterLibMode.stdlib;
+
+	public DebuggerDialog(final GameStateTracker ds) {
+		debugState = ds;
 		setTitle("RALjector: Debugger");
 		setLayout(new BorderLayout());
+		// for commands menu, etc.
+		debuggerConsole = new DebuggerConsolePane(new DebuggerConsoleImpl(debugState, this));
 		// commands menu
 		JPanel dbgCommandsMenu = new JPanel();
 		dbgCommandsMenu.setLayout(new BoxLayout(dbgCommandsMenu, BoxLayout.X_AXIS));
-		JButton jb1 = new JButton("step");
-		jb1.addActionListener((a) -> {
-			debugState.tackPlay();
-		});
-		dbgCommandsMenu.add(jb1);
-		JButton jb2 = new JButton("continue");
-		jb2.addActionListener((a) -> {
-			debugState.dbgPlay();
-		});
-		dbgCommandsMenu.add(jb2);
+		dbgCommandsMenu.add(new Macro("step", "s"));
+		dbgCommandsMenu.add(new Macro("over", "so"));
+		dbgCommandsMenu.add(new Macro("stmt", "ns"));
+		dbgCommandsMenu.add(new Macro("continue", "c"));
 		final JLabel statusLine = new JLabel("Idle...");
 		dbgCommandsMenu.add(statusLine);
 		// VAs set
@@ -70,8 +70,9 @@ public class DebuggerDialog extends JFrame {
 		// finish up
 		add(dbgCommandsMenu, BorderLayout.NORTH);
 		JScrollPane vaScroll = new JScrollPane(vasSetPane);
-		JSplitPane intrinsicVASplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, intrinsicsSetPane, vaScroll); 
-		JSplitPane jsp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, text, frameList);
+		JSplitPane intrinsicVASplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, intrinsicsSetPane, vaScroll);
+		JSplitPane framesConsoleSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(frameList), debuggerConsole);
+		JSplitPane jsp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, text, framesConsoleSplit);
 		JSplitPane jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, intrinsicVASplit, jsp2);
 		add(jsp, BorderLayout.CENTER);
 		setSize(800, 600);
@@ -79,7 +80,7 @@ public class DebuggerDialog extends JFrame {
 			setVisible(true);
 			processedFrames = ProcessedDebugFrame.process(f);
 			newPDFSet.fire(processedFrames);
-			statusLine.setText(" Tacked @ " + f.inScript.toScrpLine() + "." + f.caosOffset);
+			statusLine.setText(" Tacked @ " + f.inScript.toScrpLine() + "." + f.caosOffset + " ");
 		});
 		newPDFSet.add((set) -> {
 			frameListModel.clear();
@@ -88,9 +89,22 @@ public class DebuggerDialog extends JFrame {
 			for (ProcessedDebugFrame pdf : set) {
 				if (fallback == null)
 					fallback = pdf;
-				if (wanted == null)
-					if (!pdf.shouldAvoid)
+				if (wanted == null) {
+					switch (filterLib) {
+					case stdlib:
+						if (!pdf.shouldAvoid)
+							wanted = pdf;
+						break;
+					case caos:
+						if (pdf.name.equals("CAOS"))
+							wanted = pdf;
+						break;
+					default:
+					case none:
 						wanted = pdf;
+						break;
+					}
+				}
 				frameListModel.addElement(pdf);
 			}
 			// and pick default to select
@@ -109,11 +123,23 @@ public class DebuggerDialog extends JFrame {
 		});
 		debugState.stateChange.add((s) -> {
 			if (s != GameStateTracker.State.Tacked)
-				statusLine.setText(" " + s.toString());
+				statusLine.setText(" " + s.toString() + " ");
 		});
 	}
 
 	private void openValueInspector(String string, String string2) {
+		debugState.displayMessageToUser.fire(string + ":\n" + string2);
+	}
+
+	public class Macro extends JButton {
+		public final String command;
+		public Macro(String text, String cmd) {
+			super(text);
+			command = cmd;
+			addActionListener((a) -> {
+				debuggerConsole.fakeInput(command);
+			});
+		}
 	}
 
 	public abstract class ValueView extends JButton {
@@ -158,5 +184,9 @@ public class DebuggerDialog extends JFrame {
 		public String getValueFromPDF(ProcessedDebugFrame pdf) {
 			return pdf.base.va[index];
 		}
+	}
+
+	public enum FilterLibMode {
+		none, caos, stdlib;
 	}
 }

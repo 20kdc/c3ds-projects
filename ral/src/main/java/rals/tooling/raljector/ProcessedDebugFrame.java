@@ -17,13 +17,15 @@ import rals.debug.DebugSite;
  */
 public class ProcessedDebugFrame {
 	public final String name;
+	public final String lineIdentifier;
 	public final RawDebugFrame base;
 	public final String[] vaNames;
 	public final CodeViewPane.Contents contents;
 	public final boolean shouldAvoid;
 
-	public ProcessedDebugFrame(String n, RawDebugFrame b, String[] v, CodeViewPane.Contents c, boolean ic) {
+	public ProcessedDebugFrame(String n, String li, RawDebugFrame b, String[] v, CodeViewPane.Contents c, boolean ic) {
 		name = n;
+		lineIdentifier = li;
 		base = b;
 		vaNames = v;
 		contents = c;
@@ -42,8 +44,9 @@ public class ProcessedDebugFrame {
 		return vaNames;
 	}
 	public static ProcessedDebugFrame[] process(RawDebugFrame rdf) {
-		CodeViewPane.Contents caosContents = new CodeViewPane.Contents(rdf.caos, findLineInCAOS(rdf.caos, rdf.caosOffset));
-		ProcessedDebugFrame caosFrame = new ProcessedDebugFrame("CAOS", rdf, getVANames(), caosContents, true);
+		CodeViewPane.Contents caosContents = findLineInCAOS(rdf.caos, rdf.caosOffset);
+		String caosLI = "#" + rdf.caosOffset;
+		ProcessedDebugFrame caosFrame = new ProcessedDebugFrame("CAOS", caosLI, rdf, getVANames(), caosContents, true);
 		LinkedList<ProcessedDebugFrame> frames = new LinkedList<>();
 		DebugSite ds = DebugSite.tryDecode(rdf.va[99]);
 		while (ds != null) {
@@ -66,8 +69,9 @@ public class ProcessedDebugFrame {
 				for (int i = 0; i < vaNames.length; i++)
 					if (ds.vaNames[i] != null)
 						vaNames[i] = ds.vaNames[i];
-				CodeViewPane.Contents nfc = new CodeViewPane.Contents(sb.toString(), ds.location.line);
-				frames.add(new ProcessedDebugFrame(ds.location.toString(), rdf, vaNames, nfc, likelyStdLib));
+				CodeViewPane.Contents nfc = new CodeViewPane.Contents(sb.toString(), ds.location.line, ds.location.character);
+				String li = ds.location.file.toString() + "#" + ds.location.line;
+				frames.add(new ProcessedDebugFrame(ds.location.toString(), li, rdf, vaNames, nfc, likelyStdLib));
 			} catch (Exception ex) {
 			}
 			ds = ds.parent;
@@ -75,14 +79,19 @@ public class ProcessedDebugFrame {
 		frames.add(caosFrame);
 		return frames.toArray(new ProcessedDebugFrame[0]);
 	}
-	private static int findLineInCAOS(String caos, int ofs) {
+	private static CodeViewPane.Contents findLineInCAOS(String caos, int ofs) {
 		int plannedLine = 0;
+		int chr = 0;
 		if (ofs < caos.length()) {
 			for (int i = 0; i < ofs; i++) {
-				if (caos.charAt(i) == 10)
+				if (caos.charAt(i) == 10) {
 					plannedLine++;
+					chr = 0;
+				} else {
+					chr++;
+				}
 			}
 		}
-		return plannedLine;
+		return new CodeViewPane.Contents(caos, plannedLine, chr);
 	}
 }

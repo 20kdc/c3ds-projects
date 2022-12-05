@@ -37,9 +37,20 @@ public class CodeViewPane extends JScrollPane {
 			sd.remove(0, sd.getLength());
 			int savedOffset = 0;
 			for (int i = 0; i < textLines.length; i++) {
-				if (c.line == i)
-					savedOffset = sd.getLength();
-				sd.insertString(sd.getLength(), textLines[i], c.line == i ? thisLine : null);
+				if (c.line == i) {
+					String line = textLines[i];
+					if (c.character >= 0 && c.character <= line.length()) {
+						sd.insertString(sd.getLength(), line.substring(0, c.character), null);
+						savedOffset = sd.getLength();
+						sd.insertString(sd.getLength(), "@", thisLine);
+						sd.insertString(sd.getLength(), line.substring(c.character), null);
+					} else {
+						savedOffset = sd.getLength();
+						sd.insertString(sd.getLength(), line, thisLine);
+					}
+				} else {
+					sd.insertString(sd.getLength(), textLines[i], null);
+				}
 				sd.insertString(sd.getLength(), "\n", null);
 			}
 			interiorTextPane.setCaretPosition(savedOffset);
@@ -50,10 +61,11 @@ public class CodeViewPane extends JScrollPane {
 
 	public static class Contents {
 		public final String text;
-		public final int line;
-		public Contents(String t, int l) {
+		public final int line, character;
+		public Contents(String t, int l, int c) {
 			text = t;
 			line = l;
+			character = c;
 		}
 	}
 }

@@ -26,7 +26,8 @@ import rals.parser.IDocPath;
 @SuppressWarnings("serial")
 public class RALjector extends JFrame {
 	// UI
-	public final InjectStatusFrame injectFrame;
+	@SuppressWarnings("unused")
+	private final InjectStatusFrame injectFrame;
 	public final DebuggerDialog debugFrame;
 	public final JButton[] mainButtons;
 	// Variables
@@ -61,9 +62,9 @@ public class RALjector extends JFrame {
 	public RALjector(final IDocPath std) {
 		super("RALjector");
 		stdLibDP = std;
-		injectFrame = new InjectStatusFrame(this);
+		injectFrame = new InjectStatusFrame(this, debugState);
 		debugFrame = new DebuggerDialog(debugState);
-		new Timer(250, (a) -> {
+		new Timer(50, (a) -> {
 			debugState.update();
 		}).start();
 		mainButtons = new JButton[mainButtonTexts.length];
@@ -135,8 +136,7 @@ public class RALjector extends JFrame {
 
 	private void injectUI(ScriptSection... sections) {
 		if (debugState.doNotInject()) {
-			injectFrame.injectTextArea.setText("Cannot inject: busy (open debugger!)");
-			injectFrame.setVisible(true);
+			debugState.displayMessageToUser.fire("Cannot inject: busy (open debugger!)");
 			return;
 		}
 		StringBuilder sb = new StringBuilder();
@@ -149,7 +149,6 @@ public class RALjector extends JFrame {
 				sb.append("\nInject failed.");
 			}
 		}
-		injectFrame.injectTextArea.setText(sb.toString());
-		injectFrame.setVisible(true);
+		debugState.displayMessageToUser.fire(sb.toString());
 	}
 }

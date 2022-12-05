@@ -6,6 +6,8 @@
  */
 package rals.tooling.raljector;
 
+import java.util.function.Function;
+
 import rals.tooling.Injector;
 
 public class GameStateTracker {
@@ -25,7 +27,10 @@ public class GameStateTracker {
 	private State lastGameState = State.Offline;
 
 	public final Signal<State> stateChange = new Signal<>();
+	public RawDebugFrame lastDebugFrame;
 	public final Signal<RawDebugFrame> debugFrame = new Signal<>();
+	public final Signal<String> displayMessageToUser = new Signal<>();
+	private Function<RawDebugFrame, Boolean> stepDecider = DebugStepDecider.SKIP_METADATA;
 
 	public void update() {
 		try {
@@ -95,20 +100,22 @@ public class GameStateTracker {
 						String src = Injector.cpxRequest( 
 							"execute\nouts sorc " + codf + " " + codg + " " + cods + " " + code
 						);
-						// determine if we should cheese things
-						if (codp < src.length()) {
-							if (src.substring(codp).startsWith("sets va99 \"")) {
-								// cheese it!
-								Injector.cpxRequest("execute\ndbg: tack tack");
-								didCheese = true;
-							}
+						rdf = new RawDebugFrame(lines, 7, codf, codg, cods, code, codp, src);
+						didCheese = stepDecider.apply(rdf);
+						if (!didCheese) {
+							// reset to default when a sequence completes
+							stepDecider = DebugStepDecider.SKIP_METADATA;
+						} else {
+							// never happened, honest
+							rdf = null;
+							Injector.cpxRequest("execute\ndbg: tack tack");
 						}
-						if (!didCheese)
-							rdf = new RawDebugFrame(lines, 7, codf, codg, cods, code, codp, src);
 					}
 					gameState = didCheese ? State.RunningTack : State.Tacked;
-					if (rdf != null)
+					if (rdf != null) {
+						lastDebugFrame = rdf;
 						debugFrame.fire(rdf);
+					}
 				} else {
 					gameState = State.RunningTack;
 				}
@@ -141,7 +148,8 @@ public class GameStateTracker {
 		}
 	}
 
-	public void tackPlay() {
+	public void tackPlay(Function<RawDebugFrame, Boolean> sd) {
+		stepDecider = sd;
 		try {
 			Injector.cpxRequest("execute\ndbg: tack tack");
 			gameState = State.RunningTack;
@@ -152,6 +160,7 @@ public class GameStateTracker {
 	}
 
 	public void dbgPlay() {
+		stepDecider = DebugStepDecider.SKIP_METADATA;
 		try {
 			Injector.cpxRequest("execute\ndbg: play");
 			gameState = State.Running;
