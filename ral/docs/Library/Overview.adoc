@@ -1,6 +1,4 @@
-## RAL Library Reference: Overview
-
-### Structure
+### Overview
 
 The RAL Standard Library is a set of RAL macros and constants to help in developing agents for Creatures 3 and Docking Station. It also contains general macros and constants for the engine.
 

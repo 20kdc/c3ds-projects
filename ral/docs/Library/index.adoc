@@ -1,9 +1,9 @@
 <<<
 
+## RAL Library Reference
+
 include::Overview.adoc[]
 
 <<<
-
-## RAL Library Reference: Contents
 
 include::gen.adoc[]

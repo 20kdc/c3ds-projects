@@ -1,6 +1,6 @@
-## RAL Language Technical Details
+### Technical Details
 
-### Expressions
+#### Expressions
 
 Expressions are represented as slices (`RALExprSlice`). Slices are made up of slots.
 
@@ -30,7 +30,7 @@ There's a current rule in the compiler about writing single slots at a time, but
 
 In addition, statement expressions have some interesting slicing rules meant to try and reduce the amount of nonsense that goes on around macros.
 
-### Conditions
+#### Conditions
 
 Conditions are a special case of expressions. The reason they're special is because in most cases, the RAL compiler is able to directly embed a condition inside a CAOS conditional or loop.
 
@@ -40,7 +40,7 @@ This is important as RAL attempts to simulate more advanced boolean expression s
 
 So idioms such as `(cat != null) && catCanMeow(cat)` will not act properly (`catCanMeow(cat)` may get executed regardless of if `cat` is `null`)
 
-### Lexer
+#### Lexer
 
 The RAL lexer has 6 distinct token categories:
 

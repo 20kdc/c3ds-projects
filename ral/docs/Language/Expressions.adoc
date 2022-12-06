@@ -1,10 +1,10 @@
-## RAL Language Reference: Expressions
+### Expressions
 
 Expressions are how values to be read *or written* are expressed.
 
 RAL uses tuples as expressions for versatility, though it does not have a tuple type.
 
-### Constants
+#### Constants
 
 Constants are the simplest kind of expression.
 
@@ -18,7 +18,7 @@ There are four types of constant in RAL.
 
 You might be tempted to count `null`, but that's internally an alias.
 
-### Variable IDs
+#### Variable IDs
 
 Variable IDs represent variables or expressions declared or aliased by `let` and `alias`, alongside declared constants.
 
@@ -29,7 +29,7 @@ let meh = 12;
 let result = meh + 8; // 20
 ```
 
-### Brackets and Binary Operators
+#### Brackets and Binary Operators
 
 Binary (as in two-parameter) operators are used to perform simple operations on values such as numbers and strings.
 
@@ -63,11 +63,11 @@ let result2 = 1 + 2 * 3 + 4;       // 12
 let result3 = (((1 - 1) - 1) - 1); // -2
 ```
 
-#### The Secret Operator: `,`
+##### The Secret Operator: `,`
 
 `,` is an operator which merges expressions together into a group. This is what creates the tuples, and how macros have more than one parameter.
 
-### Unary Operators
+#### Unary Operators
 
 Unary operators are handled when they are found at the start of an expression.
 
@@ -84,7 +84,7 @@ let vb = ~a; // -2
 let vc = !a; // 0
 ```
 
-### Increment/Decrement Expressions
+#### Increment/Decrement Expressions
 
 Appending or prepending `++` or `--` to a variable (or something writable in general) causes an increment or decrement to the value.
 
@@ -100,7 +100,7 @@ let d = a--; // d is 2, a is now 1
 let e = --a; // e is 0, a is now 0
 ```
 
-### String Embedding
+#### String Embedding
 
 Strings surrounded by `'` instead of `"` allow for "embedding". In these strings, sections surrounded by `{}` are expressions - the values of which are inserted into the string.
 
@@ -108,7 +108,7 @@ Strings surrounded by `'` instead of `"` allow for "embedding". In these strings
 outs('The hand is named {hand()}.'); // The hand is named Lambert.
 ```
 
-### instanceof
+#### instanceof
 
 `instanceof` checks if a given value matches a given classifier (returning false if the value is null).
 
@@ -118,7 +118,7 @@ It will only perform a null check if the value is not nullable, but will otherwi
 let isDolphin = targ instanceof Dolphin;
 ```
 
-### Message/Script IDs
+#### Message/Script IDs
 
 Message/script ID expressions are used when other methods of writing message and script IDs do not apply.
 
@@ -128,7 +128,7 @@ They consist of the type name, a separator (`:` for scripts, `->` for messages),
 scrx(Dolphin, Dolphin:chirp);
 ```
 
-### Field Accesses
+#### Field Accesses
 
 Field accesses take the form of a suffix `.` followed by the ID of a field on the given agent.
 
@@ -142,7 +142,7 @@ field bool Kitten.meowing 1; // meowing is mv01 of Kitten
 kitten.meowing = true;
 ```
 
-### Macro Calls
+#### Macro Calls
 
 Macro calls act as static function calls might in another language.
 
@@ -155,7 +155,7 @@ myMacro();
 let a, b = myOtherMacro(c, d);
 ```
 
-### Inline Expressions
+#### Inline Expressions
 
 Inline expressions are `&` followed by the syntax for a string embedding.
 However, rather than this being a real string embedding, variables are instead replaced with references to them in CAOS.
@@ -167,7 +167,7 @@ let var = "important"; // doesn't need to be this convoluted, but makes a good e
 let important = &'game {var}'!float;
 ```
 
-#### Inline Variables
+##### Inline Variables
 
 Inline variables are like inline expressions, except rather than `&`, `&=` is used.
 
@@ -179,7 +179,7 @@ They're also still readable, just like inline expressions.
 &= 'game "moose"' = 12; // setv game "moose" 12
 ```
 
-### Statement Expressions
+#### Statement Expressions
 
 Statement expressions are expressions of statements.
 
@@ -193,7 +193,7 @@ Macros typically use these and don't show it.
 let result = {let a = 1; let b = 2; return a + b;};
 ```
 
-### Explicit Casts
+#### Explicit Casts
 
 Explicit casts, written as `!` followed by something that is not an ID (indicates cast to non-nullable) or by a type (indicates cast to that type), mostly ignores the existing type of the value in favour of an overridden one.
 This works both ways and may be used to cast a variable you are going to write into.
@@ -204,7 +204,7 @@ This is particularly important for working with inline statements and expression
 let modu = &'modu'!str;
 ```
 
-#### Initial Scope
+##### Initial Scope
 
 The initial scope is the set of variables available in every script.
 

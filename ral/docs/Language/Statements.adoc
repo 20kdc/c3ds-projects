@@ -1,12 +1,12 @@
-## RAL Language Reference: Statements
+### Statements
 
 Statements are the unit of sequenced, non-value-returning code in RAL.
 
 image::diagram/Stmt.png[]
 
-### Scoping
+#### Scoping
 
-#### Blocks
+##### Blocks
 
 Blocks are one of the most basic kinds of statement, made up of `{}` surrounding other statements. Blocks separate scopes, and allow multiple statements to be written in any place a single statement can be written.
 
@@ -19,7 +19,7 @@ let int counter = 0;
 
 image::diagram/BlockStmt.png[]
 
-#### let
+##### let
 
 `let` is used to introduce variables in the current scope.
 
@@ -49,7 +49,7 @@ __LetStmtBody__:
 
 image::diagram/LetStmtBody.png[]
 
-#### alias
+##### alias
 
 `alias` is used to retype variables, provide different names for them, or outright treat complex expressions as simple variables (re-run on every use, mind).
 
@@ -71,9 +71,9 @@ alias a!float; // cast variant - alter
 
 image::diagram/AliasStmt.png[]
 
-### Actions
+#### Actions
 
-#### Inline Statements
+##### Inline Statements
 
 Inline statements, or `&`, are used to reasonably-directly write CAOS into the output.
 
@@ -91,7 +91,7 @@ let int number = 0;
 
 image::diagram/InlineStmt.png[]
 
-#### Expression Statements and Assignment Statements
+##### Expression Statements and Assignment Statements
 
 Assignment statements assign some expressions to some other expressions.
 
@@ -108,7 +108,7 @@ xPos, yPos = getRandomXY(); // Assignment statement with multiple return values
 
 image::diagram/AssignStmt.png[]
 
-#### Modify-Assignment Statements
+##### Modify-Assignment Statements
 
 Modify-assignment statements are a shorthand for certain assignment statements.
 
@@ -123,7 +123,7 @@ counter += 1; // counter is now 2
 
 image::diagram/ModifyStmt.png[]
 
-#### Emit Statements
+##### Emit Statements
 
 Emit statements are of the form `receiver->messageName([arg1[, arg2]])[ after ticks];`, where `receiver`, `messageName`, `arg1`, `arg2`, and `ticks` are changed as appropriate. This becomes a `MESG WRIT` or `MESG WRT+` as appropriate.
 
@@ -136,7 +136,7 @@ targ->receivedBoop();
 
 image::diagram/EmitStmt.png[]
 
-#### call
+##### call
 
 `call` represents a `CALL` rather than a `MESG WRIT`, occurring on the owner and suspending the current script until completion - it is otherwise like an emit statement.
 
@@ -146,9 +146,9 @@ call makeBoopNoises();
 
 image::diagram/CallStmt.png[]
 
-### Flow Control
+#### Flow Control
 
-#### if
+##### if
 
 `if` is a conditional branch statement. It is of the form `if cond... { code } [else { code }]`.
 
@@ -170,7 +170,7 @@ if a == 1 {
 
 image::diagram/IfStmt.png[]
 
-#### while
+##### while
 
 `while` is a (breakable) loop. Given a condition, the condition is checked on every iteration (except the first), and if false, the loop is returned from.
 
@@ -184,7 +184,7 @@ a++;
 
 image::diagram/WhileStmt.png[]
 
-#### break
+##### break
 
 A `while`, `for` or `foreach` block may be escaped with `break`. (In `foreach`'s case this does not actually terminate the loop but prevents the contents from executing until the loop completes, which is effectively the same thing but less efficient.)
 
@@ -200,7 +200,7 @@ handleStuff();
 
 image::diagram/BreakStmt.png[]
 
-#### for
+##### for
 
 `for` loops consist of initial variables (as in a `let` statement), a condition, an adjustment statement, and finally a loop body.
 
@@ -214,7 +214,7 @@ for a = 1; a <= 10; a++; {
 
 image::diagram/ForStmt.png[]
 
-#### foreach
+##### foreach
 
 `foreach` blocks handle the different types of agent iteration.
 
@@ -240,7 +240,7 @@ foreach (Agent in econ targ) {
 
 image::diagram/ForeachStmt.png[]
 
-#### with
+##### with
 
 A `with` block checks if a given variable (or something like a variable, such as `targ`) is of a given type (where said type must be a class) and if so, runs the code within. Otherwise, said code is not run.
 

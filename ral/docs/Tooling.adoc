@@ -2,7 +2,11 @@
 
 The RAL compiler is a Java command-line application, and therefore is run via `java -jar ral.jar`.
 
-It is designed for use in simple build systems, and injection, for rapid iteration similar to CAOS Tool.
+It can also be run via the supplied `ral` and `raljector` command-line scripts.
+
+The RAL command-line application is designed for use in simple build systems, and injection, for rapid iteration similar to CAOS Tool.
+
+RALjector is designed to be a companion to a text editor, providing CAOS Tool-style immediate injection with debugging capabilities.
 
 ### Subcommands
 
@@ -18,29 +22,43 @@ The usual `compile` variant is a 1:1 compilation of a RAL file to an equivalent 
 
 The `compileInstall` variant only compiles the install script, the `compileEvents` script only compiles the event scripts, and the `compileRemove` script only compiles the remove script (without the `rscr` header, so this is suitable for agent remove scripts).
 
-`compileDebug` is `compile` but it writes additional metadata.
+`compileDebug` is `compile`, but it writes additional debug information. _This information includes the full file paths of RAL source code on your computer. This information is critical to debugging, but if your username on your computer happens to also be your real name, you should be careful about use of this option._
 
-#### inject, injectEvents, injectRemove
+#### inject, injectInstall, injectEvents, injectRemove
 
 The `inject` subcommand, and it's friends `injectEvents` and `injectRemove`, perform a CAOS injection over CPX (which requires having `caosprox` running).
 
-The sole parameter is the RAL file to inject.
+The sole parameter is the RAL file to inject. (CPX host and port are provided via the `CPX_HOST` and `CPX_PORT` environment variables.)
 
-`inject` injects the event scripts and the install script, while `injectEvents` and `injectRemove` inject only the event scripts and the remove script respectively.
+`inject` injects the event scripts and the install script, while `injectInstall`, `injectEvents` and `injectRemove` inject only the install script, the event scripts and the remove script respectively.
 
-#### lsp, lspLog
+#### lsp, lspLog, lspLoud
 
-`lsp` and `lspLog` make up a Language Server Protocol implementation "over stdio" (standard input/output).
+`lsp`, `lspLog`, and `lspLoud` make up a Language Server Protocol implementation "over stdio" (standard input/output).
 
 In sensible (Vim, Kate, lite-xl, Qt Creator) implementations of the Language Server Protocol, either of these may be used in LSP server launch commands used to enable completion, definition lookup, and live diagnostics.
 
 In insane (Lapce, Visual Studio Code) implementations, more work is required.
 
-_LSP support is not currently tested with paths that contain spaces, LSP clients other than lite-xl, or the Windows operating system._
+_LSP support is not currently tested with paths that contain spaces, LSP clients other than lite-xl and Kate, or the Windows operating system._
+
+#### docGen
+
+The `docGen` subcommand has the form `docGen INPUT OUTPUT (+/-PREFIX)...`.
+
+It generates standalone AsciiDoc documentation for RAL code, such as the standard library documentation at the end of this manual.
 
 #### cpxConnectionTest
 
 The `cpxConnectionTest` subcommand is used to test injection.
+
+#### raljector
+
+The `raljector` subcommand launches RALjector, a Java Swing GUI for injecting RAL agents ala CAOS Tool, and performing debugging.
+
+`raljector` functionality is likely to change over time, but the basic principle is that it's an always-on-top window that can be contracted to sit in a corner and let you press one of it's buttons to inject a file (that you have just saved from a text editor) into the game.
+
+It also contains a CAOS debugger, which is capable of reading debug information (which it can embed) and showing the equivalent position in RAL code.
 
 ### Standard Library Location
 
@@ -49,3 +67,4 @@ In JAR form, the RAL compiler expects the `include` directory to be nearby (eith
 To override this, the environment variable `RAL_STDLIB_PATH` may be set.
 
 _This environment variable should not need to be used under regular conditions. It exists as an emergency mechanism in the event that RAL standard library autodetection does not succeed. `RAL_STDLIB_PATH` is not a toy, and custom modifications of any kind directly to the RAL standard library may make it harder to update to future versions of RAL, and may make it harder for code to be reused or compiled on new installations._
+

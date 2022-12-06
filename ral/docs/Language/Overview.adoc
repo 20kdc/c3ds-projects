@@ -1,6 +1,6 @@
-## RAL Language Reference: Overview
+### Overview
 
-### Language Structure
+#### Language Structure
 
 A RAL file is made up of *declarations*.
 
@@ -8,7 +8,7 @@ Declarations in turn contain expressions and statements (statements containing m
 
 In particular, macros and scripts contain code, while other declarations focus more on type structure or "meta" concerns such as includes.
 
-### Type System
+#### Type System
 
 RAL is designed with a relatively "modern" type system, though it lacks features such as generics (it can generally be assumed they'd be impractical anyway in a CAOS environment).
 
