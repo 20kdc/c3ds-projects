@@ -74,7 +74,6 @@ local ral_symbols = {
 	["foreach"] = "keyword",
 	["in"] = "keyword",
 	["call"] = "keyword",
-	["class"] = "keyword",
 	-- compiler types
 	["str"] = "keyword2",
 	["int"] = "keyword2",

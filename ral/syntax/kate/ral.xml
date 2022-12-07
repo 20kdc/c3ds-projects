@@ -1,14 +1,131 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language name="RAL" version="1" kateversion="5.0" section="Sources" extensions="*.ral" />
+<language name="RAL" version="1" kateversion="5.0" section="Sources" extensions="*.ral">
 	<!-- dummy for now -->
 	<highlighting>
+		<list name="lKeywords">
+			<!-- meta -->
+			<item>include</item>
+			<item>addSearchPath</item>
+			<!-- type system decls -->
+			<item>class</item>
+			<item>interface</item>
+			<item>extends</item>
+			<item>typedef</item>
+			<item>message</item>
+			<item>field</item>
+			<item>assertConst</item>
+			<!-- evil decls -->
+			<item>overrideOwnr</item>
+			<item>messageHook</item>
+			<!-- code decls -->
+			<item>macro</item>
+			<item>script</item>
+			<item>install</item>
+			<item>remove</item>
+			<!-- in-function (not CF) -->
+			<item>let</item>
+			<item>alias</item>
+			<item>instanceof</item>
+			<item>after</item>
+		</list>
+		<list name="lKeywordsCF">
+			<!-- in-function (CF) -->
+			<item>if</item>
+			<item>else</item>
+			<item>while</item>
+			<item>break</item>
+			<item>return</item>
+			<item>with</item>
+			<item>for</item>
+			<item>foreach</item>
+			<item>in</item>
+			<item>call</item>
+		</list>
+		<list name="lCompilerTypes">
+			<item>str</item>
+			<item>int</item>
+			<item>bool</item>
+			<item>float</item>
+			<item>num</item>
+			<item>bytes</item>
+		</list>
+		<list name="lLiterals">
+			<!-- can be variable name or type -->
+			<item>null</item>
+			<!-- compiler helpers -->
+			<item>true</item>
+			<item>false</item>
+		</list>
 		<contexts>
-			<context attribute="Start" lineEndContext="#stay" name="Start">
-				<RegExpr attribute="Start" context="#stay" String="." />
+			<context name="cStart" attribute="aStart" lineEndContext="#stay">
+				<!-- consumeWS -->
+				<RegExpr String="/\*" attribute="aComment" context="cMultiLineComment" />
+				<RegExpr String="//[^\n]*" attribute="aComment" context="#stay" />
+				<RegExpr String="\s" attribute="aStart" context="#stay" />
+				<!-- Strings -->
+				<DetectChar char="'" attribute="aString" context="cStringEmbed" />
+				<DetectChar char='"' attribute="aString" context="cString" />
+				<!-- String Embed Handling -->
+				<DetectChar char="{" attribute="aStart" context="cStart" />
+				<DetectChar char="}" attribute="aStart" context="#pop" />
+				<!-- Loners/Operators -->
+				<RegExpr String="[\;\[\]\{\}\(\)\,\.]" attribute="aStart" context="#stay" />
+				<!-- Operators -->
+				<RegExpr String="[\&lt;\&gt;\=\?\!\/\*\-\+\:\&amp;\|\^\%\~\@]" attribute="aOperator" context="#stay" />
+				<!-- IDs -->
+				<Int attribute="aInt" context="#stay" />
+				<Float attribute="aFloat" context="#stay" />
+				<keyword String="lKeywords" attribute="aKeyword" context="#stay" />
+				<keyword String="lKeywordsCF" attribute="aKeywordCF" context="#stay" />
+				<keyword String="lCompilerTypes" attribute="aBuiltInType" context="#stay" />
+				<keyword String="lLiterals" attribute="aBuiltInLiteral" context="#stay" />
+				<RegExpr String="[A-Z]" attribute="aConstType" context="cConstType" />
+				<RegExpr String="." attribute="aID" context="cID" />
+			</context>
+			<!-- these three have the same contents but different attributes! -->
+			<context name="cID" attribute="aID" lineEndContext="#pop">
+				<!-- Whitespace -->
+				<RegExpr String="\s" lookAhead="true" context="#pop" />
+				<!-- Loners/Operators -->
+				<RegExpr String="[\;\[\]\{\}\(\)\,\.]" lookAhead="true" context="#pop" />
+				<RegExpr String="[\&lt;\&gt;\=\?\!\/\*\-\+\:\&amp;\|\^\%\~\@]" lookAhead="true" context="#pop" />
+			</context>
+			<context name="cConstType" attribute="aConstType" lineEndContext="#pop">
+				<!-- Whitespace -->
+				<RegExpr String="\s" lookAhead="true" context="#pop" />
+				<!-- Loners/Operators -->
+				<RegExpr String="[\;\[\]\{\}\(\)\,\.]" lookAhead="true" context="#pop" />
+				<RegExpr String="[\&lt;\&gt;\=\?\!\/\*\-\+\:\&amp;\|\^\%\~\@]" lookAhead="true" context="#pop" />
+			</context>
+			<context name="cMultiLineComment" attribute="aComment" lineEndContext="#stay">
+				<RegExpr String="\*/" attribute="aComment" context="#pop" />
+			</context>
+			<context name="cStringEmbed" attribute="aString" lineEndContext="#stay">
+				<DetectChar char="'" attribute="aString" context="#pop" />
+				<DetectChar char="{" attribute="aStart" context="cStart" />
+				<RegExpr String="\\" attribute="aString" context="cStringEscape" />
+			</context>
+			<context name="cString" attribute="aString" lineEndContext="#stay">
+				<DetectChar char='"' attribute="aString" context="#pop" />
+				<RegExpr String="\\" attribute="aString" context="cStringEscape" />
+			</context>
+			<context name="cStringEscape" attribute="aString" lineEndContext="#pop">
+				<RegExpr String="." attribute="aString" context="#pop" />
 			</context>
 		</contexts>
 		<itemDatas>
-			<itemData name="Start" defStyleNum="dsNormal" spellChecking="false"/>
+			<itemData name="aStart" defStyleNum="dsNormal" spellChecking="false"/>
+			<itemData name="aKeyword" defStyleNum="dsKeyword" spellChecking="false"/>
+			<itemData name="aKeywordCF" defStyleNum="dsControlFlow" spellChecking="false"/>
+			<itemData name="aString" defStyleNum="dsString" spellChecking="false"/>
+			<itemData name="aBuiltInType" defStyleNum="dsDataType" spellChecking="false"/>
+			<itemData name="aBuiltInLiteral" defStyleNum="dsBuiltIn" spellChecking="false"/>
+			<itemData name="aInt" defStyleNum="dsDecVal" spellChecking="false"/>
+			<itemData name="aFloat" defStyleNum="dsFloat" spellChecking="false"/>
+			<itemData name="aComment" defStyleNum="dsComment" spellChecking="false"/>
+			<itemData name="aID" defStyleNum="dsVariable" spellChecking="false"/>
+			<itemData name="aConstType" defStyleNum="dsConstant" spellChecking="false"/>
+			<itemData name="aOperator" defStyleNum="dsOperator" spellChecking="false"/>
 		</itemDatas>
 	</highlighting>
 	<general>
