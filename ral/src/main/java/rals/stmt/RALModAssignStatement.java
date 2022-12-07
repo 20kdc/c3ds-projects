@@ -89,7 +89,7 @@ public class RALModAssignStatement extends RALStatementUR {
 				}
 				op.stepCodegen(targetType, lInline, sourceType, rInline, c2);
 				if (lVA != null)
-					target.writeCompile(0, lVA.getCode(c2), targetNewType, c2);
+					target.writeCompile(0, lVA.getCode(c2), targetNewType.majorType, c2);
 			}
 		}
 	}

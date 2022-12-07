@@ -8,7 +8,7 @@ If the file is in the parent directory, refer to it as follows: "../abc.ral".
 If the file is in a subdirectory, then refer to it as, say, "somedir/abc.ral".
 Note that as far as RAL includes go, the sub-directory name of "std" is reserved for RAL's standard library.
 */
-include "talking-lemon-caos-final-finished-interface.ral";
+include "talking-lemon-finished-interface.ral";
 
 // Value indicates the current speech line of the talking lemon.
 field int TalkingLemon.line 0;
@@ -27,9 +27,10 @@ It would also be valid to move this code into the newTalkingLemon macro.
 */
 script TalkingLemon:init {
 	inst();
-	// Set attributes
+	// Set attributes.
+	// Note that targ starts out as equivalent to ownr at the start of a script in almost all cases.
 	perm(100);
-	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_ACTIVATE | ATTR_MOUSE | ATTR_CARRY);
+	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_PNTR_ACT1 | ATTR_PNTR_PICKUP | ATTR_AGNT_PICKUP);
 	aero(10);
 	accg(2);
 }
@@ -67,7 +68,8 @@ remove {
 	foreach (TalkingLemon in enum) {
 		kill(targ);
 	}
-	// Remove the script
+	// Remove the scripts
+	scrx(TalkingLemon, TalkingLemon:init);
 	scrx(TalkingLemon, TalkingLemon:act1);
 }
 

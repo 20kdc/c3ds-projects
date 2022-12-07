@@ -60,7 +60,7 @@ public class RALBitInvert implements RALExprUR {
 						String tmpCode = tmp.getCode(c2);
 						exprR.readCompileInner(tmp, c2);
 						context.writer.writeCode(actualCmd + " " + tmpCode);
-						out.writeCompile(0, tmpCode, tmp.type, context);
+						out.writeCompile(0, tmpCode, RALType.Major.Value, context);
 					}
 				}
 			}

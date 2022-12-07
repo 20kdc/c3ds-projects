@@ -78,7 +78,7 @@ public class RALStmtExpr implements RALExprUR {
 		}
 
 		@Override
-		protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+		protected void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 			try (CompileContext cc = new CompileContext(context)) {
 				rStmt.compile(context.writer, context);
 				rExpr.writeCompile(index, input, inputExactType, context);

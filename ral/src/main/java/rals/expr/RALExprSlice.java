@@ -103,7 +103,7 @@ public abstract class RALExprSlice {
 	 * WARNING: May alter TARG before input runs. If this matters, make a temporary.
 	 * Must throw if not writable, or else expression handles (return-values-as-variables) will break.
 	 */
-	public final void writeCompile(int index, String input, RALType inputExactType, CompileContext context) {
+	public final void writeCompile(int index, String input, RALType.Major inputExactType, CompileContext context) {
 		checkSlot(index);
 		getUnderlying(context).writeCompileInner(index, input, inputExactType, context);
 	}
@@ -289,7 +289,7 @@ public abstract class RALExprSlice {
 	 * WARNING: May alter TARG before input runs. If this matters, make a temporary.
 	 * Must throw if not writable, or else expression handles (return-values-as-variables) will break.
 	 */
-	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+	protected void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 		throw new RuntimeException("Write not supported on " + this);
 	}
 
@@ -367,7 +367,7 @@ public abstract class RALExprSlice {
 		protected abstract void readInplaceCompileInner(RALVarVA[] out, CompileContext context);
 
 		@Override
-		protected abstract void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context);
+		protected abstract void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context);
 
 		@Override
 		protected abstract String getInlineCAOSInner(int index, boolean write, CompileContextNW context);
@@ -435,7 +435,7 @@ public abstract class RALExprSlice {
 		}
 
 		@Override
-		protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+		protected void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 			// We know a/b must be underlying because getUnderying earlier checked that for us.
 			if (index < a.length) {
 				a.writeCompileInner(index, input, inputExactType, context);

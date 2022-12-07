@@ -12,7 +12,7 @@ ral/ral.jar:
 RAL_REL += ral/include/std ral/syntax
 
 # RAL manual
-RAL_REL += ral/manual.pdf ral/manual.html
+RAL_REL += ral/manual.pdf ral/manual.html ral/samples
 
 .PHONY: ral/manual.pdf
 ral/manual.pdf:

@@ -39,8 +39,6 @@ public class ScopeContext {
 		setLoc("from", dFrm, new RALVarString.Fixed("from", parent.fromType, false));
 		DefInfo dItt = new DefInfo.Builtin("For Creature agents, _it_ is the current object of attention at the start of this script.");
 		setLoc("_it_", dItt, new RALVarString.Fixed("_it_", world.types.gAgentNullable, false));
-		DefInfo dPrt = new DefInfo.Builtin("part is an implicit parameter to CAOS commands that may operate on compounds.");
-		setLoc("part", dPrt, new RALVarPart(world.types.gInteger));
 		DefInfo dPm1 = new DefInfo.Builtin("_p1_ is a parameter. The engine can set it for some scripts, or it can be controlled by the sender of a message.");
 		setLoc("_p1_", dPm1, new RALVarString.Fixed("_p1_", parent.p1Type, true));
 		DefInfo dPm2 = new DefInfo.Builtin("_p2_ is a parameter. The engine can set it for some scripts, or it can be controlled by the sender of a message.");

@@ -20,19 +20,26 @@ public class RALVarString extends RALVarBase {
 
 	@Override
 	protected void readCompileInner(RALExprSlice out, CompileContext context) {
-		out.writeCompile(0, getInlineCAOS(0, false, context), type, context);
+		out.writeCompile(0, getInlineCAOS(0, false, context), type.majorType, context);
 	}
 
 	@Override
-	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+	protected void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 		if (!isWritable)
 			throw new RuntimeException("Var " + this + " is not writable");
-		writeSet(context.writer, getInlineCAOS(index, true, context), input, inputExactType);
+		// Note that if we don't *have* the input's exact type, we can still try our OWN type.
+		// This particularly applies to casts on in-place reads.
+		writeSet(context.writer, getInlineCAOS(index, true, context), input, inputExactType.autoPromote(type.majorType));
 	}
 
-	public static void writeSet(CodeWriter writer, String code, String input, RALType inputExactType) {
+	/**
+	 * Writes a seta/sets/setv. WARNING: ALL CALLS TO THIS SHOULD BE DOING AUTOPROMOTING.
+	 * That is, if you have a "local" type, you should use inputExactType.autoPromote(that local major type)
+	 * inputExactType still overrules, but this catches edge cases.
+	 */
+	public static void writeSet(CodeWriter writer, String code, String input, RALType.Major inputExactType) {
 		String set;
-		switch (inputExactType.majorType) {
+		switch (inputExactType) {
 		case Agent:
 			set = "seta ";
 			break;

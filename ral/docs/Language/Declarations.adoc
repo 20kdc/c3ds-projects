@@ -114,7 +114,7 @@ image::diagram/ScriptProtoDecl.png[]
 
 This is used in the standard library to mark specific script numbers that the engine misuses in colourful ways, in particular 101 through 105.
 
-In this event, what would usually be `ownr`'s type is moved to `from`, and `ownr`'s type is set to the one given.
+In this event, what would usually be the type of `ownr` is moved to `from`, and the type of `ownr` is set to the one given.
 
 image::diagram/OverrideOwnrDecl.png[]
 

@@ -52,7 +52,7 @@ public class ScriptsUR {
 			rc.precompile(world);
 
 		if (installScript != null) {
-			ScriptContext installScriptCtx = new ScriptContext(world, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
+			ScriptContext installScriptCtx = new ScriptContext(world, ts.gAgentNullable, ts.gAny, ts.gAny, ts.gAny);
 			scripts.installScript = installScriptCtx.resolveStmt(installScript);
 		}
 

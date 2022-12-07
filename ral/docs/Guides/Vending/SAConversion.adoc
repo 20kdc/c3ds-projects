@@ -15,7 +15,7 @@ include::../AboutCAOS/TalkingLemonCTFooter.cos[]
 A very literal transliteration to RAL goes as follows:
 
 ```
-include::../../../samples/talking-lemon-caos-final-naive.ral[]
+include::../../../samples/talking-lemon-naive.ral[]
 ```
 
 So far, this code is clearly worse than what we started with.
@@ -102,7 +102,7 @@ The RAL Standard Library contains RAL definitions for many CAOS commands and exp
 As such, finishing the conversion, the result is much cleaner.
 
 ```
-include::../../../samples/talking-lemon-caos-final-stdlib.ral[]
+include::../../../samples/talking-lemon-stdlib.ral[]
 ```
 
 #### Constructor Script, Interface File
@@ -111,16 +111,19 @@ There's some final adjustments that can be made before moving onto other agents.
 
 Mainly this amounts to preparations for later.
 
-`talking-lemon-caos-final-finished-interface.ral`:
+`talking-lemon-finished-interface.ral`:
 ```
-include::../../../samples/talking-lemon-caos-final-finished-interface.ral[]
+include::../../../samples/talking-lemon-finished-interface.ral[]
 ```
 
-`talking-lemon-caos-final-finished.ral`:
+`talking-lemon-finished.ral`:
 ```
-include::../../../samples/talking-lemon-caos-final-finished.ral[]
+include::../../../samples/talking-lemon-finished.ral[]
 ```
 
 With the constructor script in place, the Talking Lemon is now more or less done.
 
-A particularly good idea is to make the lemon say a random line from a set of lines, without repeating the same line twice in a row.
+#### Things To Check
+
+* A good idea is to make the lemon say a random line from a set of lines, without repeating the same line twice in a row.
+* Future agents in this guide will expect the Talking Lemon's scripts to be installed. As such, please remove any spare lemons with `kill hots`, rather than using the remove script, or alternatively, re-inject the event scripts (but not the install script).

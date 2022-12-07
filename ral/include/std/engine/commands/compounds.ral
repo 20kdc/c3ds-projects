@@ -53,16 +53,27 @@ macro () page(int &p) &'page {p}';
 // With a text part selected, returns the current page.
 macro page() &'npgs'!int;
 
-// PART is handled in the compiler as a variable, because of it's nature as a pseudo-variable.
+/*
+Sets the current `part`, used to select the part of a compound agent that some operations target.
+Note that this is independent of `targ`, but the combination of `targ` and `part` selects the specific part.
+*/
+macro () part(int &i) &'part {i}';
 
 // Returns true if the given part exists on `targ`, false otherwise.
 macro partExists(int &i) &'part {i}'!bool;
 
 /*
 Adds a new button part to the `targ` compound agent.
+`id` is the part ID for this part.
+`gallery` may be an empty string for no overlay, but is otherwise the sprite of an overlay on top of the camera view.
+`first` is the initial frame that all further sprite commands on this part are relative to.
+`count` is the amount of frames for this part.
+`x`, `y`, and `plane` are relative to part 0.
+`hover` is an ANIM-style animation for when hovering over the button.
+`msg` is a message to send when the button is clicked.
+`trns` if true checks the transparency of pixels for button hit detection -- otherwise button hit detection is based on the bounding box.
 */
-// OH WAIT THIS USES BYTE-STRINGS
-//macro () patButt(int &family, int &genus, int &species, str &gallery, int &count, int &first, int &plane) &'new: comp {family, genus, species, gallery, count, first, plane}';
+macro () patButt(int &id, str &gallery, int &first, int &count, num &x, num &y, int &plane, bytes &hover, int &msg, bool &trns) &'pat: butt {id, gallery, first, count, x, y, plane, hover, msg, trns}';
 
 /*
 Adds a new camera-view part to the `targ` compound agent.
@@ -118,8 +129,6 @@ macro () patKill(int &id) &'pat: kill {id}';
 Moves a part on the `targ` compound agent.
 */
 macro () patMove(int &id, num &x, num &y) &'pat: move {id, x, y}';
-
-// MISSING
 
 /*
 Adds a text (i.e. textbox) part to the `targ` compound agent.

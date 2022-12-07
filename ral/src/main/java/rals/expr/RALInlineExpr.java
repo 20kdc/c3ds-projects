@@ -8,6 +8,7 @@ package rals.expr;
 
 import rals.code.*;
 import rals.stmt.*;
+import rals.types.RALType;
 
 /**
  * Inline expression
@@ -45,12 +46,25 @@ public class RALInlineExpr implements RALExprUR {
 		@Override
 		protected void readCompileInner(RALExprSlice out, CompileContext context) {
 			try (CompileContext c2 = new CompileContext(context)) {
-				out.writeCompile(0, RALInlineStatement.compileResolvedParts(resolved, c2), context.typeSystem.gAny, c2);
+				out.writeCompile(0, RALInlineStatement.compileResolvedParts(resolved, c2), RALType.Major.Unknown, c2);
+			}
+		}
+
+		@Override
+		protected void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
+			// having to manually check this is cringe, need to make RALExprSlice do these checks at some point
+			// but I'm patching this midway through writing the bloody tutorial
+			if (!slot.perms.write)
+				throw new RuntimeException("Write to unwritable inline expression");
+			try (CompileContext c2 = new CompileContext(context)) {
+				RALVarString.writeSet(c2.writer, RALInlineStatement.compileResolvedParts(resolved, c2), input, inputExactType);
 			}
 		}
 
 		@Override
 		protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
+			if (write && !slot.perms.write)
+				return null;
 			return RALInlineStatement.compileResolvedParts(resolved, context);
 		}
 	}

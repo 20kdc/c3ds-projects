@@ -210,9 +210,8 @@ The initial scope is the set of variables available in every script.
 
 Two things are of note here: first, that these variables may be retyped with `alias` and casting, and second, that macros do not inherit the types from the caller (this is because otherwise errors, and therefore diagnostics, are not consistent between callers).
 
-* `ownr` - Type is usually derived from the classifier of this script, except where `overrideOwnr` intervenes. For macros, this is `any`.
+* `ownr` - Type is usually derived from the classifier of this script, except where `overrideOwnr` intervenes. For macros, this is `Agent?`.
 * `from` - Type is assumed to be `any`, usually, except `overrideOwnr` changes that. For macros, this is again `any`.
-* `part` - Type is `int`. This is used with `targ` to select parts of compound agents.
 * `_p1_` - Type is `any`.
 * `_p2_` - Type is `any`.
 * `null` - Type is `null`.

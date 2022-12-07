@@ -38,27 +38,27 @@ public class RALFieldAccess implements RALExprUR {
 				if (outInline != null) {
 					// This means we have a guarantee of being able to safely output, which is great
 					inlineIO(context, (va) -> {
-						RALVarString.writeSet(context.writer, outInline, va, slot.type);
+						RALVarString.writeSet(context.writer, outInline, va, slot.type.majorType.autoPromote(out.slot(0).type.majorType));
 					});
 				} else {
 					RALSpecialInline si = baseExpr.getSpecialInline(0, context);
 					if (si == RALSpecialInline.Ownr) {
 						// Don't do this with TARG because we could in theory be victim to a switcheroo.
-						out.writeCompile(0, CompileContext.vaToString("mv", slot.slot), slot.type, context);
+						out.writeCompile(0, CompileContext.vaToString("mv", slot.slot), slot.type.majorType, context);
 					} else {
 						// use fallbackIO - this stores the agent reference in a temporary before we do the writeCompile
 						// as such, it's immune to targ switcheroo
 						fallbackIO(context, (va) -> {
-							out.writeCompile(0, va, slot.type, context);
+							out.writeCompile(0, va, slot.type.majorType, context);
 						});
 					}
 				}
 			}
 
 			@Override
-			protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+			protected void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 				inlineIO(context, (va) -> {
-					RALVarString.writeSet(context.writer, va, input, inputExactType);
+					RALVarString.writeSet(context.writer, va, input, inputExactType.autoPromote(slot.type.majorType));
 				});
 			}
 

@@ -37,7 +37,7 @@ public final class RALErrorExpr extends RALExprSlice.ThickProxy {
 	}
 
 	@Override
-	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+	protected void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 		throw new RuntimeException(errorText);
 	}
 

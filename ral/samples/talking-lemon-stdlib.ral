@@ -19,7 +19,7 @@ install {
 	perm(100);
 	// | is an operator which bitwise ORs together flags.
 	// RAL will handle certain expressions on constants during compilation when possible, so this still compiles to "attr 199".
-	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_ACTIVATE | ATTR_MOUSE | ATTR_CARRY);
+	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_PNTR_ACT1 | ATTR_PNTR_PICKUP | ATTR_AGNT_PICKUP);
 	aero(10);
 	accg(2);
 }

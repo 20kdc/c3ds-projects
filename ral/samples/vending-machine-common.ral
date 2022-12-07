@@ -1,0 +1,57 @@
+// Since Justanuts are DS-specific, use the DS-specific headers.
+include "std/ds.ral";
+
+class VendingMachine 2 24 8803;
+
+// Sprite gallery and frames
+VMS_GALLERY = "ral_vending_machine";
+VMS_MAIN = 0;
+VMS_FRONTPLATE = 1;
+// The green variants are 3 poses ahead of the red variants
+VMS_RED_LEMON = 2;
+VMS_RED_NUT = 3;
+VMS_RED_RANDOM = 4;
+VMS_GREEN_LEMON = 5;
+VMS_GREEN_NUT = 6;
+VMS_GREEN_RANDOM = 7;
+
+// Part numbers
+VMP_FRONTPLATE = 1;
+VMP_LEMON = 2;
+VMP_NUT = 3;
+VMP_RANDOM = 4;
+VMP_PRODUCTS = 5;
+
+// Relative planes
+VMR_BUTTONS = 1;
+VMR_PRODUCT = 2;
+VMR_FRONTPLATE = 3;
+
+macro () newVendingMachine() newComp(VendingMachine, VMS_GALLERY, 1, VMS_MAIN, 40);
+
+script VendingMachine:buttonLemon 1000;
+script VendingMachine:buttonJustanut 1001;
+script VendingMachine:buttonRandom 1002;
+// _p1_: Product ID in list of products
+script VendingMachine:dispenseProduct 1003;
+
+install {
+	newVendingMachine();
+	// Move it to the Meso
+	mvsf(631, 9158);
+}
+
+remove {
+	// Delete all vending machines
+	foreach (VendingMachine in enum) {
+		kill(targ);
+	}
+	// Remove the scripts
+	scrx(VendingMachine, VendingMachine:init);
+	scrx(VendingMachine, VendingMachine:timer);
+	scrx(VendingMachine, VendingMachine:buttonLemon);
+	scrx(VendingMachine, VendingMachine:buttonJustanut);
+	scrx(VendingMachine, VendingMachine:buttonRandom);
+	scrx(VendingMachine, VendingMachine:dispenseProduct);
+}
+

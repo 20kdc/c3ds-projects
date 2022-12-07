@@ -20,4 +20,20 @@ include::Types.adoc[]
 
 <<<
 
-include::SAVendingMachine.adoc[]
+include::Plan.adoc[]
+
+<<<
+
+include::SAVMDummy.adoc[]
+
+<<<
+
+include::SAVMButtons.adoc[]
+
+<<<
+
+include::SAVMProducts.adoc[]
+
+<<<
+
+include::SAVMAnim.adoc[]

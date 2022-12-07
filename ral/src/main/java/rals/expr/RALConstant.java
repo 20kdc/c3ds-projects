@@ -59,7 +59,7 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 
 		@Override
 		protected void readCompileInner(RALExprSlice out, CompileContext context) {
-			out.writeCompile(0, toString(), type, context);
+			out.writeCompile(0, toString(), type.majorType, context);
 		}
 	}
 

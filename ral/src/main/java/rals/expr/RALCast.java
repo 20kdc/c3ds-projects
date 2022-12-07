@@ -152,12 +152,12 @@ public final class RALCast implements RALExprUR {
 		}
 
 		@Override
-		public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+		public void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 			// trigger checks
 			writeType(0);
 			// Overwriting inputExactType here is what turns, i.e. null|integer (major type unknown) into integer (Int).
 			// This is important for set instruction selection.
-			expr.writeCompile(0, input, doImplicitCheck ? inputExactType : targetSlot.type, context);
+			expr.writeCompile(0, input, targetSlot.type.majorType.autoPromote(inputExactType), context);
 		}
 
 		@Override

@@ -152,6 +152,12 @@ public abstract class RALType {
 		String,
 		Value,
 		ByteString;
+
+		public Major autoPromote(Major other) {
+			if (this == Unknown)
+				return other;
+			return this;
+		}
 	}
 
 	/**

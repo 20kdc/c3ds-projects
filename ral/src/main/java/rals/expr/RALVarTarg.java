@@ -28,13 +28,13 @@ public class RALVarTarg extends RALVarBase implements RALExprUR {
 	}
 
 	@Override
-	protected void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+	protected void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 		context.writer.writeCode("targ " + input);
 	}
 
 	@Override
 	protected void readCompileInner(RALExprSlice out, CompileContext context) {
-		out.writeCompile(0, "targ", type, context);
+		out.writeCompile(0, "targ", type.majorType, context);
 	}
 
 	@Override

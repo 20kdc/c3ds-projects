@@ -45,7 +45,7 @@ public class Macro implements RALCallable {
 		isBeingPrecompiled = true;
 
 		TypeSystem ts = world.types;
-		ScriptContext msContext = new ScriptContext(world, ts.gAny, ts.gAny, ts.gAny, ts.gAny);
+		ScriptContext msContext = new ScriptContext(world, ts.gAgentNullable, ts.gAny, ts.gAny, ts.gAny);
 		ScopeContext scContext = new ScopeContext(msContext);
 		for (MacroArg arg : args)
 			scContext.setLoc(arg.name, defInfo, new RALVarEH(arg, arg.type));
@@ -132,7 +132,7 @@ public class Macro implements RALCallable {
 		}
 
 		@Override
-		public void writeCompileInner(int index, String input, RALType inputExactType, CompileContext context) {
+		public void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
 				try (CompileContext c2 = new CompileContext(context)) {
 					vc.writeCacheCode(c2);

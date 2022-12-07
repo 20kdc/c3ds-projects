@@ -24,10 +24,12 @@ BHVR_EAT = 16;
 BHVR_PICKUP = 32;
 
 // ATTR Attributes
-//
-ATTR_CARRY = 1;
-ATTR_MOUSE = 2;
-ATTR_ACTIVATE = 4;
+// Can be picked up by arbitrary agents. (Pointer uses `ATTR_PNTR_PICKUP`. Creatures use `BHVR_PICKUP`. Vehicles aren't picky.)
+ATTR_AGNT_PICKUP = 1;
+// Can be picked up by the pointer.
+ATTR_PNTR_PICKUP = 2;
+// Can be activated by the pointer.
+ATTR_PNTR_ACT1 = 4;
 ATTR_GREEDY_CAB = 8;
 ATTR_INVISIBLE = 16;
 ATTR_FLOAT = 32;

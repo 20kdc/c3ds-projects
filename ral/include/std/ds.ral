@@ -9,4 +9,5 @@
 include "std/c3ds.ral";
 
 // Include DS headers
+include "std/ds/classes.ral";
 
