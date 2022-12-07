@@ -58,6 +58,8 @@ The `raljector` subcommand launches RALjector, a Java Swing GUI for injecting RA
 
 `raljector` functionality is likely to change over time, but the basic principle is that it's an always-on-top window that can be contracted to sit in a corner and let you press one of it's buttons to inject a file (that you have just saved from a text editor) into the game.
 
+_Notably, RALjector reloads all involved RAL files every time you perform an inject of any kind. This ensures you can use RALjector alongside your editor._
+
 It also contains a CAOS debugger, which is capable of reading debug information (which it can embed) and showing the equivalent position in RAL code.
 
 ### Standard Library Location

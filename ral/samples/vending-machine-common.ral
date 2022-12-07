@@ -1,8 +1,19 @@
 // Since Justanuts are DS-specific, use the DS-specific headers.
 include "std/ds.ral";
 
+// RAL vending machine example agent.
 class VendingMachine 2 24 8803;
 
+/*
+```
+Constants can be defined by: `CONSTANT = VALUE;`
+
+Beware: Constants take priority over local variables.
+As such, it's advisible to capitalize the entire constant (to distingulish it from classes and variables).
+
+The first constants that will be defined cover the different sprite frames, as so:
+```
+*/
 // Sprite gallery and frames
 VMS_GALLERY = "ral_vending_machine";
 VMS_MAIN = 0;
@@ -15,24 +26,55 @@ VMS_GREEN_LEMON = 5;
 VMS_GREEN_NUT = 6;
 VMS_GREEN_RANDOM = 7;
 
-// Part numbers
+/*
+```
+As you should know by this point, compound agents are made up of numbered parts.
+
+It's a tad confusing to manage these manually, so instead, when reasonable, do so with names:
+```
+*/
+
 VMP_FRONTPLATE = 1;
+// This part number has the button number added to it during part generation.
 VMP_LEMON = 2;
 VMP_NUT = 3;
 VMP_RANDOM = 4;
+// This part number is the first product part, which we'll see in action later.
 VMP_PRODUCTS = 5;
 
-// Relative planes
+/*
+```
+Compound parts have plane numbers, relative to part 0.
+
+Let's also make constants of these for ease of understanding.
+```
+*/
 VMR_BUTTONS = 1;
 VMR_PRODUCT = 2;
 VMR_FRONTPLATE = 3;
 
+// Like with the talking lemon, we define a macro here to correctly create the vending machine.
 macro () newVendingMachine() newComp(VendingMachine, VMS_GALLERY, 1, VMS_MAIN, 40);
 
+/*
+```
+Importantly, names can be defined for script numbers using declarations of the form: `script TYPE:NAME NUM;`
+
+Note that defining a name for a script number does not mean you actually have to define the script.
+
+And these scripts aren't actually defined in this file anyway.
+They're just here so we don't repeat them later.
+```
+*/
 script VendingMachine:buttonLemon 1000;
 script VendingMachine:buttonJustanut 1001;
 script VendingMachine:buttonRandom 1002;
-// _p1_: Product ID in list of products
+/*
+```
+This script will, sometime in the future, dispense a product in the product list.
+`\_p1_`: Product ID in list of products (this will make more sense when we get to `call`).
+```
+*/
 script VendingMachine:dispenseProduct 1003;
 
 install {
@@ -55,3 +97,56 @@ remove {
 	scrx(VendingMachine, VendingMachine:dispenseProduct);
 }
 
+/*
+```
+And now to define a macro for setting up the vending machine's buttons, attributes, and front panel.
+
+This macro will be reused in all the scripts going forward, so it makes sense to define it here.
+```
+*/
+macro () vmSetupCommon() {
+	// Set attributes
+	perm(100);
+	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_PNTR_PICKUP | ATTR_AGNT_PICKUP);
+	aero(10);
+	accg(2);
+	fric(100);
+	elas(0);
+	/*
+	Creates the "front plate" part. This is for layering purposes.
+	It doesn't have any functionality by itself.
+	*/
+	patDull(VMP_FRONTPLATE, VMS_GALLERY, VMS_FRONTPLATE, 0, 0, VMR_FRONTPLATE);
+	/*
+	Create the three buttons.
+	A for loop starts with a let statement, is followed by a condition (to repeat, or even start the loop), and an advance statement.
+	It then finishes with the actual loop body statement.
+	Here, the let statement is "let int i = 0;" (the "let" is implied, and the "int" is inferred automatically).
+	The condition is "i < 3".
+	And the advance statement is "i++".
+	As such, the loop body is run three times, with i being 0, 1 and 2.
+	*/
+	for i = 0; i < 3; i++; {
+		/*
+		Creates one of the three buttons.
+		Note that since the part, sprite and message numbers are all next to each other in order, we simply add the button number to that.
+		We use a frame count of 4, since the ordering of the sprites is three red followed by three green.
+		In particular, note the use of VendingMachine:buttonLemon + i.
+		Due to the way these scripts are ordered, this makes buttons that run buttonLemon, buttonJustanut, and buttonRandom.
+		*/
+		let pId = VMP_LEMON + i;
+		patButt(pId, VMS_GALLERY, VMS_RED_LEMON + i, 4, 0, 0, VMR_BUTTONS, [0], VendingMachine:buttonLemon + i, true);
+		// Select the button (new parts are not automatically selected).
+		part(pId);
+		/*
+		anim is a command to play an animation on an agent or part.
+
+		Button hover works in a bit of a weird way, where it plays it's own animation, then restores the previous animation.
+		However, it does not restore the previous pose.
+		Therefore, you need to have a continuously looping animation to fix the pose when hover returns.
+
+		3 is pose 3 (which, relative to any given button part, is the green variant of that button), and 255 indicates the animation should loop.
+		*/
+		anim([3, 255]);
+	}
+}

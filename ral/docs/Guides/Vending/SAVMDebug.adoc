@@ -1,0 +1,62 @@
+### Debugging With RALjector
+
+RALjector is one of the more "value-added" parts of RAL. Theoretically, RAL can be operated entirely without RALjector. However, RAL intends to provide a better experience than CAOS, and RALjector is a part of that.
+
+If you don't know how to start RALjector, then one of two things have occurred:
+
+* You can't start RAL at all, and need to read the RAL Installation Guide.
+* You can start RAL, but don't know how to start RALjector (it's the launch scripts directly next to the RAL launch scripts, but called `raljector`).
+
+RALjector has a button at the top marked `File:`. This is the button you use to pick the RAL file you wish to inject or remove.
+
+Pressing this and selecting the RAL file you wish to inject, you can then inject various scripts as CAOS Tool would.
+
+_Notably, RALjector reloads all involved RAL files every time you perform an inject of any kind. This ensures you can use RALjector alongside your editor._
+
+In this case, a good idea would be to first ensure Debug Info is _on_, then use `Inject Install/Events` as usual.
+
+Now you can open the debugger.
+
+You may need to fix some splitters (please don't panic, these ones don't crash to my knowledge).
+
+To the bottom-right is the RALjector Debug Console. In practice, the only time you'll want to use this is to add or remove breakpoints.
+
+Here, we want to run `bp+ 2 24 8803 1000` (type it and press Enter).
+
+If you've been following along so far, you know `2 24 8803` is the `VendingMachine` classifier, and `1000` is the `buttonLemon` script number.
+
+As such, this sets a breakpoint at the start of the buttonLemon script, which will freeze the game and open the debugger when reached.
+
+Then, press the lemon button.
+
+(If you only see `dbg: tack ownr @sndc "beep"` here, this means debug information wasn't on. Press Continue, Remove, Debug Info, Inject Install/Events, and re-enter the command.)
+
+You should see the dummy script, with a red-backgrounded `@` to the left of the `sndc("beep");` command.
+
+To the top-right, there are the frames.
+
+* The `sounds.ral` frame is part of the RAL Standard Library.
+* The `vending-machine-dummy.ral` frame is where the call to `sndc` is.
+* The `CAOS` frame gives no detail, but shows the raw CAOS.
+
+You can control which frame is default with the `filterLib` debug command (see `help`).
+
+The breakpoint can be removed with `bp- 2 24 8803 1000`.
+
+As for the buttons at the top-left:
+
+* `step` advances a single CAOS line (though will skip multiple if it chances upon the debug metadata lines used by RALjector).
+* `over` skips until the stack frame you have showing has changed. This can be used to skip past a complex function call, but it also tends to skip over any block of code.
+* `stmt` skips until it _reaches_ the next debug metadata line, then skips that, too, so should roughly skip a single RAL statement in most cases.
+* `continue` is directly equivalent to `dbg: play`, and simply continues the game until the next breakpoint is hit (or some other thing happens to interrupt the game).
+
+RALjector also contains it's own somewhat limited CAOS command line, in the form of being able to use, say, `caos outs "Hello World!"` at the debug console.
+
+However, RALjector does not split up CAOS the way CAOS Tool and the CAOS Command Line do, so the `scrp` block divider is not functional.
+
+#### Things To Check
+
+* If you write some RAL code into a copy of the dummy vending machine script, you should be able to step through it using a breakpoint. Note that RAL variable names automatically replace the variable names in the bottom-left panel when in the relevant stack frames.
+* It is possible to step through the `init` script this way, and might be an idea to do so.
+** It is even more interesting to step through with the CAOS frame, as this gives an idea of how RAL turns RAL code into CAOS, particularly the way that macros are flattened.
+

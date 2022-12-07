@@ -2,26 +2,17 @@ include "vending-machine-common.ral";
 
 script VendingMachine:init {
 	inst();
-	// Set attributes
-	perm(100);
-	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_PNTR_PICKUP | ATTR_AGNT_PICKUP);
-	aero(10);
-	accg(2);
-	// Prepare parts
-	patDull(VMP_FRONTPLATE, VMS_GALLERY, VMS_FRONTPLATE, 0, 0, VMR_FRONTPLATE);
-	for int i = 0; i < 3; i++; {
-		part = VMP_LEMON + i;
-		patButt(part, VMS_GALLERY, VMS_RED_LEMON + i, 4, 0, 0, VMR_BUTTONS, [0], VendingMachine:buttonLemon + i, true);
-		pose(3);
-	}
+	vmSetupCommon();
 }
 
 script VendingMachine:buttonLemon {
+	sndc("beep");
 }
 
 script VendingMachine:buttonJustanut {
+	sndc("beep");
 }
 
 script VendingMachine:buttonRandom {
+	sndc("beep");
 }
-

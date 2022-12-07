@@ -6,27 +6,24 @@ The following are various tools of relevance to use with RAL (for more tools, pl
 
 * lite-xl: https://lite-xl.com/
 ** Function: Very lightweight text editor, has LSP support with a plugin.
-** Pros: If you already have the LSP client plugin installed, setup is basically just copying some stuff into your config and copying the language highlighting file.
-** Cons: Too mercurial. Needs to stabilize. The version I have is a tad crashy. Installing the LSP client plugin is annoying.
-
-*Big scary warning: a proper highlighting file hasn't been written for Kate yet. The current one is just what is necessary to make the LSP work properly.*
+** Pros: If you already have the LSP client plugin installed, setup is two steps:
+*** Step 1. Drop `language_ral.lua` into your plugins directory.
+*** Step 2. Open your lite-xl config, paste in the contents of `syntax/litexl_config_snippet.lua` at the end, adjust until it works.
+** Cons: Too mercurial. Needs to stabilize. The version I have is a tad crashy. Installing the LSP client plugin is a convoluted process due to version conflicts.
+*** If there was a universal distribution of lite-xl with the LSP plugin that didn't crash, the RAL install process for lite-xl could be streamlined to just the part where you adjust the config.
 
 * Kate: https://kate-editor.org/
-** Function: Decently lightweight text editor with LSP support.
+** Function: Decently lightweight text editor with LSP support. (In a plugin, but said plugin is shipped with the base installation.)
 ** Pros: Works with RAL's LSP with relatively little configuration:
-*** Step 1. Copy `syntax/kate/ral.xml` to `AppData\Local\org.kde.syntax-highlighting\syntax`
-*** Step 2. Enable the LSP Client and External Tools plugins, apply, and close the settings window
+*** Step 1. Copy `syntax/kate/ral.xml` to the syntax highlighting files directory. See https://docs.kde.org/stable5/en/kate/katepart/highlight.html for this -- if the link has broken, it's _probably_ `.local/share/org.kde.syntax-highlighting/syntax` or `AppData/Local/org.kde.syntax-highlighting/syntax`. The `.local/share` or `AppData/Local` part is expected to already exist, and the `org.kde.syntax-highlighting/syntax` part is expected to _not_ exist, so you will need to create it.
+**** Alternatively, find your Kate installation, find the relevant directory _there_ where it stores all the built-in presets, and simply place the file there.
+***** I won't tell Kate developers if you won't.
+*** Step 2. Enable the LSP Client plugin, apply, and close the settings window.
 *** Step 3. Re-open the settings, and in the LSP Client settings, in User Server Settings, copy in the contents of `syntax/kate/lsp.json` from your RAL distribution and adjust for the location of your RAL installation (and change `ral", "lsp` to `ral.cmd", "lsp` if on Windows)
-*** Step 4. In the External Tools settings, add a tool with these settings:
-**** Executable: `your/path/to/ral/ral` (add `.cmd` if on Windows)
-**** Arguments: `inject %{Document:FileName}`
-**** Save: Current Document
-**** Output: Display in Pane
-**** Editor Command: `ral-inject` (this allows pressing F7 and typing `ral-inject`)
-*** Step 5. Repeat Step 4 with any other RAL commands.
-** Cons: The RAL install process, though less painful than having to write a VSCode extension, could be better
+*** _Optionally, you can use the External Tools plugin to create a shortcut to quickly start RALjector, along with the CAOS Proxy. How is left as an exercise for the reader._
+** Cons: The RAL install process could be better. It is, however, infinitely better than dealing with Visual Studio Code, where implementing support for a language starts with, essentially, creating a whole separate project for the sole purpose of satisfying the VSC blood gods.
 
-*Note that any sensible LSP-compatible text editor can be used with RAL. Despite being the originator of the Language Server Protocol, VSCode is not sensible -- in particular, it's inability to simply allow a user to enable an LSP server.*
+*Note that any _sensible_ LSP-compatible text editor can be used with RAL. Despite being the originator of the Language Server Protocol, VSCode is not sensible -- in particular, there is no way to simply allow a user to enable an LSP server the way you can in Kate.*
 
 ### Build/Conversion
 
@@ -58,7 +55,7 @@ The following are various tools of relevance to use with RAL (for more tools, pl
 * CAOS Tool: https://creatures.wiki/CAOS_Tool
 ** Function: Write CAOS, inject it, simple as that.
 ** Pros: Easier to work with than the CAOS Command Line.
-** Cons: Likes to fail to recognize valid syntax.
+** Cons: If it doesn't like the syntax, it won't bother sending it to the engine.
 * CAOS Debugger: https://creatures.wiki/CAOS_Debugger
 ** Function: Keeping an eye on script execution in real-time.
 ** Pros: Can monitor all the various debug things.

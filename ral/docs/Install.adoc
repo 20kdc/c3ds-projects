@@ -13,6 +13,8 @@ First of all, the assumption is that you are receiving this file with _at least_
 ** `ral.jar`: Contains the RAL compiler.
 ** `ral`: For Linux and Mac OS X users.
 ** `ral.cmd`: For Windows users.
+** `raljector`: RALjector launch.
+** `raljector.cmd`: RALjector launch.
 
 There are other necessary files, but this should give you an idea of what to look for.
 
@@ -121,6 +123,14 @@ Using `./ral compile someRALFile.ral someCosFile.cos`, you can compile.
 There are variants to this command that only compile particular parts (see the Tooling Reference or RAL's own internal help).
 
 _In particular, you can compile the Remove script into a separate file._
+
+### RALjector
+
+Assuming you've gotten RAL launching, you can start RALjector by simply running the RALjector launch script in some way.
+
+### Editor Setup
+
+Please skip to the Booklet of Tooling Pointers and check there in regards to the current state of editors that RAL has integration for.
 
 ### Things To Check
 

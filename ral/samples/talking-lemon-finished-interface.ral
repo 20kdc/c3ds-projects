@@ -1,10 +1,10 @@
 // Include C3/DS definitions.
 include "std/c3ds.ral";
 
-// This file describes the Talking Lemon so that other, future chapters can refer to it.
-// Since you, the reader, are supposed to be experimenting, future chapters will not assume much about the Talking Lemon.
-// However, the two definitions here need to exist and work at least roughly as they do now.
+// This file describes the Talking Lemon.
+// Having interface files is not mandatory, but they help with compatibility.
 
+// A talking lemon. Not actually edible.
 class TalkingLemon 2 24 8802;
 
 /*

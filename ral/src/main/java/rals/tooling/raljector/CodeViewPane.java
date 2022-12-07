@@ -7,7 +7,6 @@
 package rals.tooling.raljector;
 
 import java.awt.Color;
-import java.awt.Dimension;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -28,7 +27,6 @@ public class CodeViewPane extends JScrollPane {
 		setViewportView(interiorTextPane);
 		thisLine = interiorTextPane.addStyle("thisLine", null);
 		StyleConstants.setBackground(thisLine, Color.red);
-		setMinimumSize(new Dimension(512, 512));
 	}
 	public void setCodeContents(Contents c) {
 		String[] textLines = c.text.split("\n");

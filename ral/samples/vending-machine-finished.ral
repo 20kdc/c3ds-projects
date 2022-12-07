@@ -27,27 +27,7 @@ macro () newRandomProductAt(int id) {
 
 script VendingMachine:init {
 	inst();
-	// Set attributes
-	perm(100);
-	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_PNTR_PICKUP | ATTR_AGNT_PICKUP);
-	aero(10);
-	accg(2);
-	fric(100);
-	elas(0);
-	// Set regen timer
-	tick(100);
-	// Prepare parts
-	patDull(VMP_FRONTPLATE, VMS_GALLERY, VMS_FRONTPLATE, 0, 0, VMR_FRONTPLATE);
-	for i = 0; i < 3; i++; {
-		let pId = VMP_LEMON + i;
-		part(pId);
-		patButt(pId, VMS_GALLERY, VMS_RED_LEMON + i, 4, 0, 0, VMR_BUTTONS, [0], VendingMachine:buttonLemon + i, true);
-		// Having a continuously looping animation fixes the pose when hover returns.
-		anim([3, 255]);
-	}
-	for i = 0; i < PRODUCT_COUNT; i++; {
-		newRandomProductAt(i);
-	}
+	vmSetupCommon();
 }
 
 script VendingMachine:timer {
@@ -67,7 +47,7 @@ script VendingMachine:dispenseProduct {
 	} else if productType(productToDrop) == PRODUCT_KIND_NONE {
 		// we've still failed, nope sound
 		// we can't do this in the same clause as above,
-		//  as that sitll causes the read of productType.
+		//  as that still causes the read of productType.
 		// productType(-1) produces a very spicy exception.
 		sndc("beep");
 	} else {

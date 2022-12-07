@@ -1,0 +1,29 @@
+### The Common Code And The Dummy Version
+
+This vending machine will go through a good few iterations over the course of this guide.
+
+As such, there's a lot of code that would be annoyingly repeated.
+
+So we're going to get it out of the way early.
+
+`vending-machine-common.ral`:
+```
+include::../../../samples/vending-machine-common.ral[]
+```
+
+This file will be referenced from the files to come using `include`, which requires that it has been placed in the same directory as the file to inject.
+
+#### The Dummy Version
+
+```
+include::../../../samples/vending-machine-dummy.ral[]
+```
+
+This version of the code simply puts the buttons and front panel into place.
+
+You can hover your mouse over the panel, and click the buttons, and they beep.
+
+#### Things To Check
+
+* You should study the above code and understand, if not why it's structured the way it is, at least what it does.
+* You should be able to inject the code into your game and hear beeping noises when the dummy's buttons are pressed, and ensure they animate correctly. (If you have trouble copying it, all RAL code in this guide has copies in the `samples` directory of your RAL installation.)

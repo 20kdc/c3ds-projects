@@ -28,7 +28,7 @@ include::SAVMDummy.adoc[]
 
 <<<
 
-include::SAVMButtons.adoc[]
+include::SAVMDebug.adoc[]
 
 <<<
 
