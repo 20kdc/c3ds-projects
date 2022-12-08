@@ -1,5 +1,7 @@
 ### Scripts & A Talking Lemon
 
+_try as one might, it's not edible_
+
 // DIRECTION: Still using the CAOS command line, on-road the user into making a talking lemon.
 // Bring up MVs, but conditionals are going to need CAOS Tool
 // Classifier allocated for this is 2 24 8802

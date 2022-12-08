@@ -1,5 +1,7 @@
 ### Required Knowledge
 
+_standing on the shoulders of those standing on the shoulders of..._
+
 // DIRECTION: Wall of fire
 
 Before proceeding, you should have enough knowledge of CAOS that you can feasibly write your own agents.

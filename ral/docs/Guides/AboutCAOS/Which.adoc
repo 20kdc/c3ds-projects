@@ -1,5 +1,7 @@
 ### What CAOS, and Which?
 
+_will the real CAOS please stand up?_
+
 CAOS is a programming language used by the Creatures series of games.
 
 It comes in three iterations for the three main Creatures games: Creatures 1 CAOS, Creatures 2 CAOS, and Creatures 3 CAOS.

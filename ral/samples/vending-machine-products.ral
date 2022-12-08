@@ -44,6 +44,8 @@ In this case, we're writing the relative X and Y of a given product ID (not to b
 ```
 */
 macro (int x, int y) getProductLocation(int id) {
+	// (id & 1) here gives 1 for odd, 0 for even. This is rather convenient.
+	// As such, this basically amounts to 8 for even, 28 for odd.
 	x = 8 + ((id & 1) * 20);
 	y = id * 14;
 }
@@ -58,8 +60,11 @@ Note that there's no check to make sure that a product isn't there first (we che
 macro () newRandomProductAt(int id) {
 	// Decide which product we get, store it, and make the part
 	let product = rand(PRODUCT_KIND_LEMON, PRODUCT_KIND_NUT);
+	// This is where that whole "productType is writable" thing comes in.
 	productType(id) = product;
+	// And here's where that whole deal with getProductLocation comes in.
 	let x, y = getProductLocation(id);
+	// And finally, we actually create the parts.
 	if product == PRODUCT_KIND_LEMON
 		patDull(VMP_PRODUCTS + id, "ds lemon pod", 30, x, y, VMR_PRODUCT);
 	else
@@ -75,6 +80,7 @@ script VendingMachine:init {
 	inst();
 	vmSetupCommon();
 	tick(100);
+	// Setup products.
 	for i = 0; i < PRODUCT_COUNT; i++; {
 		newRandomProductAt(i);
 	}
@@ -89,7 +95,10 @@ That's fine.
 */
 script VendingMachine:timer {
 	inst();
+	// Pick a random slot...
 	let id = rand(0, PRODUCT_COUNT - 1);
+	// We only want to add a product if there's none already there.
+	// If we add a product when one is already there, an error is likely.
 	if productType(id) == PRODUCT_KIND_NONE {
 		newRandomProductAt(id);
 	}
@@ -106,6 +115,7 @@ macro () dispenseProductOfKind(int kind) {
 	for i = 0; i < PRODUCT_COUNT; i++; {
 		if productType(i) == kind {
 			productToDrop = i;
+			// The "break;" statement lets us leave a loop early.
 			break;
 		}
 	}
@@ -156,7 +166,7 @@ script VendingMachine:buttonRandom {
 	// if that still fails give it -1 so it makes the error sound
 	if productType(productToDrop) == PRODUCT_KIND_NONE
 		productToDrop = -1;
-	// Same deal as last time.
-	alias ownr!VendingMachine;
+	// Since we're on a VendingMachine script, we don't need to cast ownr.
 	call dispenseProduct(productToDrop);
 }
+

@@ -1,5 +1,7 @@
 ### Debugging With RALjector
 
+_the splitters don't crash on this one -- isn't Swing wonderful?_
+
 RALjector is one of the more "value-added" parts of RAL. Theoretically, RAL can be operated entirely without RALjector. However, RAL intends to provide a better experience than CAOS, and RALjector is a part of that.
 
 If you don't know how to start RALjector, then one of two things have occurred:
@@ -17,7 +19,7 @@ In this case, a good idea would be to first ensure Debug Info is _on_, then use 
 
 Now you can open the debugger.
 
-You may need to fix some splitters (please don't panic, these ones don't crash to my knowledge).
+You may need to fix the layout, as the splitters have some slightly strange defaults.
 
 To the bottom-right is the RALjector Debug Console. In practice, the only time you'll want to use this is to add or remove breakpoints.
 

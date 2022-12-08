@@ -10,6 +10,8 @@
 
 include::Warnings.adoc[]
 
+include::../GuideStructureCommon.adoc[]
+
 <<<
 
 include::SAConversion.adoc[]
@@ -41,3 +43,7 @@ include::SAVMProducts.adoc[]
 <<<
 
 include::SAVMAnim.adoc[]
+
+<<<
+
+include::VendingMachineCAOSListing.adoc[]

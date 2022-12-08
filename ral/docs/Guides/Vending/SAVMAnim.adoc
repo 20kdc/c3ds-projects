@@ -6,6 +6,8 @@ This is the final stage. The products are being managed and replenish, the rando
 
 Now things just need a nice(ish) animation.
 
+Most importantly, since we `include` all the previous work, injecting this final result counts for everything.
+
 ```
 include::../../../samples/vending-machine-root-final.ral[]
 ```

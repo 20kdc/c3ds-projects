@@ -1,6 +1,10 @@
 ### Product Trays
 
+_usually seen dispensing choccy_
+
 This is where the vending machine really starts to manage it's products.
+
+Again, we'll be splitting the code into a separate file for reuse.
 
 `vending-machine-products.ral`:
 ```
@@ -14,3 +18,12 @@ This, on the other hand, is a simple implementation of `dispenseProduct` which d
 ```
 include::../../../samples/vending-machine-root-products.ral[]
 ```
+
+#### Things To Check
+
+* If you want to skip the next chapter entirely, try making the product dispense sequence more involved.
+** Remember that you can re-inject event scripts.
+* While this requires some spritework, consider adding more products.
+** What needs to be changed in the code to add more products?
+** Could the layout be setup with a "display hole" and a "next" button to make adding more products easier?
+** Remove the explicit selection buttons in favour of only selecting products by random chance, and then adding as many products as one wishes?

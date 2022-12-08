@@ -1,5 +1,7 @@
 ### The Common Code And The Dummy Version
 
+_the plastic shell_
+
 This vending machine will go through a good few iterations over the course of this guide.
 
 As such, there's a lot of code that would be annoyingly repeated.

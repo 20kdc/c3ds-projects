@@ -1,5 +1,7 @@
 ### Types: What, why, how?
 
+_advanced sodium chloride inhibition_
+
 // DIRECTION: Salt prevention
 
 So you may have noticed four instances so far of the use of _types_ in RAL.

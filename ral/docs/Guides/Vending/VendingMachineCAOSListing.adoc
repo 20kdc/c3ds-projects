@@ -1,0 +1,19 @@
+### A Full Listing Of The CAOS Of The Vending Machine, And Final Notes
+
+_what does the other end look like?_
+
+This is as compiled at the same time as and with the same version of RAL as was used for the standard library documentation in this manual.
+
+It acts as a reference to see the kind of code RAL actually generates with this input.
+
+Some notes:
+
+* Be aware that there _is_ at least one inefficiency in the input RAL code that was kept for simplicity of reading. In practice, however, if your code is properly using `inst();` this should never be an issue. Still, there are certain sequences that RAL may not compile with absolute perfectly optimal code when it arguably should.
+** In particular, RAL guarantees that any `let` reserves a `va` number, regardless of if the variable is actually used. This is very good for debugging but can be rather awkward due to unnecessary copies.
+* RAL will generate a lot of dummy writes to VA99 by itself when debug info is enabled (not visible here) -- this is _intended behaviour_ and is necessary for RALjector to show the fancy things it does even despite game restarts and RALjector restarts and so forth.
+
+_Notably, this code is not hand-annotated. The variable name notes and so forth are what RAL generates to help navigate code in the event of a bug in RAL._
+
+```
+include::../../../samples/vending-machine-root-final.cos[]
+```

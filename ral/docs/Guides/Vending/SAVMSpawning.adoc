@@ -1,5 +1,7 @@
 ### Spawning
 
+_what rule do basic laws of thermodynamics have over `newSimp` ?_
+
 Right now, the vending machine doesn't actually provide anything. Let's change that.
 
 This is another case where code will be written that we want to use later, so:

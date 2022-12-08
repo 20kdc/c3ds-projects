@@ -1,5 +1,7 @@
 ### A Final Bit Of Advice
 
+_shouldn't be bound to the spine_
+
 // DIRECTION: Don't have infinite time to write all this.
 // Point to other resources.
 

@@ -1,7 +1,11 @@
 #!/bin/sh
 # Another RAL build script
+java -jar ral.jar compile samples/vending-machine-root-final.ral samples/vending-machine-root-final.cos || exit
 java -jar ral.jar docGen docs/all.ral docs/Library/gen.adoc +std/ -std/compiler_helpers.ral || exit
 cd docs
+echo Manual: Compiling PDF
 asciidoctor-pdf full.adoc -o ../manual.pdf || exit
+echo Manual: Compiling HTML
 asciidoctor -a data-uri -b html full.adoc -o ../manual.html || exit
+echo Manual: Done compiling
 

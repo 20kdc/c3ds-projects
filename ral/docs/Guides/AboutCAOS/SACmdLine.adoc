@@ -1,5 +1,7 @@
 ### Basic Concepts & The CAOS Command Line
 
+_be calm, little norn -- I merely control your universe_
+
 // DIRECTION: Teach users how the CAOS command line works and the underlying structure of the system that it's built on.
 // They should understand how commands and expressions work by the end of this chapter.
 

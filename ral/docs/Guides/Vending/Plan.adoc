@@ -1,5 +1,7 @@
 ### The Plan
 
+_good thing there's no enemies_
+
 // DIRECTION: What will we be doing, and how?
 
 The plan is for a vending machine with a limited amount of stuff inside it.

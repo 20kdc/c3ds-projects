@@ -1,5 +1,7 @@
 ### The Environment
 
+_produced in a factory which also handles atoms_
+
 The environment in which CAOS code runs is a complicated one, made up of many moving parts.
 
 * The _Scriptorium_, the database of all scripts.

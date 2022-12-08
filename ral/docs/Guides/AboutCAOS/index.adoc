@@ -2,6 +2,10 @@
 
 ## Crash Course On CAOS For New Users
 
+include::../GuideStructureCommon.adoc[]
+
+<<<
+
 include::Which.adoc[]
 
 <<<

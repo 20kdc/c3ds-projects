@@ -1,0 +1,4 @@
+#!/bin/sh
+./build-scripts/jar || exit
+./build-scripts/manual || exit
+

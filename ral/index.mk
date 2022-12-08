@@ -6,17 +6,13 @@ RAL_REL := ral/ral.jar ral/ral ral/ral.cmd ral/raljector ral/raljector.cmd
 
 .PHONY: ral/ral.jar
 ral/ral.jar:
-	cd ral ; ./build-scripts/jar
+	cd ral ; ./build-scripts/all
 
 # RAL support infrastructure
 RAL_REL += ral/include/std ral/syntax
 
 # RAL manual
 RAL_REL += ral/manual.pdf ral/manual.html ral/samples
-
-.PHONY: ral/manual.pdf
-ral/manual.pdf:
-	cd ral ; ./build-scripts/manual
 
 rel: $(RAL_REL)
 rel-sdk: $(RAL_REL)

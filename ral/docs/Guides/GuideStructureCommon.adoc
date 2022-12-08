@@ -1,0 +1,9 @@
+### Structure Of This Guide
+
+_consistency is key, inconsistency is also key_
+
+This guide is split into _information_ and _follow-along_ sections.
+
+The _information_ sections help give context, while the _follow-along_ sections show code, what it does, and what to do with it.
+
+At the end of each _follow-along_ section, there is a list of Things To Check. This helps check your understanding is complete enough to continue.

@@ -1,5 +1,7 @@
 ### Agents and Parts
 
+_agents aren't the smallest thing in the universe_
+
 *Agents* are the main kind of "thing" in Creatures 3 and Docking Station.
 
 Agents have a _classifier_, made up of a family, genus, and species.
