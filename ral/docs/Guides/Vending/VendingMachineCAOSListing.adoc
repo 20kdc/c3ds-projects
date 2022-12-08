@@ -11,6 +11,7 @@ Some notes:
 * Be aware that there _is_ at least one inefficiency in the input RAL code that was kept for simplicity of reading. In practice, however, if your code is properly using `inst();` this should never be an issue. Still, there are certain sequences that RAL may not compile with absolute perfectly optimal code when it arguably should.
 ** In particular, RAL guarantees that any `let` reserves a `va` number, regardless of if the variable is actually used. This is very good for debugging but can be rather awkward due to unnecessary copies.
 * RAL will generate a lot of dummy writes to VA99 by itself when debug info is enabled (not visible here) -- this is _intended behaviour_ and is necessary for RALjector to show the fancy things it does even despite game restarts and RALjector restarts and so forth.
+* RAL makes heavy use of a semi-documented CAOS "feature", the `goto` command. The official documentation on this command has a lot of doom-saying about how terrible this command is. This command is safer than it sounds _if used correctly_, and RAL's heavy use of this command to implement loops is a key efficiency trick for RAL's loops, the `break;` statement, etc.
 
 _Notably, this code is not hand-annotated. The variable name notes and so forth are what RAL generates to help navigate code in the event of a bug in RAL._
 

@@ -72,3 +72,9 @@ However, in practice, there are only 5:
     If the number parses as an integer, then that is what you get.
     Otherwise, if the number parses as a float, that's what you get.
     Otherwise, a compiler error is given.
+
+#### Dirty CAOS Tricks
+
+* RAL makes heavy use of `goto` and `subr` for loops so that `break;` is as simple as a `goto`.
+* `enum` currently doesn't do anything too special, but this is _very_ likely to change due to a better understanding of the CAOS VM -- it might already have been changed by the time you read this manual.
+* RAL switches between the `ovXX`, `mvXX` and `avar` variables when doing field accesses, to avoid having to alter `targ` ever.
