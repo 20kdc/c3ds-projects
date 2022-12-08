@@ -30,9 +30,11 @@ public abstract class RALCondition extends RALExprSlice {
 	 * Also checks the type is sane.
 	 */
 	public static RALCondition coerceToCondition(RALExprSlice re, TypeSystem ts) {
-		re.assert1ReadType().assertImpCast(ts.gBoolean);
 		if (re instanceof RALCondition)
 			return (RALCondition) re;
+		if (re instanceof RALConditionCoercable)
+			return ((RALConditionCoercable) re).coerceToCondition();
+		re.assert1ReadType().assertImpCast(ts.gBoolean);
 		return RALCondSimple.Resolved.of(ts, RALCondSimple.Op.NotEqual, re, new RALConstant.Int(ts, 0));
 	}
 
@@ -59,7 +61,7 @@ public abstract class RALCondition extends RALExprSlice {
 	public abstract String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert);
 
 	@Override
-	protected void readCompileInner(RALExprSlice out, CompileContext context) {
+	protected final void readCompileInner(RALExprSlice out, CompileContext context) {
 		String cc = compileCond(context.writer, context, false);
 		context.writer.writeCode("doif " + cc, 1);
 		out.writeCompile(0, "1", RALType.Major.Value, context);
@@ -69,7 +71,7 @@ public abstract class RALCondition extends RALExprSlice {
 	}
 
 	@Override
-	protected RALSlot slotInner(int index) {
+	protected final RALSlot slotInner(int index) {
 		return boolRSlot;
 	}
 

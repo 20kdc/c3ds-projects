@@ -6,6 +6,8 @@
  */
 package rals.code;
 
+import rals.cond.RALCondition;
+import rals.cond.RALConditionCoercable;
 import rals.diag.DiagRecorder;
 import rals.diag.SrcRange;
 import rals.expr.*;
@@ -86,28 +88,30 @@ public class Macro implements RALCallable {
 
 		// ensure compiled, then resolve with that code
 		precompile(sc.world);
-		return new Resolved(name, defInfo.srcRange, vc, precompiledCode, args);
+		return new Resolved(name, defInfo.srcRange, vc, precompiledCode, args, sc.world.types);
 	}
 
-	public static final class Resolved extends RALExprSlice {
+	public static final class Resolved extends RALExprSlice.ThickProxy implements RALConditionCoercable {
 		private final VarCacher vc;
 		public final RALExprSlice innards;
 		public final String macroName;
 		public final SrcRange macroExt;
 		public final MacroArg[] macroArgs;
+		public final TypeSystem typeSystem;
 
-		public Resolved(String mn, SrcRange me, VarCacher vc, RALExprSlice innards, MacroArg[] args) {
+		public Resolved(String mn, SrcRange me, VarCacher vc, RALExprSlice innards, MacroArg[] args, TypeSystem ts) {
 			super(innards.length);
 			macroName = mn;
 			macroExt = me;
 			this.vc = vc;
 			this.innards = innards;
 			macroArgs = args;
+			typeSystem = ts;
 		}
 
 		@Override
 		protected RALExprSlice sliceInner(int tB, int tL) {
-			return new Resolved(macroName, macroExt, vc, innards.slice(tB, tL), macroArgs);
+			return new Resolved(macroName, macroExt, vc, innards.slice(tB, tL), macroArgs, typeSystem);
 		}
 
 		@Override
@@ -115,7 +119,7 @@ public class Macro implements RALCallable {
 			if (b instanceof Resolved) {
 				if (((Resolved) b).vc == vc) {
 					// this is the same instance, so share!
-					return new Resolved(macroName, macroExt, vc, RALExprSlice.concat(innards, ((Resolved) b).innards), macroArgs);
+					return new Resolved(macroName, macroExt, vc, RALExprSlice.concat(innards, ((Resolved) b).innards), macroArgs, typeSystem);
 				}
 			}
 			return super.tryConcatWithInner(b);
@@ -180,6 +184,27 @@ public class Macro implements RALCallable {
 			CompileContextNW c2 = new CompileContextNW(context);
 			installMacroArgs(c2);
 			return innards.getSpecialInline(index, c2);
+		}
+
+		@Override
+		public RALCondition coerceToCondition() {
+			final RALCondition innardsC = RALCondition.coerceToCondition(innards, typeSystem);
+			return new RALCondition(typeSystem) {
+				@Override
+				public String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert) {
+					// This isn't ideal, but it's not fatal as we're doing the compile literally NOW.
+					// So it's not strictly a problem. Maybe.
+					// oh for the love of kittens we need capability-based cc
+					vc.writeCacheCode(sharedContext);
+					installMacroArgs(sharedContext);
+					return innardsC.compileCond(writer, sharedContext, invert);
+				}
+
+				@Override
+				public String toString() {
+					return "condition-of-macro " + macroName;
+				}
+			};
 		}
 
 		@Override
