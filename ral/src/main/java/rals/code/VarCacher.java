@@ -8,6 +8,7 @@ package rals.code;
 
 import java.util.LinkedList;
 
+import rals.caos.CAOSUtils;
 import rals.cctx.*;
 import rals.expr.*;
 
@@ -93,7 +94,7 @@ public class VarCacher {
 				if (names != null) {
 					int absI = c.sourceBase + i;
 					if (names[absI] != null)
-						context.writer.writeComment(CompileContext.vaToString(v) + ": " + names[absI]);
+						context.writer.writeComment(CAOSUtils.vaToString(v) + ": " + names[absI]);
 				}
 			}
 			c.srcSlice.readInplaceCompile(c.variables, context);

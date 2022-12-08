@@ -17,7 +17,7 @@ import rals.expr.*;
 /**
  * Responsible for holding VA handles.
  */
-public class CompileContext extends CompileContextNW implements AutoCloseable, IVAAllocator {
+public class CompileContext extends CompileContextNW implements AutoCloseable {
 	public final CodeWriter writer;
 
 	public final ScopedVAAllocator alloc;
@@ -56,21 +56,11 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, I
 		sc.subUsers++;
 	}
 
-	@Override
-	public int allocVA() {
-		return alloc.allocVA();
-	}
-
-	@Override
-	public void allocVA(int i) {
-		alloc.allocVA(i);
-	}
-
 	/**
 	 * Allocates a VA and assigns it to the given VA handle.
 	 */
 	public int allocVA(IVAHandle obj) {
-		int res = allocVA();
+		int res = alloc.allocVA();
 		heldVAHandles.put(obj, res);
 		return res;
 	}
@@ -79,7 +69,7 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, I
 	 * Allocates the given VA and assigns it to the given VA handle.
 	 */
 	public void allocVA(IVAHandle obj, int i) {
-		allocVA(i);
+		alloc.allocVA(i);
 		heldVAHandles.put(obj, i);
 	}
 
@@ -95,11 +85,6 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, I
 		};
 		allocVA(handle);
 		return new RALVarVA(handle, t);
-	}
-
-	@Override
-	public void releaseVA(int i) {
-		alloc.releaseVA(i);
 	}
 
 	@Override

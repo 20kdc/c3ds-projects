@@ -19,6 +19,7 @@ import java.util.zip.GZIPOutputStream;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import rals.caos.CAOSUtils;
 import rals.cctx.*;
 import rals.diag.SrcPosUntranslated;
 import rals.parser.FileDocPath;
@@ -46,7 +47,7 @@ public class DebugSite {
 		}
 		location = new SrcPosUntranslated(new FileDocPath(new File(jo.getString("file"))), jo.getInt("line"), jo.getInt("character"));
 		for (int i = 0; i < vaNames.length; i++) {
-			String df = CompileContext.vaToString(i);
+			String df = CAOSUtils.vaToString(i);
 			if (jo.has(df))
 				vaNames[i] = jo.getString(df);
 		}
@@ -60,7 +61,7 @@ public class DebugSite {
 		jo.put("line", location.line);
 		jo.put("character", location.character);
 		for (int i = 0; i < vaNames.length; i++) {
-			String df = CompileContext.vaToString(i);
+			String df = CAOSUtils.vaToString(i);
 			if (vaNames[i] != null)
 				jo.put(df, vaNames[i]);
 		}

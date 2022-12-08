@@ -6,6 +6,7 @@
  */
 package rals.expr;
 
+import rals.caos.CAOSUtils;
 import rals.cctx.*;
 import rals.types.*;
 
@@ -42,7 +43,7 @@ public class RALVarVA extends RALVarString {
 		Integer i = context.heldVAHandles.get(handle);
 		if (i == null)
 			throw new RuntimeException("VA handle " + handle + " escaped containment");
-		return CompileContext.vaToString(i);
+		return CAOSUtils.vaToString(i);
 	}
 
 	@Override

@@ -9,7 +9,7 @@ package rals.tooling.raljector;
 import java.io.Reader;
 import java.util.LinkedList;
 
-import rals.cctx.CompileContext;
+import rals.caos.CAOSUtils;
 import rals.debug.DebugSite;
 
 /**
@@ -40,7 +40,7 @@ public class ProcessedDebugFrame {
 	private static String[] getVANames() {
 		String[] vaNames = new String[100];
 		for (int i = 0; i < vaNames.length; i++)
-			vaNames[i] = CompileContext.vaToString(i);
+			vaNames[i] = CAOSUtils.vaToString(i);
 		return vaNames;
 	}
 	public static ProcessedDebugFrame[] process(RawDebugFrame rdf) {

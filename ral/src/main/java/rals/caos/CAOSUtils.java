@@ -4,30 +4,26 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.debug;
-
-import rals.cctx.*;
+package rals.caos;
 
 /**
- * Lots of stuff here...
+ * Utilities for writing CAOS.
  */
-public class FullDebugRecorder extends CommentingDebugRecorder {
-	public FullDebugRecorder() {
-		super(true);
+public class CAOSUtils {
+	/**
+	 * Converts a VA index into the VA name.
+	 */
+	public static String vaToString(String pfx, int va) {
+		String res = Integer.toString(va);
+		if (res.length() == 1)
+			return pfx + "0" + res;
+		return pfx + res;
 	}
 
-	@Override
-	public boolean shouldGenerateSites() {
-		return true;
-	}
-
-	@Override
-	public void saveSiteAndCreateMarker(CodeWriter caller, DebugSite ds) {
-		caller.writeCode("sets va99 \"" + ds.encode() + "\"");
-	}
-
-	@Override
-	public void initializeRootCC(CompileContext compileContext) {
-		compileContext.alloc.allocVA(99);
+	/**
+	 * Converts a VA index into the VA name.
+	 */
+	public static String vaToString(int va) {
+		return vaToString("va", va);
 	}
 }

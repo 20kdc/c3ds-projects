@@ -8,6 +8,7 @@ package rals.expr;
 
 import java.util.function.Consumer;
 
+import rals.caos.CAOSUtils;
 import rals.cctx.*;
 import rals.code.*;
 import rals.types.*;
@@ -45,7 +46,7 @@ public class RALFieldAccess implements RALExprUR {
 					RALSpecialInline si = baseExpr.getSpecialInline(0, context);
 					if (si == RALSpecialInline.Ownr) {
 						// Don't do this with TARG because we could in theory be victim to a switcheroo.
-						out.writeCompile(0, CompileContext.vaToString("mv", slot.slot), slot.type.majorType, context);
+						out.writeCompile(0, CAOSUtils.vaToString("mv", slot.slot), slot.type.majorType, context);
 					} else {
 						// use fallbackIO - this stores the agent reference in a temporary before we do the writeCompile
 						// as such, it's immune to targ switcheroo
@@ -96,7 +97,7 @@ public class RALFieldAccess implements RALExprUR {
 					String pfx = "ov";
 					if (si == RALSpecialInline.Ownr)
 						pfx = "mv";
-					return CompileContext.vaToString(pfx, slot.slot);
+					return CAOSUtils.vaToString(pfx, slot.slot);
 				} else {
 					// if we can inline the agent reference, we're fine
 					String agentRefInline = baseExpr.getInlineCAOS(0, false, context);

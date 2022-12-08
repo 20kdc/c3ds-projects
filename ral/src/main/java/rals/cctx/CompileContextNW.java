@@ -62,21 +62,4 @@ public class CompileContextNW {
 	public String allocLabel() {
 		return "_RAL_" + labelAllocator.getAndIncrement();
 	}
-
-	/**
-	 * Converts a VA index into the VA name.
-	 */
-	public static String vaToString(String pfx, int va) {
-		String res = Integer.toString(va);
-		if (res.length() == 1)
-			return pfx + "0" + res;
-		return pfx + res;
-	}
-
-	/**
-	 * Converts a VA index into the VA name.
-	 */
-	public static String vaToString(int va) {
-		return CompileContextNW.vaToString("va", va);
-	}
 }
