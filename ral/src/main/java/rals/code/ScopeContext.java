@@ -8,6 +8,7 @@ package rals.code;
 
 import java.util.HashMap;
 
+import rals.cctx.*;
 import rals.diag.SrcPos;
 import rals.expr.*;
 import rals.lex.DefInfo;

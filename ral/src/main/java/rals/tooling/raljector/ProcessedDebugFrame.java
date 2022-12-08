@@ -9,7 +9,7 @@ package rals.tooling.raljector;
 import java.io.Reader;
 import java.util.LinkedList;
 
-import rals.code.CompileContext;
+import rals.cctx.CompileContext;
 import rals.debug.DebugSite;
 
 /**

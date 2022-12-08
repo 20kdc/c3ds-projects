@@ -9,6 +9,7 @@ package rals.code;
 import java.util.HashMap;
 import java.util.Map;
 
+import rals.cctx.ScriptContext;
 import rals.diag.DiagRecorder;
 import rals.expr.RALCallable;
 import rals.hcm.IHCMRecorder;

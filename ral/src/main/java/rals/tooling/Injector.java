@@ -13,7 +13,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import rals.code.CodeWriter;
+import rals.cctx.CodeWriter;
 
 /**
  * CAOS into the game at maximum velocity!

@@ -6,6 +6,7 @@
  */
 package rals.code;
 
+import rals.cctx.IEHHandle;
 import rals.expr.RALSlot;
 import rals.types.RALType;
 

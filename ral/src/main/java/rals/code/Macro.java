@@ -6,10 +6,9 @@
  */
 package rals.code;
 
-import rals.cond.RALCondition;
-import rals.cond.RALConditionCoercable;
-import rals.diag.DiagRecorder;
-import rals.diag.SrcRange;
+import rals.cctx.*;
+import rals.cond.*;
+import rals.diag.*;
 import rals.expr.*;
 import rals.lex.DefInfo;
 import rals.types.*;

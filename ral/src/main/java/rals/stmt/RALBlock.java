@@ -8,11 +8,9 @@ package rals.stmt;
 
 import java.util.LinkedList;
 
-import rals.code.CodeWriter;
-import rals.code.CompileContext;
+import rals.cctx.*;
 import rals.code.ScopeContext;
-import rals.diag.SrcPos;
-import rals.diag.SrcRange;
+import rals.diag.*;
 
 /**
  * Block "statement"

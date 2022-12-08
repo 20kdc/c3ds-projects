@@ -16,20 +16,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
-import rals.code.CodeWriter;
-import rals.code.OuterCompileContext;
-import rals.code.ScriptSection;
-import rals.code.Scripts;
-import rals.debug.CommentingDebugRecorder;
-import rals.debug.DummyDebugRecorder;
-import rals.debug.FullDebugRecorder;
-import rals.debug.IDebugRecorder;
+import rals.cctx.CodeWriter;
+import rals.code.*;
+import rals.debug.*;
 import rals.diag.DiagRecorder;
 import rals.parser.*;
-import rals.tooling.DocGen;
-import rals.tooling.Injector;
-import rals.tooling.LSPBaseProtocolLoop;
-import rals.tooling.LanguageServer;
+import rals.tooling.*;
 import rals.tooling.raljector.RALjector;
 
 /**

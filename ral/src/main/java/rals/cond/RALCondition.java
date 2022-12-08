@@ -6,7 +6,7 @@
  */
 package rals.cond;
 
-import rals.code.*;
+import rals.cctx.*;
 import rals.expr.*;
 import rals.types.*;
 

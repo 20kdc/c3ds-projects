@@ -8,6 +8,8 @@ package rals.code;
 
 import java.util.LinkedList;
 
+import rals.cctx.IVAAllocator;
+
 /**
  * This is usable by RALStatements for their various internal purposes.
  */

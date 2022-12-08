@@ -6,7 +6,7 @@
  */
 package rals.stmt;
 
-import rals.code.*;
+import rals.cctx.*;
 import rals.debug.DebugSite;
 import rals.diag.SrcRange;
 

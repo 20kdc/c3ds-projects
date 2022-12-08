@@ -19,8 +19,7 @@ import java.util.zip.GZIPOutputStream;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import rals.code.CompileContext;
-import rals.code.IVAHandle;
+import rals.cctx.*;
 import rals.diag.SrcPosUntranslated;
 import rals.parser.FileDocPath;
 
