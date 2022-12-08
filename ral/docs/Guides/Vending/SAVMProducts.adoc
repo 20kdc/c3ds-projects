@@ -1,0 +1,16 @@
+### Product Trays
+
+This is where the vending machine really starts to manage it's products.
+
+`vending-machine-products.ral`:
+```
+include::../../../samples/vending-machine-products.ral[]
+```
+
+#### The Injectable File Itself
+
+This, on the other hand, is a simple implementation of `dispenseProduct` which does the bare minimum.
+
+```
+include::../../../samples/vending-machine-root-products.ral[]
+```

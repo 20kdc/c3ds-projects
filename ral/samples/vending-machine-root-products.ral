@@ -1,0 +1,17 @@
+include "vending-machine-products.ral";
+
+// Short version of the dispenseProduct script that simply spawns the real product and removes our fake one.
+script VendingMachine:dispenseProduct {
+	alias productToDrop = _p1_!int;
+	if productToDrop == -1 {
+		// we've failed, nope sound
+		sndc("beep");
+	} else {
+		sndc("lock");
+		spawnProduct(productType(productToDrop));
+		// revert targ and virtual product goes bye-bye
+		targ = ownr;
+		patKill(VMP_PRODUCTS + productToDrop);
+		productType(productToDrop) = PRODUCT_KIND_NONE;
+	}
+}

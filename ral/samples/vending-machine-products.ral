@@ -1,0 +1,162 @@
+include "vending-machine-spawn.ral";
+
+/*
+```
+As usual, we're declaring constants that we'll be using a lot.
+```
+*/
+
+AVAR_PRODUCTS = 0;
+PRODUCT_COUNT = 7;
+
+/*
+```
+This macro is the first example of an expression macro shown so far.
+
+An expression macro is simply a replacement of one expression (the call to the expression macro) for another (the macro's contents).
+
+There are some specifics (the rules on what various forms of inline argument do still apply), but that's the gist.
+
+Here, we're using `avar` for the fun purpose it has of accessing, say `mv00` for example, dynamically.
+
+That is, we can determine at runtime which `mv` slot to access.
+
+_Importantly, we don't actually explicitly specify here if productType is being written or read. When this is possible, the answer can be either._
+
+As such, the cast not only casts any value inside to `int` -- but also states any value being written must be implicitly castable to `int`.
+
+If you're using the RAL Language Server, you'll see the result of this as productType returning `int/RW`.
+```
+*/
+macro productType(int &id) avar(ownr!VendingMachine, AVAR_PRODUCTS + id)!int;
+
+/*
+```
+On the flip-side, here's an example of a fun use of statement macros.
+
+Statement macros use a different sense of "returning" values than most macros would cause one to expect.
+
+Instead of the macro preparing all the values and returning them all at once, any time the return values are written to, a write to wherever they were intended to be returned to occurs.
+
+(This implies that for reasonable, sensible behaviour, you should only write to said values exactly once.)
+
+In this case, we're writing the relative X and Y of a given product ID (not to be confused with a product type).
+```
+*/
+macro (int x, int y) getProductLocation(int id) {
+	x = 8 + ((id & 1) * 20);
+	y = id * 14;
+}
+
+/*
+```
+Here, we decide on a random product type, and spawn it.
+
+Note that there's no check to make sure that a product isn't there first (we check it elsewhere).
+```
+*/
+macro () newRandomProductAt(int id) {
+	// Decide which product we get, store it, and make the part
+	let product = rand(PRODUCT_KIND_LEMON, PRODUCT_KIND_NUT);
+	productType(id) = product;
+	let x, y = getProductLocation(id);
+	if product == PRODUCT_KIND_LEMON
+		patDull(VMP_PRODUCTS + id, "ds lemon pod", 30, x, y, VMR_PRODUCT);
+	else
+		patDull(VMP_PRODUCTS + id, "justanut pod", 19, x, y, VMR_PRODUCT);
+}
+
+/*
+```
+Sets up the initial random products.
+```
+*/
+script VendingMachine:init {
+	inst();
+	vmSetupCommon();
+	tick(100);
+	for i = 0; i < PRODUCT_COUNT; i++; {
+		newRandomProductAt(i);
+	}
+}
+
+/*
+```
+Adds a random product.
+This gets somewhat less likely to work as the vending machine gets fuller, because we'll keep bumping into existing products.
+That's fine.
+```
+*/
+script VendingMachine:timer {
+	inst();
+	let id = rand(0, PRODUCT_COUNT - 1);
+	if productType(id) == PRODUCT_KIND_NONE {
+		newRandomProductAt(id);
+	}
+}
+
+/*
+```
+Dispenses a product of the given kind (if any).
+```
+*/
+macro () dispenseProductOfKind(int kind) {
+	inst();
+	let productToDrop = -1;
+	for i = 0; i < PRODUCT_COUNT; i++; {
+		if productType(i) == kind {
+			productToDrop = i;
+			break;
+		}
+	}
+	// RAL does not check the calling context of a macro (mostly).
+	// This is because having errors specific to specific callers of a macro makes it harder to fix the macro.
+	// However, a side-effect of this is that macros have an `ownr` of `Agent?` -- which we can't call `dispenseProduct` on.
+	// That in mind, cast `ownr` as `VendingMachine`.
+	alias ownr!VendingMachine;
+	call dispenseProduct(productToDrop);
+}
+
+script VendingMachine:buttonLemon {
+	dispenseProductOfKind(PRODUCT_KIND_LEMON);
+}
+
+script VendingMachine:buttonJustanut {
+	dispenseProductOfKind(PRODUCT_KIND_NUT);
+}
+
+/*
+```
+Dispenses a random product.
+To try and make it particularly random, we:
+
+* Try a few times to just use a random slot.
+* Failing that, we pick the first occupied slot.
+* If that fails, we fail.
+```
+*/
+script VendingMachine:buttonRandom {
+	inst();
+	// try random a few times
+	let int productToDrop;
+	for i = 0; i < 8; i++; {
+		productToDrop = rand(0, PRODUCT_COUNT - 1);
+		if productType(productToDrop) != PRODUCT_KIND_NONE
+			break;
+	}
+	// if that fails then try first available
+	if productType(productToDrop) == PRODUCT_KIND_NONE {
+		for i = 0; i < PRODUCT_COUNT; i++; {
+			if productType(i) != PRODUCT_KIND_NONE {
+				productToDrop = i;
+				break;
+			}
+		}
+	}
+	// if that still fails give it -1 so it makes the error sound
+	if productType(productToDrop) == PRODUCT_KIND_NONE
+		productToDrop = -1;
+	// Same deal as last time.
+	alias ownr!VendingMachine;
+	call dispenseProduct(productToDrop);
+}

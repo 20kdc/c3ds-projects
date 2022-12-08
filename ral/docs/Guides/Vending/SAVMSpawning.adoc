@@ -1,0 +1,27 @@
+### Spawning
+
+Right now, the vending machine doesn't actually provide anything. Let's change that.
+
+This is another case where code will be written that we want to use later, so:
+
+`vending-machine-spawn.ral`:
+```
+include::../../../samples/vending-machine-spawn.ral[]
+```
+
+#### The Injectable File Itself
+
+We're still not done with our goal, but this version implements the basic functionality.
+
+We can now spawn the products, dispensing them from the vending machine.
+
+```
+include::../../../samples/vending-machine-root-spawn.ral[]
+```
+
+#### Things To Check
+
+_When trying these, please try to avoid modifying the "base" files as they are used in later chapters. If you do modify the "base" files, don't modify the pristine copies in `samples`._
+
+* Given the use of macros so far, see if there's a better way to handle the buttons.
+* Try adding counter fields so that you can only dispense so many of a given product (accounting for the chosen product by random, too!)

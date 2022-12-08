@@ -1,0 +1,43 @@
+include "vending-machine-common.ral";
+
+/*
+```
+We define the kinds of product here, including a "none" value for internal use.
+```
+*/
+PRODUCT_KIND_NONE = 0;
+PRODUCT_KIND_LEMON = 1;
+PRODUCT_KIND_NUT = 2;
+
+/*
+```
+This is our first macro that accepts arguments.
+
+Macro arguments are _roughly_ the macro equivalent of `\_p1_` and `\_p2_`.
+
+There are three kinds of arguments:
+
+* Regular arguments, such as `int kind`: These take what's given and basically `let` them into variables.
+* Inline arguments, such as `int &kind`: These are like `alias`, so if read more than once, the expression passed is repeatedly executed. If not read at all, the expression is never executed.
+* Inline variable arguments, such as `int &=kind`: Like inline arguments, but these are also writable.
+
+Beware that this macro alters `targ`.
+
+Also beware that macros don't have separate copies of the `inst` and `lock` state either.
+
+If this doesn't seem to make sense, check the output CAOS code -- but in short, even though it's separate macros, it's the same script.
+```
+*/
+macro () spawnProduct(int &kind) {
+	// spawn in world product
+	let myX, myY = posx(), posy();
+	if productType(kind) == PRODUCT_KIND_LEMON {
+		dsLemonNew();
+		mvsf(myX + 16, myY + 36);
+		dsLemonFinish();
+	} else {
+		dsJustanutNew();
+		mvsf(myX + 8, myY + 36);
+		dsJustanutFinish();
+	}
+}

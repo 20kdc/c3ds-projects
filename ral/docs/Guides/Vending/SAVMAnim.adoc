@@ -1,0 +1,20 @@
+### Animated Falling Lemons
+
+_not to be confused with animated falling apples_
+
+This is the final stage. The products are being managed and replenish, the random button is mostly kind of fair, and you can run out of stuff.
+
+Now things just need a nice(ish) animation.
+
+```
+include::../../../samples/vending-machine-root-final.ral[]
+```
+
+#### Things To Check
+
+* Adjust the animation. (Maybe add a little bounce?)
+** Remember that you can re-inject event scripts.
+* While this requires some spritework, consider adding more products.
+** What needs to be changed in the code to add more products?
+** Could the layout be setup with a "display hole" and a "next" button to make adding more products easier?
+** Remove the explicit selection buttons in favour of only selecting products by random chance, and then adding as many products as one wishes?

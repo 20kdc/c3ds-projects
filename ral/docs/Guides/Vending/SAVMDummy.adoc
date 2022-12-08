@@ -16,7 +16,7 @@ This file will be referenced from the files to come using `include`, which requi
 #### The Dummy Version
 
 ```
-include::../../../samples/vending-machine-dummy.ral[]
+include::../../../samples/vending-machine-root-dummy.ral[]
 ```
 
 This version of the code simply puts the buttons and front panel into place.

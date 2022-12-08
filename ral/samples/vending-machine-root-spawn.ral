@@ -1,0 +1,27 @@
+include "vending-machine-spawn.ral";
+
+// Same constructor script as usual.
+script VendingMachine:init {
+	inst();
+	vmSetupCommon();
+}
+
+// These three scripts all call spawnProduct, which spawns the actual product.
+// Note that spawnProduct is a macro, so this may well write out the same CAOS code three times, but that's fine.
+script VendingMachine:buttonLemon {
+	inst();
+	sndc("lock");
+	spawnProduct(PRODUCT_KIND_LEMON);
+}
+
+script VendingMachine:buttonJustanut {
+	inst();
+	sndc("lock");
+	spawnProduct(PRODUCT_KIND_NUT);
+}
+
+script VendingMachine:buttonRandom {
+	inst();
+	sndc("lock");
+	spawnProduct(rand(PRODUCT_KIND_LEMON, PRODUCT_KIND_NUT));
+}

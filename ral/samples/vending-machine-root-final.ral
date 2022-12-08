@@ -1,0 +1,49 @@
+include "vending-machine-products.ral";
+
+// Final version of dispenseProduct.
+script VendingMachine:dispenseProduct {
+	alias productToDrop = _p1_!int;
+	lock();
+	if productToDrop == -1 {
+		// we've failed, nope sound
+		sndc("beep");
+	} else {
+		sndc("lock");
+		// animation of dropping product
+		// start by nudging down/right
+		let pX, pY = getProductLocation(productToDrop);
+		for i = 0; i < 8; i++; {
+			pX += 1;
+			pY += 1;
+			patMove(VMP_PRODUCTS + productToDrop, pX, pY);
+			wait(1);
+			inst();
+		}
+		// now let it 'fall' and hit bottom
+		pY += 1;
+		let velY = 0;
+		while pY < 100 {
+			patMove(VMP_PRODUCTS + productToDrop, pX, pY);
+			wait(1);
+			inst();
+			velY += 1;
+			pY += velY;
+		}
+		pY = 100;
+		// push right
+		while pX < 64 {
+			pX += 4;
+			patMove(VMP_PRODUCTS + productToDrop, pX, pY);
+			wait(1);
+			inst();
+		}
+		// finally...
+		inst();
+		spawnProduct(productType(productToDrop));
+		// revert targ and virtual product goes bye-bye
+		targ = ownr;
+		patKill(VMP_PRODUCTS + productToDrop);
+		productType(productToDrop) = PRODUCT_KIND_NONE;
+	}
+}
+
