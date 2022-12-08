@@ -7,9 +7,9 @@
 package rals.stmt;
 
 import rals.code.*;
-import rals.diag.SrcPos;
 import rals.diag.SrcRange;
 import rals.expr.*;
+import rals.lex.DefInfo;
 
 /**
  * Inline statement, made up of a set of parts.
@@ -17,7 +17,7 @@ import rals.expr.*;
  */
 public class RALInlineStatement extends RALStatementUR {
 	public final Object[] parts;
-	public RALInlineStatement(SrcPos pos, Object[] p) {
+	public RALInlineStatement(DefInfo pos, Object[] p) {
 		super(pos);
 		parts = p;
 	}

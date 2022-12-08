@@ -28,7 +28,7 @@ public class Diag {
 	}
 
 	public enum Kind {
-		// Error
-		Error
+		Error,
+		Warning;
 	}
 }

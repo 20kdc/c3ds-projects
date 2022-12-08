@@ -40,12 +40,8 @@ public class ParserType {
 		RALType rt = ts.byName(name);
 		if (rt == null)
 			throw new RuntimeException("No such type " + name);
-		Token tkn = lx.requireNext();
-		if (tkn.isKeyword("?")) {
+		if (lx.optNextKw("?"))
 			return ts.byNullable(rt);
-		} else {
-			lx.back();
-		}
 		return rt;
 	}
 

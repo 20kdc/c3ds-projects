@@ -26,8 +26,8 @@ public class RALEnumLoop extends RALStatementUR {
 	}
 
 	@Override
-	protected RALStatement resolveInner(ScopeContext scope) {
-		scope = new ScopeContext(scope);
+	protected RALStatement resolveInner(ScopeContext outerScope) {
+		ScopeContext scope = new ScopeContext(outerScope);
 		RALExprSlice paramsR = params.resolve(scope);
 		final RALStatement loopStarter;
 		if (enumToken.equals("econ")) {
@@ -64,6 +64,9 @@ public class RALEnumLoop extends RALStatementUR {
 
 		final boolean isAdjustingLoopBodyForBreak = true;
 		final RALStatement loopBodyR = loopBody.resolve(scope);
+		// targ's type changes to that of Agent?
+		outerScope.regenerateTarg(lineNumber, scope.world.types.gAgentNullable);
+
 		// finally make it
 		return new RALStatement(extent) {
 			@Override

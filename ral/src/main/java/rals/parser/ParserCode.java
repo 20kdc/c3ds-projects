@@ -54,7 +54,10 @@ public class ParserCode {
 			}
 			return rb;
 		} else if (tkn.isKeyword("&")) {
-			return new RALInlineStatement(tkn.lineNumber, parseStringEmbed(ifc, false));
+			Object[] obj = parseStringEmbed(ifc, false);
+			// This *doesn't* require the semicolon as parseStringEmbed handles it.
+			RALInlineStatement ris = new RALInlineStatement(lx.genDefInfo(tkn), obj);
+			return ris;
 		} else if (tkn.isKeyword("let")) {
 			return parseLetStatement(tkn, ifc);
 		} else if (tkn.isKeyword("alias")) {
@@ -73,18 +76,14 @@ public class ParserCode {
 				throw new RuntimeException("Did not understand alias form at: " + tkn);
 			}
 		} else if (tkn.isKeyword("if")) {
-			RALExprUR cond = ParserExpr.parseExpr(ifc, true);
+			RALExprUR cond = eatIfWhileCond(ifc);
 			RALStatementUR body = ParserCode.parseStatement(ifc);
 			RALStatementUR elseBranch = null;
-			Token chk = lx.requireNext();
-			if (chk.isKeyword("else")) {
+			if (lx.optNextKw("else"))
 				elseBranch = ParserCode.parseStatement(ifc);
-			} else {
-				lx.back();
-			}
 			return new RALIfStatement(tkn.lineNumber, cond, body, elseBranch, false);
 		} else if (tkn.isKeyword("while")) {
-			RALExprUR cond = ParserExpr.parseExpr(ifc, true);
+			RALExprUR cond = eatIfWhileCond(ifc);
 			RALStatementUR body = ParserCode.parseStatement(ifc);
 			RALBlock outerBlock = new RALBlock(tkn.lineNumber, true);
 			outerBlock.content.add(new RALIfStatement(tkn.lineNumber, cond, new RALBreakFromLoop(tkn.lineNumber), null, true));
@@ -202,6 +201,16 @@ public class ParserCode {
 				return new RALBlock(tkn.lineNumber, false);
 			}
 		}
+	}
+
+	/**
+	 * Dropping support for "magic floating if" because it lets an expr neighbour a statement (BAD)
+	 */
+	private static RALExprUR eatIfWhileCond(InsideFileContext ifc) {
+		ifc.lexer.requireNextKw("(");
+		RALExprUR ex = ParserExpr.parseExpr(ifc, true);
+		ifc.lexer.requireNextKw(")");
+		return ex;
 	}
 
 	private static RALExprUR parseRelativeMessageID(RALExprUR target, InsideFileContext ifc) {

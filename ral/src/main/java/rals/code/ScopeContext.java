@@ -66,6 +66,13 @@ public class ScopeContext {
 		scopedVariables.put(name, new LVar(name, def, slice));
 	}
 
+	public LVar requireLocal(String string) {
+		LVar lv = scopedVariables.get(string);
+		if (lv == null)
+			throw new RuntimeException("Expected local: " + string);
+		return lv;
+	}
+
 	/**
 	 * Note: You still have to actualize the VA handle for this!
 	 */

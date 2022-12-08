@@ -26,6 +26,8 @@ public class GameStateTracker {
 	 */
 	private State lastGameState = State.Offline;
 
+	private boolean newExceptionsNeedToBeShown = true;
+
 	public final Signal<State> stateChange = new Signal<>();
 	public RawDebugFrame lastDebugFrame;
 	public final Signal<RawDebugFrame> debugFrame = new Signal<>();
@@ -128,8 +130,12 @@ public class GameStateTracker {
 				}
 			}
 			// System.out.println(tackUNID + " " + isPaws);
+			newExceptionsNeedToBeShown = true;
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			if (newExceptionsNeedToBeShown) {
+				ex.printStackTrace();
+				newExceptionsNeedToBeShown = false;
+			}
 			tackUNID = -1;
 			gameState = State.Offline;
 		}

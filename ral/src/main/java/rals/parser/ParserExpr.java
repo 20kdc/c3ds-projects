@@ -65,8 +65,10 @@ public class ParserExpr {
 	public static RALExprUR parseExpr(InsideFileContext ifc, boolean must) {
 		RALExprUR expr = parseExprOrNull(ifc);
 		if (expr == null) {
-			if (must)
-				ifc.diags.lexParseErr(ifc.lexer.genLN(), "expected expression");
+			if (must) {
+				RuntimeException re = new RuntimeException("expected expression, not: " + ifc.lexer.diagContext());
+				ifc.diags.lexParseErr(ifc.lexer.genLN(), "", re);
+			}
 			return RALExprGroupUR.of();
 		}
 		return expr;

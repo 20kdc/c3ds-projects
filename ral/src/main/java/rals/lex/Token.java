@@ -17,6 +17,11 @@ import rals.parser.IDocPath;
  */
 public class Token {
 	public static final HashSet<String> keywords = new HashSet<>();
+
+	public static final String DEBUG_PREFIX = "bugsAwake";
+	public static final String DEBUG_TRACE_ON = DEBUG_PREFIX + "LexerTraceOn";
+	public static final String DEBUG_TRACE_OFF = DEBUG_PREFIX + "LexerTraceOff";
+
 	static {
 		// meta
 		keywords.add("include");
@@ -52,6 +57,9 @@ public class Token {
 		keywords.add("foreach");
 		keywords.add("in");
 		keywords.add("call");
+		// debug
+		keywords.add(DEBUG_TRACE_ON);
+		keywords.add(DEBUG_TRACE_OFF);
 	}
 
 	public final SrcPos lineNumber;
@@ -123,6 +131,13 @@ public class Token {
 
 		@Override
 		public String toString() {
+			if (startIsClusterEnd && endIsClusterStart) {
+				return "S|:";
+			} else if (startIsClusterEnd) {
+				return "S}:";
+			} else if (endIsClusterStart) {
+				return "S{:";
+			}
 			return "SE:" + text;
 		}
 	}

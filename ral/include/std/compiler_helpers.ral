@@ -57,13 +57,42 @@ macro __ral_compiler_helper_call(int &messageId) {
 }
 
 /*
+ * Instanceof Targ
+ * We need to be careful so targ is consistent when the result write occurs.
+ */
+macro __ral_compiler_helper_instanceof_targ(int &family, int &genus, int &species) (family == &'fmly'!int) && (genus == &'gnus'!int) && (species == &'spcs'!int);
+macro __ral_compiler_helper_instanceof_targ(int &family, int &genus) (family == &'fmly'!int) && (genus == &'gnus'!int);
+macro __ral_compiler_helper_instanceof_targ(int &family) (family == &'fmly'!int);
+macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int &family, int &genus, int &species) {
+	if (targ == null) {
+		result = 0!bool;
+	} else {
+		result = __ral_compiler_helper_instanceof_targ(family, genus, species);
+	}
+}
+macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int &family, int &genus) {
+	if (targ == null) {
+		result = 0!bool;
+	} else {
+		result = __ral_compiler_helper_instanceof_targ(family, genus);
+	}
+}
+macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int &family) {
+	if (targ == null) {
+		result = 0!bool;
+	} else {
+		result = __ral_compiler_helper_instanceof_targ(family);
+	}
+}
+
+/*
  * Instanceof
  * We need to be careful so targ is consistent when the result write occurs.
  */
 macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family, int &genus, int &species) {
 	let tmpTarg = targ;
-	targ!Agent? = target;
-	if (family == &'fmly'!int) && (genus == &'gnus'!int) && (species == &'spcs'!int) {
+	targ = target;
+	if (__ral_compiler_helper_instanceof_targ(family, genus, species)) {
 		targ = tmpTarg;
 		result = 1!bool;
 	} else {
@@ -73,8 +102,8 @@ macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family,
 }
 macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family, int &genus) {
 	let tmpTarg = targ;
-	targ!Agent? = target;
-	if (family == &'fmly'!int) && (genus == &'gnus'!int) {
+	targ = target;
+	if (__ral_compiler_helper_instanceof_targ(family, genus)) {
 		targ = tmpTarg;
 		result = 1!bool;
 	} else {
@@ -84,8 +113,8 @@ macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family,
 }
 macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family) {
 	let tmpTarg = targ;
-	targ!Agent? = target;
-	if (family == &'fmly'!int) {
+	targ = target;
+	if (__ral_compiler_helper_instanceof_targ(family)) {
 		targ = tmpTarg;
 		result = 1!bool;
 	} else {
@@ -94,45 +123,48 @@ macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family)
 	}
 }
 macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, int &family, int &genus, int &species) {
-	let tmpTarg = targ;
-	targ!Agent? = target;
-	if (targ == null) {
-		targ = tmpTarg;
+	if (target == null) {
 		result = 0!bool;
-	} else if (family == &'fmly'!int) && (genus == &'gnus'!int) && (species == &'spcs'!int) {
-		targ = tmpTarg;
-		result = 1!bool;
 	} else {
-		targ = tmpTarg;
-		result = 0!bool;
+		let tmpTarg = targ;
+		targ = target;
+		if (__ral_compiler_helper_instanceof_targ(family, genus, species)) {
+			targ = tmpTarg;
+			result = 1!bool;
+		} else {
+			targ = tmpTarg;
+			result = 0!bool;
+		}
 	}
 }
 macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, int &family, int &genus) {
-	let tmpTarg = targ;
-	targ!Agent? = target;
-	if (targ == null) {
-		targ = tmpTarg;
+	if (target == null) {
 		result = 0!bool;
-	} else if (family == &'fmly'!int) && (genus == &'gnus'!int) {
-		targ = tmpTarg;
-		result = 1!bool;
 	} else {
-		targ = tmpTarg;
-		result = 0!bool;
+		let tmpTarg = targ;
+		targ = target;
+		if (__ral_compiler_helper_instanceof_targ(family, genus)) {
+			targ = tmpTarg;
+			result = 1!bool;
+		} else {
+			targ = tmpTarg;
+			result = 0!bool;
+		}
 	}
 }
 macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, int &family) {
-	let tmpTarg = targ;
-	targ!Agent? = target;
-	if (targ == null) {
-		targ = tmpTarg;
+	if (target == null) {
 		result = 0!bool;
-	} else if (family == &'fmly'!int) {
-		targ = tmpTarg;
-		result = 1!bool;
 	} else {
-		targ = tmpTarg;
-		result = 0!bool;
+		let tmpTarg = targ;
+		targ = target;
+		if (__ral_compiler_helper_instanceof_targ(family)) {
+			targ = tmpTarg;
+			result = 1!bool;
+		} else {
+			targ = tmpTarg;
+			result = 0!bool;
+		}
 	}
 }
 

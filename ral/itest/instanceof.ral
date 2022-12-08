@@ -1,0 +1,55 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+class VerySpecificAgent 1 2 3;
+class LessSpecificAgent 1 2 0;
+class NotSpecificAgent 1 0 0;
+
+install {
+	// instanceof testing
+	let Agent somehowAnAgent;
+
+	// bugsAwakeLexerTraceOn
+
+	if (somehowAnAgent instanceof VerySpecificAgent)
+		&'outs {"V"}';
+
+	// bugsAwakeLexerTraceOff
+
+	if (somehowAnAgent instanceof LessSpecificAgent)
+		&'outs {"L"}';
+	if (somehowAnAgent instanceof NotSpecificAgent)
+		&'outs {"N"}';
+
+	alias somehowAnAgent = somehowAnAgent!Agent?;
+	if (somehowAnAgent instanceof VerySpecificAgent)
+		&'outs {"V"}';
+	if (somehowAnAgent instanceof LessSpecificAgent)
+		&'outs {"L"}';
+	if (somehowAnAgent instanceof NotSpecificAgent)
+		&'outs {"N"}';
+
+	&'outs {"Instanceof testing 2"}';
+
+	// instanceof testing 2
+	alias targ!Agent;
+	if (targ instanceof VerySpecificAgent)
+		&'outs {"V"}';
+	if (targ instanceof LessSpecificAgent)
+		&'outs {"L"}';
+	if (targ instanceof NotSpecificAgent)
+		&'outs {"N"}';
+
+	alias targ!Agent?;
+	if (targ instanceof VerySpecificAgent)
+		&'outs {"V"}';
+	if (targ instanceof LessSpecificAgent)
+		&'outs {"L"}';
+	if (targ instanceof NotSpecificAgent)
+		&'outs {"N"}';
+}
+

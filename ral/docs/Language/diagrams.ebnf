@@ -76,8 +76,8 @@ ModifyStmt ::= Expr ("+=" | "-=" | "*=" | "/=" | "|=" | "&=") Expr ";"
 EmitStmt ::= Expr "->" ID "(" Expr ")" ("after" Expr)? ";"
 CallStmt ::= "call" ID "(" Expr ")" ";"
 
-IfStmt ::= "if" Expr Stmt ("else" Stmt)?
-WhileStmt ::= "while" Expr Stmt
+IfStmt ::= "if" "(" Expr ")" Stmt ("else" Stmt)?
+WhileStmt ::= "while" "(" Expr ")" Stmt
 BreakStmt ::= "break" ";"
 ForStmt ::= "for" LetStmtBody ";" Expr ";" Stmt Stmt
 ForeachStmt ::= "foreach" "(" Type "in" ID Expr? ")" Stmt

@@ -69,6 +69,10 @@ public class DiagRecorder {
 		diag(new Diag(Diag.Kind.Error, frames.toArray(new SrcRange[0]), details.toString(), ex.getMessage()));
 	}
 
+	public void warning(String text) {
+		diag(new Diag(Diag.Kind.Warning, frames.toArray(new SrcRange[0]), text, text));
+	}
+
 	public String unwrapToString() {
 		if (hasFailed) {
 			StringBuilder sb = new StringBuilder();

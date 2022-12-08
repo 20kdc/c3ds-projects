@@ -150,18 +150,18 @@ image::diagram/CallStmt.png[]
 
 ##### if
 
-`if` is a conditional branch statement. It is of the form `if cond... { code } [else { code }]`.
+`if` is a conditional branch statement. It is of the form `if (cond) { code } [else { code }]`.
 
-Like in C, the `else` branch of an `if` is a single statement, and that statement may therefore be an `if` without an enclosing block.
+Like in C, the branches of an `if` can be single statements without enclosing `{}`.
 
 ```
-if a == 1 {
+if (a == 1) {
 
 }
 
-if a == 1 {
+if (a == 1) {
 
-} else if b == 2 {
+} else if (b == 2) {
 
 } else {
 
@@ -176,7 +176,7 @@ image::diagram/IfStmt.png[]
 
 ```
 let a = 0;
-while a < 5 {
+while (a < 5) {
 outs("Meow!");
 a++;
 }
@@ -189,7 +189,7 @@ image::diagram/WhileStmt.png[]
 A `while`, `for` or `foreach` block may be escaped with `break`. (In `foreach`'s case this does not actually terminate the loop but prevents the contents from executing until the loop completes, which is effectively the same thing but less efficient.)
 
 ```
-while true {
+while (true) {
 if calculateImportantCondition() {
 break;
 } else {
@@ -225,6 +225,8 @@ In most cases, the supplied type (such as `Agent`) is used to supply the classif
 With `econ` a supplied agent is used (as that's how `econ` works).
 
 Within the `foreach` block, `targ` is initially set to the current agent, and is retyped to the supplied type.
+
+Once the `foreach` block ends, `targ` is set to `ownr`. (RAL adjusts the type of `targ` to `Agent?` so things more or less make sense.)
 
 ```
 // enum/epas/esee/etch

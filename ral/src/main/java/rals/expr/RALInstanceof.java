@@ -7,6 +7,7 @@
 package rals.expr;
 
 import rals.code.*;
+import rals.cond.RALCondSimple;
 import rals.types.Classifier;
 import rals.types.RALType;
 
@@ -30,27 +31,41 @@ public class RALInstanceof implements RALExprUR {
 		RALExprSlice params;
 		if (type.family == 0) {
 			// trying this on Agent?
-			return new RALConstant.Int(scope.world.types, 1);
+			// no reasonable way to fail if not nullable
+			if (!nullable)
+				return new RALConstant.Int(scope.world.types, 1);
+			RALExprSlice nullOp = scope.requireLocal("null").content;
+			return RALCondSimple.Resolved.of(scope.world.types, RALCondSimple.Op.NotEqual, val, nullOp);
 		} else if (type.genus == 0) {
 			params = RALExprSlice.concat(
-				val,
 				new RALConstant.Int(scope.world.types, type.family)
 			);
 		} else if (type.species == 0) {
 			params = RALExprSlice.concat(
-				val,
 				new RALConstant.Int(scope.world.types, type.family),
 				new RALConstant.Int(scope.world.types, type.genus)
 			);
 		} else {
 			params = RALExprSlice.concat(
-				val,
 				new RALConstant.Int(scope.world.types, type.family),
 				new RALConstant.Int(scope.world.types, type.genus),
 				new RALConstant.Int(scope.world.types, type.species)
 			);
 		}
+		// start by assuming it's not targ, and then try to check if it is targ
+		RALExprSlice finParams = RALExprSlice.concat(
+			val,
+			params
+		);
 		String macroName = nullable ? "__ral_compiler_helper_instanceof_nullable" : "__ral_compiler_helper_instanceof";
-		return RALCall.makeResolved(macroName, params, scope);
+		RALExprSlice tunnellingCast = val;
+		if (tunnellingCast instanceof RALCast.Resolved)
+			tunnellingCast = ((RALCast.Resolved) val).expr;
+		if (tunnellingCast instanceof RALVarTarg) {
+			macroName += "_targ";
+			finParams = params;
+		}
+
+		return RALCall.makeResolved(macroName, finParams, scope);
 	}
 }
