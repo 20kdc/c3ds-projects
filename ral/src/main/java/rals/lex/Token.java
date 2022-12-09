@@ -48,6 +48,8 @@ public class Token {
 		keywords.add("else");
 		keywords.add("while");
 		keywords.add("break");
+		keywords.add("continue");
+		keywords.add("loop");
 		keywords.add("alias");
 		keywords.add("return");
 		keywords.add("instanceof");

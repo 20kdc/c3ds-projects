@@ -22,8 +22,6 @@ public abstract class CompileContextNW extends CompileContextBase {
 
 	// protected because NW variant isn't supposed to expose this
 	protected final CCTXVAScope vaScope;
-	// protected because we just plain shouldn't expose this
-	protected final CCTXBreakScope breakScope;
 
 	protected final boolean ownsVAScope;
 
@@ -31,14 +29,12 @@ public abstract class CompileContextNW extends CompileContextBase {
 		super(ts, m, d);
 		vaScope = new CCTXVAScope();
 		ownsVAScope = true;
-		breakScope = new CCTXBreakScope(null, null);
 		heldExprHandles = new HashMap<>();
 	}
 
-	protected CompileContextNW(CompileContextNW base, boolean newVA, boolean newEH, CCTXBreakScope brkScope) {
+	protected CompileContextNW(CompileContextNW base, boolean newVA, boolean newEH) {
 		super(base);
 		// inherit/grab
-		breakScope = brkScope != null ? brkScope : base.breakScope;
 		vaScope = newVA ? new CCTXVAScope(base.vaScope) : base.vaScope;
 		heldExprHandles = newEH ? new HashMap<>(base.heldExprHandles) : base.heldExprHandles;
 		ownsVAScope = newVA;

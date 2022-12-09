@@ -76,5 +76,5 @@ However, in practice, there are only 5:
 #### Dirty CAOS Tricks
 
 * RAL makes heavy use of `goto` and `subr` for loops so that `break;` is as simple as a `goto`.
-* `enum` currently doesn't do anything too special, but this is _very_ likely to change due to a better understanding of the CAOS VM -- it might already have been changed by the time you read this manual.
+* The ability to `break` from an `enum` is essentially magic code, relying on some aspects of how the CAOS VM handles the stack.
 * RAL switches between the `ovXX`, `mvXX` and `avar` variables when doing field accesses, to avoid having to alter `targ` ever.

@@ -8,6 +8,7 @@ package rals.parser;
 
 import java.util.LinkedList;
 
+import rals.cctx.ILabelHandle;
 import rals.diag.SrcPos;
 import rals.diag.SrcRange;
 import rals.expr.*;
@@ -86,9 +87,12 @@ public class ParserCode {
 			RALExprUR cond = eatIfWhileCond(ifc);
 			RALStatementUR body = ParserCode.parseStatement(ifc);
 			RALBlock outerBlock = new RALBlock(tkn.lineNumber, true);
-			outerBlock.content.add(new RALIfStatement(tkn.lineNumber, cond, new RALBreakFromLoop(tkn.lineNumber), null, true));
+			outerBlock.content.add(new RALIfStatement(tkn.lineNumber, cond, new RALGoto(tkn.extent, ILabelHandle.BREAK), null, true));
 			outerBlock.content.add(body);
 			return new RALBreakableLoop(tkn.lineNumber, outerBlock);
+		} else if (tkn.isKeyword("loop")) {
+			RALStatementUR body = ParserCode.parseStatement(ifc);
+			return new RALBreakableLoop(tkn.lineNumber, body);
 		} else if (tkn.isKeyword("for")) {
 			RALStatementUR init = parseLetStatement(tkn, ifc);
 			RALExprUR cond = ParserExpr.parseExpr(ifc, true);
@@ -97,7 +101,7 @@ public class ParserCode {
 			RALStatementUR body = parseStatement(ifc);
 			RALBlock outerBlock = new RALBlock(tkn.lineNumber, true);
 			RALBlock innerBlock = new RALBlock(tkn.lineNumber, false);
-			innerBlock.content.add(new RALIfStatement(tkn.lineNumber, cond, new RALBreakFromLoop(tkn.lineNumber), null, true));
+			innerBlock.content.add(new RALIfStatement(tkn.lineNumber, cond, new RALGoto(tkn.extent, ILabelHandle.BREAK), null, true));
 			innerBlock.content.add(body);
 			innerBlock.content.add(adjust);
 			// Actual structure is: {
@@ -113,7 +117,10 @@ public class ParserCode {
 			return outerBlock;
 		} else if (tkn.isKeyword("break")) {
 			lx.requireNextKw(";");
-			return new RALBreakFromLoop(tkn.lineNumber);
+			return new RALGoto(tkn.extent, ILabelHandle.BREAK);
+		} else if (tkn.isKeyword("continue")) {
+			lx.requireNextKw(";");
+			return new RALGoto(tkn.extent, ILabelHandle.CONTINUE);
 		} else if (tkn.isKeyword("foreach")) {
 			lx.requireNextKw("("); // for flexibility in syntax
 			RALType iterOver = ParserType.parseType(ifc);

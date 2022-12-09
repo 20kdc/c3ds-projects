@@ -21,12 +21,14 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, C
 	public final CodeWriter writer;
 	public final DebugSite currentDebugSite;
 	private final SrcRange diagsExtent;
+	public final CCTXLabelScope labelScope;
 
 	public CompileContext(TypeSystem ts, Scripts m, DiagRecorder d, CodeWriter cw) {
 		super(ts, m, d);
 		currentDebugSite = null;
 		writer = cw;
 		diagsExtent = null;
+		labelScope = new CCTXLabelScope();
 		cw.debug.initializeRootCC(this);
 	}
 
@@ -34,14 +36,15 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, C
 			CompileContext sc,
 			boolean newVA,
 			boolean newEH,
-			CCTXBreakScope cbs,
 			DebugSite newDebugSite,
-			SrcRange de
+			SrcRange de,
+			IBreakHandler escape
 	) {
-		super(sc, newVA, newEH, cbs);
+		super(sc, newVA, newEH);
 		currentDebugSite = newDebugSite != null ? newDebugSite : sc.currentDebugSite;
 		writer = sc.writer;
 		diagsExtent = de;
+		labelScope = escape != null ? new CCTXLabelScope(sc.labelScope, escape) : sc.labelScope;
 		if (de != null)
 			diags.pushFrame(de);
 	}
@@ -61,16 +64,19 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, C
 		return new CompileContext(this, false, true, null, null, null);
 	}
 
-	public CompileContext forkBreak(String breakLabel, String breakBool) {
-		return new CompileContext(this, false, false, new CCTXBreakScope(breakLabel, breakBool), null, null);
+	public CompileContext forkBreak(IBreakHandler escape) {
+		assert escape != null;
+		return new CompileContext(this, false, false, null, null, escape);
 	}
 
-	public CompileContext forkVAEHBreak(String breakLabel, String breakBool) {
-		return new CompileContext(this, true, true, new CCTXBreakScope(breakLabel, breakBool), null, null);
+	public CompileContext forkVAEHBreak(IBreakHandler escape) {
+		assert escape != null;
+		return new CompileContext(this, true, true, null, null, escape);
 	}
 
 	public CompileContext forkDebugDiagExtent(DebugSite dbg, SrcRange diagExtent) {
-		return new CompileContext(this, false, false, null, dbg, diagExtent);
+		// Note that dbg can be null if debug info is off, this is expected!
+		return new CompileContext(this, false, false, dbg, diagExtent, null);
 	}
 
 	@Override
@@ -82,19 +88,15 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, C
 	}
 
 	@Override
-	public CCTXVAScope getVAScope() {
+	public CodeWriter internalCodeWriter() {
+		return writer;
+	}
+	@Override
+	public CCTXLabelScope internalLabelScope() {
+		return labelScope;
+	}
+	@Override
+	public CCTXVAScope internalVAScope() {
 		return vaScope;
-	}
-
-	public String allocLabel() {
-		return "_RAL_" + writer.labelNumber++;
-	}
-
-	public String getBreakLabel() {
-		return breakScope.breakLabel;
-	}
-
-	public String getBreakBool() {
-		return breakScope.breakBool;
 	}
 }

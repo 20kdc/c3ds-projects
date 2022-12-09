@@ -8,14 +8,21 @@ package rals.stmt;
 
 import rals.cctx.*;
 import rals.code.ScopeContext;
-import rals.diag.SrcPos;
+import rals.diag.SrcRange;
 
 /**
- * This is EVEN MORE WRONG!
+ * Advanced goto for an advanced era.
  */
-public class RALBreakFromLoop extends RALStatementUR {
-	public RALBreakFromLoop(SrcPos sp) {
+public class RALGoto extends RALStatementUR {
+	public final ILabelHandle globalHandle;
+	public RALGoto(SrcRange sp, ILabelHandle g) {
 		super(sp);
+		globalHandle = g;
+	}
+
+	@Override
+	public String toString() {
+		return "goto " + globalHandle + ";";
 	}
 
 	@Override
@@ -23,20 +30,11 @@ public class RALBreakFromLoop extends RALStatementUR {
 		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext context) {
-				String breakLabel = context.getBreakLabel();
-				String breakBool = context.getBreakBool();
-				if (breakBool != null)
-					writer.writeCode("setv " + breakBool + " 1");
-
-				if (breakLabel != null) {
-					writer.writeCode("goto " + breakLabel);
-				} else {
-					throw new RuntimeException("Cannot break at this place!");
-				}
+				context.labelScope.compileJump(globalHandle, context);
 			}
 			@Override
 			public String toString() {
-				return "break;";
+				return "goto " + globalHandle + ";";
 			}
 		};
 	}

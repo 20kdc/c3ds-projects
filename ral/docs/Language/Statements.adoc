@@ -12,7 +12,7 @@ Blocks are one of the most basic kinds of statement, made up of `{}` surrounding
 
 ```
 {
-let int counter = 0;
+    let int counter = 0;
 }
 // counter = 1; // would error, counter doesn't exist here
 ```
@@ -170,35 +170,57 @@ if (a == 1) {
 
 image::diagram/IfStmt.png[]
 
-##### while
+##### loop
 
-`while` is a (breakable) loop. Given a condition, the condition is checked on every iteration (except the first), and if false, the loop is returned from.
+`loop` is an infinite loop (but see `break` and `continue`).
 
 ```
 let a = 0;
-while (a < 5) {
-outs("Meow!");
-a++;
+loop {
+    outs("Meow!");
+    a++;
+    if (a == 5)
+        break;
 }
 ```
 
-image::diagram/WhileStmt.png[]
+image::diagram/LoopStmt.png[]
 
-##### break
+##### break/continue
 
-A `while`, `for` or `foreach` block may be escaped with `break`. (In `foreach`'s case this does not actually terminate the loop but prevents the contents from executing until the loop completes, which is effectively the same thing but less efficient.)
+A `while`, `loop`, `for` or `foreach` block may be escaped with `break`. (In the case of `foreach` this may take some time -- CAOS doesn't have a good way to escape these loops.)
 
 ```
-while (true) {
-if calculateImportantCondition() {
-break;
-} else {
-handleStuff();
-}
+loop {
+    if (calculateImportantCondition()) {
+        break;
+    } else {
+        handleStuff();
+        if (someOtherCondition())
+            continue;
+        handleMoreStuff();
+    }
 }
 ```
 
 image::diagram/BreakStmt.png[]
+
+
+##### while
+
+`while` is a (breakable) loop. Given a condition, the condition is checked on every iteration (including the first), and if false, the loop stops.
+
+This is internally syntax sugar for a `loop` with `if (!(condition)) break;` inside.
+
+```
+let a = 0;
+while (a < 5) {
+    outs("Meow!");
+    a++;
+}
+```
+
+image::diagram/WhileStmt.png[]
 
 ##### for
 

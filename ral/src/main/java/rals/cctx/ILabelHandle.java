@@ -7,18 +7,19 @@
 package rals.cctx;
 
 /**
- * Cleanup of break stuff
+ * Yup, it's the same deal as IEHHandle and friends.
  */
-public class CCTXBreakScope {
-	/**
-	 * Two break methods.
-	 * If Bool is set, then the bool is set to 1 and you go to the label.
-	 * If only Label is set, then you just go to the label.
-	 */
-	public final String breakLabel, breakBool;
-
-	public CCTXBreakScope(String l, String b) {
-		breakLabel = l;
-		breakBool = b;
-	}
+public interface ILabelHandle {
+	public static final ILabelHandle BREAK = new ILabelHandle() {
+		@Override
+		public String toString() {
+			return "break";
+		}
+	};
+	public static final ILabelHandle CONTINUE = new ILabelHandle() {
+		@Override
+		public String toString() {
+			return "continue";
+		}
+	};
 }

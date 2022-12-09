@@ -60,8 +60,10 @@ Stmt ::=
 
 	IfStmt |
 	WhileStmt |
-	BreakStmt |
+	LoopStmt |
 	ForStmt |
+	BreakStmt |
+	ContinueStmt |
 	ForeachStmt |
 	WithStmt
 
@@ -78,8 +80,9 @@ CallStmt ::= "call" ID "(" Expr ")" ";"
 
 IfStmt ::= "if" "(" Expr ")" Stmt ("else" Stmt)?
 WhileStmt ::= "while" "(" Expr ")" Stmt
-BreakStmt ::= "break" ";"
+LoopStmt ::= "loop" Stmt
 ForStmt ::= "for" LetStmtBody ";" Expr ";" Stmt Stmt
+BreakStmt ::= ("break" | "continue") ";"
 ForeachStmt ::= "foreach" "(" Type "in" ID Expr? ")" Stmt
 WithStmt ::= "with" ("(" Type ID ")" | Type ID) Stmt ("else" Stmt)?
 

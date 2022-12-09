@@ -16,13 +16,13 @@ import rals.types.RALType;
  * Used to move code out of the very repetitive CompileContext.
  */
 public interface CCTXMixin {
-	CCTXVAScope getVAScope();
+	CCTXVAScope internalVAScope();
 
 	/**
 	 * Allocates a VA and assigns it to the given VA handle.
 	 */
 	default int allocVA(IVAHandle obj) {
-		CCTXVAScope vac = getVAScope();
+		CCTXVAScope vac = internalVAScope();
 		int res = vac.alloc.allocVA();
 		vac.heldVAHandles.put(obj, res);
 		return res;
@@ -32,7 +32,7 @@ public interface CCTXMixin {
 	 * Allocates the given VA and does nothing with it.
 	 */
 	default void allocVA(int i) {
-		CCTXVAScope vac = getVAScope();
+		CCTXVAScope vac = internalVAScope();
 		vac.alloc.allocVA(i);
 	}
 
@@ -40,14 +40,14 @@ public interface CCTXMixin {
 	 * Entry set
 	 */
 	default Set<Map.Entry<IVAHandle, Integer>> getVAHandleEntrySet() {
-		return getVAScope().heldVAHandles.entrySet();
+		return internalVAScope().heldVAHandles.entrySet();
 	}
 
 	/**
 	 * Allocates the given VA and assigns it to the given VA handle.
 	 */
 	default void allocVA(IVAHandle obj, int i) {
-		CCTXVAScope vac = getVAScope();
+		CCTXVAScope vac = internalVAScope();
 		vac.alloc.allocVA(i);
 		vac.heldVAHandles.put(obj, i);
 	}
@@ -66,4 +66,24 @@ public interface CCTXMixin {
 		return new RALVarVA(handle, t);
 	}
 
+	CCTXLabelScope internalLabelScope();
+	CodeWriter internalCodeWriter();
+
+	default String allocLabel() {
+		return "_RAL_" + internalCodeWriter().labelNumber++;
+	}
+
+	default String allocLabel(ILabelHandle lbl) {
+		String labelName = allocLabel();
+		internalLabelScope().addLabel(lbl, labelName);
+		return labelName;
+	}
+
+	default void allocLabel(ILabelHandle lbl, String lv) {
+		internalLabelScope().addLabel(lbl, lv);
+	}
+
+	default boolean isLabelDefinedHereUsed(ILabelHandle lbl) {
+		return internalLabelScope().isDefinedHereUsed(lbl);
+	}
 }
