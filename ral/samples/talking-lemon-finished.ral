@@ -38,12 +38,12 @@ script TalkingLemon:init {
 script TalkingLemon:act1 {
 	lock();
 	let str text;
-	if ownr.line == 0 {
+	if (ownr.line == 0) {
 		text = "Hello! I'm a talking lemon!";
 		ownr.line = 2;
 		wait(15);
 		ownr.line = 1;
-	} else if ownr.line == 1 {
+	} else if (ownr.line == 1) {
 		text = "Oh no, not again...";
 		ownr.line = 2;
 		wait(15);

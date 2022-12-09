@@ -68,7 +68,7 @@ public class RALModAssignStatement extends RALStatementUR {
 
 		@Override
 		protected void compileInner(CodeWriter writer, CompileContext context) {
-			try (CompileContext c2 = new CompileContext(context)) {
+			try (CompileContext c2 = context.forkVAEH()) {
 				RALVarVA lVA = null;
 				String lInline = target.getInlineCAOS(0, true, c2);
 				String rInline = source.getInlineCAOS(0, false, c2);

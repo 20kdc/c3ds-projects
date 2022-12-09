@@ -4,30 +4,21 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.debug;
-
-import rals.cctx.*;
+package rals.cctx;
 
 /**
- * Lots of stuff here...
+ * Cleanup of break stuff
  */
-public class FullDebugRecorder extends CommentingDebugRecorder {
-	public FullDebugRecorder() {
-		super(true);
-	}
+public class CCTXBreakScope {
+	/**
+	 * Two break methods.
+	 * If Bool is set, then the bool is set to 1 and you go to the label.
+	 * If only Label is set, then you just go to the label.
+	 */
+	public final String breakLabel, breakBool;
 
-	@Override
-	public boolean shouldGenerateSites() {
-		return true;
-	}
-
-	@Override
-	public void saveSiteAndCreateMarker(CodeWriter caller, DebugSite ds) {
-		caller.writeCode("sets va99 \"" + ds.encode() + "\"");
-	}
-
-	@Override
-	public void initializeRootCC(CompileContext compileContext) {
-		compileContext.allocVA(99);
+	public CCTXBreakScope(String l, String b) {
+		breakLabel = l;
+		breakBool = b;
 	}
 }

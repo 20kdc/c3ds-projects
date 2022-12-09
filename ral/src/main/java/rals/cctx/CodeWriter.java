@@ -26,6 +26,8 @@ public class CodeWriter {
 	public DebugSite queuedSiteForNextLine = null;
 	public final IDebugRecorder debug;
 
+	public int labelNumber = 0;
+
 	public CodeWriter(StringBuilder outText, IDebugRecorder dbg) {
 		writer = outText;
 		debug = dbg;

@@ -82,7 +82,7 @@ public class RALFieldAccess implements RALExprUR {
 			 */
 			private void fallbackIO(CompileContext context, Consumer<String> doTheThing) {
 				// fast-path inline failed - we need to use a temporary to hold the agent reference
-				try (CompileContext cc = new CompileContext(context)) {
+				try (CompileContext cc = context.forkVAEH()) {
 					RALVarVA va = cc.allocVA(baseType, "RALFieldAccess computed agent");
 					baseExpr.readInplaceCompile(new RALVarVA[] {va}, cc);
 					doTheThing.accept("avar " + va.getCode(cc) + " " + slot.slot);

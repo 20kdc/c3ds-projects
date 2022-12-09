@@ -72,33 +72,33 @@ public class RALEnumLoop extends RALStatementUR {
 		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext context) {
-				try (CompileContext cc = new CompileContext(context)) {
+				try (CompileContext ccVAEH = context.forkVAEH()) {
 					// just don't allow it
-					cc.clearBreak();
-					String endJumpLabel = cc.allocLabel();
+					String endJumpLabel = ccVAEH.allocLabel();
 					String breakBool = null;
 					if (isAdjustingLoopBodyForBreak) {
-						breakBool = cc.allocVA(cc.typeSystem.gBoolean, "RALEnumLoop break boolean").getCode(cc);
+						breakBool = ccVAEH.allocVA(ccVAEH.typeSystem.gBoolean, "RALEnumLoop break boolean").getCode(ccVAEH);
 						// initialize break bool to 0
 						writer.writeCode("setv " + breakBool + " 0");
 					}
-					loopStarter.compileInner(writer, cc);
-					// loopStarter is weird, do indent manually
-					writer.indent++;
-					if (isAdjustingLoopBodyForBreak) {
-						cc.breakLabel = endJumpLabel;
-						cc.breakBool = breakBool;
-						// if break bool is still 0, run body
-						writer.writeCode("doif " + breakBool + " eq 0");
+					String breakLabel = isAdjustingLoopBodyForBreak ? endJumpLabel : null;
+					try (CompileContext cc = ccVAEH.forkBreak(breakLabel, breakBool)) {
+						loopStarter.compileInner(writer, cc);
+						// loopStarter is weird, do indent manually
+						writer.indent++;
+						if (isAdjustingLoopBodyForBreak) {
+							// if break bool is still 0, run body
+							writer.writeCode("doif " + breakBool + " eq 0");
+						}
+						loopBodyR.compileInner(writer, cc);
+						if (isAdjustingLoopBodyForBreak) {
+							// endif, then jump label NOP
+							writer.writeCode("endi");
+							writer.writeCode("goto " + endJumpLabel);
+							writer.writeCode("subr " + endJumpLabel);
+						}
+						writer.writeCode(-1, "next");
 					}
-					loopBodyR.compileInner(writer, cc);
-					if (isAdjustingLoopBodyForBreak) {
-						// endif, then jump label NOP
-						writer.writeCode("endi");
-						writer.writeCode("goto " + endJumpLabel);
-						writer.writeCode("subr " + endJumpLabel);
-					}
-					writer.writeCode(-1, "next");
 				}
 			}
 			@Override

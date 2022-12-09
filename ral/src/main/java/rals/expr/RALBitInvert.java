@@ -56,12 +56,12 @@ public class RALBitInvert implements RALExprUR {
 					context.writer.writeCode(actualCmd + " " + out.getInlineCAOS(0, true, context));
 				} else {
 					// slow and bad
-					try (CompileContext c2 = new CompileContext(context)) {
+					try (CompileContext c2 = context.forkVAEH()) {
 						RALVarVA tmp = c2.allocVA(context.typeSystem.gInteger, "RALBitInvert slowpath tmp");
 						String tmpCode = tmp.getCode(c2);
 						exprR.readCompileInner(tmp, c2);
 						context.writer.writeCode(actualCmd + " " + tmpCode);
-						out.writeCompile(0, tmpCode, RALType.Major.Value, context);
+						out.writeCompile(0, tmpCode, RALType.Major.Value, c2);
 					}
 				}
 			}

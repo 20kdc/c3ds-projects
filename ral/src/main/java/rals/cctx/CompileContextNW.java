@@ -7,7 +7,6 @@
 package rals.cctx;
 
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import rals.code.Scripts;
 import rals.diag.DiagRecorder;
@@ -18,48 +17,41 @@ import rals.types.*;
  * Responsible for holding VA handles.
  * Stuff got moved here so that it's possible to avoid leaking the writer to inline-related methods.
  */
-public class CompileContextNW {
-	public final TypeSystem typeSystem;
-	public final Scripts module;
-	public final HashMap<IVAHandle, Integer> heldVAHandles = new HashMap<>();
-	public final HashMap<IEHHandle, RALExprSlice> heldExprHandles = new HashMap<>();
-	public final DiagRecorder diags;
+public abstract class CompileContextNW extends CompileContextBase {
+	public final HashMap<IEHHandle, RALExprSlice> heldExprHandles;
 
-	public final AtomicInteger labelAllocator;
+	// protected because NW variant isn't supposed to expose this
+	protected final CCTXVAScope vaScope;
+	// protected because we just plain shouldn't expose this
+	protected final CCTXBreakScope breakScope;
 
-	/**
-	 * Two break methods.
-	 * If Bool is set, then the bool is set to 1 and you go to the label.
-	 * If only Label is set, then you just go to the label.
-	 */
-	public String breakLabel, breakBool;
+	protected final boolean ownsVAScope;
 
 	protected CompileContextNW(TypeSystem ts, Scripts m, DiagRecorder d) {
-		typeSystem = ts;
-		module = m;
-		diags = d;
-		labelAllocator = new AtomicInteger();
+		super(ts, m, d);
+		vaScope = new CCTXVAScope();
+		ownsVAScope = true;
+		breakScope = new CCTXBreakScope(null, null);
+		heldExprHandles = new HashMap<>();
 	}
 
-	public CompileContextNW(CompileContextNW sc) {
-		typeSystem = sc.typeSystem;
-		module = sc.module;
-		diags = sc.diags;
-		labelAllocator = sc.labelAllocator;
-		// inherit break label
-		breakLabel = sc.breakLabel;
-		breakBool = sc.breakBool;
-		// inherit handles
-		heldVAHandles.putAll(sc.heldVAHandles);
-		heldExprHandles.putAll(sc.heldExprHandles);
+	protected CompileContextNW(CompileContextNW base, boolean newVA, boolean newEH, CCTXBreakScope brkScope) {
+		super(base);
+		// inherit/grab
+		breakScope = brkScope != null ? brkScope : base.breakScope;
+		vaScope = newVA ? new CCTXVAScope(base.vaScope) : base.vaScope;
+		heldExprHandles = newEH ? new HashMap<>(base.heldExprHandles) : base.heldExprHandles;
+		ownsVAScope = newVA;
 	}
 
-	public void clearBreak() {
-		breakLabel = null;
-		breakBool = null;
-	}
+	public abstract CompileContextNW forkEH();
 
-	public String allocLabel() {
-		return "_RAL_" + labelAllocator.getAndIncrement();
+	/**
+	 * Looks up a VA.
+	 * This is needed even if in a CompileContextNW.
+	 * This is because CompileContextNW's point is for stuff like inline statements.
+	 */
+	public Integer lookupVA(IVAHandle handle) {
+		return vaScope.heldVAHandles.get(handle);
 	}
 }

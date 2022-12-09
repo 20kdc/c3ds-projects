@@ -54,7 +54,7 @@ public class RALAssignStatement extends RALStatementUR {
 		@Override
 		protected void compileInner(CodeWriter writer, CompileContext cc) {
 			// Break scope here so we don't leak temporaries.
-			try (CompileContext c2 = new CompileContext(cc)) {
+			try (CompileContext c2 = cc.forkVAEH()) {
 				if (targetsR == null) {
 					// Assign everything to discard
 					sourceR.readCompile(new RALDiscard(c2.typeSystem, sourceR.length), c2);

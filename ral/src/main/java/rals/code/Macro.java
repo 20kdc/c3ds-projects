@@ -137,7 +137,7 @@ public class Macro implements RALCallable {
 		@Override
 		public void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
 			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
-				try (CompileContext c2 = new CompileContext(context)) {
+				try (CompileContext c2 = context.forkVAEH()) {
 					vc.writeCacheCode(c2);
 					installMacroArgs(c2);
 					innards.writeCompile(index, input, inputExactType, c2);
@@ -148,7 +148,7 @@ public class Macro implements RALCallable {
 		@Override
 		public void readCompileInner(RALExprSlice out, CompileContext context) {
 			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
-				try (CompileContext c2 = new CompileContext(context)) {
+				try (CompileContext c2 = context.forkVAEH()) {
 					vc.writeCacheCode(c2);
 					installMacroArgs(c2);
 					innards.readCompile(out, c2);
@@ -159,7 +159,7 @@ public class Macro implements RALCallable {
 		@Override
 		protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
 			try (DiagRecorder.Scope ds = context.diags.newScope(macroExt)) {
-				try (CompileContext c2 = new CompileContext(context)) {
+				try (CompileContext c2 = context.forkVAEH()) {
 					vc.writeCacheCode(c2);
 					installMacroArgs(c2);
 					innards.readInplaceCompile(out, c2);
@@ -171,18 +171,20 @@ public class Macro implements RALCallable {
 		protected String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 			if (vc.copies.length != 0)
 				return null;
-			CompileContextNW c2 = new CompileContextNW(context);
-			installMacroArgs(c2);
-			return innards.getInlineCAOS(index, write, c2);
+			try (CompileContextNW c2 = context.forkEH()) {
+				installMacroArgs(c2);
+				return innards.getInlineCAOS(index, write, c2);
+			}
 		}
 
 		@Override
 		protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 			if (vc.copies.length != 0)
 				return RALSpecialInline.None;
-			CompileContextNW c2 = new CompileContextNW(context);
-			installMacroArgs(c2);
-			return innards.getSpecialInline(index, c2);
+			try (CompileContextNW c2 = context.forkEH()) {
+				installMacroArgs(c2);
+				return innards.getSpecialInline(index, c2);
+			}
 		}
 
 		@Override
@@ -191,12 +193,12 @@ public class Macro implements RALCallable {
 			return new RALCondition(typeSystem) {
 				@Override
 				public String compileCond(CodeWriter writer, CompileContext sharedContext, boolean invert) {
-					// This isn't ideal, but it's not fatal as we're doing the compile literally NOW.
-					// So it's not strictly a problem. Maybe.
-					// oh for the love of kittens we need capability-based cc
-					vc.writeCacheCode(sharedContext);
-					installMacroArgs(sharedContext);
-					return innardsC.compileCond(writer, sharedContext, invert);
+					// We don't want to fork VAs because of the return, but we do want to fork EHs
+					try (CompileContext c2 = sharedContext.forkEH()) {
+						vc.writeCacheCode(c2);
+						installMacroArgs(c2);
+						return innardsC.compileCond(writer, c2, invert);
+					}
 				}
 
 				@Override

@@ -82,7 +82,7 @@ public class RALChainOp implements RALExprUR {
 
 			@Override
 			protected void readCompileInner(RALExprSlice out, CompileContext context) {
-				try (CompileContext cc2 = new CompileContext(context)) {
+				try (CompileContext cc2 = context.forkVAEH()) {
 					// Create a temporary and run things through that.
 					RALVarVA va = cc2.allocVA(ipr.finishedType, "RALChainOp temporary");
 					cc2.heldExprHandles.put(eh, va);
@@ -93,7 +93,7 @@ public class RALChainOp implements RALExprUR {
 
 			@Override
 			protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
-				try (CompileContext cc2 = new CompileContext(context)) {
+				try (CompileContext cc2 = context.forkVAEH()) {
 					// Who needs temporaries?
 					cc2.heldExprHandles.put(eh, out[0]);
 					ipr.compute.compile(cc2.writer, cc2);

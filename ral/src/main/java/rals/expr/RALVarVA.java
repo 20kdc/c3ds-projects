@@ -40,7 +40,7 @@ public class RALVarVA extends RALVarString {
 	 * For compatibility with the stuff that uses these directly
 	 */
 	public String getCode(CompileContextNW context) {
-		Integer i = context.heldVAHandles.get(handle);
+		Integer i = context.lookupVA(handle);
 		if (i == null)
 			throw new RuntimeException("VA handle " + handle + " escaped containment");
 		return CAOSUtils.vaToString(i);

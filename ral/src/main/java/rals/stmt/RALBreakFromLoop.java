@@ -23,11 +23,13 @@ public class RALBreakFromLoop extends RALStatementUR {
 		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext context) {
-				if (context.breakBool != null)
-					writer.writeCode("setv " + context.breakBool + " 1");
+				String breakLabel = context.getBreakLabel();
+				String breakBool = context.getBreakBool();
+				if (breakBool != null)
+					writer.writeCode("setv " + breakBool + " 1");
 
-				if (context.breakLabel != null) {
-					writer.writeCode("goto " + context.breakLabel);
+				if (breakLabel != null) {
+					writer.writeCode("goto " + breakLabel);
 				} else {
 					throw new RuntimeException("Cannot break at this place!");
 				}

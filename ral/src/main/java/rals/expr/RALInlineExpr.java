@@ -46,7 +46,7 @@ public class RALInlineExpr implements RALExprUR {
 
 		@Override
 		protected void readCompileInner(RALExprSlice out, CompileContext context) {
-			try (CompileContext c2 = new CompileContext(context)) {
+			try (CompileContext c2 = context.forkVAEH()) {
 				out.writeCompile(0, RALInlineStatement.compileResolvedParts(resolved, c2), RALType.Major.Unknown, c2);
 			}
 		}
@@ -57,7 +57,7 @@ public class RALInlineExpr implements RALExprUR {
 			// but I'm patching this midway through writing the bloody tutorial
 			if (!slot.perms.write)
 				throw new RuntimeException("Write to unwritable inline expression");
-			try (CompileContext c2 = new CompileContext(context)) {
+			try (CompileContext c2 = context.forkVAEH()) {
 				RALVarString.writeSet(c2.writer, RALInlineStatement.compileResolvedParts(resolved, c2), input, inputExactType);
 			}
 		}

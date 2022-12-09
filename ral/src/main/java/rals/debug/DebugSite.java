@@ -35,7 +35,7 @@ public class DebugSite {
 	public DebugSite(DebugSite p, SrcPosUntranslated loc, CompileContext cc) {
 		parent = p;
 		location = loc;
-		for (Map.Entry<IVAHandle, Integer> lv : cc.heldVAHandles.entrySet())
+		for (Map.Entry<IVAHandle, Integer> lv : cc.getVAHandleEntrySet())
 			vaNames[lv.getValue()] = lv.getKey().toString();
 	}
 

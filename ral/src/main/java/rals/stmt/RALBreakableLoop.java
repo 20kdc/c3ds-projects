@@ -26,11 +26,9 @@ public class RALBreakableLoop extends RALStatementUR {
 		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext context) {
-				try (CompileContext ccs = new CompileContext(context)) {
-					String labelTop = ccs.allocLabel();
-					String labelEnd = ccs.allocLabel();
-					ccs.clearBreak();
-					ccs.breakLabel = labelEnd;
+				String labelTop = context.allocLabel();
+				String labelEnd = context.allocLabel();
+				try (CompileContext ccs = context.forkVAEHBreak(labelEnd, null)) {
 					writer.writeCode("goto " + labelTop);
 					writer.writeCode("subr " + labelTop, 1);
 					rs.compile(writer, ccs);

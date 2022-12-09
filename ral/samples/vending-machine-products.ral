@@ -65,7 +65,7 @@ macro () newRandomProductAt(int id) {
 	// And here's where that whole deal with getProductLocation comes in.
 	let x, y = getProductLocation(id);
 	// And finally, we actually create the parts.
-	if product == PRODUCT_KIND_LEMON
+	if (product == PRODUCT_KIND_LEMON)
 		patDull(VMP_PRODUCTS + id, "ds lemon pod", 30, x, y, VMR_PRODUCT);
 	else
 		patDull(VMP_PRODUCTS + id, "justanut pod", 19, x, y, VMR_PRODUCT);
@@ -99,7 +99,7 @@ script VendingMachine:timer {
 	let id = rand(0, PRODUCT_COUNT - 1);
 	// We only want to add a product if there's none already there.
 	// If we add a product when one is already there, an error is likely.
-	if productType(id) == PRODUCT_KIND_NONE {
+	if (productType(id) == PRODUCT_KIND_NONE) {
 		newRandomProductAt(id);
 	}
 }
@@ -113,7 +113,7 @@ macro () dispenseProductOfKind(int kind) {
 	inst();
 	let productToDrop = -1;
 	for i = 0; i < PRODUCT_COUNT; i++; {
-		if productType(i) == kind {
+		if (productType(i) == kind) {
 			productToDrop = i;
 			// The "break;" statement lets us leave a loop early.
 			break;
@@ -151,20 +151,20 @@ script VendingMachine:buttonRandom {
 	let int productToDrop;
 	for i = 0; i < 8; i++; {
 		productToDrop = rand(0, PRODUCT_COUNT - 1);
-		if productType(productToDrop) != PRODUCT_KIND_NONE
+		if (productType(productToDrop) != PRODUCT_KIND_NONE)
 			break;
 	}
 	// if that fails then try first available
-	if productType(productToDrop) == PRODUCT_KIND_NONE {
+	if (productType(productToDrop) == PRODUCT_KIND_NONE) {
 		for i = 0; i < PRODUCT_COUNT; i++; {
-			if productType(i) != PRODUCT_KIND_NONE {
+			if (productType(i) != PRODUCT_KIND_NONE) {
 				productToDrop = i;
 				break;
 			}
 		}
 	}
 	// if that still fails give it -1 so it makes the error sound
-	if productType(productToDrop) == PRODUCT_KIND_NONE
+	if (productType(productToDrop) == PRODUCT_KIND_NONE)
 		productToDrop = -1;
 	// Since we're on a VendingMachine script, we don't need to cast ownr.
 	call dispenseProduct(productToDrop);

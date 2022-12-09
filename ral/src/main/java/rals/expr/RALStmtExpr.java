@@ -64,25 +64,25 @@ public class RALStmtExpr implements RALExprUR {
 
 		@Override
 		protected void readCompileInner(RALExprSlice out, CompileContext context) {
-			try (CompileContext cc = new CompileContext(context)) {
-				rStmt.compile(context.writer, context);
-				rExpr.readCompile(out, context);
+			try (CompileContext cc = context.forkVAEH()) {
+				rStmt.compile(cc.writer, cc);
+				rExpr.readCompile(out, cc);
 			}
 		}
 
 		@Override
 		protected void readInplaceCompileInner(RALVarVA[] out, CompileContext context) {
-			try (CompileContext cc = new CompileContext(context)) {
-				rStmt.compile(context.writer, context);
-				rExpr.readInplaceCompile(out, context);
+			try (CompileContext cc = context.forkVAEH()) {
+				rStmt.compile(cc.writer, cc);
+				rExpr.readInplaceCompile(out, cc);
 			}
 		}
 
 		@Override
 		protected void writeCompileInner(int index, String input, RALType.Major inputExactType, CompileContext context) {
-			try (CompileContext cc = new CompileContext(context)) {
-				rStmt.compile(context.writer, context);
-				rExpr.writeCompile(index, input, inputExactType, context);
+			try (CompileContext cc = context.forkVAEH()) {
+				rStmt.compile(cc.writer, cc);
+				rExpr.writeCompile(index, input, inputExactType, cc);
 			}
 		}
 

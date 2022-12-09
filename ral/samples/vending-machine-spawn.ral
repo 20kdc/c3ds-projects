@@ -31,7 +31,7 @@ If this doesn't seem to make sense, check the output CAOS code -- but in short, 
 macro () spawnProduct(int &kind) {
 	// spawn in world product
 	let myX, myY = posx(), posy();
-	if productType(kind) == PRODUCT_KIND_LEMON {
+	if (kind == PRODUCT_KIND_LEMON) {
 		dsLemonNew();
 		mvsf(myX + 16, myY + 36);
 		dsLemonFinish();

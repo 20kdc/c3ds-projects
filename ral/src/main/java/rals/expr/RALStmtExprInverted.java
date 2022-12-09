@@ -70,7 +70,7 @@ public class RALStmtExprInverted implements RALExprUR {
 		@Override
 		protected void readCompileInner(RALExprSlice out, CompileContext context) {
 			// alright, now we're here, just need to wire this up
-			try (CompileContext cci = new CompileContext(context)) {
+			try (CompileContext cci = context.forkVAEH()) {
 				// These handles wire everything up nicely
 				for (int i = 0; i < out.length; i++)
 					cci.heldExprHandles.put(handles[i], out.slice(i, 1));

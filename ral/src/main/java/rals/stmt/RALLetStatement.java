@@ -91,7 +91,7 @@ public class RALLetStatement extends RALStatementUR {
 			}
 
 			if (init != null) {
-				try (CompileContext iScope = new CompileContext(scope)) {
+				try (CompileContext iScope = scope.forkVAEH()) {
 					init.readCompile(RALExprSlice.concat(vars), iScope);
 				}
 			}

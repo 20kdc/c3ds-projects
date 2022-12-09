@@ -23,21 +23,19 @@ public abstract class RALStatement {
 		if (writer.queuedCommentForNextLine == null)
 			writer.queuedCommentForNextLine = writer.debug.createQueuedComment(this);
 		// Push diags/debug
-		DebugSite savedSite = context.currentDebugSite;
-		if (writer.debug.shouldGenerateSites()) {
-			context.currentDebugSite = new DebugSite(savedSite, extent.start.toUntranslated(), context);
-			writer.queuedSiteForNextLine = context.currentDebugSite;
+		DebugSite newSite = null;
+		if (writer.debug.shouldGenerateSites())
+			newSite = new DebugSite(context.currentDebugSite, extent.start.toUntranslated(), context);
+		try (CompileContext c2 = context.forkDebugDiagExtent(newSite, extent)) {
+			if (newSite != null)
+				writer.queuedSiteForNextLine = c2.currentDebugSite;
+			// Actually compile
+			try {
+				compileInner(writer, c2);
+			} catch (Exception ex) {
+				context.diags.error("stmt compile: ", ex);
+			}
 		}
-		context.diags.pushFrame(extent);
-		// Actually compile
-		try {
-			compileInner(writer, context);
-		} catch (Exception ex) {
-			context.diags.error("stmt compile: ", ex);
-		}
-		// Pop diags/debug
-		context.diags.popFrame(extent);
-		context.currentDebugSite = savedSite;
 	}
 
 	/**

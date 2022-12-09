@@ -4,7 +4,7 @@ include "vending-machine-products.ral";
 script VendingMachine:dispenseProduct {
 	alias productToDrop = _p1_!int;
 	lock();
-	if productToDrop == -1 {
+	if (productToDrop == -1) {
 		// we've failed, nope sound
 		sndc("beep");
 	} else {
@@ -22,7 +22,7 @@ script VendingMachine:dispenseProduct {
 		// now let it 'fall' and hit bottom
 		pY += 1;
 		let velY = 0;
-		while pY < 100 {
+		while (pY < 100) {
 			patMove(VMP_PRODUCTS + productToDrop, pX, pY);
 			wait(1);
 			inst();
@@ -31,7 +31,7 @@ script VendingMachine:dispenseProduct {
 		}
 		pY = 100;
 		// push right
-		while pX < 64 {
+		while (pX < 64) {
 			pX += 4;
 			patMove(VMP_PRODUCTS + productToDrop, pX, pY);
 			wait(1);

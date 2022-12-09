@@ -3,7 +3,7 @@ include "vending-machine-products.ral";
 // Short version of the dispenseProduct script that simply spawns the real product and removes our fake one.
 script VendingMachine:dispenseProduct {
 	alias productToDrop = _p1_!int;
-	if productToDrop == -1 {
+	if (productToDrop == -1) {
 		// we've failed, nope sound
 		sndc("beep");
 	} else {

@@ -62,15 +62,15 @@ public class RALIfStatement extends RALStatementUR {
 			return new RALStatement(extent) {
 				@Override
 				protected void compileInner(CodeWriter writer, CompileContext context) {
-					try (CompileContext outerCtx = new CompileContext(context)) {
+					try (CompileContext outerCtx = context.forkVAEH()) {
 						String inl = conditionR.compileCond(writer, outerCtx, invert);
 						writer.writeCode("doif " + inl, 1);
-						try (CompileContext bsr = new CompileContext(outerCtx)) {
+						try (CompileContext bsr = outerCtx.forkVAEH()) {
 							mainBranchR.compile(writer, bsr);
 						}
 						if (elseBranchR != null) {
 							writer.writeCode(-1, "else", 1);
-							try (CompileContext bsr = new CompileContext(outerCtx)) {
+							try (CompileContext bsr = outerCtx.forkVAEH()) {
 								elseBranchR.compile(writer, bsr);
 							}
 						}

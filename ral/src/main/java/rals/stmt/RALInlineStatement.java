@@ -44,7 +44,7 @@ public class RALInlineStatement extends RALStatementUR {
 		@Override
 		protected void compileInner(CodeWriter writer, CompileContext scope) {
 			// scope for all the temporary VAs we may make
-			try (CompileContext scope2 = new CompileContext(scope)) {
+			try (CompileContext scope2 = scope.forkVAEH()) {
 				scope.writer.writeCode(compileResolvedParts(parts2, scope2, false));
 			}
 		}
