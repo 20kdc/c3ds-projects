@@ -302,15 +302,8 @@ public class ParserExpr {
 			// so perform the operation on the initial value, then return what we got in the first place
 			return new RALStmtExpr(mod, inner);
 		} else {
-			String idStr = ts.newParserVariableName();
-			RALAmbiguousID id = new RALAmbiguousID(extent, ts, idStr);
-			// return value is before the adjustment
-			// so store a temporary before the operation
-			RALBlock blk = new RALBlock(extent.start, false);
-			DefInfo di = new DefInfo.At(extent.start, "Internal inc/dec variable. How'd you notice this?");
-			blk.content.add(new RALLetStatement(di, new String[] {idStr}, new int[] {-1}, new RALType[] {null}, inner));
-			blk.content.add(mod);
-			return new RALStmtExpr(blk, id);
+			// Same deal, but in reverse
+			return new RALReturnBeforeModify(inner, mod);
 		}
 	}
 	private static RALExprUR parseExprSuffix(RALExprUR base, InsideFileContext ifc) {
