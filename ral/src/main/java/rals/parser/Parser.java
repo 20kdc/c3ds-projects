@@ -311,9 +311,9 @@ public class Parser {
 		while (true) {
 			RALType typ = ParserType.parseType(ifc);
 			RALSlot.Perm isInline = null;
-			if (lx.optNextKw("&")) {
+			if (lx.optNextKw("@")) {
 				isInline = RALSlot.Perm.R;
-			} else if (lx.optNextKw("&=")) {
+			} else if (lx.optNextKw("@=")) {
 				isInline = RALSlot.Perm.RW;
 			}
 			String name = lx.requireNextID();

@@ -43,7 +43,10 @@ public class ParserCode {
 	private static RALStatementUR parseStatementInnards(InsideFileContext ifc, Token tkn) {
 		TypeSystem ts = ifc.typeSystem;
 		Lexer lx = ifc.lexer;
-		if (tkn.isKeyword("{")) {
+		if (tkn.isKeyword(";")) {
+			// Return an empty block as a null statement
+			return new RALBlock(tkn.lineNumber, false);
+		} else if (tkn.isKeyword("{")) {
 			RALBlock rb = new RALBlock(tkn.lineNumber, true);
 			while (true) {
 				stmtCompletionIntents(ifc);
@@ -54,7 +57,7 @@ public class ParserCode {
 				rb.content.add(parseStatement(ifc));
 			}
 			return rb;
-		} else if (tkn.isKeyword("&")) {
+		} else if (tkn.isKeyword("@")) {
 			Object[] obj = parseStringEmbed(ifc, false);
 			// This *doesn't* require the semicolon as parseStringEmbed handles it.
 			RALInlineStatement ris = new RALInlineStatement(lx.genDefInfo(tkn), obj);
@@ -77,14 +80,14 @@ public class ParserCode {
 				throw new RuntimeException("Did not understand alias form at: " + tkn);
 			}
 		} else if (tkn.isKeyword("if")) {
-			RALExprUR cond = eatIfWhileCond(ifc);
+			RALExprUR cond = ParserExpr.parseExpr(ifc, true);
 			RALStatementUR body = ParserCode.parseStatement(ifc);
 			RALStatementUR elseBranch = null;
 			if (lx.optNextKw("else"))
 				elseBranch = ParserCode.parseStatement(ifc);
 			return new RALIfStatement(tkn.lineNumber, cond, body, elseBranch, false);
 		} else if (tkn.isKeyword("while")) {
-			RALExprUR cond = eatIfWhileCond(ifc);
+			RALExprUR cond = ParserExpr.parseExpr(ifc, true);
 			RALStatementUR body = ParserCode.parseStatement(ifc);
 			RALBlock outerBlock = new RALBlock(tkn.lineNumber, true);
 			outerBlock.content.add(new RALIfStatement(tkn.lineNumber, cond, new RALGoto(tkn.extent, ILabelHandle.BREAK), null, true));
@@ -98,6 +101,7 @@ public class ParserCode {
 			RALExprUR cond = ParserExpr.parseExpr(ifc, true);
 			lx.requireNextKw(";");
 			RALStatementUR adjust = parseStatement(ifc);
+			// TODO: Figure out how to knock off the semicolon here.
 			RALStatementUR body = parseStatement(ifc);
 			RALBlock outerBlock = new RALBlock(tkn.lineNumber, true);
 			RALBlock innerBlock = new RALBlock(tkn.lineNumber, false);
@@ -208,16 +212,6 @@ public class ParserCode {
 				return new RALBlock(tkn.lineNumber, false);
 			}
 		}
-	}
-
-	/**
-	 * Dropping support for "magic floating if" because it lets an expr neighbour a statement (BAD)
-	 */
-	private static RALExprUR eatIfWhileCond(InsideFileContext ifc) {
-		ifc.lexer.requireNextKw("(");
-		RALExprUR ex = ParserExpr.parseExpr(ifc, true);
-		ifc.lexer.requireNextKw(")");
-		return ex;
 	}
 
 	private static RALExprUR parseRelativeMessageID(RALExprUR target, InsideFileContext ifc) {
