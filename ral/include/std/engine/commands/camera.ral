@@ -11,46 +11,46 @@
 
 include "std/engine/commands_inc.ral";
 
-macro () bkgd(int &id, str &img, int &t) &'bkgd {id, img, t}';
-macro bkgd(int &id) &'bkgd {id}'!str;
+macro () bkgd(int @id, str @img, int @t) @'bkgd {id, img, t}';
+macro bkgd(int @id) @'bkgd {id}'!str;
 
-macro () brmi(int &mb, int &rb) &'brmi {mb, rb}';
+macro () brmi(int @mb, int @rb) @'brmi {mb, rb}';
 
-macro () cmra(int &x, int &y, int &p) &'cmra {x, y, p}';
-macro () cmrp(int &x, int &y, int &p) &'cmrp {x, y, p}';
-macro () cmrt(int &p) &'cmrt {p}';
+macro () cmra(int @x, int @y, int @p) @'cmra {x, y, p}';
+macro () cmrp(int @x, int @y, int @p) @'cmrp {x, y, p}';
+macro () cmrt(int @p) @'cmrt {p}';
 
-macro cmrx() &'cmrx'!int;
-macro cmry() &'cmry'!int;
+macro cmrx() @'cmrx'!int;
+macro cmry() @'cmry'!int;
 
-macro () frsh() &'frsh';
+macro () frsh() @'frsh';
 
-macro () line(int &x1, int &y1, int &x2, int &y2, int &r, int &g, int &b, int &so, int &sf) &'line {x1, y1, x2, y2, r, g, b, so, sf}';
+macro () line(int @x1, int @y1, int @x2, int @y2, int @r, int @g, int @b, int @so, int @sf) @'line {x1, y1, x2, y2, r, g, b, so, sf}';
 
-macro loft(str &fn) &'loft {fn}'!bool;
+macro loft(str @fn) @'loft {fn}'!bool;
 
-macro () meta(int &id, int &x, int &y, int &t) &'meta {id, x, y, t}';
-macro meta() &'meta'!int;
+macro () meta(int @id, int @x, int @y, int @t) @'meta {id, x, y, t}';
+macro meta() @'meta'!int;
 
-macro () scam(Agent? &agent, int &part) &'scam {agent, part}';
+macro () scam(Agent? @agent, int @part) @'scam {agent, part}';
 
-macro () snap(str &fn, int &x, int &y, int &w, int &h, int &z) &'snap {fn, x, y, w, h, z}';
+macro () snap(str @fn, int @x, int @y, int @w, int @h, int @z) @'snap {fn, x, y, w, h, z}';
 
-macro snax(str &fn) &'snax {fn}'!bool;
+macro snax(str @fn) @'snax {fn}'!bool;
 
-macro () trck(Agent? &agent, int &xp, int &yp, int &s, int &t) &'scam {agent, xp, yp, s, t}';
-macro trck() &'trck'!Agent?;
+macro () trck(Agent? @agent, int @xp, int @yp, int @s, int @t) @'scam {agent, xp, yp, s, t}';
+macro trck() @'trck'!Agent?;
 
 // forms indistingulishable
-macro () wdowToggle() &'wdow';
-macro wdowGet() &'wdow'!bool;
+macro () wdowToggle() @'wdow';
+macro wdowGet() @'wdow'!bool;
 
-macro wndb() &'wndb'!int;
-macro wndh() &'wndh'!int;
-macro wndl() &'wndl'!int;
-macro wndr() &'wndr'!int;
-macro wndt() &'wndt'!int;
-macro wndw() &'wndw'!int;
+macro wndb() @'wndb'!int;
+macro wndh() @'wndh'!int;
+macro wndl() @'wndl'!int;
+macro wndr() @'wndr'!int;
+macro wndt() @'wndt'!int;
+macro wndw() @'wndw'!int;
 
-macro () zoom(int &p, int &xp, int &yp) &'zoom {p, xp, yp}';
+macro () zoom(int @p, int @xp, int @yp) @'zoom {p, xp, yp}';
 

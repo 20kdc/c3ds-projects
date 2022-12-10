@@ -11,38 +11,38 @@
 
 include "std/engine/commands_inc.ral";
 
-macro () fade() &'fade';
+macro () fade() @'fade';
 
-macro () mclr(int &x, int &y) &'mclr {x, y}';
+macro () mclr(int @x, int @y) @'mclr {x, y}';
 
-macro () midi(str &m) &'midi {m}';
+macro () midi(str @m) @'midi {m}';
 
-macro () mmsc(int &x, int &y, str &t) &'mmsc {x, y, t}';
-macro mmsc(int &x, int &y) &'mmsc {x, y}'!str;
+macro () mmsc(int @x, int @y, str @t) @'mmsc {x, y, t}';
+macro mmsc(int @x, int @y) @'mmsc {x, y}'!str;
 
-macro mute(int &a, int &e) &'mute {a, e}'!int;
+macro mute(int @a, int @e) @'mute {a, e}'!int;
 
-macro () rclr(int &x, int &y) &'rclr {x, y}';
+macro () rclr(int @x, int @y) @'rclr {x, y}';
 
-macro () rmsc(int &x, int &y, str &tn) &'rclr {x, y, tn}';
-macro rmsc(int &x, int &y) &'rmsc {x, y}'!str;
+macro () rmsc(int @x, int @y, str @tn) @'rclr {x, y, tn}';
+macro rmsc(int @x, int @y) @'rmsc {x, y}'!str;
 
-macro () sezz(str &s) &'sezz {s}';
+macro () sezz(str @s) @'sezz {s}';
 
-macro () sndc(str &s) &'sndc {s}';
-macro () snde(str &s) &'snde {s}';
-macro () sndl(str &s) &'sndl {s}';
-macro () sndq(str &s, int &d) &'sndq {s, d}';
+macro () sndc(str @s) @'sndc {s}';
+macro () snde(str @s) @'snde {s}';
+macro () sndl(str @s) @'sndl {s}';
+macro () sndq(str @s, int @d) @'sndq {s, d}';
 
-macro () stpc() &'stpc';
+macro () stpc() @'stpc';
 
-macro () strk(int &l, str &s) &'strk {l, s}';
+macro () strk(int @l, str @s) @'strk {l, s}';
 
-macro () voic(int &f, int &g, int &a) &'voic {f, g, a}';
+macro () voic(int @f, int @g, int @a) @'voic {f, g, a}';
 
-macro () vois(str &vn) &'vois {vn}';
-macro vois() &'vois'!str;
+macro () vois(str @vn) @'vois {vn}';
+macro vois() @'vois'!str;
 
-macro () volm(int &c, int &v) &'volm {c, v}';
-macro volm(int &c) &'volm {c}'!int;
+macro () volm(int @c, int @v) @'volm {c, v}';
+macro volm(int @c) @'volm {c}'!int;
 

@@ -16,64 +16,64 @@ This creates a "virtual file" which is opened for input, listing the contents of
 This starts with `dir`, one of the `FILE_DIR_` constants, and appends `fn` as a "file spec" such as `*.txt`.
 _This does not support `FILE_DIR_OTHER`._
 */
-macro () fileGlob(int &dir, str &fn) &'file glob {dir, fn}';
+macro () fileGlob(int @dir, str @fn) @'file glob {dir, fn}';
 
 // Closes the current input stream.
-macro () fileIclo() &'file iclo';
+macro () fileIclo() @'file iclo';
 
 /*
 Opens a file for input. You should generally do this in an `inst` block, as the file is "effectively closed" when the world is saved and reloaded.
 `dir` is one of the `FILE_DIR_` constants, `fn` is the filename.
 See `innf`, `inni`, `innl`, and `fileIclo`.
 */
-macro () fileIope(int &dir, str &fn) &'file iope {dir, fn}';
+macro () fileIope(int @dir, str @fn) @'file iope {dir, fn}';
 
 /*
 Deletes a file `fn` from the directory stated by `dir`, one of the `FILE_DIR_` constants.
 _This does not support `FILE_DIR_OTHER`._
 */
-macro () fileJdel(int &dir, str &fn) &'file jdel {dir, fn}';
+macro () fileJdel(int @dir, str @fn) @'file jdel {dir, fn}';
 
 // Closes the current output stream.
-macro () fileOclo() &'file oclo';
+macro () fileOclo() @'file oclo';
 
 // Flushes the current output stream. Only really makes sense for files.
-macro () fileOflu() &'file oflu';
+macro () fileOflu() @'file oflu';
 
 /*
 Opens a file for output. You should generally do this in an `inst` block, as the file is "effectively closed" when the world is saved and reloaded.
 `dir` is one of the `FILE_DIR_` constants, `fn` is the filename and `append` indicates if the file should be cleared (false) or appended to (true).
 */
-macro () fileOope(int &dir, str &fn, bool &append) &'file oope {dir, fn, append}';
+macro () fileOope(int @dir, str @fn, bool @append) @'file oope {dir, fn, append}';
 
 // Creates an altered filename to remove unsafe characters that might allow for tricks and nonsense.
-macro fvwm(str &fn) &'fvwm {fn}'!str;
+macro fvwm(str @fn) @'fvwm {fn}'!str;
 
 // Reads a float from the input file, or returns 0.0 on failure.
-macro innf() &'innf'!float;
+macro innf() @'innf'!float;
 
 // Reads an integer from the input file, or returns 0 on failure.
-macro inni() &'inni'!int;
+macro inni() @'inni'!int;
 
 // Reads a line from the input file, or returns an empty string on failure.
-macro innl() &'innl'!str;
+macro innl() @'innl'!str;
 
 /*
 Returns true if the input file is 'OK', and false otherwise. "OK" here means "able to accept further reads". EOF, read errors, and so forth count as "unable".
 There must be a file selected for input, however, or an error occurs.
 */
-macro inok() &'inok'!bool;
+macro inok() @'inok'!bool;
 
 // Outputs a number to the current output stream.
-macro () outv(num &value) &'outv {value}';
+macro () outv(num @value) @'outv {value}';
 // Outputs a string to the current output stream.
-macro () outs(str &value) &'outs {value}';
+macro () outs(str @value) @'outs {value}';
 // Outputs a string escaped in the specific way the PRAY compiler expects to the current output stream.
-macro () outx(str &value) &'outx {value}';
+macro () outx(str @value) @'outx {value}';
 
 /*
 Tries to go to a website given _most_ of a URL.
 The `http://` component is automatically added as a security measure (due to the nature of how the command was implemented).
 */
-macro () webb(str &value) &'webb {value}';
+macro () webb(str @value) @'webb {value}';
 

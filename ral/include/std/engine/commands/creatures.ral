@@ -16,50 +16,50 @@ Ages up the `targ` creature by the given amount of stages.
 Note that a creature will spend some time going through intermediate life stages before reaching the target.
 Also note that it is not possible to un-age a creature.
 */
-macro () ages(int &a) &'ages {a}';
+macro () ages(int @a) @'ages {a}';
 
 /*
 `targ` creature approaches `iitt`, or a CA smell for `attn`.
 This is asynchronous, and runs until the creature either arrives or the CA pathfinder gives up.
 WARNING: This command _causes the wasteland glitch_ on skeletal creatures that do not have a smell!
 */
-macro () appr() &'appr';
+macro () appr() @'appr';
 
 /*
 `targ` creature tries to avoid `iitt`, or a CA smell for `attn`.
 This is asynchronous, and runs until the creature either arrives or the CA pathfinder gives up.
 WARNING: This command _causes the wasteland glitch_ on skeletal creatures that do not have a smell!
 */
-macro () flee() &'flee';
+macro () flee() @'flee';
 
 /*
 Sets `targ` creature as asleep if true, awake if false.
 */
-macro () aslp(bool &a) &'aslp {a}';
+macro () aslp(bool @a) @'aslp {a}';
 
 /*
 Gets if `targ` creature is asleep.
 */
-macro aslp() &'aslp'!bool;
+macro aslp() @'aslp'!bool;
 
 /*
 Returns the attention category ID for the `targ` creature.
 This should match `iitt` (if one exists).
 */
-macro attn() &'attn'!int;
+macro attn() @'attn'!int;
 
 /*
 Sets a given body overlay set `s` on every part of the `targ` creature, with layer `l`.
 See `wear` for more information about this.
 `nude` resets.
 */
-macro () body(int &s, int &l) &'body {s, l}';
+macro () body(int @s, int @l) @'body {s, l}';
 
 /*
 Returns the body overlay set on the highest layer of the given body part.
 See `BODY_` constants for part numbers.
 */
-macro body(int &p) &'body {p}'!int;
+macro body(int @p) @'body {p}'!int;
 
 /*
 This is a secondary mechanism for loading large sets of CAOS files from the bootstrap directories.
@@ -76,100 +76,100 @@ These flags are checked in order from 1 upwards (just keep doubling it).
 
 This command is in the Creatures category for some unknown reason.
 */
-macro () boot(int &sbn, int &flags, bool &reset) &'body {sbn, flags, reset}';
+macro () boot(int @sbn, int @flags, bool @reset) @'body {sbn, flags, reset}';
 
 /*
 Officially considers the `targ` creature as having been born.
 This will throw an error if it has already been born.
 */
-macro () born() &'born';
+macro () born() @'born';
 
 /*
 Returns the variant of the `targ` creature.
 Variants are between 1 and 8 inclusive, and genes can be locked to specific variants.
 */
-macro bvar() &'bvar'!int;
+macro bvar() @'bvar'!int;
 
 /*
 Returns true if the `targ` creature is in reach of `iitt`.
 */
-macro byit() &'byit'!bool;
+macro byit() @'byit'!bool;
 
 /*
 Returns the life stage of the `targ` creature, see `CAGE_` constants.
 */
-macro cage() &'cage'!int;
+macro cage() @'cage'!int;
 
 /*
 Changes the `targ` creature's method `m` for picking which agent of category `cat` to pay attention to.
 Check `CALG_` constants for methods.
 */
-macro () calg(int &cat, int &m) &'calg {cat, m}';
+macro () calg(int @cat, int @m) @'calg {cat, m}';
 
 /*
 Returns the `targ` creature's method for picking which agent of category `cat` to pay attention to.
 Check `CALG_` constants for results.
 */
-macro calg(int &cat) &'calg {cat}'!int;
+macro calg(int @cat) @'calg {cat}'!int;
 
 /*
 Adjusts the `targ` creature's chemical `c` by `a`.
 Note that chemical levels are bounded between `0.0` and `1.0`.
 */
-macro () chem(int &c, num &a) &'chem {c, a}';
+macro () chem(int @c, num @a) @'chem {c, a}';
 
 /*
 Returns the amount of the `targ` creature's chemical `c`.
 Note that chemical levels are bounded between `0.0` and `1.0`.
 */
-macro chem(int &c) &'calg {c}'!float;
+macro chem(int @c) @'calg {c}'!float;
 
 /*
 Returns true if the agent `c` is a valid creature.
 This includes checking that it is not null.
 */
-macro crea(Agent? &c) &'calg {c}'!bool;
+macro crea(Agent? @c) @'calg {c}'!bool;
 
 // no way to distingulish forms
 
 /*
 Kills the `targ` creature.
 */
-macro () deadC() &'dead';
+macro () deadC() @'dead';
 
 /*
 Returns true if the `targ` creature is dead.
 */
-macro deadI() &'dead'!bool;
+macro deadI() @'dead'!bool;
 
 /*
 Returns the planned verb ID for the `targ` creature.
 */
-macro decn() &'decn'!int;
+macro decn() @'decn'!int;
 
 // Returns the X position of the down foot of the `targ` creature.
-macro dftx() &'dftx'!float;
+macro dftx() @'dftx'!float;
 
 // Returns the Y position of the down foot of the `targ` creature.
-macro dfty() &'dfty'!float;
+macro dfty() @'dfty'!float;
 
 /*
 Makes the `targ` creature face a specific direction.
 See `DIRN_` constants.
 */
-macro () dirn(int &i) &'dirn {i}';
+macro () dirn(int @i) @'dirn {i}';
 
 /*
 Gets the `targ` creature's facing direction.
 See `DIRN_` constants.
 */
-macro dirn() &'dirn'!int;
+macro dirn() @'dirn'!int;
 
 /*
 Stops involuntary actions on `targ` creature.
 Note that this is meant to be run from within the involuntary action script, hence its name.
 */
-macro () done() &'done';
+macro () done() @'done';
 
 /*
 If `d` is true, makes the `targ` creature go to sleep and "dream".
@@ -177,14 +177,14 @@ If `d` is true, makes the `targ` creature go to sleep and "dream".
 See `adin` for an explanation of what those are.
 If `d` is false, stops the dreaming (but may not wake the creature up).
 */
-macro () drea(bool &d) &'drea {d}';
+macro () drea(bool @d) @'drea {d}';
 
 /*
 Returns true if the `targ` creature is "dreaming".
 "Dreaming" is a fancy term for processing instincts.
 See `adin` for an explanation of what those are.
 */
-macro drea() &'drea'!bool;
+macro drea() @'drea'!bool;
 
 /*
 Adjusts drive chemical `d` (as a drive ID) in the `targ` creature by the amount `a`.
@@ -193,27 +193,27 @@ And what makes this distinct from `stim` is that the adjustment isn't controlled
 As such, this has a severe chance to fry Norn brains.
 Note that `ownr` is considered as the source, which can matter for learning (especially in synchronous learning mode).
 */
-macro () driv(int &d, num &a) &'driv {d, a}';
+macro () driv(int @d, num @a) @'driv {d, a}';
 
 // Gets the level of the drive chemical `d` (as a drive ID) in the `targ` creature.
-macro driv(int &d) &'driv {d}'!float;
+macro driv(int @d) @'driv {d}'!float;
 
 // exclamation mark? really?
 
 // Gets the ID of the `targ` creature's most needy drive.
-macro drvX() &'drv!'!int;
+macro drvX() @'drv!'!int;
 
 /*
 Gets the facial expression index of the `targ` creature.
 See `EXPR_` constants.
 */
-macro expr() &'expr'!int;
+macro expr() @'expr'!int;
 
 /*
 Sets the facial expression index of the `targ` creature.
 See `EXPR_` constants.
 */
-macro () face(int &e) &'face {e}';
+macro () face(int @e) @'face {e}';
 
 /*
 Returns the pose ID for the `targ` creature's face.
@@ -221,7 +221,7 @@ This is meant to be used with `faceStr`.
 _As this value has return-type-dependent behaviour, RAL will always generate an intermediate variable._
 */
 macro faceInt() {
-	let x = &'face'!int;
+	let x = @'face'!int;
 	return x;
 }
 
@@ -231,7 +231,7 @@ This is meant to be used with `faceInt`.
 _As this value has return-type-dependent behaviour, RAL will always generate an intermediate variable._
 */
 macro faceStr() {
-	let x = &'face'!str;
+	let x = @'face'!str;
 	return x;
 }
 
@@ -243,7 +243,7 @@ This command changes which creature is selected.
 It doesn't add creatures to the allocation, though.
 If the creature is not present in the memory cells, then nothing is selected.
 */
-macro () forf(Agent? &c) &'forf {c}';
+macro () forf(Agent? @c) @'forf {c}';
 
 /*
 Adjusts the `targ` creature's hair's tidiness by `c`.
@@ -252,7 +252,7 @@ There are three stages of tidiness: messy, somewhere in the middle, and tidy.
 Therefore, `-2` will always make the hair as messy as possible.
 And `2` will always make the hair as tidy as possible.
 */
-macro () hair(int &c) &'hair {c}';
+macro () hair(int @c) @'hair {c}';
 
 /*
 Returns the creature holding hands with the pointer, if any.
@@ -261,7 +261,7 @@ There are three stages of tidiness: messy, somewhere in the middle, and tidy.
 Therefore, `-2` will always make the hair as messy as possible.
 And `2` will always make the hair as tidy as possible.
 */
-macro hhld() &'hhld'!Agent?;
+macro hhld() @'hhld'!Agent?;
 
 /*
 Theoretically, this is supposed to injure a creature's organs.
@@ -271,7 +271,7 @@ Special organ values are 0 for the body organ, and -1 for random.
 Realistically, organ injury is effectively the appendix of the game's code.
 It probably served a function, some time ago...
 */
-macro () injr(int &o, num &v) &'injr {o, v}';
+macro () injr(int @o, num @v) @'injr {o, v}';
 
 // what are all these things in the names
 
@@ -279,7 +279,7 @@ macro () injr(int &o, num &v) &'injr {o, v}';
 Returns the amount of instincts the `targ` creature hasn't processed yet.
 (A good solution to having unprocessed instincts is to make the creature dream.)
 */
-macro insH() &'ins#'!int;
+macro insH() @'ins#'!int;
 
 /*
 Makes the `targ` creature express their disposition towards agent `c`.
@@ -287,7 +287,7 @@ Makes the `targ` creature express their disposition towards agent `c`.
 This is as measured by the `forf` lobe, as usual.
 There are a few odd rules to this, also -- Grendels will never state a good opinion of any creature that is not another Grendel.
 */
-macro () like(Agent? &v) &'like {v}';
+macro () like(Agent? @v) @'like {v}';
 
 /*
 Looks up the sprite of a given creature part.
@@ -298,26 +298,26 @@ This is done with the same rules as are used for creatures themselves.
 `a` is the life stage (`CAGE_` consts)
 `v` is the variant (1 through 8 inclusive).
 */
-macro limb(int &part, int &g, int &s, int &a, int &v) &'limb {part, g, s, a, v}'!str;
+macro limb(int @part, int @g, int @s, int @a, int @v) @'limb {part, g, s, a, v}'!str;
 
 /*
 Writes a locus in the `targ` creature.
 A locus is a persistent floating-point value, usually used for communications between the faculties and genetics.
 */
-macro () loci(int &t, int &o, int &ti, int &i, num &v) &'loci {t, o, ti, i, v}';
+macro () loci(int @t, int @o, int @ti, int @i, num @v) @'loci {t, o, ti, i, v}';
 
 /*
 Reads a locus in the `targ` creature.
 A locus is a persistent floating-point value, usually used for communications between the faculties and genetics.
 */
-macro loci(int &t, int &o, int &ti, int &i) &'loci {t, o, ti, i}'!float;
+macro loci(int @t, int @o, int @ti, int @i) @'loci {t, o, ti, i}'!float;
 
 /*
 On the `targ` agent, delays an involuntary action ID `a` for some time.
 This is an absolute limit, as opposed to genetic limits which can theoretically break with sufficient mutation/other tampering.
 This limit is specified as a random number between `mi` and `ma`, inclusive, which themselves are integers between 0 and 255, inclusive.
 */
-macro () ltcy(int &a, int &mi, int &ma) &'ltcy {a, mi, ma}';
+macro () ltcy(int @a, int @mi, int @ma) @'ltcy {a, mi, ma}';
 
 /*
 Ok, so, this is a really specifically unintuitive command to describe.
@@ -334,22 +334,22 @@ If that passes, the results are hopefully obvious.
 This command is a bit hard to make do anything unintended, but there is a lack of any classifier check on the `targ` agent.
 So, do your own maths as to how to use that.
 */
-macro () mate() &'mate';
+macro () mate() @'mate';
 
 // Alias for `soul(SOUL_MIND, d)`
-macro () mind(bool &d) &'mind {d}';
+macro () mind(bool @d) @'mind {d}';
 
 // Alias for `soul(SOUL_MIND)`
-macro mind() &'mind'!bool;
+macro mind() @'mind'!bool;
 
 // Alias for `soul(SOUL_MOTR, d)`
-macro () motr(bool &d) &'motr {d}';
+macro () motr(bool @d) @'motr {d}';
 
 // Alias for `soul(SOUL_MOTR)`
-macro motr() &'motr'!bool;
+macro motr() @'motr'!bool;
 
 // Moves the `targ` creature such that it's down foot is at the given position.
-macro () mvft(int &x, int &y) &'mvft {x, y}';
+macro () mvft(int @x, int @y) @'mvft {x, y}';
 
 /*
 Creates a new "Creature Agent".
@@ -357,7 +357,7 @@ There are all sorts of interesting caveats to these, but in theory it's a creatu
 In practice, because it has no built-in locomotion, it expects scripts to help it navigate. (See the cragNavTarget scripts.)
 See `newSimp` and `newCrea` for how this fits together.
 */
-macro () newCrag(int &family, Agent &geneSrc, int &geneSrcSlot, int &s, int &v, str &gallery, int &count, int &first, int &plane) &'new: crag {family, geneSrc, geneSrcSlot, s, v, gallery, count, first, plane}';
+macro () newCrag(int @family, Agent @geneSrc, int @geneSrcSlot, int @s, int @v, str @gallery, int @count, int @first, int @plane) @'new: crag {family, geneSrc, geneSrcSlot, s, v, gallery, count, first, plane}';
 
 /*
 Creates a new creature.
@@ -366,32 +366,32 @@ The variant is `v` (or random if it's 0).
 `geneSrc` and `geneSrcSlot` are the source for the genetics. The genetics are _moved_ from this source to the creature, not copied.
 The new creature ends up in `targ`.
 */
-macro () newCrea(int &family, Agent &geneSrc, int &geneSrcSlot, int &s, int &v) &'new: crea {family, geneSrc, geneSrcSlot, s, v}';
+macro () newCrea(int @family, Agent @geneSrc, int @geneSrcSlot, int @s, int @v) @'new: crea {family, geneSrc, geneSrcSlot, s, v}';
 
 /*
 Creates a new creature, but asynchronously.
 See `newCrea` for everything.
 */
-macro () newc(int &family, Agent &geneSrc, int &geneSrcSlot, int &s, int &v) &'newc {family, geneSrc, geneSrcSlot, s, v}';
+macro () newc(int @family, Agent @geneSrc, int @geneSrcSlot, int @s, int @v) @'newc {family, geneSrc, geneSrcSlot, s, v}';
 
 /*
 Sets the creature selected by the player.
 This triggers the Agent:selectionChanged script on everything.
 */
-macro () norn(Agent? &c) &'norn {c}';
+macro () norn(Agent? @c) @'norn {c}';
 
 // Returns the creature selected by the player, if any.
-macro norn() &'norn'!Agent?;
+macro norn() @'norn'!Agent?;
 
 // Removes all overlays from the `targ` creature (see `body`, `wear`).
-macro () nude() &'nude';
+macro () nude() @'nude';
 
 // See `ordrWrit`. However, it is applied to all creatures that hear `ownr`.
-macro () ordrShou(str &txt) &'ordr shou {txt}';
+macro () ordrShou(str @txt) @'ordr shou {txt}';
 // See `ordrShou`, but based on sight rather than hearing.
-macro () ordrSign(str &txt) &'ordr sign {txt}';
+macro () ordrSign(str @txt) @'ordr sign {txt}';
 // See `ordrShou`, but based on touch rather than hearing.
-macro () ordrTact(str &txt) &'ordr tact {txt}';
+macro () ordrTact(str @txt) @'ordr tact {txt}';
 /*
 Forces the creature `c` to hear the sentence `txt`.
 Rather useful in conjunction with the word learning syntax:
@@ -400,24 +400,24 @@ Rather useful in conjunction with the word learning syntax:
 
 For example, `perfect noun 3 seed`.
 */
-macro () ordrWrit(Agent &c, str &txt) &'ordr writ {c, txt}';
+macro () ordrWrit(Agent @c, str @txt) @'ordr writ {c, txt}';
 
 /*
 Returns an organ property of the `targ` creature (see `ORGF_` constants).
 There are `orgn` organs, starting at 0.
 Importantly, this is not a constant amount, it's variable due to genetics.
 */
-macro orgf(int &o, int &f) &'orgf {o, f}'!float;
+macro orgf(int @o, int @f) @'orgf {o, f}'!float;
 
 /*
 Returns an organ property of the `targ` creature (see `ORGI_` constants).
 There are `orgn` organs, starting at 0.
 Importantly, this is not a constant amount, it's variable due to genetics.
 */
-macro orgi(int &o, int &f) &'orgi {o, f}'!int;
+macro orgi(int @o, int @f) @'orgi {o, f}'!int;
 
 // Returns the `targ` creature's number of organs, including the body organ (0).
-macro orgn() &'orgn'!int;
+macro orgn() @'orgn'!int;
 
 /*
 So for whatever reason, this command dumps all the dendrites in a tract.
@@ -426,116 +426,116 @@ Just the dendrites.
 This seems to have something to do with the old Palm PDAs.
 Still makes no sense though.
 */
-macro () plmd(int &ti, str &f) &'plmd {ti, f}';
+macro () plmd(int @ti, str @f) @'plmd {ti, f}';
 
 /*
 So for whatever reason, this takes a dump created by `plmd` and loads it.
 */
-macro () plmu(int &ti, str &f) &'plmu {ti, f}';
+macro () plmu(int @ti, str @f) @'plmu {ti, f}';
 
 // Makes the `targ` creature express their need.
-macro () sayn() &'sayn';
+macro () sayn() @'sayn';
 
 // Gets the agent `targ` creature considers "it" for category {c}.
-macro seen(int &c) &'seen {c}'!Agent?;
+macro seen(int @c) @'seen {c}'!Agent?;
 
 // Sets if a faculty of the `targ` creature (see `SOUL_` constants) is being processed.
-macro () soul(int &i, bool &p) &'soul {i, p}';
+macro () soul(int @i, bool @p) @'soul {i, p}';
 
 // Returns if a faculty of the `targ` creature (see `SOUL_` constants) is being processed.
-macro soul(int &i) &'soul {i}'!bool;
+macro soul(int @i) @'soul {i}'!bool;
 
 /*
 Writes `v` into `targ` creature's brain's lobe `l` (the 4-character name) neuron `i`'s input.
 Typically used by sensory expansion lobes.
 */
-macro () spnl(str &l, int &i, num &v) &'spnl {l, i, v}';
+macro () spnl(str @l, int @i, num @v) @'spnl {l, i, v}';
 
 // Runs a tick of a faculty (see `SOUL_` constants) of the `targ` creature.
-macro () step(int &i) &'step {i}';
+macro () step(int @i) @'step {i}';
 
 // See `stimWrit`. However, the stimulus is applied to all creatures that hear `ownr`.
-macro () stimShou(int &stim, num &weight) &'stim shou {stim, weight}';
+macro () stimShou(int @stim, num @weight) @'stim shou {stim, weight}';
 // See `stimShou`, but based on sight rather than hearing.
-macro () stimSign(int &stim, num &weight) &'stim sign {stim, weight}';
+macro () stimSign(int @stim, num @weight) @'stim sign {stim, weight}';
 // See `stimShou`, but based on touch rather than hearing.
-macro () stimTact(int &stim, num &weight) &'stim tact {stim, weight}';
+macro () stimTact(int @stim, num @weight) @'stim tact {stim, weight}';
 /*
 Executes stimulus `stim` (see `STIM_` constants) of weight `weight` on creature `c`.
 Note that `ownr` is considered as the source, which can matter for learning (especially in synchronous learning mode).
 A weight of 0 has the chemical effects of a weight of 1, but with learning disabled.
 */
-macro () stimWrit(Agent &c, int &stim, num &weight) &'stim writ {c, stim, weight}';
+macro () stimWrit(Agent @c, int @stim, num @weight) @'stim writ {c, stim, weight}';
 
 // See `swayWrit`. However, the stimulus is applied to all creatures that hear `ownr`.
-macro () swayShou(int &d1, num &v1, int &d2, num &v2, int &d3, num &v3, int &d4, num &v4) &'sway shou {d1, v1, d2, v2, d3, v3, d4, v4}';
+macro () swayShou(int @d1, num @v1, int @d2, num @v2, int @d3, num @v3, int @d4, num @v4) @'sway shou {d1, v1, d2, v2, d3, v3, d4, v4}';
 // See `swayShou`, but based on sight rather than hearing.
-macro () swaySign(int &d1, num &v1, int &d2, num &v2, int &d3, num &v3, int &d4, num &v4) &'sway sign {d1, v1, d2, v2, d3, v3, d4, v4}';
+macro () swaySign(int @d1, num @v1, int @d2, num @v2, int @d3, num @v3, int @d4, num @v4) @'sway sign {d1, v1, d2, v2, d3, v3, d4, v4}';
 // See `swayShou`, but based on touch rather than hearing.
-macro () swayTact(int &d1, num &v1, int &d2, num &v2, int &d3, num &v3, int &d4, num &v4) &'sway tact {d1, v1, d2, v2, d3, v3, d4, v4}';
+macro () swayTact(int @d1, num @v1, int @d2, num @v2, int @d3, num @v3, int @d4, num @v4) @'sway tact {d1, v1, d2, v2, d3, v3, d4, v4}';
 /*
 You can think of this as an extension of the `driv` command.
 It creates essentially a fake stimulus, adjusting four drives at once.
 */
-macro () swayWrit(Agent &c, int &d1, num &v1, int &d2, num &v2, int &d3, num &v3, int &d4, num &v4) &'sway writ {c, d1, v1, d2, v2, d3, v3, d4, v4}';
+macro () swayWrit(Agent @c, int @d1, num @v1, int @d2, num @v2, int @d3, num @v3, int @d4, num @v4) @'sway writ {c, d1, v1, d2, v2, d3, v3, d4, v4}';
 
 /*
 Age in ticks `targ` has lived (at least according to `born`).
 There's a few caveats to this, the main one being that it's measured in 4-tick increments.
 It also stops ticking when the creature dies.
 */
-macro tage() &'tage'!int;
+macro tage() @'tage'!int;
 
 /*
 Makes `targ` creature reach out towards `iitt`.
 This is asynchronous.
 */
-macro () touc() &'touc';
+macro () touc() @'touc';
 
 // Returns the X position of the up foot of the `targ` creature.
-macro uftx() &'uftx'!float;
+macro uftx() @'uftx'!float;
 
 // Returns the Y position of the up foot of the `targ` creature.
-macro ufty() &'ufty'!float;
+macro ufty() @'ufty'!float;
 
 /*
 Sets `targ` creature as unconscious if true, normal if false.
 If true, this disables some of the functionality `zomb` does, but not as much.
 It is worth noting that this is distinct from sleeping or dreaming.
 */
-macro () uncs(bool &a) &'uncs {a}';
+macro () uncs(bool @a) @'uncs {a}';
 
 /*
 Gets if `targ` creature is unconscious.
 It is worth noting that this is distinct from sleeping or dreaming.
 */
-macro uncs() &'uncs'!bool;
+macro uncs() @'uncs'!bool;
 
 /*
 See `urgeWrit`. However, the urge is applied to all creatures that hear `ownr`.
 Also, the `noun` is set to that of `ownr`.
 */
-macro () urgeShou(num &nWeight, int &verb, num &weight) &'urge shou {nWeight, verb, weight}';
+macro () urgeShou(num @nWeight, int @verb, num @weight) @'urge shou {nWeight, verb, weight}';
 // See `urgeShou`, but based on sight rather than hearing.
-macro () urgeSign(num &nWeight, int &verb, num &weight) &'urge sign {nWeight, verb, weight}';
+macro () urgeSign(num @nWeight, int @verb, num @weight) @'urge sign {nWeight, verb, weight}';
 // See `urgeShou`, but based on touch rather than hearing.
-macro () urgeTact(num &nWeight, int &verb, num &weight) &'urge tact {nWeight, verb, weight}';
+macro () urgeTact(num @nWeight, int @verb, num @weight) @'urge tact {nWeight, verb, weight}';
 /*
 The `noun` and `verb` parts of this are effectively separate, but use the same logic.
 If a weight is above 1.0, an override is set on that half. Setting -1 this way deactivates the override.
 Otherwise, merely sets the respective lobe input.
 `noun` is a category, and `verb` is a verb ID, as usual.
 */
-macro () urgeWrit(Agent &c, int &noun, num &nWeight, int &verb, num &vWeight) &'urge writ {c, noun, nWeight, verb, vWeight}';
+macro () urgeWrit(Agent @c, int @noun, num @nWeight, int @verb, num @vWeight) @'urge writ {c, noun, nWeight, verb, vWeight}';
 
 // Overwrites `targ` creature's vocabulary with that of the current language.
-macro () vocb() &'vocb';
+macro () vocb() @'vocb';
 
 /*
 Makes `targ` creature start walking, with whatever gait is currently considered appropriate.
 Importantly, `targ` creature may not stop walking...
 */
-macro () walk() &'walk';
+macro () walk() @'walk';
 
 /*
 Sets a given body overlay set `s` on part `p` (see `BODY_` consts) of the `targ` creature, with layer `l`.
@@ -543,7 +543,7 @@ Layer 0 is the "regular body" layer, so overwriting this is probably a bad idea.
 Higher layer numbers display over lower ones.
 `nude` resets.
 */
-macro () wear(int &p, int &s, int &l) &'wear {p, s, l}';
+macro () wear(int @p, int @s, int @l) @'wear {p, s, l}';
 
 /*
 Sets `targ` creature as zombie if true, normal if false.
@@ -551,10 +551,10 @@ If true, disables a number of the creature's actions.
 In particular, the creature stops being able to choose actions or say things.
 If the creature is not dead, scripts on the creature stop (unless that script ran `zomb`).
 */
-macro () zomb(bool &a) &'zomb {a}';
+macro () zomb(bool @a) @'zomb {a}';
 
 /*
 Gets if `targ` creature is a "zombie".
 */
-macro zomb() &'zomb'!bool;
+macro zomb() @'zomb'!bool;
 

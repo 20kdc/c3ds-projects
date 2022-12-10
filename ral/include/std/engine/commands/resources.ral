@@ -12,60 +12,60 @@
 include "std/engine/commands_inc.ral";
 
 // See `prayMake`. However, the export destination is over the network.
-macro netMake(int &dir, str &file, str &uin, str &=errors) &'net: make {dir, file, uin, errors}'!int;
+macro netMake(int @dir, str @file, str @uin, str @=errors) @'net: make {dir, file, uin, errors}'!int;
 
 /*
 Returns the value of the given integer `key` of resource `name`.
 If not found, `def` is returned.
 */
-macro prayAgti(str &name, str &key, int &def) &'pray agti {name, key, def}'!int;
+macro prayAgti(str @name, str @key, int @def) @'pray agti {name, key, def}'!int;
 
 /*
 Returns the value of the given string `key` of resource `name`.
 If not found, `def` is returned.
 */
-macro prayAgts(str &name, str &key, str &def) &'pray agts {name, key, def}'!str;
+macro prayAgts(str @name, str @key, str @def) @'pray agts {name, key, def}'!str;
 
 /*
 Finds the previous resource of the given `type`.
 If the given resource `next` doesn't exist, returns the last resource in the list.
 If there's no resource before `next`, or no resources of the type at all, returns an empty string.
 */
-macro prayBack(str &type, str &next) &'pray back {type, next}'!str;
+macro prayBack(str @type, str @next) @'pray back {type, next}'!str;
 
 // Returns the number of PRAY chunks with the given 4-character chunk `type`.
-macro prayCoun(str &type) &'pray coun {type}'!int;
+macro prayCoun(str @type) @'pray coun {type}'!int;
 
 /*
 Installs dependencies of resource `name`.
 If `confirm` is false, this is only a test.
 See `PRAY_DEPS_` consts for return values.
 */
-macro prayDeps(str &name, bool &confirm) &'pray deps {name, confirm}'!int;
+macro prayDeps(str @name, bool @confirm) @'pray deps {name, confirm}'!int;
 
 // Exports the `targ` creature with the given chunk `type`. Return values match `NET_EXPO_` constants.
-macro prayExpo(str &type) &'pray expo {type}'!int;
+macro prayExpo(str @type) @'pray expo {type}'!int;
 
 /*
 Installs a `FILE` PRAY chunk.
 If `confirm` is false, this is only a test.
 True is failure.
 */
-macro prayFile(str &name, int &type, bool &confirm) &'pray file {name, type, confirm}'!bool;
+macro prayFile(str @name, int @type, bool @confirm) @'pray file {name, type, confirm}'!bool;
 
 /*
 Finds the next resource of the given `type`.
 If the given resource `prev` doesn't exist, returns the first resource in the list.
 If there's no resource after `prev`, or no resources of the type at all, returns an empty string.
 */
-macro prayFore(str &type, str &prev) &'pray fore {type, prev}'!str;
+macro prayFore(str @type, str @prev) @'pray fore {type, prev}'!str;
 
 /*
 The PRAY system naturally accumulates memory use as resources are loaded.
 This command flushes them.
 By default, it only flushes some of them, but if `all` is true, it flushes all of them (eventually).
 */
-macro () prayGarb(bool &all) &'pray garb {all}';
+macro () prayGarb(bool @all) @'pray garb {all}';
 
 /*
 Attempts to import a creature with the given resource name.
@@ -74,7 +74,7 @@ If `noDelete` is true, the creature file won't be deleted. (Moreover, if it's fa
 For return values, see `PRAY_IMPO_` constants.
 Above all else, keep in mind `engine_clone_upon_import`.
 */
-macro prayImpo(str &name, bool &confirm, bool &noDelete) &'pray impo {name, confirm, noDelete}'!int;
+macro prayImpo(str @name, bool @confirm, bool @noDelete) @'pray impo {name, confirm, noDelete}'!int;
 
 /*
 Performs the body of an agent injection.
@@ -85,13 +85,13 @@ It requires `Agent Type` exist, but does not actually care about it's value.
 `errors` is a variable that gets updated with details of any errors that occur.
 See `PRAY_INJT_` constants for return values.
 */
-macro prayInjt(str &name, bool &confirm, str &=errors) &'pray injt {name, confirm, errors}'!int;
+macro prayInjt(str @name, bool @confirm, str @=errors) @'pray injt {name, confirm, errors}'!int;
 
 /*
 Removes the PRAY file which contains the given chunk.
 This command might not be a good idea in all cases, though, as the given chunk may not be the only chunk in the file.
 */
-macro prayKill(str &name) &'pray kill {name}'!bool;
+macro prayKill(str @name) @'pray kill {name}'!bool;
 
 /*
 This is an embedded PRAY builder.
@@ -100,17 +100,17 @@ There isn't a consistent guarantee of return values, except that 0 is success an
 `outCreatures` is false to output to My Agents, true to output to My Creatures.
 `errors` is a variable that gets set to the errors from the PRAY builder.
 */
-macro prayMake(int &inDir, str &inFile, bool &outCreatures, str &outFile, str &=errors) &'pray make {inDir, inFile, outCreatures, outFile, errors}'!int;
+macro prayMake(int @inDir, str @inFile, bool @outCreatures, str @outFile, str @=errors) @'pray make {inDir, inFile, outCreatures, outFile, errors}'!int;
 
 // Cycles forwards through resources of the given `type`. `l` should be the last returned resource name. Will only return an empty string if none of the resource type exists, period.
-macro prayNext(str &type, str &l) &'pray next {type, l}'!str;
+macro prayNext(str @type, str @l) @'pray next {type, l}'!str;
 
 // Cycles backwards through resources of the given `type`. `l` should be the last returned resource name. Will only return an empty string if none of the resource type exists, period.
-macro prayPrev(str &type, str &l) &'pray prev {type, l}'!str;
+macro prayPrev(str @type, str @l) @'pray prev {type, l}'!str;
 
 // Rescans PRAY directories. Only deleted or added files are handled, though.
-macro () prayRefr() &'pray refr';
+macro () prayRefr() @'pray refr';
 
 // Return values match `PRAY_TEST_` constants.
-macro prayTest(str &t) &'pray test {t}'!int;
+macro prayTest(str @t) @'pray test {t}'!int;
 

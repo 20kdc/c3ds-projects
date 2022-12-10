@@ -37,27 +37,27 @@ include "std/engine/commands/world.ral";
 // This *might* get removed later
 
 // `GAME` variable as `int`. Can be assigned to as so: `gameInt("test") = 5;`
-macro gameInt(str &key) game(key)!int;
+macro gameInt(str @key) game(key)!int;
 // `EAME` variable as `int`. Can be assigned to as so: `eameInt("test") = 5;`
-macro eameInt(str &key) eame(key)!int;
+macro eameInt(str @key) eame(key)!int;
 // `GAME` variable as `bool`. Can be assigned to as so: `gameBool("test") = true;`
-macro gameBool(str &key) game(key)!bool;
+macro gameBool(str @key) game(key)!bool;
 // `EAME` variable as `bool`. Can be assigned to as so: `eameBool("test") = true;`
-macro eameBool(str &key) eame(key)!bool;
+macro eameBool(str @key) eame(key)!bool;
 // `GAME` variable as `num`. Can be assigned to as so: `gameNum("test") = 5;`
-macro gameNum(str &key) game(key)!num;
+macro gameNum(str @key) game(key)!num;
 // `EAME` variable as `num`. Can be assigned to as so: `eameNum("test") = 5;`
-macro eameNum(str &key) eame(key)!num;
+macro eameNum(str @key) eame(key)!num;
 // `GAME` variable as `float`. Can be assigned to as so: `gameFloat("test") = 5.0;`
-macro gameFloat(str &key) game(key)!float;
+macro gameFloat(str @key) game(key)!float;
 // `EAME` variable as `float`. Can be assigned to as so: `eameFloat("test") = 5.0;`
-macro eameFloat(str &key) eame(key)!float;
+macro eameFloat(str @key) eame(key)!float;
 // `GAME` variable as `str`. Can be assigned to as so: `gameStr("test") = "Hello";`
-macro gameStr(str &key) game(key)!str;
+macro gameStr(str @key) game(key)!str;
 // `EAME` variable as `str`. Can be assigned to as so: `eameStr("test") = "Hello";`
-macro eameStr(str &key) eame(key)!str;
+macro eameStr(str @key) eame(key)!str;
 // `GAME` variable as `Agent`. Can be assigned to as so: `gameAgent("test") = ownr;`
-macro gameAgent(str &key) game(key)!Agent;
+macro gameAgent(str @key) game(key)!Agent;
 // `EAME` variable as `Agent`. Can be assigned to as so: `eameAgent("test") = ownr;`
-macro eameAgent(str &key) eame(key)!Agent;
+macro eameAgent(str @key) eame(key)!Agent;
 

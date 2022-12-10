@@ -15,16 +15,16 @@ include "std/engine/commands_inc.ral";
 Documentation on this command has been deferred to 2023. Or never.
 Go read the official documentation.
 */
-macro caos(bool &il, bool &st, any &p1, any &p2, str &cmd, bool &thr, bool &ctc, str &=errors) &'caos {il, st, p1, p2, cmd, thr, ctc, errors}'!str;
+macro caos(bool @il, bool @st, any @p1, any @p2, str @cmd, bool @thr, bool @ctc, str @=errors) @'caos {il, st, p1, p2, cmd, thr, ctc, errors}'!str;
 
 // Writes a space-separated list of scriptorium genuses in the given family to the output stream.
-macro () gidsFmly(int &i) &'gids fmly {i}';
+macro () gidsFmly(int @i) @'gids fmly {i}';
 // Writes a space-separated list of scriptorium species in the given genus to the output stream.
-macro () gidsGnus(int &i, int &i2) &'gids gnus {i, i2}';
+macro () gidsGnus(int @i, int @i2) @'gids gnus {i, i2}';
 // Writes a space-separated list of scriptorium families to the output stream.
-macro () gidsRoot() &'gids root';
+macro () gidsRoot() @'gids root';
 // Writes a space-separated list of scriptorium scripts in the given classifier to the output stream.
-macro () gidsSpcs(int &i, int &i2, int &i3) &'gids spcs {i, i2, i3}';
+macro () gidsSpcs(int @i, int @i2, int @i3) @'gids spcs {i, i2, i3}';
 
 /*
 Begins "instant" code.
@@ -34,43 +34,43 @@ It is also much faster - in general you should be using `inst` most of the time.
 Beware that an automatic `slow` occurs for any code that performs an asynchronous operation.
 Examples include `wait`, `over`, and some network operations.
 */
-macro () inst() &'inst';
+macro () inst() @'inst';
 
 /*
 Injects a CAOS file from somewhere in the bootstrap directories and `mode`.
 `mode` is made up of flags from the `JECT_` consts.
 Scripts (as enabled by `mode`) are run in this order: remove script (is run), event scripts (are put into the Scriptorium), install script (is run).
 */
-macro () ject(str &cos, int &mode) &'ject {cos, mode}';
+macro () ject(str @cos, int @mode) @'ject {cos, mode}';
 
 /*
 Stops messages and such from interrupting the current code.
 Do beware however that this comes at the cost of dropping those messages, completely.
 If the code isn't doing something asynchronous, consider using `inst`.
 */
-macro () lock() &'lock';
+macro () lock() @'lock';
 
 // Removes a script from the Scriptorium.
-macro () scrx(int &family, int &genus, int &species, int &scr) &'scrx {family, genus, species, scr}';
+macro () scrx(int @family, int @genus, int @species, int @scr) @'scrx {family, genus, species, scr}';
 
 /*
 Ends `inst`ness.
 Returns code to running at a few operations per tick.
 */
-macro () slow() &'slow';
+macro () slow() @'slow';
 
 // Terminates the running script.
-macro () stop() &'stop';
+macro () stop() @'stop';
 
 // Terminates the script the `targ` agent is executing.
-macro () stpt() &'stpt';
+macro () stpt() @'stpt';
 
 // Ends `lock`.
-macro () unlk() &'unlk';
+macro () unlk() @'unlk';
 
 /*
 Waits `ticks` ticks (50ms / 0.05 seconds / 20 ticks per second).
 This is asynchronous, so be sure to `inst` afterwards...
 */
-macro () wait(int &ticks) &'wait {ticks}';
+macro () wait(int @ticks) @'wait {ticks}';
 

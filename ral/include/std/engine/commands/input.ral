@@ -15,13 +15,13 @@ include "std/engine/commands_inc.ral";
 Sets the handling of clicking on the `targ` agent to send the given message ID.
 -1 means no message.
 */
-macro () clac(int &m) &'clac {m}';
+macro () clac(int @m) @'clac {m}';
 
 /*
 Sets the handling of clicking on the `targ` agent to toggle between up to three message IDs.
 -1 means no message, and thus skips the slot.
 */
-macro () clik(int &m1, int &m2, int &m3) &'clik {m1, m2, m3}';
+macro () clik(int @m1, int @m2, int @m3) @'clik {m1, m2, m3}';
 
 /*
 Returns the number of the part underneath the pointer, or -1 for "no agent".
@@ -29,53 +29,53 @@ Transparency is not considered -- bounding boxes are used.
 The agent this part is relative to is `hots` (which does consider transparency).
 See also `hots`.
 */
-macro hotp() &'hotp'!int;
+macro hotp() @'hotp'!int;
 
 
 /*
 Returns the agent underneath the pointer, or null.
 Transparency is considered based on the setting of the `tran` command.
 */
-macro hots() &'hots'!Agent?;
+macro hots() @'hots'!Agent?;
 
 /*
 Sets the global input events the `targ` agent receives.
 This is a bitfield -- OR together `IMSK_` constants.
 */
-macro () imsk(int &mask) &'imsk {mask}';
+macro () imsk(int @mask) @'imsk {mask}';
 
 // Returns true if the given key ID is down.
-macro keyd(int &key) &'keyd {key}'!bool;
+macro keyd(int @key) @'keyd {key}'!bool;
 
 // Returns the mouse's world X position.
-macro mopx() &'mopx'!int;
+macro mopx() @'mopx'!int;
 
 // Returns the mouse's world Y position.
-macro mopy() &'mopy'!int;
+macro mopy() @'mopy'!int;
 
 /*
 Sets the mouse button override mode.
 This is a bitfield, see `MOUS_` constants.
 */
-macro () mous(int &mode) &'mous {mode}';
+macro () mous(int @mode) @'mous {mode}';
 
 // Returns the mouse's world X velocity.
-macro movx() &'movx'!float;
+macro movx() @'movx'!float;
 
 // Returns the mouse's world Y velocity.
-macro movy() &'movy'!float;
+macro movy() @'movy'!float;
 
 /*
 This is a global flag that disables ordinary mouse behaviour.
 That is, activating agents, picking up agents...
 */
-macro () pure(bool &v) &'pure {v}';
+macro () pure(bool @v) @'pure {v}';
 
 // Returns the mouse's world X velocity.
-macro pure() &'pure'!bool;
+macro pure() @'pure'!bool;
 
 // conflict with the other tran from Agents
 
 // Sets pixel-perfect click transparency (or lack thereof) on the given part of the `targ` agent.
-macro () tranC(bool &v, int &p) &'tran {v, p}';
+macro () tranC(bool @v, int @p) @'tran {v, p}';
 

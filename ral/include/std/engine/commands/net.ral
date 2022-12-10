@@ -15,51 +15,51 @@ include "std/engine/commands_inc.ral";
 Returns an error code from `NET: LINE`.
 See the `NET_ERRA_` constants for results.
 */
-macro netErra() &'net: erra'!int;
+macro netErra() @'net: erra'!int;
 
 /*
 Given a chunk type (should always be `warp`!) and a stringified UIN, warps the creature.
 See `NET_EXPO_` constants for results.
 */
-macro netExpo(str &chunk, str &dst) &'net: expo {chunk, dst}'!int;
+macro netExpo(str @chunk, str @dst) @'net: expo {chunk, dst}'!int;
 
 /*
 Returns the UIN that sent the given chunk, or an empty string if this isn't from the network.
 This identifier is effectively unfakable unless the server you're connecting to is evil or stupid.
 As such, it is a good idea to verify chunks with this whenever they are on the list found in the "pray_allow_chunks warp" catalogue tag.
 */
-macro netFrom(str &chunk) &'net: from {chunk}'!str;
+macro netFrom(str @chunk) @'net: from {chunk}'!str;
 
 /*
 Dumps debugging information about users of `netHear` to the output stream.
 In particular, lists the total amount of channels, and for each channel, lists agents as either `targ` or `someone`.
 */
-macro () netHead() &'net: head';
+macro () netHead() @'net: head';
 
 // Set the `targ` agent to receive `netWrit` messages (and faked `netWrit` messages sent by the server!) on the given channel.
-macro () netHear(str &c) &'net: hear {c}';
+macro () netHear(str @c) @'net: hear {c}';
 
 /*
 Returns information about the server to which you're connected, or an empty string when not connected.
 This information is, space-delimited, the hostname, port, and something that documentation insists is the server's ID.
 */
-macro netHost() &'net: host'!str;
+macro netHost() @'net: host'!str;
 
 /*
 Connects/disconnects from the server. You need to use `netPass` before trying this, since you need a username and password.
 Can't run this in `inst`, this command is asynchronous.
 Check `netErra` for errors.
 */
-macro () netLine(bool &b) &'net: line {b}';
+macro () netLine(bool @b) @'net: line {b}';
 
 // Returns true if connected to the server.
-macro netLine() &'net: line'!bool;
+macro netLine() @'net: line'!bool;
 
 // Sets the player's username and password. If the password is empty and the real password had been saved with `engine_netbabel_save_passwords`, then it will be loaded.
-macro () netPass(str &user, str &pass) &'net: pass {user, pass}';
+macro () netPass(str @user, str @pass) @'net: pass {user, pass}';
 
 // Returns the player's username.
-macro netPass() &'net: pass'!str;
+macro netPass() @'net: pass'!str;
 
 /*
 This is supposed to be an internal error code.
@@ -75,7 +75,7 @@ My best guess, everybody who had an encyclopedic knowledge of the error codes is
 So now you _really_ shouldn't rely on these.
 The upside is, if you do figure them out, they're never changing...
 */
-macro netRawe() &'net: rawe'!int;
+macro netRawe() @'net: rawe'!int;
 
 /*
 Asynchronous command to store a random online user UIN string into the given variable, or an empty string if none.
@@ -83,20 +83,20 @@ Theoretically, this can return yourself, but modern Natsue doesn't allow this _b
 Theoretically, this can return anyone online, but modern Natsue has user flags to be excluded from the list.
 The user might go offline at any point before or after you receive the UIN.
 */
-macro () netRuso(str &uin) &'net: ruso {uin}';
+macro () netRuso(str @uin) @'net: ruso {uin}';
 
 /*
 Writes a set of statistics from the server into variables.
 The statistics are supposed to be, in order, milliseconds the connection has been going for, amount of users on the server, bytes the server's sent, and bytes the client's sent.
 Note that these statistics are entirely defined by the server, and what you will actually receive from Natsue is zeros at present.
 */
-macro () netStat(int &to, int &uo, int &br, int &bs) &'net: stat {to, uo, br, bs}';
+macro () netStat(int @to, int @uo, int @br, int @bs) @'net: stat {to, uo, br, bs}';
 
 /*
 Returns if a user (by UIN string) is online or not.
 This is synchronous, which means a lagspike if the result isn't locally known (use the WWR).
 */
-macro netUlin(str &uin) &'net: ulin {uin}'!bool;
+macro netUlin(str @uin) @'net: ulin {uin}'!bool;
 
 /*
 Asynchronous command to get the nickname of a user by UIN string, and put it in the given variable.
@@ -105,30 +105,30 @@ Theoretically, Babel is supposed to split the username and nickname.
 Practically, actually doing this breaks vanilla CAOS (it assumes your nickname is your username), so Natsue doesn't support this.
 Further, changing nicknames breaks vanilla CAOS even further (it never updates nicknames).
 */
-macro () netUnik(str &uin, str &res) &'net: unik {uin, res}';
+macro () netUnik(str @uin, str @res) @'net: unik {uin, res}';
 
 // Returns the UIN of the current user, if known, or an empty string otherwise.
-macro netUser() &'net: user'!str;
+macro netUser() @'net: user'!str;
 
 // Supposedly says what Babel's doing in the background.
-macro netWhat() &'net: what'!str;
+macro netWhat() @'net: what'!str;
 
 // Remove a user UIN string from the `targ` agent's WWR.
-macro () netWhof(str &user) &'net: whof {user}';
+macro () netWhof(str @user) @'net: whof {user}';
 
 /*
 Add a user UIN string from the `targ` agent's WWR.
 The WWR is the set of users that the engine keeps an eye on.
 */
-macro () netWhon(str &user) &'net: whon {user}';
+macro () netWhon(str @user) @'net: whon {user}';
 
 // Clear the `targ` agent's WWR.
-macro () netWhoz() &'net: whoz';
+macro () netWhoz() @'net: whoz';
 
 /*
 This command is a twitchy little problem in a box.
 Simply put, it'll freeze the sender if you blink at it wrong.
 And if the server isn't properly prepared for it, it'll *definitely* freeze the sender.
 */
-macro () netWrit(str &uid, str &c, int &msg, any &p1, any &p2) &'net: writ {uid, c, msg, p1, p2}';
+macro () netWrit(str @uid, str @c, int @msg, any @p1, any @p2) @'net: writ {uid, c, msg, p1, p2}';
 

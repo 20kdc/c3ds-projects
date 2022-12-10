@@ -11,26 +11,26 @@
 
 include "std/engine/commands_inc.ral";
 
-macro () cabn(int &l, int &t, int &r, int &b) &'cabn {l, t, r, b}';
+macro () cabn(int @l, int @t, int @r, int @b) @'cabn {l, t, r, b}';
 
-macro cabb() &'cabb'!int;
-macro cabl() &'cabl'!int;
-macro cabr() &'cabr'!int;
-macro cabt() &'cabt'!int;
+macro cabb() @'cabb'!int;
+macro cabl() @'cabl'!int;
+macro cabr() @'cabr'!int;
+macro cabt() @'cabt'!int;
 
-macro () cabp(int &p) &'cabp {p}';
-macro cabp() &'cabp'!int;
+macro () cabp(int @p) @'cabp {p}';
+macro cabp() @'cabp'!int;
 
-macro () cabv(int &p) &'cabv {p}';
-macro cabv() &'cabv'!int;
+macro () cabv(int @p) @'cabv {p}';
+macro cabv() @'cabv'!int;
 
-macro () cabw(int &p) &'cabw {p}';
+macro () cabw(int @p) @'cabw {p}';
 
-macro () dpas(int &f, int &g, int &s) &'dpas {f, g, s}';
+macro () dpas(int @f, int @g, int @s) @'dpas {f, g, s}';
 
 // EPAS covered by compiler
 
-macro () gpas(int &f, int &g, int &s, int &r) &'dpas {f, g, s, r}';
+macro () gpas(int @f, int @g, int @s, int @r) @'dpas {f, g, s, r}';
 
 /*
 Creates a new vehicle agent.
@@ -38,8 +38,8 @@ Vehicle agents are a sub-type of compound agents capable of holding other agents
 For parameters, see `newSimp`, but also reference `newComp`.
 Be aware of the vehicle-specific `attr` and `bhvr` flags, along with `cabn`, `cabw`, `cabp`, and `cabv`.
 */
-macro () newVhcl(int &family, int &genus, int &species, str &gallery, int &count, int &first, int &plane) &'new: vhcl {family, genus, species, gallery, count, first, plane}';
+macro () newVhcl(int @family, int @genus, int @species, str @gallery, int @count, int @first, int @plane) @'new: vhcl {family, genus, species, gallery, count, first, plane}';
 
-macro () rpas(Agent &v, Agent &p) &'rpas {v, p}';
-macro () spas(Agent &v, Agent &p) &'spas {v, p}';
+macro () rpas(Agent @v, Agent @p) @'rpas {v, p}';
+macro () spas(Agent @v, Agent @p) @'spas {v, p}';
 

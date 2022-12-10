@@ -11,40 +11,40 @@
 
 include "std/engine/commands_inc.ral";
 
-macro histCage(str &moniker, int &e) &'hist cage {moniker, e}'!int;
-macro histCoun(str &moniker) &'hist coun {moniker}'!int;
-macro histCros(str &moniker) &'hist cros {moniker}'!int;
-macro () histEvnt(str &moniker, int &et, str &m1, str &m2) &'hist evnt {moniker, et, m1, m2}';
-macro histFind(str &moniker, int &et, int &i) &'hist find {moniker, et, i}'!int;
-macro histFinr(str &moniker, int &et, int &i) &'hist finr {moniker, et, i}'!int;
+macro histCage(str @moniker, int @e) @'hist cage {moniker, e}'!int;
+macro histCoun(str @moniker) @'hist coun {moniker}'!int;
+macro histCros(str @moniker) @'hist cros {moniker}'!int;
+macro () histEvnt(str @moniker, int @et, str @m1, str @m2) @'hist evnt {moniker, et, m1, m2}';
+macro histFind(str @moniker, int @et, int @i) @'hist find {moniker, et, i}'!int;
+macro histFinr(str @moniker, int @et, int @i) @'hist finr {moniker, et, i}'!int;
 
-macro histFoto(str &moniker, int &e) &'hist foto {moniker, e}'!str;
-macro () histFoto(str &moniker, int &e, str &v) &'hist foto {moniker, e, v}';
+macro histFoto(str @moniker, int @e) @'hist foto {moniker, e}'!str;
+macro () histFoto(str @moniker, int @e, str @v) @'hist foto {moniker, e, v}';
 
-macro histGend(str &moniker) &'hist gend {moniker}'!int;
-macro histGnus(str &moniker) &'hist gnus {moniker}'!int;
-macro histMon1(str &moniker, int &e) &'hist mon1 {moniker, e}'!str;
-macro histMon2(str &moniker, int &e) &'hist mon2 {moniker, e}'!str;
-macro histMute(str &moniker) &'hist mute {moniker}'!int;
+macro histGend(str @moniker) @'hist gend {moniker}'!int;
+macro histGnus(str @moniker) @'hist gnus {moniker}'!int;
+macro histMon1(str @moniker, int @e) @'hist mon1 {moniker, e}'!str;
+macro histMon2(str @moniker, int @e) @'hist mon2 {moniker, e}'!str;
+macro histMute(str @moniker) @'hist mute {moniker}'!int;
 
-macro histName(str &moniker) &'hist name {moniker}'!str;
-macro () histName(str &moniker, str &n) &'hist name {moniker, n}';
+macro histName(str @moniker) @'hist name {moniker}'!str;
+macro () histName(str @moniker, str @n) @'hist name {moniker, n}';
 
-macro histNetu(str &moniker, int &e) &'hist netu {moniker, e}'!str;
-macro histNext(str &moniker) &'hist next {moniker}'!str;
-macro histPrev(str &moniker) &'hist prev {moniker}'!str;
-macro histRtim(str &moniker, int &e) &'hist rtim {moniker, e}'!int;
-macro histTage(str &moniker, int &e) &'hist tage {moniker, e}'!int;
-macro histType(str &moniker, int &e) &'hist type {moniker, e}'!int;
+macro histNetu(str @moniker, int @e) @'hist netu {moniker, e}'!str;
+macro histNext(str @moniker) @'hist next {moniker}'!str;
+macro histPrev(str @moniker) @'hist prev {moniker}'!str;
+macro histRtim(str @moniker, int @e) @'hist rtim {moniker, e}'!int;
+macro histTage(str @moniker, int @e) @'hist tage {moniker, e}'!int;
+macro histType(str @moniker, int @e) @'hist type {moniker, e}'!int;
 
-macro histUtxt(str &moniker, int &e) &'hist utxt {moniker, e}'!str;
-macro () histUtxt(str &moniker, int &e, str &v) &'hist utxt {moniker, e, v}';
+macro histUtxt(str @moniker, int @e) @'hist utxt {moniker, e}'!str;
+macro () histUtxt(str @moniker, int @e, str @v) @'hist utxt {moniker, e, v}';
 
-macro histVari(str &moniker) &'hist vari {moniker}'!int;
-macro () histWipe(str &moniker) &'hist wipe {moniker}';
-macro histWnam(str &moniker, int &e) &'hist wnam {moniker, e}'!str;
-macro histWtik(str &moniker, int &e) &'hist wtik {moniker, e}'!int;
-macro histWuid(str &moniker, int &e) &'hist wuid {moniker, e}'!str;
-macro histWvet(str &moniker) &'hist wvet {moniker}'!bool;
-macro ooww(str &moniker) &'ooww {moniker}'!int;
+macro histVari(str @moniker) @'hist vari {moniker}'!int;
+macro () histWipe(str @moniker) @'hist wipe {moniker}';
+macro histWnam(str @moniker, int @e) @'hist wnam {moniker, e}'!str;
+macro histWtik(str @moniker, int @e) @'hist wtik {moniker, e}'!int;
+macro histWuid(str @moniker, int @e) @'hist wuid {moniker, e}'!str;
+macro histWvet(str @moniker) @'hist wvet {moniker}'!bool;
+macro ooww(str @moniker) @'ooww {moniker}'!int;
 

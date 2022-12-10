@@ -17,57 +17,57 @@ Instincts are sets of fake inputs - these ones are made up of a verb ID, noun (c
 The amount is the amount to subtract from the drive (i.e. the amount of reward to give).
 Note that CAOS instinct adjustments are inverted to how genetics handles it.
 */
-macro () adin(int &v, int &n, num &q, int &d) &'adin {v, n, q, d}';
+macro () adin(int @v, int @n, num @q, int @d) @'adin {v, n, q, d}';
 
 /*
 Dumps the `targ` creature's brain data sizes and the brain dump format version to the output stream.
 Unfortunately due to embedded null bytes and newlines, and reading issues as a result, most of these commands are useless for in-engine tools.
 */
-macro () brnDmpb() &'brn: dmpb';
+macro () brnDmpb() @'brn: dmpb';
 
 /*
 Dumps the `targ` creature's dendrite (by tract and dendrite index) data to the output stream.
 Unfortunately due to embedded null bytes and newlines, and reading issues caused as a result, most of these commands are useless for in-engine tools.
 In addition, this command is usually rather pointless anyway, as `brnDmpt` dumps all dendrites within the tract.
 */
-macro () brnDmpd(int &t, int &d) &'brn: dmpd {t, d}';
+macro () brnDmpd(int @t, int @d) @'brn: dmpd {t, d}';
 
 /*
 Dumps the `targ` creature's lobe data (by lobe index) to the output stream.
 The dump also includes neurons.
 Unfortunately due to embedded null bytes and newlines, and reading issues caused as a result, most of these commands are useless for in-engine tools.
 */
-macro () brnDmpl(int &l) &'brn: dmpl {l}';
+macro () brnDmpl(int @l) @'brn: dmpl {l}';
 
 /*
 Dumps the `targ` creature's neuron data (by lobe and neuron index) to the output stream.
 The dump also includes neurons.
 Unfortunately due to embedded null bytes and newlines, and reading issues caused as a result, most of these commands are useless for in-engine tools.
 */
-macro () brnDmpn(int &l, int &n) &'brn: dmpn {l, n}';
+macro () brnDmpn(int @l, int @n) @'brn: dmpn {l, n}';
 
 /*
 Dumps the `targ` creature's tract data (by tract index) to the output stream.
 The dump also includes dendrites.
 Unfortunately due to embedded null bytes and newlines, and reading issues caused as a result, most of these commands are useless for in-engine tools.
 */
-macro () brnDmpt(int &t) &'brn: dmpt {t}';
+macro () brnDmpt(int @t) @'brn: dmpt {t}';
 
 // Given the `targ` creature, a tract index, dendrite index, a value index, and the value, sets a value inside a dendrite.
-macro () brnSetd(int &t, int &d, int &i, num &v) &'brn: setd {t, d, i, v}';
+macro () brnSetd(int @t, int @d, int @i, num @v) @'brn: setd {t, d, i, v}';
 /*
 Given the `targ` creature, a lobe index, line index, and the value, sets a value inside a lobe's SV-rules.
 The first 16 line indexes (starting at 0) cover the init rule, and the second 16 cover the update rule.
 */
-macro () brnSetl(int &l, int &ln, num &v) &'brn: setl {l, ln, v}';
+macro () brnSetl(int @l, int @ln, num @v) @'brn: setl {l, ln, v}';
 // Given the `targ` creature, a lobe index, neuron index, a value index, and the value, sets a value inside a neuron.
-macro () brnSetn(int &l, int &n, int &i, num &v) &'brn: setn {l, n, i, v}';
+macro () brnSetn(int @l, int @n, int @i, num @v) @'brn: setn {l, n, i, v}';
 /*
 Given the `targ` creature, a tract index, line index, and the value, sets a value inside a tract's SV-rules.
 The first 16 line indexes (starting at 0) cover the init rule, and the second 16 cover the update rule.
 */
-macro () brnSett(int &t, int &ln, num &v) &'brn: sett {t, ln, v}';
+macro () brnSett(int @t, int @ln, num @v) @'brn: sett {t, ln, v}';
 
 // Processes a number of instincts on the `targ` creature.
-macro () doin(int &i) &'doin {i}';
+macro () doin(int @i) @'doin {i}';
 

@@ -11,73 +11,73 @@
 
 include "std/engine/commands_inc.ral";
 
-macro accg() &'accg'!float;
-macro () accg(num &value) &'accg {value}';
+macro accg() @'accg'!float;
+macro () accg(num @value) @'accg {value}';
 
-macro admp() &'admp'!float;
-macro () admp(num &value) &'admp {value}';
+macro admp() @'admp'!float;
+macro () admp(num @value) @'admp {value}';
 
-macro aero() &'aero'!int;
-macro () aero(int &value) &'aero {value}';
+macro aero() @'aero'!int;
+macro () aero(int @value) @'aero {value}';
 
-macro angl(num &x, num &y) &'angl {x, y}'!float;
+macro angl(num @x, num @y) @'angl {x, y}'!float;
 
-macro avel() &'avel'!float;
-macro () avel(num &value) &'avel {value}';
+macro avel() @'avel'!float;
+macro () avel(num @value) @'avel {value}';
 
-macro elas() &'elas'!int;
-macro () elas(int &value) &'elas {value}';
+macro elas() @'elas'!int;
+macro () elas(int @value) @'elas {value}';
 
-macro fall() &'fall'!bool;
+macro fall() @'fall'!bool;
 
-macro fdmp() &'fdmp'!float;
-macro () fdmp(num &value) &'fdmp {value}';
+macro fdmp() @'fdmp'!float;
+macro () fdmp(num @value) @'fdmp {value}';
 
-macro () flto(num &x, num &y) &'flto {x, y}';
-macro () frel(Agent? &dst) &'frel {dst}';
+macro () flto(num @x, num @y) @'flto {x, y}';
+macro () frel(Agent? @dst) @'frel {dst}';
 
-macro fric() &'fric'!int;
-macro () fric(int &value) &'fric {value}';
+macro fric() @'fric'!int;
+macro () fric(int @value) @'fric {value}';
 
-macro fvel() &'fric'!float;
-macro () fvel(num &value) &'fvel {value}';
+macro fvel() @'fric'!float;
+macro () fvel(num @value) @'fvel {value}';
 
-macro movs() &'movs'!int;
+macro movs() @'movs'!int;
 
-macro () mvby(num &x, num &y) &'mvby {x, y}';
-macro () mvsf(num &x, num &y) &'mvsf {x, y}';
-macro () mvto(num &x, num &y) &'mvto {x, y}';
+macro () mvby(num @x, num @y) @'mvby {x, y}';
+macro () mvsf(num @x, num @y) @'mvsf {x, y}';
+macro () mvto(num @x, num @y) @'mvto {x, y}';
 
-macro obst(int &dir) &'obst {dir}'!float;
+macro obst(int @dir) @'obst {dir}'!float;
 
-macro relx(Agent &a, Agent &b) &'relx {a, b}'!float;
-macro rely(Agent &a, Agent &b) &'rely {a, b}'!float;
+macro relx(Agent @a, Agent @b) @'relx {a, b}'!float;
+macro rely(Agent @a, Agent @b) @'rely {a, b}'!float;
 
-macro () rotn(num &rS, num &rC) &'rotn {rS, rC}';
+macro () rotn(num @rS, num @rC) @'rotn {rS, rC}';
 
-macro sdmp() &'sdmp'!float;
-macro () sdmp(num &value) &'sdmp {value}';
+macro sdmp() @'sdmp'!float;
+macro () sdmp(num @value) @'sdmp {value}';
 
-macro spin() &'spin'!float;
-macro () spin(num &value) &'spin {value}';
+macro spin() @'spin'!float;
+macro () spin(num @value) @'spin {value}';
 
-macro svel() &'svel'!float;
-macro () svel(num &value) &'svel {value}';
+macro svel() @'svel'!float;
+macro () svel(num @value) @'svel {value}';
 
-macro tmvb(num &x, num &y) &'tmvb {x, y}'!bool;
-macro tmvf(num &x, num &y) &'tmvf {x, y}'!bool;
-macro tmvt(num &x, num &y) &'tmvt {x, y}'!bool;
+macro tmvb(num @x, num @y) @'tmvb {x, y}'!bool;
+macro tmvf(num @x, num @y) @'tmvf {x, y}'!bool;
+macro tmvt(num @x, num @y) @'tmvt {x, y}'!bool;
 
-macro varc() &'varc'!float;
-macro () varc(num &value) &'varc {value}';
+macro varc() @'varc'!float;
+macro () varc(num @value) @'varc {value}';
 
-macro vecx(num &v) &'vecx {v}'!float;
-macro vecy(num &v) &'vecy {v}'!float;
+macro vecx(num @v) @'vecx {v}'!float;
+macro vecy(num @v) @'vecy {v}'!float;
 
-macro () velo(num &x, num &y) &'velo {x, y}';
+macro () velo(num @x, num @y) @'velo {x, y}';
 
-macro velx() &='velx'!num;
-macro vely() &='vely'!num;
+macro velx() @='velx'!num;
+macro vely() @='vely'!num;
 
-macro wall() &'wall'!int;
+macro wall() @'wall'!int;
 

@@ -17,67 +17,67 @@ include "std/compiler_prelude.ral";
  * And then whatever parameters are placed inside the () are forwarded directly to the emit statement, leading to three sets of argument counts.
  */
 
-macro __ral_compiler_helper_emit(Agent &target, int &messageId, int &ticks, any &param1, any &param2) {
-	&'mesg wrt+ {target, messageId, param1, param2, ticks}';
+macro __ral_compiler_helper_emit(Agent @target, int @messageId, int @ticks, any @param1, any @param2) {
+	@'mesg wrt+ {target, messageId, param1, param2, ticks}';
 }
 
-macro __ral_compiler_helper_emit(Agent &target, int &messageId, int &ticks, any &param1) {
-	&'mesg wrt+ {target, messageId, param1, 0, ticks}';
+macro __ral_compiler_helper_emit(Agent @target, int @messageId, int @ticks, any @param1) {
+	@'mesg wrt+ {target, messageId, param1, 0, ticks}';
 }
 
-macro __ral_compiler_helper_emit(Agent &target, int &messageId, int &ticks) {
-	&'mesg wrt+ {target, messageId, 0, 0, ticks}';
+macro __ral_compiler_helper_emit(Agent @target, int @messageId, int @ticks) {
+	@'mesg wrt+ {target, messageId, 0, 0, ticks}';
 }
 
-macro __ral_compiler_helper_emit_na(Agent &target, int &messageId, any &param1, any &param2) {
-	&'mesg wrt+ {target, messageId, param1, param2, 0}';
+macro __ral_compiler_helper_emit_na(Agent @target, int @messageId, any @param1, any @param2) {
+	@'mesg wrt+ {target, messageId, param1, param2, 0}';
 }
 
-macro __ral_compiler_helper_emit_na(Agent &target, int &messageId, any &param1) {
-	&'mesg wrt+ {target, messageId, param1, 0, 0}';
+macro __ral_compiler_helper_emit_na(Agent @target, int @messageId, any @param1) {
+	@'mesg wrt+ {target, messageId, param1, 0, 0}';
 }
 
-macro __ral_compiler_helper_emit_na(Agent &target, int &messageId) {
-	&'mesg writ {target, messageId}';
+macro __ral_compiler_helper_emit_na(Agent @target, int @messageId) {
+	@'mesg writ {target, messageId}';
 }
 
 /*
  * Call
  */
-macro __ral_compiler_helper_call(int &messageId, any &param1, any &param2) {
-	&'call {messageId, param1, param2}';
+macro __ral_compiler_helper_call(int @messageId, any @param1, any @param2) {
+	@'call {messageId, param1, param2}';
 }
 
-macro __ral_compiler_helper_call(int &messageId, any &param1) {
-	&'call {messageId, param1, 0}';
+macro __ral_compiler_helper_call(int @messageId, any @param1) {
+	@'call {messageId, param1, 0}';
 }
 
-macro __ral_compiler_helper_call(int &messageId) {
-	&'call {messageId, 0, 0}';
+macro __ral_compiler_helper_call(int @messageId) {
+	@'call {messageId, 0, 0}';
 }
 
 /*
  * Instanceof Targ
  * We need to be careful so targ is consistent when the result write occurs.
  */
-macro __ral_compiler_helper_instanceof_targ(int &family, int &genus, int &species) (family == &'fmly'!int) && (genus == &'gnus'!int) && (species == &'spcs'!int);
-macro __ral_compiler_helper_instanceof_targ(int &family, int &genus) (family == &'fmly'!int) && (genus == &'gnus'!int);
-macro __ral_compiler_helper_instanceof_targ(int &family) (family == &'fmly'!int);
-macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int &family, int &genus, int &species) {
+macro __ral_compiler_helper_instanceof_targ(int @family, int @genus, int @species) (family == @'fmly'!int) && (genus == @'gnus'!int) && (species == @'spcs'!int);
+macro __ral_compiler_helper_instanceof_targ(int @family, int @genus) (family == @'fmly'!int) && (genus == @'gnus'!int);
+macro __ral_compiler_helper_instanceof_targ(int @family) (family == @'fmly'!int);
+macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int @family, int @genus, int @species) {
 	if (targ == null) {
 		result = 0!bool;
 	} else {
 		result = __ral_compiler_helper_instanceof_targ(family, genus, species);
 	}
 }
-macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int &family, int &genus) {
+macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int @family, int @genus) {
 	if (targ == null) {
 		result = 0!bool;
 	} else {
 		result = __ral_compiler_helper_instanceof_targ(family, genus);
 	}
 }
-macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int &family) {
+macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int @family) {
 	if (targ == null) {
 		result = 0!bool;
 	} else {
@@ -89,7 +89,7 @@ macro (bool result) __ral_compiler_helper_instanceof_nullable_targ(int &family) 
  * Instanceof
  * We need to be careful so targ is consistent when the result write occurs.
  */
-macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family, int &genus, int &species) {
+macro (bool result) __ral_compiler_helper_instanceof(Agent @target, int @family, int @genus, int @species) {
 	let tmpTarg = targ;
 	targ = target;
 	if (__ral_compiler_helper_instanceof_targ(family, genus, species)) {
@@ -100,7 +100,7 @@ macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family,
 		result = 0!bool;
 	}
 }
-macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family, int &genus) {
+macro (bool result) __ral_compiler_helper_instanceof(Agent @target, int @family, int @genus) {
 	let tmpTarg = targ;
 	targ = target;
 	if (__ral_compiler_helper_instanceof_targ(family, genus)) {
@@ -111,7 +111,7 @@ macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family,
 		result = 0!bool;
 	}
 }
-macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family) {
+macro (bool result) __ral_compiler_helper_instanceof(Agent @target, int @family) {
 	let tmpTarg = targ;
 	targ = target;
 	if (__ral_compiler_helper_instanceof_targ(family)) {
@@ -122,7 +122,7 @@ macro (bool result) __ral_compiler_helper_instanceof(Agent &target, int &family)
 		result = 0!bool;
 	}
 }
-macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, int &family, int &genus, int &species) {
+macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? @target, int @family, int @genus, int @species) {
 	if (target == null) {
 		result = 0!bool;
 	} else {
@@ -137,7 +137,7 @@ macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, in
 		}
 	}
 }
-macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, int &family, int &genus) {
+macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? @target, int @family, int @genus) {
 	if (target == null) {
 		result = 0!bool;
 	} else {
@@ -152,7 +152,7 @@ macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, in
 		}
 	}
 }
-macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? &target, int &family) {
+macro (bool result) __ral_compiler_helper_instanceof_nullable(Agent? @target, int @family) {
 	if (target == null) {
 		result = 0!bool;
 	} else {

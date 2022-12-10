@@ -15,7 +15,7 @@ include "std/engine/commands_inc.ral";
 With a text part selected, focuses the text field for editing.
 With `null` selected, unfocuses.
 */
-macro () fcus() &'fcus';
+macro () fcus() @'fcus';
 
 /*
 With a text part selected, sets margins, spacing, and flags.
@@ -23,17 +23,17 @@ With a text part selected, sets margins, spacing, and flags.
 `ls` and `cs` make up the spacing (default 0 0).
 `flags` makes up the flags (default 0) -- please see the `FRMT` set of constants.
 */
-macro () frmt(int &l, int &t, int &r, int &b, int &ls, int &cs, int &flags) &'fcus';
+macro () frmt(int @l, int @t, int @r, int @b, int @ls, int @cs, int @flags) @'fcus';
 
 /*
 With a graph part selected, adds a line. You are expected to keep track of indexes yourself -- they start from 0 with the first line you add, then counts upward.
 `minV`/`maxV` represent the minimum and maximum values for the line, which are mapped to the bottom and top of the graph respectively.
 See `newGrph` and `grpv`.
 */
-macro () grpl(int &r, int &g, int &b, num &minV, num &maxV) &'grpl {r, g, b, minV, maxV}';
+macro () grpl(int @r, int @g, int @b, num @minV, num @maxV) @'grpl {r, g, b, minV, maxV}';
 
 // With a graph part selected, adds a value to a line of the given index. The graph advances when all graphs have had a line added to them.
-macro () grpv(int &i, num &v) &'grpv {i, v}';
+macro () grpv(int @i, num @v) @'grpv {i, v}';
 
 /*
 Creates a new compound agent.
@@ -42,25 +42,25 @@ However, their meaning differs slightly, in that they apply to the root part (pa
 The `pat` series of commands adds new parts.
 Commands that operate on parts select those parts with the `targ` and `part` variables -- `targ` points at the compound agent, and `part` points at the specific part number.
 */
-macro () newComp(int &family, int &genus, int &species, str &gallery, int &count, int &first, int &plane) &'new: comp {family, genus, species, gallery, count, first, plane}';
+macro () newComp(int @family, int @genus, int @species, str @gallery, int @count, int @first, int @plane) @'new: comp {family, genus, species, gallery, count, first, plane}';
 
 // With a text part selected, returns the number of text pages. See `page`.
-macro npgs() &'npgs'!int;
+macro npgs() @'npgs'!int;
 
 // With a text part selected, sets the current text page. See `npgs`.
-macro () page(int &p) &'page {p}';
+macro () page(int @p) @'page {p}';
 
 // With a text part selected, returns the current page.
-macro page() &'npgs'!int;
+macro page() @'npgs'!int;
 
 /*
 Sets the current `part`, used to select the part of a compound agent that some operations target.
 Note that this is independent of `targ`, but the combination of `targ` and `part` selects the specific part.
 */
-macro () part(int &i) &'part {i}';
+macro () part(int @i) @'part {i}';
 
 // Returns true if the given part exists on `targ`, false otherwise.
-macro partExists(int &i) &'part {i}'!bool;
+macro partExists(int @i) @'part {i}'!bool;
 
 /*
 Adds a new button part to the `targ` compound agent.
@@ -73,7 +73,7 @@ Adds a new button part to the `targ` compound agent.
 `msg` is a message to send when the button is clicked.
 `trns` if true checks the transparency of pixels for button hit detection -- otherwise button hit detection is based on the bounding box.
 */
-macro () patButt(int &id, str &gallery, int &first, int &count, num &x, num &y, int &plane, bytes &hover, int &msg, bool &trns) &'pat: butt {id, gallery, first, count, x, y, plane, hover, msg, trns}';
+macro () patButt(int @id, str @gallery, int @first, int @count, num @x, num @y, int @plane, bytes @hover, int @msg, bool @trns) @'pat: butt {id, gallery, first, count, x, y, plane, hover, msg, trns}';
 
 /*
 Adds a new camera-view part to the `targ` compound agent.
@@ -84,7 +84,7 @@ Adds a new camera-view part to the `targ` compound agent.
 `camW` and `camH` represent the world width/height the camera covers, while `partW` and `partH` represent the size of the display (this part).
 To be clear, this is _not_ backwards, if anything the official documentation is really really confusing.
 */
-macro () patCmra(int &id, str &gallery, int &first, num &x, num &y, int &plane, int &camW, int &camH, int &partW, int &partH) &'pat: cmra {id, gallery, first, x, y, plane, camW, camH, partW, partH}';
+macro () patCmra(int @id, str @gallery, int @first, num @x, num @y, int @plane, int @camW, int @camH, int @partW, int @partH) @'pat: cmra {id, gallery, first, x, y, plane, camW, camH, partW, partH}';
 
 /*
 Adds a functionless sprite (aka a "dull part") to the `targ` compound agent.
@@ -93,7 +93,7 @@ Adds a functionless sprite (aka a "dull part") to the `targ` compound agent.
 `first` is the initial frame that all further sprite commands on this part are relative to.
 `x`, `y`, and `plane` are relative to part 0.
 */
-macro () patDull(int &id, str &gallery, int &first, num &x, num &y, int &plane) &'pat: dull {id, gallery, first, x, y, plane}';
+macro () patDull(int @id, str @gallery, int @first, num @x, num @y, int @plane) @'pat: dull {id, gallery, first, x, y, plane}';
 
 /*
 Adds a fixed text (i.e. label) part to the `targ` compound agent.
@@ -107,7 +107,7 @@ You almost certainly will need to create specific images for your text parts.
 `fontGallery` is like `gallery`, but refers to a font.
 See also `ptxt` and `frmt`.
 */
-macro () patFixd(int &id, str &gallery, int &first, num &x, num &y, int &plane, str &fontGallery) &'pat: fixd {id, gallery, first, x, y, plane, fontGallery}';
+macro () patFixd(int @id, str @gallery, int @first, num @x, num @y, int @plane, str @fontGallery) @'pat: fixd {id, gallery, first, x, y, plane, fontGallery}';
 
 /*
 Adds a graph part to the `targ` compound agent.
@@ -118,17 +118,17 @@ Adds a graph part to the `targ` compound agent.
 `values` is the amount of values stored in the graph, equally spaced over the X axis.
 See also `grpl`, `grpv`.
 */
-macro () patGrph(int &id, str &gallery, int &first, num &x, num &y, int &plane, int &values) &'pat: grph {id, gallery, first, x, y, plane, values}';
+macro () patGrph(int @id, str @gallery, int @first, num @x, num @y, int @plane, int @values) @'pat: grph {id, gallery, first, x, y, plane, values}';
 
 /*
 Removes a part (except 0) from the `targ` compound agent.
 */
-macro () patKill(int &id) &'pat: kill {id}';
+macro () patKill(int @id) @'pat: kill {id}';
 
 /*
 Moves a part on the `targ` compound agent.
 */
-macro () patMove(int &id, num &x, num &y) &'pat: move {id, x, y}';
+macro () patMove(int @id, num @x, num @y) @'pat: move {id, x, y}';
 
 /*
 Adds a text (i.e. textbox) part to the `targ` compound agent.
@@ -142,14 +142,14 @@ You almost certainly will need to create specific images for your text parts.
 `fontGallery` is like `gallery`, but refers to a font.
 See also `ptxt`, `fcus` and `frmt`.
 */
-macro () patText(int &id, str &gallery, int &first, num &x, num &y, int &plane, int &msgId, str &fontGallery) &'pat: text {id, gallery, first, x, y, plane, msgId, fontGallery}';
+macro () patText(int @id, str @gallery, int @first, num @x, num @y, int @plane, int @msgId, str @fontGallery) @'pat: text {id, gallery, first, x, y, plane, msgId, fontGallery}';
 
 // Given a part ID (or -1 for the first), returns the next part ID (or -1 after the last part).
-macro pnxt(int &id) &'pnxt {id}'!int;
+macro pnxt(int @id) @'pnxt {id}'!int;
 
 // Sets the text of the selected text part. See `patFixd` and `patText`.
-macro () ptxt(str &txt) &'ptxt {txt}';
+macro () ptxt(str @txt) @'ptxt {txt}';
 
 // Gets the text of the selected text part. See `patFixd` and `patText`.
-macro ptxt() &'ptxt'!str;
+macro ptxt() @'ptxt'!str;
 
