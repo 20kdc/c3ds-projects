@@ -25,6 +25,8 @@ image::diagram/IncludeDecl.png[]
 
 Adds a search path for `include`. If the search path is relative, then it is relative to the current source file.
 
+_It is expected that this does not play well with tooling such as the RAL language server (as when editing whatever files you included, that file doesn't have the added search path) -- this has been kept as ultimately it may be a useful tool to "just get code working" without having to do too many adjustments._
+
 ```
 addSearchPath "../evilcorpCoreLibraries";
 include "eccl/elo.ral";
@@ -159,10 +161,10 @@ The expression must be evaluatable at compile-time at the point of declaration -
 myConst = 1;
 alwaysFalse = 0;
 install {
-&'outv {myConst}';
-if alwaysFalse {
-    &'outs "This code will never be run!"';
-}
+    @'outv {myConst}';
+    if alwaysFalse {
+        @'outs "This code will never be run!"';
+    }
 }
 ```
 
@@ -182,7 +184,7 @@ It is generally preferrable to use script names.
 
 ```
 script Canary:eaten {
-&'dbg: outs {"Ouchie!"}';
+@'dbg: outs {"Ouchie!"}';
 }
 ```
 
@@ -232,7 +234,7 @@ The syntax of an expression macro is simply `macro NAME(PARAM...) EXPRESSION`.
 
 It is polite to append a semicolon after an expression macro that is not a *statement expression*.
 
-Parameters are separated by `,` and take the form of `TYPE NAME`, `TYPE &NAME`, or `TYPE &=NAME`. The presence of the `&` character, declaring the parameter as inline, is invalid (and redundant) for the return values of a statement macro, but for regular (non-return) parameters it's always valid. The `&=` variant indicates the parameter is inline and variable (it must be assignable to).
+Parameters are separated by `,` and take the form of `TYPE NAME`, `TYPE @NAME`, or `TYPE @=NAME`. The presence of the `@` character, declaring the parameter as inline, is invalid (and redundant) for the return values of a statement macro, but for regular (non-return) parameters it's always valid. The `@=` variant indicates the parameter is inline and variable (it must be assignable to).
 
 Essentially, the difference is that an inline parameter is declared as if an `alias` had occurred in a scope immediately surrounding the call, while a non-inline parameter is declared as if a `let` had occurred in that same scope.
 
@@ -242,28 +244,28 @@ It is allowed to declare multiple macros with the same name if and only if they 
 
 ```
 macro textWithSideEffects() {
-&'outs {"Side effect!\n"}';
+@'outs {"Side effect!\n"}';
 return "Bloop.";
 }
 
 macro test1(str text) {
 // As the argument is not inline, a temporary variable is created.
 // Thus the side effects only execute once.
-&'outs {text}';
-&'outs {text}';
+@'outs {text}';
+@'outs {text}';
 return 1;
 }
 
-macro (int retVal) test2(str &text) {
+macro (int retVal) test2(str @text) {
 // As the argument is inline, 'text' here is substituted for the expression.
 // Thus the side effects execute twice.
-&'outs {text}';
-&'outs {text}';
+@'outs {text}';
+@'outs {text}';
 // Note that if there are any side-effects necessary in order to write to retVal, they occur here.
 retVal = 1;
 }
 
-macro () test3(str &=text) {
+macro () test3(str @=text) {
 // Inline variable arguments can also effectively return values.
 text = "someText!\n";
 }
@@ -274,7 +276,7 @@ test2(textWithSideEffects());
 // v is modified here by test3.
 let string v;
 test3(v);
-&'outs {v}'; // someText!\n
+@'outs {v}'; // someText!\n
 }
 ```
 

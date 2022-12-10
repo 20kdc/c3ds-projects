@@ -4,6 +4,8 @@ Statements are the unit of sequenced, non-value-returning code in RAL.
 
 image::diagram/Stmt.png[]
 
+_A single semicolon `;` is an empty statement, with no effect._
+
 #### Scoping
 
 ##### Blocks
@@ -82,9 +84,9 @@ These statements start with `&`, followed by string-embeds containing the CAOS c
 ```
 // Inline statements may contain expressions.
 let int number = 0;
-&'outv {number + 1}';
+@'outv {number + 1}';
 // Inline statements may be written over multiple string-embeds.
-&'outs {"Now is the time\n"}\n'
+@'outs {"Now is the time\n"}\n'
  'outs {"For all good Norns\n"}\n'
  'outs {"To respect the buzzing of the airlock\n"}';
 ```
@@ -150,7 +152,7 @@ image::diagram/CallStmt.png[]
 
 ##### if
 
-`if` is a conditional branch statement. It is of the form `if (cond) { code } [else { code }]`.
+`if` is a conditional branch statement. It is of the form `if cond { code } [else { code }]`.
 
 Like in C, the branches of an `if` can be single statements without enclosing `{}`.
 
@@ -165,6 +167,10 @@ if (a == 1) {
 
 } else {
 
+}
+
+// Can also be used without ()
+if a == 1 {
 }
 ```
 
@@ -217,6 +223,10 @@ let a = 0;
 while (a < 5) {
     outs("Meow!");
     a++;
+}
+
+// Can also be used without ()
+while a < 5 {
 }
 ```
 

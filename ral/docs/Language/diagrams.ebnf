@@ -43,11 +43,12 @@ InstallDecl ::= "install" Stmt
 RemoveDecl ::= "remove" Stmt
 MacroDecl ::= "macro" (ArgList ID ArgList Stmt | ID ArgList Expr)
 MacroArgList ::= "(" MacroArg ("," MacroArg)* ")"
-MacroArg ::= Type ("&" | "&=")? ID
+MacroArg ::= Type ("@" | "@=")? ID
 
 // stmt
 
 Stmt ::=
+	EmptyStmt |
 	BlockStmt |
 	LetStmt |
 	AliasStmt |
@@ -67,19 +68,20 @@ Stmt ::=
 	ForeachStmt |
 	WithStmt
 
+EmptyStmt ::= ";"
 BlockStmt ::= "{" Stmt* "}"
 LetStmt ::= "let" LetStmtBody ";"
 LetStmtBody ::= Type? ID ("," Type? ID)* ("=" Expr)? ";"
 AliasStmt ::= "alias" ID ("=" Expr | "!" Type) ";"
 
-InlineStmt ::= "&" StringEmbed+ ";"
+InlineStmt ::= "@" StringEmbed+ ";"
 AssignStmt ::= (Expr "=")? Expr ";"
 ModifyStmt ::= Expr ("+=" | "-=" | "*=" | "/=" | "|=" | "&=") Expr ";"
 EmitStmt ::= Expr "->" ID "(" Expr ")" ("after" Expr)? ";"
 CallStmt ::= "call" ID "(" Expr ")" ";"
 
-IfStmt ::= "if" "(" Expr ")" Stmt ("else" Stmt)?
-WhileStmt ::= "while" "(" Expr ")" Stmt
+IfStmt ::= "if" Expr Stmt ("else" Stmt)?
+WhileStmt ::= "while" Expr Stmt
 LoopStmt ::= "loop" Stmt
 ForStmt ::= "for" LetStmtBody ";" Expr ";" Stmt Stmt
 BreakStmt ::= ("break" | "continue") ";"
