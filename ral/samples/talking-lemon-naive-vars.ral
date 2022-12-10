@@ -8,14 +8,14 @@ install {
 	 * This ensures that escapes, such as \n, are passed through properly.
 	 * Otherwise, RAL interprets it as wanting a newline in the inline CAOS.
 	 */
-	&'new: simp 2 24 8802 {"ds lemon pod"} 1 30 8000';
+	@'new: simp 2 24 8802 {"ds lemon pod"} 1 30 8000';
 	// Move it to the Meso
-	&'mvsf 631 9158';
+	@'mvsf 631 9158';
 	// Set attributes
-	&'perm 100';
-	&'attr 199';
-	&'aero 10';
-	&'accg 2';
+	@'perm 100';
+	@'attr 199';
+	@'aero 10';
+	@'accg 2';
 }
 
 // ---%<---
@@ -27,28 +27,28 @@ The 0 here indicates ov00.
 field int TalkingLemon.line 0;
 
 script TalkingLemon 1 {
-	&'lock';
+	@'lock';
 	let str text;
-	// if (CONDITION) STATEMENT [else STATEMENT]
+	// if CONDITION STATEMENT [else STATEMENT]
 	if (ownr.line == 0) {
 		// Assignment: EXPRESSION = EXPRESSION;
 		text = "Hello! I'm a talking lemon!";
 		// Field access: EXPRESSION.FIELD
 		ownr.line = 2;
-		&'wait 15';
+		@'wait 15';
 		ownr.line = 1;
 	} else if (ownr.line == 1) {
 		text = "Oh no, not again...";
 		ownr.line = 2;
-		&'wait 15';
+		@'wait 15';
 		ownr.line = 0;
 	} else {
 		text = "You ought not to see this...";
 		ownr.line = 0;
 	}
-	&'rtar 1 2 10';
+	@'rtar 1 2 10';
 	// The same {} wrapping that helps with literal strings is also able to translate variable names into the variables they represent.
-	&'mesg wrt+ targ 126 {text} ownr 0';
+	@'mesg wrt+ targ 126 {text} ownr 0';
 }
 
 // ---%<---
@@ -61,10 +61,10 @@ remove {
 	// foreach (TYPE in epas[ EXPRESSION, EXPRESSION, EXPRESSION]) STATEMENT
 	// foreach (TYPE in econ EXPRESSION) STATEMENT
 	foreach (TalkingLemon in enum) {
-		&'kill targ';
+		@'kill targ';
 	}
 	// Remove the script
-	&'scrx 2 24 8802 1';
+	@'scrx 2 24 8802 1';
 }
 
 // ---%<---

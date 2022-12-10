@@ -8,44 +8,44 @@ install {
 	 * This ensures that escapes, such as \n, are passed through properly.
 	 * Otherwise, RAL interprets it as wanting a newline in the inline CAOS.
 	 */
-	&'new: simp 2 24 8802 {"ds lemon pod"} 1 30 8000';
+	@'new: simp 2 24 8802 {"ds lemon pod"} 1 30 8000';
 	// Move it to the Meso
-	&'mvsf 631 9158';
+	@'mvsf 631 9158';
 	// Set attributes
-	&'perm 100';
-	&'attr 199';
-	&'aero 10';
-	&'accg 2';
+	@'perm 100';
+	@'attr 199';
+	@'aero 10';
+	@'accg 2';
 }
 
 script TalkingLemon 1 {
-	&'lock';
+	@'lock';
 	// Inform RAL that we're using VA00, so RAL isn't allowed to use it.
 	let str text@0;
-	&'doif mv00 = 0';
-		&'sets va00 {"Hello! I'm a talking lemon!"}';
-		&'setv mv00 2';
-		&'wait 15';
-		&'setv mv00 1';
-	&'elif mv00 = 1';
-		&'sets va00 {"Oh no, not again..."}';
-		&'setv mv00 2';
-		&'wait 15';
-		&'setv mv00 0';
-	&'else';
-		&'sets va00 {"You ought not to see this..."}';
-		&'setv mv00 0';
-	&'endi';
-	&'rtar 1 2 10';
-	&'mesg wrt+ targ 126 va00 ownr 0';
+	@'doif mv00 = 0';
+		@'sets va00 {"Hello! I'm a talking lemon!"}';
+		@'setv mv00 2';
+		@'wait 15';
+		@'setv mv00 1';
+	@'elif mv00 = 1';
+		@'sets va00 {"Oh no, not again..."}';
+		@'setv mv00 2';
+		@'wait 15';
+		@'setv mv00 0';
+	@'else';
+		@'sets va00 {"You ought not to see this..."}';
+		@'setv mv00 0';
+	@'endi';
+	@'rtar 1 2 10';
+	@'mesg wrt+ targ 126 va00 ownr 0';
 }
 
 remove {
 	// Delete all talking lemons
-	&'enum 2 24 8802';
-		&'kill targ';
-	&'next';
+	@'enum 2 24 8802';
+		@'kill targ';
+	@'next';
 	// Remove the script
-	&'scrx 2 24 8802 1';
+	@'scrx 2 24 8802 1';
 }
 

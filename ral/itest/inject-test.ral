@@ -10,13 +10,13 @@
 class Moo 90 90 90;
 
 install {
-	&'outs "MOO+"';
+	@'outs "MOO+"';
 }
 
 script Moo 10 {
-	&'outs "MOO SCRIPT"';
+	@'outs "MOO SCRIPT"';
 }
 
 remove {
-	&'outs "MOO-"';
+	@'outs "MOO-"';
 }

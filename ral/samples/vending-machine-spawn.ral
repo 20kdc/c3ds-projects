@@ -28,7 +28,7 @@ Also beware that macros don't have separate copies of the `inst` and `lock` stat
 If this doesn't seem to make sense, check the output CAOS code -- but in short, even though it's separate macros, it's the same script.
 ```
 */
-macro () spawnProduct(int &kind) {
+macro () spawnProduct(int @kind) {
 	// spawn in world product
 	let myX, myY = posx(), posy();
 	if (kind == PRODUCT_KIND_LEMON) {

@@ -6,17 +6,17 @@
  */
 
 install {
-	&'outs {"enum-escape\n"}';
+	@'outs {"enum-escape\n"}';
 	foreach (Agent in enum) {
-		&'outs {" break\n"}';
+		@'outs {" break\n"}';
 		break;
-		&'outs {"no way? no way!"}';
+		@'outs {"no way? no way!"}';
 	}
-	&'outs {" midpoint\n"}';
+	@'outs {" midpoint\n"}';
 	foreach (Agent in enum) {
 		continue;
-		&'outs {"no way? no way!"}';
+		@'outs {"no way? no way!"}';
 	}
-	&'outs {" end\n"}';
+	@'outs {" end\n"}';
 }
 

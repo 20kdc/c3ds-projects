@@ -16,40 +16,40 @@ install {
 	// bugsAwakeLexerTraceOn
 
 	if (somehowAnAgent instanceof VerySpecificAgent)
-		&'outs {"V"}';
+		@'outs {"V"}';
 
 	// bugsAwakeLexerTraceOff
 
 	if (somehowAnAgent instanceof LessSpecificAgent)
-		&'outs {"L"}';
+		@'outs {"L"}';
 	if (somehowAnAgent instanceof NotSpecificAgent)
-		&'outs {"N"}';
+		@'outs {"N"}';
 
 	alias somehowAnAgent = somehowAnAgent!Agent?;
 	if (somehowAnAgent instanceof VerySpecificAgent)
-		&'outs {"V"}';
+		@'outs {"V"}';
 	if (somehowAnAgent instanceof LessSpecificAgent)
-		&'outs {"L"}';
+		@'outs {"L"}';
 	if (somehowAnAgent instanceof NotSpecificAgent)
-		&'outs {"N"}';
+		@'outs {"N"}';
 
-	&'outs {"Instanceof testing 2"}';
+	@'outs {"Instanceof testing 2"}';
 
 	// instanceof testing 2
 	alias targ!Agent;
 	if (targ instanceof VerySpecificAgent)
-		&'outs {"V"}';
+		@'outs {"V"}';
 	if (targ instanceof LessSpecificAgent)
-		&'outs {"L"}';
+		@'outs {"L"}';
 	if (targ instanceof NotSpecificAgent)
-		&'outs {"N"}';
+		@'outs {"N"}';
 
 	alias targ!Agent?;
 	if (targ instanceof VerySpecificAgent)
-		&'outs {"V"}';
+		@'outs {"V"}';
 	if (targ instanceof LessSpecificAgent)
-		&'outs {"L"}';
+		@'outs {"L"}';
 	if (targ instanceof NotSpecificAgent)
-		&'outs {"N"}';
+		@'outs {"N"}';
 }
 

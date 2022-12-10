@@ -28,7 +28,7 @@ As such, the cast not only casts any value inside to `int` -- but also states an
 If you're using the RAL Language Server, you'll see the result of this as productType returning `int/RW`.
 ```
 */
-macro productType(int &id) avar(ownr!VendingMachine, AVAR_PRODUCTS + id)!int;
+macro productType(int @id) avar(ownr!VendingMachine, AVAR_PRODUCTS + id)!int;
 
 /*
 ```

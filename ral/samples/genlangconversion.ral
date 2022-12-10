@@ -10,7 +10,7 @@ include "std/c3ds.ral";
 // This script's purpose is to help in "adjusting" a Norn's language.
 // I blame the lack of a blackboard...
 
-macro () handleLangGroup(str &id, str &cat, int size) {
+macro () handleLangGroup(str @id, str @cat, int size) {
 	outs("* ");
 	outs(id);
 	outs(" - ");
