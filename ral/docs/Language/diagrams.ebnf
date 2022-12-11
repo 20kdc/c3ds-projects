@@ -24,21 +24,21 @@ Decl ::=
 	RemoveDecl |
 	MacroDecl
 
-IncludeDecl ::= "include" ConstantString ";"
-AddSearchPathDecl ::= "addSearchPath" ConstantString ";"
+IncludeDecl ::= "include" ConstStringExpr ";"
+AddSearchPathDecl ::= "addSearchPath" ConstStringExpr ";"
 
 TypedefDecl ::= "typedef" ID Type ";"
-ClassDecl ::= "class" ID (ConstantInt ConstantInt ConstantInt)? ("extends" ID)* ";"
+ClassDecl ::= "class" ID (ConstIntExpr ConstIntExpr ConstIntExpr)? ("extends" ID)* ";"
 InterfaceDecl ::= "interface" ID ("extends" ID)* ";"
-FieldDecl ::= "field" Type ID "." ID ConstantInt ";"
-MessageDecl ::= "message" ID ("->" | ":") ID ConstantInt ";"
-ScriptProtoDecl ::= "script" ID ("->" | ":") ID ConstantInt ";"
-OverrideOwnrDecl ::= "overrideOwnr" ConstantInt Type ";"
-MessageHookDecl ::= "messageHook" ConstantInt ";"
-AssertConstDecl ::= "assertConst" ConstantInt ";"
-ConstantDecl ::= ID "=" Constant ";"
+FieldDecl ::= "field" Type ID "." ID ConstIntExpr ";"
+MessageDecl ::= "message" ID ("->" | ":") ID ConstIntExpr ";"
+ScriptProtoDecl ::= "script" ID ("->" | ":") ID ConstIntExpr ";"
+OverrideOwnrDecl ::= "overrideOwnr" ConstIntExpr Type ";"
+MessageHookDecl ::= "messageHook" ConstIntExpr ";"
+AssertConstDecl ::= "assertConst" ConstIntExpr ";"
+ConstantDecl ::= ID "=" ConstExpr ";"
 
-ScriptCodeDecl ::= "script" ID (("->" | ":") ID | ConstantInt) Stmt
+ScriptCodeDecl ::= "script" ID (("->" | ":") ID | ConstIntExpr) Stmt
 InstallDecl ::= "install" Stmt
 RemoveDecl ::= "remove" Stmt
 MacroDecl ::= "macro" (ArgList ID ArgList Stmt | ID ArgList Expr)
@@ -90,4 +90,37 @@ WithStmt ::= "with" ("(" Type ID ")" | Type ID) Stmt ("else" Stmt)?
 
 // expr
 
+Expr ::=
+	ExprAtom
+	(
+		("," | "||" | "&&" | "==" | "!=" | "<=" | ">=" | "<" | ">" | "+" | "-" | "/" | "*" | "|" | "&")
+		ExprAtom
+	)*
+
+ExprAtom ::=
+	// parseExprAtomOrNull
+	(
+		INT |
+		STRING |
+		FLOAT |
+		ID |
+		StringEmbed |
+		"@" StringEmbed |
+		"@=" StringEmbed |
+		("{" Stmt* ("}" | ("return" Expr? ";" "}"))) |
+		"(" Expr? ")" |
+		("++" | "--" | "!" | "~" | "-") ExprAtom |
+		"[" ConstByteListExpr "]"
+	)
+	// parseExprSuffix
+	(
+		"instanceof" Type |
+		("++" | "--") |
+		// this is actually call syntax
+		"(" Expr? ")" |
+		// this is actually message ID syntax
+		(":" | "->") ID |
+		"." ID |
+		"!" Type?
+	)*
 

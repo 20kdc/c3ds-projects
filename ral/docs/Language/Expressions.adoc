@@ -4,6 +4,14 @@ Expressions are how values to be read *or written* are expressed.
 
 RAL uses tuples as expressions for versatility, though it does not have a tuple type.
 
+__Expr__:
+
+image::diagram/Expr.png[]
+
+__ExprAtom__:
+
+image::diagram/ExprAtom.png[]
+
 #### Constants
 
 Constants are the simplest kind of expression.

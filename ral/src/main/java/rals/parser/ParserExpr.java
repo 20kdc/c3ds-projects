@@ -230,11 +230,6 @@ public class ParserExpr {
 			// Because we ran into the string embed in the first place, this will have at least one value.
 			// Also keep in mind RALImplicitStringifier will guarantee this turns into concatenation.
 			return new RALChainOp(di, RALModAssignStatement.ADD, total);
-		} else if (tkn.isKeyword("++") || tkn.isKeyword("--")) {
-			RALExprUR inner = parseExprAtomOrNull(ifc);
-			if (inner == null)
-				throw new RuntimeException("Looked like the setup for a pre-inc/dec, but was not :" + tkn);
-			return makeIncDec(tkn.extent, ts, inner, true, tkn.isKeyword("++"));
 		} else if (tkn.isKeyword("@")) {
 			return new RALInlineExpr(ParserCode.parseStringEmbed(ifc, true), RALSlot.Perm.R);
 		} else if (tkn.isKeyword("@=")) {
@@ -262,6 +257,14 @@ public class ParserExpr {
 			RALExprUR interior = parseExpr(ifc, false);
 			lx.requireNextKw(")");
 			return interior;
+		} else if (tkn.isKeyword("++") || tkn.isKeyword("--")) {
+			// CRITICALLY IMPORTANT:
+			// Use parseExprFullAtomOrNull for these or it will wedge field acc.
+			// Think "++mouse.moonLevel;"
+			RALExprUR inner = parseExprFullAtomOrNull(ifc);
+			if (inner == null)
+				throw new RuntimeException("Looked like the setup for a pre-inc/dec, but was not :" + tkn);
+			return makeIncDec(tkn.extent, ts, inner, true, tkn.isKeyword("++"));
 		} else if (tkn.isKeyword("!")) {
 			// logical NOT
 			// so the reason this uses parseExprFullAtomOrNull?
