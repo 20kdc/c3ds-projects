@@ -42,7 +42,7 @@ script VendingMachine:dispenseProduct {
 		spawnProduct(productType(productToDrop));
 		// revert targ and virtual product goes bye-bye
 		/*
-		```
+```
 Note that RAL doesn't automatically manage targ for you.
 
 A particular note on this front is that targ being cast inside a given scope won't cause it to be cast outside that scope, despite the value of targ being what was set inside.
@@ -54,7 +54,7 @@ In some cases, RAL will change targ's type:
 * Inside a `foreach` loop, it's cast to the type given in the `foreach` loop.
 * When a `foreach` loop ends (to reflect `enum` changing `targ` to `ownr` at end), it's cast to the default of `Agent?`.
 * When `with` is used on `targ`, it's automatically cast like any other value would be.
-		```
+```
 		*/
 		targ = ownr;
 		patKill(VMP_PRODUCTS + productToDrop);

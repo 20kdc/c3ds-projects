@@ -81,11 +81,20 @@ Inline statements, or `&`, are used to reasonably-directly write CAOS into the o
 
 These statements start with `&`, followed by string-embeds containing the CAOS code, and finally ending with a semicolon (`;`).
 
+However, rather than the string embeds being real, the replacements are instead replaced with references to the values in CAOS.
+
+_Beware: In regards to the few cases where you will be using CAOS commands that write into provided variables:_
+_RAL can't actually determine when this is going to happen from the inline statement alone, so you get no error reporting with that._
+_The only case where this isn't enough is targ, which is a particularly interesting special case because you can only write to it with a specific command._
+_Unfortunately for targ, targ isn't a normal variable, but it has to be treated like one for things like `with` to work properly._
+_Fortunately, the only command in CAOS you could mess this up with is `seta` -- and you have no reason to use that from an inline statement._
+
 ```
 // Inline statements may contain expressions.
 let int number = 0;
 @'outv {number + 1}';
 // Inline statements may be written over multiple string-embeds.
+// (However, they're joined together without even automatic newlines.)
 @'outs {"Now is the time\n"}\n'
  'outs {"For all good Norns\n"}\n'
  'outs {"To respect the buzzing of the airlock\n"}';
