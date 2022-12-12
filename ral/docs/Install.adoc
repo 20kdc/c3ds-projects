@@ -6,7 +6,6 @@ First of all, the assumption is that you are receiving this file with _at least_
 
 * `README.md`: Licenses, general description of things.
 * `COPYING.txt`: Licenses.
-* `COPYING-godot.txt`: Licenses.
 * `caosproxy`: Directory.
 ** `caosprox.exe`: Contains the CAOS Proxy, used to connect RAL to the game.
 * `ral`: Directory.
@@ -15,6 +14,8 @@ First of all, the assumption is that you are receiving this file with _at least_
 ** `ral.cmd`: For Windows users.
 ** `raljector`: RALjector launch.
 ** `raljector.cmd`: RALjector launch.
+** `raltest`: RAL CPX test launch.
+** `raltest.cmd`: RAL CPX test launch.
 
 There are other necessary files, but this should give you an idea of what to look for.
 
@@ -34,47 +35,25 @@ OpenJDK 64-Bit Server VM (build 17.0.4+8-Ubuntu-122.04, mixed mode, sharing)
 
 _If you don't get an error and you have a Java version above or equal to 8, RAL will work and you can skip installing Java: You already have it._
 
-At present, a good source is https://adoptium.net/en-GB/temurin/releases/ . You do _not_ need a JDK (but may prefer to have it if you wish to go into developing Java applications in the future), and you do _not_ (but may prefer to have) need a version higher than Java 8.
+At present, a good source is https://adoptium.net/en-GB/temurin/releases/ .
 
-You _absolutely must ensure that Java is added to your PATH._
+Some notes on Java installation:
 
-You will know if Java is in your PATH as (after possibly a logout and login) the above `java --version` command will function.
-
-Per-OS:
-
-* For the Windows installer, installing to PATH is the default. You'd have to mess things up for it not to install to PATH.
+* Install the JDK if you intend to develop Java applications, stick to the JRE otherwise.
+** The JDK contains a JRE, so you don't need both.
+* You _probably_ want the highest Java version, for other applications you might want to run other than RAL.
+** There are exceptions to this rule for people curious about modded ancient versions of certain sandbox voxel games.
+** RAL requires at least Java 8, but it isn't particularly picky about which Java version it runs on.
+* If you are on Windows, you probably want the `.msi` version.
+** For the Windows installer (`.msi`), installing to PATH is the default. You'd have to mess things up for it not to install to PATH.
+** The `.zip` download requires you manually add it to your PATH.
 * For Linux, you're better off grabbing a `java` package from your distribution.
+** Remember, RAL doesn't require anything higher than Java 8. These days, that means literally any Java package you install from your distribution will be supported by RAL.
 * For Mac OS X, please use the `.pkg` version -- I have a hunch it is more likely to install to PATH. (This is not tested.)
 
-### Check RAL Starts!
+You _absolutely must ensure that a Java version is in your PATH._
 
-From your Terminal / Command Prompt window, you must now `cd` to the RAL directory.
-
-I'm not going to describe everything about `cd` here, just know that `cd ..` goes out one directory, `cd somewhere` goes into the directory `somewhere`, and on Windows you need to explicitly change drives before using `cd`. (Changing drives is achieved by typing `C:` or `D:` or such on it's own line.)
-
-Within the RAL directory, run `./ral`, as so:
-
-(This should work on any operating system, but Linux is shown here.)
-
-```
-20kdc@Magnus:/media/modus/Sync2/repositories/c3ds-projects/ral$ ./ral
-RAL Compiler
-Standard Library Directory: /media/modus/Sync2/repositories/c3ds-projects/ral/include
-compile INPUT OUTPUT: Compiles INPUT and writes CAOS to OUTPUT
-compileDebug INPUT OUTPUT: Same as compile, but with added compiler debug information
-compileInstall INPUT OUTPUT: Same as compile, but only the install script
-compileEvents INPUT OUTPUT: Same as compile, but only the event scripts
-compileRemove INPUT OUTPUT: Same as compile, but only the remove script (without rscr prefix!)
-inject INPUT: Injects event scripts and install script
-injectEvents INPUT: Injects event scripts only
-injectRemove INPUT: Injects removal script
-lsp: Language server over standard input/output
-lspLog: Like lsp, but writes out lsp.log and shows additional LSP debug information
-docGen INPUT OUTPUT (+/-PREFIX)...: Generates AsciiDoc documentation.
-cpxConnectionTest: Test CPX connection
-```
-
-_If you receive something like this text, and do not receive an error or warning about the standard library, then your RAL installation is working properly._
+You will know if Java is in your PATH as (_after possibly a logout and login_) the above `java --version` command will function.
 
 ### CPX (CAOS Proxy)
 
@@ -90,10 +69,11 @@ Mac OS X users: Use Wine, or start `caosprox.exe` in your virtual machine. If yo
 
 Stopping the CAOS Proxy can be done via the tray icon that appears in the bottom-right.
 
-Testing the CAOS Proxy is also relatively simple, with `ral cpxConnectionTest`:
+You can test RAL is functioning properly by running the provided `raltest` script.
+
+Results should look something like this:
 
 ```
-20kdc@Magnus:/media/modus/Sync2/repositories/c3ds-projects/ral$ ./ral cpxConnectionTest
 RAL Compiler
 Standard Library Directory: /media/modus/Sync2/repositories/c3ds-projects/ral/include
 include: std/compiler_helpers.ral
@@ -101,36 +81,35 @@ include: std/compiler_prelude.ral
 include: std/cpx_connection_test.ral
 CPX connection OK - connected to Docking Station
 Engine version 2.286
+Identified as Docking Station, Build 195.
 Modules OriginalDisplay DirectX (sillymodule 1, netbabel 148)
+
+Press Enter to continue...
 ```
 
 If you don't see `CPX connection OK`, RAL was probably unable to connect to the CPX server.
 
-_If you are connecting to Creatures 3, the script will not show the modules. This is because Creatures 3 uses an older version of the engine._
-
-### Injecting With RAL
-
-Using `./ral inject someRALFile.ral`, you can inject a RAL file. If there are errors in the code, they are shown.
-
-There are variants to this command that only inject particular parts (see the Tooling Reference or RAL's own internal help).
-
-Alternatively, you can run `./raljector`, a GUI which allows quickly re-injecting a file from a window.
-
-### Compiling With RAL
-
-Using `./ral compile someRALFile.ral someCosFile.cos`, you can compile.
-
-There are variants to this command that only compile particular parts (see the Tooling Reference or RAL's own internal help).
-
-_In particular, you can compile the Remove script into a separate file._
+_If you are connecting to Creatures 3, the script will not show the modules. This is because Creatures 3 uses an older version of the engine which doesn't have them._
 
 ### RALjector
 
-Assuming you've gotten RAL launching, you can start RALjector by simply running the RALjector launch script in some way.
+You can start RALjector by simply running the RALjector launch script in some way.
+
+This offers a mixture of a CAOS Debugger and CAOS Tool-like experience, although it doesn't include an editor.
 
 ### Editor Setup
 
 Please skip to the Booklet of Tooling Pointers and check there in regards to the current state of editors that RAL has integration for.
+
+If you need to setup something custom, RAL provides a Language Server Protocol server as the `ral lsp` command (using standard IO).
+
+### Command-Line Use
+
+The command-line `ral` tool is the best way to make release versions of RAL projects, as it can be used in batch scripts and so forth.
+
+`RALjector` is also basically capable but is inconvenient.
+
+_Please look into the `RAL Tooling Reference` for this._
 
 ### Things To Check
 

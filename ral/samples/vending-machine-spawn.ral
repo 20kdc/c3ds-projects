@@ -18,8 +18,8 @@ Macro arguments are _roughly_ the macro equivalent of `\_p1_` and `\_p2_`.
 There are three kinds of arguments:
 
 * Regular arguments, such as `int kind`: These take what's given and basically `let` them into variables.
-* Inline arguments, such as `int &kind`: These are like `alias`, so if read more than once, the expression passed is repeatedly executed. If not read at all, the expression is never executed.
-* Inline variable arguments, such as `int &=kind`: Like inline arguments, but these are also writable.
+* Inline arguments, such as `int @kind`: These are like `alias`, so if read more than once, the expression passed is repeatedly executed. If not read at all, the expression is never executed.
+* Inline variable arguments, such as `int @=kind`: Like inline arguments, but these are also writable.
 
 Beware that this macro alters `targ`.
 
