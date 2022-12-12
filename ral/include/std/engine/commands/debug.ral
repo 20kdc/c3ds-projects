@@ -6,8 +6,177 @@
  */
 
 /*
- * 2.286c/Debug - INCOMPLETE
+ * 2.286c/Debug
  */
 
 include "std/engine/commands_inc.ral";
 
+/*
+Returns the agent with the given ID, as given by `unid`, or `null` if it's not there anymore. Beware that the IDs change between a save and a load, so this is really only meant for use by out-of-game tools (which can't hold agent references directly).
+*/
+macro agnt(int @id) @'agnt {id}'!Agent?;
+
+/*
+Writes a list of command names containing the given `text` to the output stream.
+*/
+macro () apro(str @text) @'apro {text}';
+
+/*
+Performs an integer division by 0.
+This is _relatively_ safe with the Windows version of the game (even if run on Wine) but with the Linux version this can outright crash the game (due to bad handling of the signal).
+*/
+macro () bang() @'bang';
+
+// Returns the target agent VM's script number (4th element of script ID)
+macro code() @'code'!int;
+
+// Returns the target agent VM's script family number (1st element of script ID)
+macro codf() @'codf'!int;
+
+// Returns the target agent VM's script genus number (2nd element of script ID)
+macro codg() @'codg'!int;
+
+// Returns the target agent VM's script position relative to `sorc`.
+macro codp() @'codp'!int;
+
+// Returns the target agent VM's script species number (3rd element of script ID)
+macro cods() @'cods'!int;
+
+/*
+Returns the given value (see `DBG_` constants) of the target agent VM as a string.
+
+Importantly, the conversion rules are as follows:
+
+* Agents are given as their `unid`
+* `null` is given as the literal text `NULL`
+* Numbers are given as their `vtos` representation
+* Strings are given as themselves (without alteration, escaping, or quotation)
+
+*/
+macro dbgH(int @id) @'dbg# {id}'!str;
+
+/*
+If condition `c` is false, raises an "Assertion failed" error. Contrary to popular belief, this does not guarantee a dialog or any such indication (for example, consider that indirect evaluation with `caos` can catch the error)
+
+_RAL implementation note: Right now, RAL doesn't actually have the concept of directly passing a condition into an inline statement. As such, this capability is simulated poorly._
+*/
+macro () dbgAsrt(bool @c) @'dbg: asrt {c} != 0';
+
+// Resets the agent profiler. See: `dbgProf`
+macro () dbgCpro() @'dbg: cpro';
+
+/*
+Deletes pending mouse/keyboard/etc. events.
+May be a good idea to do this before disengaging `dbgPaws` as otherwise it might "catch up" to interactions.
+*/
+macro () dbgFlsh() @'dbg: flsh';
+
+/*
+Writes out the official CAOS Documentation to the output stream. If `categories` is true, then the CAOS documentation is organized by category (otherwise it's just alphabetical).
+*/
+macro () dbgHtml(bool @categories) @'dbg: html {categories}';
+
+/*
+Adds a string to the debug log.
+Notably, everything on the debug log gets it's own line.
+Retrieve (to output stream) with `dbgPoll`.
+*/
+macro () dbgOuts(str @v) @'dbg: outs {v}';
+
+/*
+Adds a number to the debug log.
+Notably, everything on the debug log gets it's own line.
+Retrieve (to output stream) with `dbgPoll`.
+*/
+macro () dbgOutv(num @v) @'dbg: outv {v}';
+
+/*
+Locks up the game until external interaction intervenes.
+_Also dangerously unstable and the cause for Brain In A Vat being system-dependent._
+*/
+macro () dbgPaws() @'dbg: paws';
+
+/*
+Un-locks-up the game. This counters both `dbgPaws` and `dbgTack` (acting as a `dbgTack(null)`).
+*/
+macro () dbgPlay() @'dbg: play';
+
+/*
+Writes the debug log to the output stream.
+See `dbgOuts` and `dbgOutv`.
+*/
+macro () dbgPoll() @'dbg: poll';
+
+/*
+Writes the profile to the output stream.
+*/
+macro () dbgProf() @'dbg: prof';
+
+/*
+Sets the current "single-step agent", aka `tack`.
+
+When this agent is next about to start executing a CAOS statement, the game will simply enter a waiting loop that will not end until a command runs that would change the `tack` -- i.e. `dbgPlay` and `dbgTack`. (This applies even if the new agent is the exact same as the old agent, i.e. `dbgTack(tack());` counts as a change.)
+
+The agent set here can be retrieved with `tack`, _and must not be killed under any circumstances, because the failsafes for `kill ownr` are not present here._ (You also can't directly tell if the game is presently paused by this command -- the closest guess you can make is if `code` and so forth return meaningful values.)
+
+Setting the agent to `null` effectively deactivates the `dbgTack`, and if paused this way, resumes the game. However, it does not do so immediately, and therefore `dbgTack(null); kill(agent);` isn't safer than `kill(agent);` directly.
+*/
+macro () dbgTack(Agent? @a) @'dbg: tack {a}';
+
+/*
+This queues a tick to occur.
+
+You can use this to advance the game frame-by-frame when `dbgPaws` is used.
+
+Do not use this from an external application to get "real-time" results. It slows everything down for no reason and you don't get a benefit out of it.
+*/
+macro () dbgTock() @'dbg: tock';
+
+/*
+Sets the `wtik` to some time. This can and will break all sorts of things, so please don't do it.
+*/
+macro () dbgWtik(int @i) @'dbg: wtik {i}';
+
+/*
+For the most part, this is a counterpart to `dbgP`.
+However `dbga` returns details of the OVs and the timer counter. See `DBGA_` constants.
+*/
+macro dbga(int @i) @'dbga {i}'!str;
+
+/*
+Returns heap information (see `HEAP_` constants).
+*/
+macro heap(int @i) @'heap {i}'!int;
+
+/*
+Lists all CAOS commands, values, etc. to the output stream. This is the full set of command/value/variable pages as seen in CAOS documentation (without the appendices). `mann` shows details.
+*/
+macro () help() @'help';
+
+/*
+Outputs information on all CAOS commands, values, etc. with the given name to the output stream. `help` lists these.
+*/
+macro () mann(str @s) @'mann {s}';
+
+/*
+If on Windows, outputs the (comma-separated) values in order harvested from the `GlobalMemoryStatus` function, with the exception of `dwLength`, to the output stream.
+
+If anywhere else, same amount and format of values to the same place, but they're all 0.
+*/
+macro () memx() @'memx';
+
+/*
+Returns true if in the `dbgPaws` state.
+Note this doesn't care about `dbgTack`.
+*/
+macro paws() @'paws'!bool;
+
+/*
+Gets the single-step agent set with `dbgTack`, if any.
+*/
+macro tack() @'tack'!Agent?;
+
+/*
+Gets the unique ID of the `targ` agent (see also `agnt` and the very important caveats).
+*/
+macro unid() @'unid'!int;

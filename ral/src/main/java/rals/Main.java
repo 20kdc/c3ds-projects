@@ -80,7 +80,7 @@ public class Main {
 			File outFile = new File(args[2]);
 			IncludeParseContext ic = Parser.run(stdLibDP, new File(args[1]));
 			StringBuilder outText = new StringBuilder();
-			OuterCompileContext cctx = new OuterCompileContext(outText, new CommentingDebugRecorder(false));
+			OuterCompileContext cctx = new OuterCompileContext(outText, new DummyDebugRecorder());
 			OuterCompileContext cctxDbg = new OuterCompileContext(outText, new FullDebugRecorder());
 			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 			if (args[0].equals("compile")) {

@@ -15,7 +15,7 @@ include "std/engine/commands/camera.ral";
 include "std/engine/commands/cd.ral";
 include "std/engine/commands/compounds.ral";
 include "std/engine/commands/creatures.ral";
-include "std/engine/commands/debug.ral"; // INCOMPLETE
+include "std/engine/commands/debug.ral";
 include "std/engine/commands/files.ral";
 // flow omitted because compiler handles it
 include "std/engine/commands/genetics.ral";

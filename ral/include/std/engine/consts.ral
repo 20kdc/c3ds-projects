@@ -237,6 +237,7 @@ DBG_IT = -6;
 DBG_PART = -7;
 DBG_P1 = -8;
 DBG_P2 = -9;
+DBG_VA = 0;
 // and 0-99 for VA00-99
 
 /*
@@ -544,3 +545,7 @@ CLIK_MSG3 = 3;
 PUHL_X = 1;
 PUHL_Y = 2;
 
+// DBGA agent variable stuff
+//
+DBGA_TIMER = -1;
+DBGA_OV = 0;
