@@ -30,7 +30,7 @@ public class TypeSystem {
 	public final Opaque gNull = new Opaque(RALType.Major.Agent, "null");
 	public final Opaque gVoid = new Opaque(RALType.Major.Unknown, "void");
 	public final Opaque gBytes = new Opaque(RALType.Major.ByteString, "bytes");
-	public final RALType.AgentClassifier gAgent = new RALType.AgentClassifier(this, new Classifier(0, 0, 0), null);
+	public final RALType.AgentClassifier gAgent;
 	public final RALType gAgentNullable;
 	public final RALType gStringOrNumber;
 	public final RALType gNumber;
@@ -85,21 +85,19 @@ public class TypeSystem {
 	private int randomVariableNameNumber = 0;
 
 	public TypeSystem() {
-		namedTypes.put("any", gAny);
-		namedTypes.put("str", gString);
-		namedTypes.put("int", gInteger);
-		namedTypes.put("bool", gBoolean);
-		namedTypes.put("float", gFloat);
-		namedTypes.put("null", gNull);
-		namedTypes.put("bytes", gBytes);
+		declareTypedef("any", gAny, new DefInfo.Builtin("Represents literally any type. Therefore, cannot be stored without a cast due to the nature of CAOS's `set` commands."));
+		declareTypedef("str", gString, new DefInfo.Builtin("Technically a list of bytes, meant to be text in the local system codepage."));
+		declareTypedef("int", gInteger, new DefInfo.Builtin("A subset of `num` -- integers are 32-bit whole numbers from -2147483648 to 2147483647 inclusive.\nNote that involving floats in a calculation tends to make that number a float."));
+		declareTypedef("bool", gBoolean, new DefInfo.Builtin("Can be either the `true` or `false` constant."));
+		declareTypedef("float", gFloat, new DefInfo.Builtin("A floating-point number such as 1.25, these have infinite range, and higher precision at low values, but lose precision at larger values."));
+		declareTypedef("null", gNull, new DefInfo.Builtin("The null agent reference. RAL uses a separate type for this to help prevent mistakes."));
+		declareTypedef("bytes", gBytes, new DefInfo.Builtin("Actually a list of bytes. Cannot be stored or even have it's values dynamically controlled in any way -- only usable for inline purposes."));
 		// setup Agent type
-		classifiers.put(gAgent.classifier, gAgent);
-		gAgent.typeName = "Agent";
-		namedTypes.put("Agent", gAgent);
+		gAgent = declareClass(new Classifier(0, 0, 0), "Agent", new DefInfo.Builtin("The root Agent type. All other Agent types are derived from this."));
 		gAgentNullable = byNullable(gAgent);
 		gNumber = byUnion(Arrays.asList(gFloat, gInteger));
 		gStringOrNumber = byUnion(Arrays.asList(gNumber, gString));
-		namedTypes.put("num", gNumber);
+		declareTypedef("num", gNumber, new DefInfo.Builtin("Number is the union of `int` and `float`, and therefore can be either.\nCAOS tends to refer to this as `v`, or when it accepts both types but cares particularly about which, `decimal`."));
 	}
 
 	public Iterable<Map.Entry<String, RALType>> getAllNamedTypes() {

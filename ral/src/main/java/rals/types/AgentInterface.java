@@ -8,6 +8,7 @@ package rals.types;
 
 import java.util.HashMap;
 
+import rals.caos.CAOSUtils;
 import rals.lex.DefInfo;
 
 /**
@@ -16,10 +17,11 @@ import rals.lex.DefInfo;
  */
 public final class AgentInterface {
 	/**
-	 * toString of this is the name. Does NOT have a concrete meaning, is just used for HCM right now.
+	 * The canonical (defining) type of the interface.
 	 * This is important as it makes Interfaces and renamed Classifiers work in HCM field/message/script lookups.
+	 * This is also important for documentation stuff.
 	 */
-	public final Object nameGiver;
+	public final RALType canonicalType;
 
 	public final HashMap<String, MsgScr> messages = new HashMap<>();
 	public final HashMap<Integer, String> messagesInv = new HashMap<>();
@@ -28,29 +30,65 @@ public final class AgentInterface {
 
 	public final HashMap<String, OVar> fields = new HashMap<>();
 
-	public AgentInterface(Object n) {
-		nameGiver = n;
+	public AgentInterface(RALType ct) {
+		canonicalType = ct;
 	}
 
-	public static class OVar {
+	/**
+	 * Base class so that DocGen doesn't get silly.
+	 */
+	public static class Attachment implements Comparable<Attachment> {
+		public final String name;
+		public final DefInfo defInfo;
+		public Attachment(String n, DefInfo di) {
+			name = n;
+			defInfo = di;
+		}
+		@Override
+		public int compareTo(Attachment var1) {
+			return name.compareTo(var1.name);
+		}
+	}
+
+	public static class OVar extends Attachment {
 		public final int slot;
 		public final RALType type;
-		public final DefInfo defInfo;
 
-		public OVar(int s, RALType t, DefInfo di) {
+		public OVar(String n, int s, RALType t, DefInfo di) {
+			super(n, di);
 			slot = s;
 			type = t;
-			defInfo = di;
+		}
+
+		@Override
+		public String toString() {
+			return "field " + type + " " + name + " (" + CAOSUtils.vaToString("ov", slot) + ")";
 		}
 	}
 
-	public static class MsgScr {
+	public static class MsgScr extends Attachment {
+		public final MST intent;
 		public final int value;
-		public final DefInfo defInfo;
 
-		public MsgScr(int v, DefInfo di) {
+		public MsgScr(String n, int v, MST i, DefInfo di) {
+			super(n, di);
+			intent = i;
 			value = v;
-			defInfo = di;
 		}
+
+		@Override
+		public String toString() {
+			if (intent == MST.Message)
+				return "msg " + name + " (" + value + ")";
+			if (intent == MST.Script)
+				return "scr " + name + " (" + value + ")";
+			return "m/s " + name + " (" + value + ")";
+		}
+	}
+
+	public static enum MST {
+		Message,
+		Script,
+		Both
 	}
 }

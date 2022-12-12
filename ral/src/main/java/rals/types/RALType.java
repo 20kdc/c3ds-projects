@@ -355,24 +355,26 @@ public abstract class RALType {
 		 */
 		public final void declareMS(String name, int id, boolean asScript, DefInfo di) {
 			boolean asMessage = !asScript;
+			AgentInterface.MST intent = asScript ? AgentInterface.MST.Script : AgentInterface.MST.Message;
 			if (!typeSystem.messageHooks.contains(id)) {
 				asMessage = true;
 				asScript = true;
+				intent = AgentInterface.MST.Both;
 			}
 			if (asMessage) {
 				if (lookupMSID(name, false) != null)
-					throw new RuntimeException("message " + name + ":" + name + " already declared");
+					throw new RuntimeException("message " + typeName + "->" + name + " already declared");
 				if (lookupMSName(id, false) != null)
-					throw new RuntimeException("message " + name + " " + id + " already declared");
+					throw new RuntimeException("message " + typeName + " " + id + " already declared");
 			}
 			if (asScript) {
 				if (lookupMSID(name, true) != null)
-					throw new RuntimeException("script " + name + ":" + name + " already declared");
+					throw new RuntimeException("script " + typeName + ":" + name + " already declared");
 				if (lookupMSName(id, true) != null)
-					throw new RuntimeException("script " + name + " " + id + " already declared");
+					throw new RuntimeException("script " + typeName + " " + id + " already declared");
 			}
 
-			AgentInterface.MsgScr ms = new AgentInterface.MsgScr(id, di);
+			AgentInterface.MsgScr ms = new AgentInterface.MsgScr(name, id, intent, di);
 			if (asMessage) {
 				inherent.messages.put(name, ms);
 				inherent.messagesInv.put(id, name);
@@ -389,7 +391,7 @@ public abstract class RALType {
 		public void declareField(String fieldName, RALType fieldType, DefInfo idi, int ovSlot) {
 			if (lookupField(fieldName) != null)
 				throw new RuntimeException("Field " + fieldName + " already exists in " + this);
-			inherent.fields.put(fieldName, new OVar(ovSlot, fieldType, idi));
+			inherent.fields.put(fieldName, new OVar(fieldName, ovSlot, fieldType, idi));
 		}
 
 		@Override

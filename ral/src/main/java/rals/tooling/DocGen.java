@@ -8,6 +8,7 @@ package rals.tooling;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -17,8 +18,9 @@ import rals.expr.RALCallable;
 import rals.expr.RALConstant;
 import rals.hcm.HCMHoverDataGenerators;
 import rals.lex.DefInfo;
-import rals.lex.DefInfo.At;
 import rals.parser.IncludeParseContext;
+import rals.types.AgentInterface;
+import rals.types.AgentInterface.Attachment;
 import rals.types.RALType;
 
 /**
@@ -40,10 +42,9 @@ public class DocGen {
 		Collections.sort(keys);
 		for (String s : keys) {
 			RALConstant rc = ic.typeSystem.namedConstants.get(s);
-			DefInfo.At di = ic.typeSystem.namedConstantsDefPoints.get(s);
+			DefInfo di = ic.typeSystem.namedConstantsDefPoints.get(s);
 			if (di != null) {
-				String officialDefLoc = translateDefInfo(di);
-				if (matchesRules(officialDefLoc, r)) {
+				if (matchesRules(di, r)) {
 					sb.append("#### `");
 					sb.append(rc.slot(0).type);
 					sb.append(" ");
@@ -64,21 +65,42 @@ public class DocGen {
 		for (String s : keys) {
 			RALType rt = ic.typeSystem.byName(s);
 			DefInfo di = ic.typeSystem.getNamedTypeDefInfo(s);
-			if (di instanceof DefInfo.At) {
-				String officialDefLoc = translateDefInfo((DefInfo.At) di);
-				if (matchesRules(officialDefLoc, r)) {
-					sb.append("#### `");
-					sb.append(s);
-					sb.append(": ");
-					sb.append(rt.getFullDescription());
-					sb.append("`\n\n");
-					showDocBody(sb, (DefInfo.At) di);
+			if (matchesRules(di, r)) {
+				sb.append("#### `");
+				sb.append(s);
+				sb.append(": ");
+				sb.append(rt.getFullDescription());
+				sb.append("`\n\n");
+				showDocBody(sb, di);
+				// Now go into agent interfaces
+				LinkedList<Attachment> fields = new LinkedList<>();
+				LinkedList<Attachment> sm = new LinkedList<>();
+				for (AgentInterface ai : rt.getInterfaces()) {
+					if (ai.canonicalType == rt) {
+						for (Attachment a : ai.fields.values())
+							fields.add(a);
+						HashSet<Attachment> al = new HashSet<>(ai.messages.values());
+						al.addAll(ai.scripts.values());
+						for (Attachment a : al)
+							sm.add(a);
+					}
 				}
+				Collections.sort(fields);
+				for (Attachment a : fields)
+					doAttachment(sb, a, r);
+				Collections.sort(sm);
+				for (Attachment a : sm)
+					doAttachment(sb, a, r);
 			}
 		}
 	}
-	private static String translateDefInfo(At at) {
-		return at.srcRange.file.shortName;
+	private static void doAttachment(StringBuilder sb, Attachment a, Rule[] r) {
+		if (matchesRules(a.defInfo, r)) {
+			sb.append("##### `");
+			sb.append(a.toString());
+			sb.append("`\n\n");
+			showDocBody(sb, (DefInfo.At) a.defInfo);
+		}
 	}
 	private static void buildCallable(StringBuilder sb, RALCallable rc, Rule[] r) {
 		if (rc instanceof MacroDefSet) {
@@ -89,8 +111,7 @@ public class DocGen {
 				buildCallable(sb, rcx.get(i), r);
 		} else if (rc instanceof Macro) {
 			Macro mac = (Macro) rc;
-			String officialDefLoc = translateDefInfo(mac.defInfo);
-			if (matchesRules(officialDefLoc, r)) {
+			if (matchesRules(mac.defInfo, r)) {
 				sb.append("#### `");
 				sb.append(mac.name);
 				HCMHoverDataGenerators.showMacroArgs(sb, mac.args);
@@ -103,7 +124,7 @@ public class DocGen {
 			}
 		}
 	}
-	private static void showDocBody(StringBuilder sb, DefInfo.At di) {
+	private static void showDocBody(StringBuilder sb, DefInfo di) {
 		if (di.docComment != null) {
 			sb.append(di.docComment);
 			sb.append("\n\n");
@@ -112,11 +133,35 @@ public class DocGen {
 		sb.append(translateDefInfo(di));
 		sb.append("`\n\n");
 	}
-	public static boolean matchesRules(String spf, Rule[] r) {
+	/**
+	 * Translates a DefInfo to user-visible text.
+	 */
+	private static String translateDefInfo(DefInfo di) {
+		if (di instanceof DefInfo.Builtin)
+			return "Built-in";
+		if (di instanceof DefInfo.At)
+			return di.srcRange.file.shortName;
+		return "Unknown DefInfo type: " + di;
+	}
+	/**
+	 * Matches a DefInfo against the set of rules, including the fancy specifics for particular DefInfo kinds.
+	 */
+	private static boolean matchesRules(DefInfo di, Rule[] r) {
 		boolean matches = true;
-		for (Rule rule : r)
-			if (spf.startsWith(rule.prefix))
-				matches = rule.add;
+		if (di instanceof DefInfo.Builtin) {
+			for (Rule rule : r)
+				if (rule.prefix.equals("BUILTIN"))
+					matches = rule.add;
+		}
+		if (di instanceof DefInfo.At) {
+			String spf = di.srcRange.file.shortName;
+			for (Rule rule : r) {
+				if (rule.prefix.equals("BUILTIN"))
+					continue;
+				if (spf.startsWith(rule.prefix))
+					matches = rule.add;
+			}
+		}
 		return matches;
 	}
 	public static class Rule {
