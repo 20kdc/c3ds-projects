@@ -1,13 +1,9 @@
 #!/bin/sh
 cd docs
-echo Manual: Compiling 
-asciidoctor -a data-uri -b html section-readme.adoc -o ../manual-html/readme.html || exit
-asciidoctor -a data-uri -b html section-install.adoc -o ../manual-html/install.html || exit
-asciidoctor -a data-uri -b html section-caos.adoc -o ../manual-html/caos.html || exit
-asciidoctor -a data-uri -b html section-vending.adoc -o ../manual-html/vending.html || exit
-asciidoctor -a data-uri -b html section-tooling-pointers.adoc -o ../manual-html/tooling-pointers.html || exit
-asciidoctor -a data-uri -b html section-tooling-ref.adoc -o ../manual-html/tooling-ref.html || exit
-asciidoctor -a data-uri -b html section-language-ref.adoc -o ../manual-html/language-ref.html || exit
-asciidoctor -a data-uri -b html section-library-ref.adoc -o ../manual-html/library-ref.html || exit
+rm ../manual-html/*.html
+echo Manual: Compiling
+for SECTION_FILE in `ls by-section | grep adoc`; do
+	asciidoctor -a data-uri -b html by-section/$SECTION_FILE -o ../manual-html/`basename -s .adoc $SECTION_FILE`.html || exit
+done
 echo Manual: Done compiling
 

@@ -2,5 +2,5 @@
 :toc: left
 :toclevels: 3
 
-include::Install.adoc[]
+include::../Language/index.adoc[]
 
