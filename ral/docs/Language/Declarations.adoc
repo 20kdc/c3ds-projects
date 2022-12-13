@@ -3,7 +3,7 @@
 Declarations are the basic element of a RAL source file.
 Everything else is defined inside declarations.
 
-image::diagram/Decl.png[]
+image::images/diagram/Decl.png[]
 
 #### Includes/etc.
 
@@ -19,7 +19,7 @@ If a file is included more than once, the second and onward includes are ignored
 include "std/c3.ral";
 ```
 
-image::diagram/IncludeDecl.png[]
+image::images/diagram/IncludeDecl.png[]
 
 ##### addSearchPath
 
@@ -32,7 +32,7 @@ addSearchPath "../evilcorpCoreLibraries";
 include "eccl/elo.ral";
 ```
 
-image::diagram/AddSearchPathDecl.png[]
+image::images/diagram/AddSearchPathDecl.png[]
 
 #### Type System
 
@@ -46,7 +46,7 @@ This is usually useful to name unions.
 typedef number integer|float;
 ```
 
-image::diagram/TypedefDecl.png[]
+image::images/diagram/TypedefDecl.png[]
 
 ##### class
 
@@ -60,7 +60,7 @@ In addition, `extends InterfaceName` may be added an arbitrary amount of times, 
 class Canary 2 13 3987 extends Bird;
 ```
 
-image::diagram/ClassDecl.png[]
+image::images/diagram/ClassDecl.png[]
 
 ##### interface
 
@@ -72,7 +72,7 @@ In addition, `extends InterfaceName` may be added an arbitrary amount of times, 
 interface Bird extends GoodBug;
 ```
 
-image::diagram/InterfaceDecl.png[]
+image::images/diagram/InterfaceDecl.png[]
 
 ##### field
 
@@ -88,7 +88,7 @@ Example:
 field string Canary.tweetText 1;
 ```
 
-image::diagram/FieldDecl.png[]
+image::images/diagram/FieldDecl.png[]
 
 ##### message
 
@@ -102,7 +102,7 @@ It consists of a message-ID-of expression (i.e. `Agent->someMessage` or `Agent:s
 message Canary:tweet 1000;
 ```
 
-image::diagram/MessageDecl.png[]
+image::images/diagram/MessageDecl.png[]
 
 ##### script (declaration form)
 
@@ -110,7 +110,7 @@ image::diagram/MessageDecl.png[]
 
 As such, see `message` for syntax. You should only see this in the standard library.
 
-image::diagram/ScriptProtoDecl.png[]
+image::images/diagram/ScriptProtoDecl.png[]
 
 ##### overrideOwnr
 
@@ -118,7 +118,7 @@ This is used in the standard library to mark specific script numbers that the en
 
 In this event, what would usually be the type of `ownr` is moved to `from`, and the type of `ownr` is set to the one given.
 
-image::diagram/OverrideOwnrDecl.png[]
+image::images/diagram/OverrideOwnrDecl.png[]
 
 ##### messageHook
 
@@ -132,7 +132,7 @@ script Agent:scrDeactivated 0;
 message Agent:msgActivate1 0;
 ```
 
-image::diagram/MessageHookDecl.png[]
+image::images/diagram/MessageHookDecl.png[]
 
 ##### assertConst
 
@@ -147,7 +147,7 @@ assertConst 1; // valid
 assertConst 0; // error
 ```
 
-image::diagram/AssertConstDecl.png[]
+image::images/diagram/AssertConstDecl.png[]
 
 ##### Constants
 
@@ -168,7 +168,7 @@ install {
 }
 ```
 
-image::diagram/ConstantDecl.png[]
+image::images/diagram/ConstantDecl.png[]
 
 #### Code
 
@@ -188,7 +188,7 @@ script Canary:eaten {
 }
 ```
 
-image::diagram/ScriptCodeDecl.png[]
+image::images/diagram/ScriptCodeDecl.png[]
 
 ##### install
 
@@ -202,7 +202,7 @@ newSimple(Canary, "canary.c16", 1, 0, 3000);
 }
 ```
 
-image::diagram/InstallDecl.png[]
+image::images/diagram/InstallDecl.png[]
 
 ##### remove
 
@@ -216,7 +216,7 @@ scrx(Canary, Canary:tweet);
 }
 ```
 
-image::diagram/RemoveDecl.png[]
+image::images/diagram/RemoveDecl.png[]
 
 ##### macro
 
@@ -280,12 +280,12 @@ test3(v);
 }
 ```
 
-image::diagram/MacroDecl.png[]
+image::images/diagram/MacroDecl.png[]
 
 __ArgList__:
 
-image::diagram/MacroArgList.png[]
+image::images/diagram/MacroArgList.png[]
 
 __MacroArg__:
 
-image::diagram/MacroArg.png[]
+image::images/diagram/MacroArg.png[]

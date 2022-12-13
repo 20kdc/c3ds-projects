@@ -6,11 +6,11 @@ RAL uses tuples as expressions for versatility, though it does not have a tuple 
 
 __Expr__:
 
-image::diagram/Expr.png[]
+image::images/diagram/Expr.png[]
 
 __ExprAtom__:
 
-image::diagram/ExprAtom.png[]
+image::images/diagram/ExprAtom.png[]
 
 #### Constants
 

@@ -2,7 +2,7 @@
 
 Statements are the unit of sequenced, non-value-returning code in RAL.
 
-image::diagram/Stmt.png[]
+image::images/diagram/Stmt.png[]
 
 _A single semicolon `;` is an empty statement, with no effect._
 
@@ -19,7 +19,7 @@ Blocks are one of the most basic kinds of statement, made up of `{}` surrounding
 // counter = 1; // would error, counter doesn't exist here
 ```
 
-image::diagram/BlockStmt.png[]
+image::images/diagram/BlockStmt.png[]
 
 ##### let
 
@@ -45,11 +45,11 @@ let Agent? a, Agent? b = null, null; // multiple definition
 let int something@5; // allocates va05 specifically
 ```
 
-image::diagram/LetStmt.png[]
+image::images/diagram/LetStmt.png[]
 
 __LetStmtBody__:
 
-image::diagram/LetStmtBody.png[]
+image::images/diagram/LetStmtBody.png[]
 
 ##### alias
 
@@ -71,7 +71,7 @@ alias b = a; // normal variant
 alias a!float; // cast variant - alter 
 ```
 
-image::diagram/AliasStmt.png[]
+image::images/diagram/AliasStmt.png[]
 
 #### Actions
 
@@ -100,7 +100,7 @@ let int number = 0;
  'outs {"To respect the buzzing of the airlock\n"}';
 ```
 
-image::diagram/InlineStmt.png[]
+image::images/diagram/InlineStmt.png[]
 
 ##### Expression Statements and Assignment Statements
 
@@ -117,7 +117,7 @@ xPos = posx(); // Assignment statement with macro call
 xPos, yPos = getRandomXY(); // Assignment statement with multiple return values
 ```
 
-image::diagram/AssignStmt.png[]
+image::images/diagram/AssignStmt.png[]
 
 ##### Modify-Assignment Statements
 
@@ -132,7 +132,7 @@ let counter = 1;
 counter += 1; // counter is now 2
 ```
 
-image::diagram/ModifyStmt.png[]
+image::images/diagram/ModifyStmt.png[]
 
 ##### Emit Statements
 
@@ -145,7 +145,7 @@ alias targ!Boopable; // for messages
 targ->receivedBoop();
 ```
 
-image::diagram/EmitStmt.png[]
+image::images/diagram/EmitStmt.png[]
 
 ##### call
 
@@ -155,7 +155,7 @@ image::diagram/EmitStmt.png[]
 call makeBoopNoises();
 ```
 
-image::diagram/CallStmt.png[]
+image::images/diagram/CallStmt.png[]
 
 #### Flow Control
 
@@ -183,7 +183,7 @@ if a == 1 {
 }
 ```
 
-image::diagram/IfStmt.png[]
+image::images/diagram/IfStmt.png[]
 
 ##### loop
 
@@ -199,7 +199,7 @@ loop {
 }
 ```
 
-image::diagram/LoopStmt.png[]
+image::images/diagram/LoopStmt.png[]
 
 ##### break/continue
 
@@ -218,7 +218,7 @@ loop {
 }
 ```
 
-image::diagram/BreakStmt.png[]
+image::images/diagram/BreakStmt.png[]
 
 
 ##### while
@@ -239,7 +239,7 @@ while a < 5 {
 }
 ```
 
-image::diagram/WhileStmt.png[]
+image::images/diagram/WhileStmt.png[]
 
 ##### for
 
@@ -253,7 +253,7 @@ for a = 1; a <= 10; a++; {
 }
 ```
 
-image::diagram/ForStmt.png[]
+image::images/diagram/ForStmt.png[]
 
 ##### foreach
 
@@ -281,7 +281,7 @@ foreach (Agent in econ targ) {
 }
 ```
 
-image::diagram/ForeachStmt.png[]
+image::images/diagram/ForeachStmt.png[]
 
 ##### with
 
@@ -305,4 +305,4 @@ doStuffWithBramboo(targ);
 }
 ```
 
-image::diagram/WithStmt.png[]
+image::images/diagram/WithStmt.png[]

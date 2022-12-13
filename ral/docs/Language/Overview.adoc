@@ -46,6 +46,6 @@ The tools with which the user may construct types are as follows:
 
 The syntax for specifying types is summarized by this diagram:
 
-image::diagram/Type.png[]
+image::images/diagram/Type.png[]
 
 However, not all syntax directly accepts a type. In particular, when used inside an expression, for example for a message/script ID or to get a classifier, only an ID may be used.

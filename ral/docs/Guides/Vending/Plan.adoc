@@ -22,40 +22,40 @@ The file `ral_vending_machine.c16` should have been supplied in the `samples` di
 
 To help with understanding how this will work in practice, the frames of the vending machine sprite are shown below.
 
-image::vmimg/vendor.png[align=center]
+image::images/vending/vendor.png[align=center]
 [.text-center]
 _The vending machine (original drawing)._
 
 #### `ral_vending_machine.c16`
 
-image::vmimg/0.png[align=center]
+image::images/vending/0.png[align=center]
 [.text-center]
 _Frame 0: The vending machine sprite, scaled down to the intended in-game resolution, with minor adjustments made to the border._
 
-image::vmimg/1.png[align=center]
+image::images/vending/1.png[align=center]
 [.text-center]
 _Frame 1: The front panel of the vending machine, as an overlay so that other sprites display under it. Shown on a cream background for clarity._
 
-image::vmimg/2.png[align=center]
+image::images/vending/2.png[align=center]
 [.text-center]
 _Frame 2: Lemon button, red._
 
-image::vmimg/3.png[align=center]
+image::images/vending/3.png[align=center]
 [.text-center]
 _Frame 3: Justanut button, red._
 
-image::vmimg/4.png[align=center]
+image::images/vending/4.png[align=center]
 [.text-center]
 _Frame 4: Random button, red._
 
-image::vmimg/5.png[align=center]
+image::images/vending/5.png[align=center]
 [.text-center]
 _Frame 5: Lemon button, green._
 
-image::vmimg/6.png[align=center]
+image::images/vending/6.png[align=center]
 [.text-center]
 _Frame 6: Justanut button, green._
 
-image::vmimg/7.png[align=center]
+image::images/vending/7.png[align=center]
 [.text-center]
 _Frame 7: Random button, green._
