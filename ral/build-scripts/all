@@ -1,4 +1,5 @@
 #!/bin/sh
 ./build-scripts/jar || exit
 ./build-scripts/manual || exit
+./build-scripts/manual-html || exit
 

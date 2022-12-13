@@ -5,7 +5,4 @@ java -jar ral.jar docGen docs/all.ral docs/Library/gen.adoc +std/ -std/compiler_
 cd docs
 echo Manual: Compiling PDF
 asciidoctor-pdf full.adoc -o ../manual.pdf || exit
-echo Manual: Compiling HTML
-asciidoctor -a data-uri -b html full.adoc -o ../manual.html || exit
-echo Manual: Done compiling
 
