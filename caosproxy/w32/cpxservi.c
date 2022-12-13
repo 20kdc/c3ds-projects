@@ -7,54 +7,30 @@
 
 // With extreme thanks to http://double.nz/creatures/developer/sharedmemory.htm
 
-// Internals module - contains the actual server
+// Internals module - contains the actual SHM/CPX logic
 #include <stdlib.h>
 #include <stdio.h>
 #include <winsock2.h>
 #include <windows.h>
 
-#include "libcpx.h"
-
-extern HWND globalWindow;
-extern UINT msgTrayBlink;
-
-static SOCKET serverSocket;
-// Initialize
-int cpxservi_serverInit(int host, int port) {
-	// deal with WS nonsense
-	libcpx_initWinsock();
-	// actual stuff
-	serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (serverSocket == INVALID_SOCKET) {
-		puts("caosprox could not make socket");
-		return 1;
-	}
-	// binding (here's the scary part)
-	struct sockaddr_in bindTarget = {
-		.sin_family = AF_INET,
-		.sin_addr = {
-			.s_addr = host
-		},
-		.sin_port = htons(port),
-	};
-	if (bind(serverSocket, (struct sockaddr *) &bindTarget, sizeof(bindTarget))) {
-		puts("caosprox could not bind to socket");
-		return 1;
-	}
-	// doing great
-	if (listen(serverSocket, SOMAXCONN)) {
-		puts("caosprox failed to listen on socket");
-		return 1;
-	}
-	return 0;
-}
+#include "cpxservc.h"
 
 const char * cpxservi_gameID = NULL;
 const char * cpxservi_gamePath = NULL;
 
-static char gameIDBuffer[8192];
-static char gamePathBuffer[8192];
-static char tmpBuffer[8200]; // above + 8 chars for _request
+#define GENERAL_STRBUF_LEN 2048
+// above + 8 chars for _request
+#define TMPBUF_LEN (GENERAL_STRBUF_LEN + 8)
+// above - 24 bytes for SHM header (for snprintf shenanigans)
+#define TMPBUF_RSPLEN (TMPBUF_LEN - sizeof(libcpx_shmHeader_t))
+typedef struct {
+	// Warning: This isn't the actual game ID 100% of the time, just allocated memory
+	char gameIDBuf[GENERAL_STRBUF_LEN];
+	// Same
+	char gamePathBuf[GENERAL_STRBUF_LEN];
+	char tmpBuf[TMPBUF_LEN];
+	libcpx_channel_t * client;
+} rGlobals_t;
 
 static const char * findRegKey(HKEY hive, const char * base, const char * sub, const char * def, char * buffer) {
 	HKEY key;
@@ -75,13 +51,13 @@ static const char * findRegKey(HKEY hive, const char * base, const char * sub, c
 	return def;
 }
 
-static const char * findGameID() {
+static const char * findGameID(rGlobals_t * g) {
 	if (cpxservi_gameID)
 		return cpxservi_gameID;
-	return findRegKey(HKEY_CURRENT_USER, "Software\\CyberLife Technology\\Creatures Engine", "Default Game", "Docking Station", gameIDBuffer);
+	return findRegKey(HKEY_CURRENT_USER, "Software\\CyberLife Technology\\Creatures Engine", "Default Game", "Docking Station", g->gameIDBuf);
 }
 
-static const char * findGamePath(const char * gameID) {
+static const char * findGamePath(rGlobals_t * g, const char * gameID) {
 	if (cpxservi_gamePath)
 		return cpxservi_gamePath;
 	const char * base = "Software\\CyberLife Technology\\";
@@ -89,57 +65,57 @@ static const char * findGamePath(const char * gameID) {
 	char name[baseLen + strlen(gameID) + 1];
 	strcpy(name, base);
 	strcpy(name + baseLen, gameID);
-	return findRegKey(HKEY_LOCAL_MACHINE, name, "Main Directory", "C:\\Program Files (x86)\\Docking Station\\", gameIDBuffer);
+	return findRegKey(HKEY_LOCAL_MACHINE, name, "Main Directory", "C:\\Program Files (x86)\\Docking Station\\", g->gamePathBuf);
 }
 
-static void transferAreaToClient(SOCKET client, const libcpx_shmHeader_t * area, int hdrOnly) {
-	libcpx_sputa(client, area, hdrOnly ? 24 : (area->sizeBytes + 24));
+static void transferAreaToClient(rGlobals_t * g, const libcpx_shmHeader_t * area, int hdrOnly) {
+	libcpx_cPutA(g->client, area, hdrOnly ? 24 : (area->sizeBytes + 24));
 }
 
-static void sendStringResponse(SOCKET client, const char * text) {
-	libcpx_shmHeader_t * tmpErr = (libcpx_shmHeader_t *) tmpBuffer;
+static void sendStringResponse(rGlobals_t * g, const char * text) {
+	libcpx_shmHeader_t * tmpErr = (libcpx_shmHeader_t *) g->tmpBuf;
 	memcpy(tmpErr->magic, "c2e@", 4);
-	strcpy(tmpErr->data, text);
+	snprintf(tmpErr->data, TMPBUF_RSPLEN, "%s", text);
 	tmpErr->pid = 0;
 	tmpErr->resultCode = 0;
 	tmpErr->sizeBytes = strlen(tmpErr->data) + 1;
 	tmpErr->maxSizeBytes = 8192;
 	tmpErr->padding = 0;
-	transferAreaToClient(client, tmpErr, 0);
+	transferAreaToClient(g, tmpErr, 0);
 }
 
 // Note! doubleSend is 1 if we haven't sent the initial 24-byte header.
-static void internalError(SOCKET client, const char * text, int doubleSend) {
-	libcpx_shmHeader_t * tmpErr = (libcpx_shmHeader_t *) tmpBuffer;
+static void internalError(rGlobals_t * g, const char * text, int doubleSend) {
+	libcpx_shmHeader_t * tmpErr = (libcpx_shmHeader_t *) g->tmpBuf;
 	memcpy(tmpErr->magic, "c2e@", 4);
-	sprintf(tmpErr->data, "caosprox: %s", text);
+	snprintf(tmpErr->data, TMPBUF_RSPLEN, "caosprox: %s", text);
 	tmpErr->pid = 0;
 	tmpErr->resultCode = 1;
 	tmpErr->sizeBytes = strlen(tmpErr->data) + 1;
 	tmpErr->maxSizeBytes = 8192;
 	tmpErr->padding = 0;
 	if (doubleSend)
-		transferAreaToClient(client, tmpErr, 1);
-	transferAreaToClient(client, tmpErr, 0);
+		transferAreaToClient(g, tmpErr, 1);
+	transferAreaToClient(g, tmpErr, 0);
 }
 
-static void handleClientWithEverything(SOCKET client, const char * gameID, libcpx_shmHeader_t * shm, HANDLE resultEvent, HANDLE requestEvent, HANDLE process) {
+static void handleClientWithEverything(rGlobals_t * g, const char * gameID, libcpx_shmHeader_t * shm, HANDLE resultEvent, HANDLE requestEvent, HANDLE process) {
 	// send SHM state to client
-	transferAreaToClient(client, shm, 1);
+	transferAreaToClient(g, shm, 1);
 	// now we want a size back
 	int size;
-	if (libcpx_sgeta(client, &size, 4) != 4) {
-		internalError(client, "failed to get request size", 0);
+	if (libcpx_cGetA(g->client, &size, 4) != 4) {
+		internalError(g, "failed to get request size", 0);
 		return;
 	}
 	if (size > shm->maxSizeBytes) {
-		internalError(client, "request size exceeds maximum size", 0);
+		internalError(g, "request size exceeds maximum size", 0);
 		return;
 	}
 	// can't hurt
 	shm->sizeBytes = size;
-	if (libcpx_sgeta(client, shm->data, size) != size) {
-		internalError(client, "failed to get request body", 0);
+	if (libcpx_cGetA(g->client, shm->data, size) != size) {
+		internalError(g, "failed to get request body", 0);
 		return;
 	}
 	// WAIT! This could be intended for CPX.
@@ -149,15 +125,15 @@ static void handleClientWithEverything(SOCKET client, const char * gameID, libcp
 		// fallthrough
 	} else if ((size >= 8) && !memcmp(shm->data, "cpx-ver\n", 8)) {
 		// The client wants us to give an identifier
-		sendStringResponse(client, "CPX Server W32, version " LIBCPX_VERSION);
+		sendStringResponse(g, "CPX Server W32, version " LIBCPX_VERSION);
 		return;
 	} else if ((size >= 8) && !memcmp(shm->data, "cpx-gamepath\n", 13)) {
 		// The client wants us to give the game path
-		sendStringResponse(client, findGamePath(gameID));
+		sendStringResponse(g, findGamePath(g, gameID));
 		return;
 	} else if ((size >= 4) && !memcmp(shm->data, "cpx-", 4)) {
 		// It's intended for CPX but we don't recognize it.
-		internalError(client, "Unrecognized CPX extension command.", 0);
+		internalError(g, "Unrecognized CPX extension command.", 0);
 		return;
 	}
 	// It's intended for the engine
@@ -168,87 +144,78 @@ static void handleClientWithEverything(SOCKET client, const char * gameID, libcp
 	if (result == WAIT_OBJECT_0) {
 		// This specific error means the process ended while the request was occuring.
 		// This can be tested with the "bang" CAOS command or some other crashing operation.
-		internalError(client, "game closed during request", 0);
+		internalError(g, "game closed during request", 0);
 	} else {
 		// send the results back to the client
-		transferAreaToClient(client, shm, 0);
+		transferAreaToClient(g, shm, 0);
 	}
 }
 
-static void handleClientWithSHM(SOCKET client, const char * gameID, libcpx_shmHeader_t * shm) {
+static void handleClientWithSHM(rGlobals_t * g, const char * gameID, libcpx_shmHeader_t * shm) {
 	HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, shm->pid);
 	if (!process) {
-		internalError(client, "failed to open process handle (game dead?)", 1);
+		internalError(g, "failed to open process handle (game dead?)", 1);
 		return;
 	}
-	sprintf(tmpBuffer, "%s_result", gameID);
-	HANDLE resultEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, tmpBuffer);
+	sprintf(g->tmpBuf, "%s_result", gameID);
+	HANDLE resultEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, g->tmpBuf);
 	if (!resultEvent) {
-		internalError(client, "failed to open result handle", 1);
+		internalError(g, "failed to open result handle", 1);
 		CloseHandle(process);
 		return;
 	}
-	sprintf(tmpBuffer, "%s_request", gameID);
-	HANDLE requestEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, tmpBuffer);
+	sprintf(g->tmpBuf, "%s_request", gameID);
+	HANDLE requestEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, g->tmpBuf);
 	if (!requestEvent) {
-		internalError(client, "failed to open request handle", 1);
+		internalError(g, "failed to open request handle", 1);
 		CloseHandle(resultEvent);
 		CloseHandle(process);
 		return;
 	}
-	handleClientWithEverything(client, gameID, shm, resultEvent, requestEvent, process);
+	handleClientWithEverything(g, gameID, shm, resultEvent, requestEvent, process);
 	CloseHandle(requestEvent);
 	CloseHandle(resultEvent);
 }
 
-static void handleClientInsideMutex(SOCKET client, const char * gameID) {
-	sprintf(tmpBuffer, "%s_mem", gameID);
-	HANDLE fma = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, tmpBuffer);
+static void handleClientInsideMutex(rGlobals_t * g, const char * gameID) {
+	sprintf(g->tmpBuf, "%s_mem", gameID);
+	HANDLE fma = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, g->tmpBuf);
 	if (!fma) {
-		internalError(client, "could not open memory handle (game not running/detection failed?)", 1);
+		internalError(g, "could not open memory handle (game not running/detection failed?)", 1);
 		return;
 	}
 	libcpx_shmHeader_t * shm = (libcpx_shmHeader_t *) MapViewOfFile(fma, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 	if (!shm) {
-		internalError(client, "could not map view of shared memory", 1);
+		internalError(g, "could not map view of shared memory", 1);
 		CloseHandle(fma);
 		return;
 	}
-	handleClientWithSHM(client, gameID, shm);
+	handleClientWithSHM(g, gameID, shm);
 	UnmapViewOfFile(shm);
 	CloseHandle(fma);
 }
 
-static void handleClient(SOCKET client) {
-	const char * gameID = findGameID();
+void cpxservi_handleClient(libcpx_channel_t * client) {
+	// notify UI thread for blinkenlights (moved here because of plan for multiple contact methods)
+	if (globalWindow)
+		PostMessageA(globalWindow, msgTrayBlink, 1, 0);
+	// continue...
+	rGlobals_t g;
+	g.client = client;
+	const char * gameID = findGameID(&g);
 	// alrighty, time to open a connection to the game, let's start with the mutex
-	sprintf(tmpBuffer, "%s_mutex", gameID);
-	HANDLE mutex = OpenMutexA(MUTEX_ALL_ACCESS, TRUE, tmpBuffer);
+	sprintf(g.tmpBuf, "%s_mutex", gameID);
+	HANDLE mutex = OpenMutexA(MUTEX_ALL_ACCESS, TRUE, g.tmpBuf);
 	if (!mutex) {
-		internalError(client, "could not open mutex (game not running/detection failed?)", 1);
+		internalError(&g, "could not open mutex (game not running/detection failed?)", 1);
 		return;
 	}
 	// wait to acquire the mutex
 	WaitForSingleObject(mutex, INFINITE);
 	// Perform stuff protected by the mutex
-	handleClientInsideMutex(client, gameID);
+	handleClientInsideMutex(&g, gameID);
 	// Release & close
 	ReleaseMutex(mutex);
 	CloseHandle(mutex);
-}
-
-// Main loop
-void cpxservi_serverLoop() {
-	while (1) {
-		// get a client
-		SOCKET client = accept(serverSocket, NULL, NULL);
-		if (client == INVALID_SOCKET)
-			continue;
-		handleClient(client);
-		// and now we're done
-		closesocket(client);
-		// notify UI thread for blinkenlights
-		PostMessageA(globalWindow, msgTrayBlink, 1, 0);
-	}
 }
 

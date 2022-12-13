@@ -2,7 +2,7 @@ CPX: CAOS Proxy For Cross-Language And Operating System Use
 
 specification version number
 
-	2209061737
+	2212132121
 
 license of specification
 
@@ -10,9 +10,20 @@ license of specification
 	To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 	You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+connection methods
+
+	A. The client connects to localhost TCP port 19960 (or a host:port specified by the user).
+	 Support for this method is MANDATORY.
+
+	B. The client opens the (Windows-only) file "\\.\pipe\CAOSWorkaroundBecauseWindowsIsAFuckedUpPieceOfShit"
+	 This is a workaround for Windows interfering with loopback TCP connections for non-Administrator tasks.
+	 Support for this method is OPTIONAL.
+
+	See the "standardized API design" section for selection method.
+
 protocol
 
-	1. The client connects to localhost TCP port 19960 (or a host:port specified by the user).
+	1. The client connects via one of the given connection methods.
 	2. The server will attempt to find an engine and lock the mutex.
 	3. It will then send the first 24 bytes of the shared memory (the header).
 	   See http://double.nz/creatures/developer/sharedmemory.htm
@@ -93,6 +104,17 @@ standardized API design
 		Ideally, the automatic CPX target should be localhost port 19960, unless environment variables CPX_HOST / CPX_PORT are provided, which override these.
 		However this is not required.
 
+		The Windows named pipe method is an additional method. It should be the preferred method if all three of the following conditions are true:
+		1. The application is running on Windows
+		2. The application has not been given any host and port override
+		3. Opening the named pipe succeeds (that is, allow for servers that do not support the named pipe method)
+
+		On Windows, the TCP method seems to be failure-prone due to what appears to be Windows interference.
+		Hence the recommendation of the named pipe method.
+		In the event that the named pipe method cannot be supported on Windows for an application:
+		Authors are advised to recommend Administrator permission for the application and CPX server.
+		This seems to tend to resolve the problem.
+
 	raw request
 
 		A CPX client library's basic requirement to be a library that acts as a client for CPX implies a way of making a request.
@@ -141,11 +163,12 @@ design rationale
 
 	The CPX mechanism was designed to use the shared memory interface as the Linux "CAOS Console" interface is frankly crippled.
 	A particular problem with the Linux "CAOS Console" interface is the use of newline-followed-by-rscr ("\nrscr") as a terminator.
-	A translation mechanism is in-progress and likely already functions in most cases.
+	The translation mechanism seems to be stable for realistic cases.
 
 	All SHM functionality was included (in particular it's still possible to get the process ID over CPX) to try and avoid losing anything in translation.
 	Out of band data such as the game path registry keys are not included (yet? not absolutely necessary given some regediting).
 	The ultimate goal with this approach is to make Creatures Labs software under Wine operate on the Linux Docking Station.
+	(This goal has in fact been achieved for enough software for it to have been worth doing.)
 
 	Worth noting is that CPX-W32 works under Wine (by design, and also it was tested on that platform).
 
@@ -154,7 +177,7 @@ design rationale
 
 	CPX-W32, and presumably any future replacement CPX servers designed properly, are expected to work in any environment in which the Windows version of the game runs.
 	The choice of a TCP socket was intentional to allow CPX to act as a bridge outside of this "Wine/Windows world".
-	A particular case I've heard about since the last revision of this specification was the use of a virtual machine to play Creatures on Mac OS X.
+	A particular case I've heard about was the use of a virtual machine to play Creatures on Mac OS X.
 	This is a good example of where CPX's choice of a TCP socket is helpful, as it allows supporting software to run outside of the VM.
 
 	In addition, the choice to have the server close communications between connections was intentional.
@@ -164,12 +187,16 @@ design rationale
 	People already have to write code to handle CAOS errors so they can simply treat this as a fancy new as-of-yet-unheard-of CAOS error.
 	No reason to make things more complicated than they are.
 
+	Since the initial creation of this specification, CPX has undergone testing under real conditions, and problems have arisen.
+	Mainly, issues with the loopback TCP interface that CPX uses for communication.
+	As such, the specification has been extended to include an alternate communication method.
+
 implementation status (from most important to least)
 
 	CPX Server Windows : OK
 	Example CPX Client : OK
-	Storyteller        : HANDLED BY UPSTREAM
-	CPX Server Unix    : BETA (still no \nrscr fixups)
+	Storyteller        : HANDLED BY UPSTREAM (but delayed on upstream's end)
+	CPX Server Unix    : BETA (still no \nrscr fixups, but it doesn't seem possible for this to naturally occur in valid CAOS)
 	CPX -> SHM         : BETA
 
 possible topologies

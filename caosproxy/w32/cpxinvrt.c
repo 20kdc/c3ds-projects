@@ -17,10 +17,10 @@
 static int cpxHost = 0x0100007F;
 static int cpxPort = 19960;
 
-static SOCKET tryConnect() {
+static libcpx_channel_t * tryConnect() {
 	SOCKET res = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (res == INVALID_SOCKET)
-		return res;
+		return NULL;
 	struct sockaddr_in target = {
 		.sin_family = AF_INET,
 		.sin_addr = {
@@ -30,9 +30,15 @@ static SOCKET tryConnect() {
 	};
 	if (connect(res, (struct sockaddr *) &target, sizeof(target))) {
 		closesocket(res);
-		return INVALID_SOCKET;
+		return NULL;
 	}
-	return res;
+	libcpx_channel_t * channel = libcpx_channelFromSocket(res);
+	if (!channel) {
+		// whoopsie...
+		closesocket(res);
+		return NULL;
+	}
+	return channel;
 }
 
 // theoretically, we should be getting this from the server
@@ -160,31 +166,31 @@ int main(int argc, char ** argv) {
 	while (1) {
 		// continue forth
 		WaitForSingleObject(requestEvent, INFINITE);
-		SOCKET cpx = tryConnect();
+		libcpx_channel_t * cpx = tryConnect();
 		if (!cpx) {
 			reportError("CPXSHM: Unable to connect to CPX server.");
 		} else {
 			libcpx_shmHeader_t tmp;
 			// get initial header (to ignore)
-			if (libcpx_sgeta(cpx, &tmp, sizeof(libcpx_shmHeader_t)) != sizeof(libcpx_shmHeader_t)) {
+			if (libcpx_cGetA(cpx, &tmp, sizeof(libcpx_shmHeader_t)) != sizeof(libcpx_shmHeader_t)) {
 				reportError("CPXSHM: CPX server connection failed or did not send initial header.");
 				goto closeSocketAndFinish;
 			}
 			// send request
 			int reqLen = strlen(shm->data) + 1;
-			libcpx_sputa(cpx, &reqLen, 4);
-			libcpx_sputa(cpx, shm->data, reqLen);
+			libcpx_cPutA(cpx, &reqLen, 4);
+			libcpx_cPutA(cpx, shm->data, reqLen);
 			// read response
-			if (libcpx_sgeta(cpx, &tmp, sizeof(libcpx_shmHeader_t)) != sizeof(libcpx_shmHeader_t)) {
+			if (libcpx_cGetA(cpx, &tmp, sizeof(libcpx_shmHeader_t)) != sizeof(libcpx_shmHeader_t)) {
 				reportError("CPXSHM: CPX server did not send a response.");
 				goto closeSocketAndFinish;
 			}
 			shm->resultCode = tmp.resultCode;
 			shm->sizeBytes = tmp.sizeBytes;
-			libcpx_sgeta(cpx, shm->data, tmp.sizeBytes);
+			libcpx_cGetA(cpx, shm->data, tmp.sizeBytes);
 			// we're done!
 			closeSocketAndFinish:
-			closesocket(cpx);
+			cpx->close(cpx);
 		}
 		// refresh this
 		initShmBase();

@@ -12,13 +12,9 @@
 #include <stdio.h>
 #include <string.h>
 
-// returns non-zero on error
-extern int cpxservi_serverInit(int host, int port);
-extern const char * cpxservi_gameID;
-// this uses stdio, so we need to be sure we stop using it from main thread if in UI mode!
-extern void cpxservi_serverLoop();
+#include "cpxservc.h"
 
-HWND globalWindow;
+HWND globalWindow = NULL;
 UINT msgTrayCallback = WM_USER;
 UINT msgTrayBlink = WM_USER + 1;
 
@@ -82,7 +78,7 @@ static void cpxservg_ui() {
 }
 
 static DWORD WINAPI cpxservg_serverThread(void * param) {
-	cpxservi_serverLoop();
+	cpxservl_serverLoop();
 	return 0;
 }
 
@@ -122,13 +118,13 @@ int main(int argc, char ** argv) {
 	printf("caosprox host %08x port %i mode %i targetting %s\n", host, port, mode, cpxservi_gameID ? cpxservi_gameID : "<autodetect>");
 	// setup server stuff immediately so we can bail if there's some obvious issue like two servers
 	if (mode == 0) {
-		while (cpxservi_serverInit(host, port)) {
+		while (cpxservl_serverInit(host, port)) {
 			puts("caosprox server init failure");
 			int res = MessageBoxA(NULL, "CPX server failed to setup networking - possible port conflict or firewall", "CAOSProx", MB_RETRYCANCEL);
 			if (res == IDCANCEL)
 				return 1;
 		}
-	} else if (cpxservi_serverInit(host, port)) {
+	} else if (cpxservl_serverInit(host, port)) {
 		// near-silently die
 		puts("caosprox server init failure");
 		return 1;
@@ -140,7 +136,7 @@ int main(int argc, char ** argv) {
 		cpxservg_ui();
 	} else {
 		puts("caosprox about to enter server loop");
-		cpxservi_serverLoop();
+		cpxservl_serverLoop();
 	}
 	return 0;
 }

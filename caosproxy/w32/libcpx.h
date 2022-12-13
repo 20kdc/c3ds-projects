@@ -12,8 +12,8 @@
 
 // Schedule:
 // Breaded, Squeezed, Drunk, Underwater, Airlocked, Exported, Spliced
-//          ^
-#define LIBCPX_VERSION_NAME "Squeezed"
+//                    ^
+#define LIBCPX_VERSION_NAME "DrunkPREREL"
 
 #define LIBCPX_VERSION LIBCPX_VERSION_NAME " [" __TIME__ " " __DATE__ "]"
 
@@ -27,44 +27,29 @@ typedef struct {
 	char data[]; // Note that this can be thought of as being of length 0.
 } libcpx_shmHeader_t;
 
-// socket utilities
+typedef struct libcpx_channel libcpx_channel_t;
 
-inline static int libcpx_sgetc(SOCKET s) {
-	char chr;
-	if (recv(s, &chr, 1, 0) == 1)
-		return chr & 0xFF;
-	return -1;
-}
+typedef int (*libcpx_channelRecv_t)(libcpx_channel_t * self, char * buf, int len);
+typedef int (*libcpx_channelSend_t)(libcpx_channel_t * self, const char * buf, int len);
+typedef void (*libcpx_channelClose_t)(libcpx_channel_t * self);
 
-inline static int libcpx_sgeta(SOCKET s, void * target, int len) {
-	char * targetC = target;
-	int i = 0;
-	while (i < len) {
-		int res = recv(s, targetC, len - i, 0);
-		if (res <= 0)
-			return i;
-		i += res;
-		targetC += res;
-	}
-	return len;
-}
+// A channel wraps an underlying thing to communicate with.
+// This was added because it appears Windows Defender ruins loopback TCP
+//  communications.
+struct libcpx_channel {
+	libcpx_channelRecv_t recv;
+	libcpx_channelSend_t send;
+	libcpx_channelClose_t close;
+};
 
-inline static void libcpx_sputc(SOCKET s, char chr) {
-	send(s, &chr, 1, 0);
-}
-
-inline static void libcpx_sputa(SOCKET s, const void * target, int len) {
-	while (len > 0) {
-		int res = send(s, target, len, 0);
-		if (res <= 0)
-			return;
-		target += res;
-		len -= res;
-	}
-}
+// Can return NULL if malloc returns NULL (the socket is not closed in this case)
+libcpx_channel_t * libcpx_channelFromSocket(SOCKET skt);
 
 inline static void libcpx_initWinsock() {
 	WSADATA dontcare = {};
 	WSAStartup(MAKEWORD(2, 2), &dontcare);
 }
+
+int libcpx_cGetA(libcpx_channel_t * s, void * target, int len);
+void libcpx_cPutA(libcpx_channel_t * s, const void * target, int len);
 
