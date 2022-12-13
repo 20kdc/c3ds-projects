@@ -13,10 +13,11 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
-import rals.cctx.CodeWriter;
+import rals.caos.CAOSUtils;
 import rals.code.*;
 import rals.debug.*;
 import rals.diag.DiagRecorder;
@@ -33,30 +34,8 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		// IMPORTANT: All text printed before we go into LSP stdio mode needs to be on STDERR.
 		System.err.println("RAL Compiler");
-		String override = System.getenv("RAL_STDLIB_PATH");
-		if ((override != null) && (override.equals("")))
-			override = null;
 		// Attempt to find the RAL standard library.
-		File ralStandardLibrary = new File("include");
-		if (override != null) {
-			ralStandardLibrary = new File(override);
-		} else {
-			try {
-				URL myURL = Main.class.getClassLoader().getResource("rals/Main.class");
-				String f = myURL.getFile();
-				int splitIdx = f.indexOf('!');
-				if (splitIdx != -1)
-					f = f.substring(0, splitIdx);
-				URL myURL2 = new URL(f);
-				File ralJarDir = new File(myURL2.getPath()).getParentFile();
-				ralStandardLibrary = new File(ralJarDir, "include");
-				// target dir.
-				if (!ralStandardLibrary.isDirectory())
-					ralStandardLibrary = new File(ralJarDir.getParentFile(), "include");
-			} catch (Exception ex) {
-				// that's fine
-			}
-		}
+		File ralStandardLibrary = findStandardLibrary();
 		System.err.println("Standard Library Directory: " + ralStandardLibrary);
 		if (!ralStandardLibrary.isDirectory()) {
 			System.err.println("Warning! Directory is missing. A directory called 'include' should be at or near the RAL jar file.");
@@ -98,7 +77,7 @@ public class Main {
 			}
 			unwrapCalmly(ic.diags);
 			FileOutputStream fos = new FileOutputStream(outFile);
-			fos.write(outText.toString().getBytes(CodeWriter.CAOS_CHARSET));
+			fos.write(outText.toString().getBytes(CAOSUtils.CAOS_CHARSET));
 			fos.close();
 			System.out.println("Compile completed");
 		} else if (args[0].equals("inject") || args[0].equals("injectInstall") || args[0].equals("injectEvents") || args[0].equals("injectRemove")) {
@@ -154,6 +133,34 @@ public class Main {
 		} else {
 			printHelp();
 		}
+	}
+	private static File findStandardLibrary() {
+		String override = System.getenv("RAL_STDLIB_PATH");
+		if ((override != null) && (override.equals("")))
+			override = null;
+		File ralStandardLibrary = new File("include");
+		if (override != null) {
+			ralStandardLibrary = new File(override);
+		} else {
+			try {
+				URL myURL = Main.class.getClassLoader().getResource("rals/Main.class");
+				String f = myURL.getFile();
+				int splitIdx = f.indexOf('!');
+				if (splitIdx != -1)
+					f = f.substring(0, splitIdx);
+				URL myURL2 = new URL(f);
+				// hopefully this works...
+				String decodedPath = URLDecoder.decode(myURL2.getPath(), "UTF-8");
+				File ralJarDir = new File(decodedPath).getParentFile();
+				ralStandardLibrary = new File(ralJarDir, "include");
+				// target dir.
+				if (!ralStandardLibrary.isDirectory())
+					ralStandardLibrary = new File(ralJarDir.getParentFile(), "include");
+			} catch (Exception ex) {
+				// that's fine
+			}
+		}
+		return ralStandardLibrary;
 	}
 
 	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, IDebugRecorder di, ScriptSection... sections) {

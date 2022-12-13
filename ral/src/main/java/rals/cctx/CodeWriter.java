@@ -6,8 +6,6 @@
  */
 package rals.cctx;
 
-import java.nio.charset.Charset;
-
 import rals.debug.DebugSite;
 import rals.debug.IDebugRecorder;
 
@@ -15,11 +13,6 @@ import rals.debug.IDebugRecorder;
  * It's that thing that does the stuff!
  */
 public class CodeWriter {
-	/**
-	 * Character set for a standard copy of Creatures 3 or Docking Station.
-	 */
-	public static final Charset CAOS_CHARSET = Charset.forName("Cp1252");
-
 	private StringBuilder writer;
 	public int indent;
 	public String queuedCommentForNextLine = null;

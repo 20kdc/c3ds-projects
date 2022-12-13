@@ -11,6 +11,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 
 import rals.parser.FileDocPath;
@@ -20,6 +23,8 @@ import rals.parser.IDocPath;
  * Contains reference copies of documents for use in editing.
  */
 public class LSPDocRepo {
+	private static final String lspURLEncoding = "UTF-8";
+
 	/**
 	 * This index specifically uses canonical file paths in URIs.
 	 */
@@ -33,7 +38,11 @@ public class LSPDocRepo {
 
 	private File decodeFileURI(String uri) {
 		if (uri.startsWith("file://"))
-			return new File(uri.substring(7)).getAbsoluteFile();
+			try {
+				return new File(URLDecoder.decode(uri.substring(7), lspURLEncoding)).getAbsoluteFile();
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
 		return null;
 	}
 
@@ -41,7 +50,11 @@ public class LSPDocRepo {
 		String ovr = uriLSPClientCanon.get(file);
 		if (ovr != null)
 			return ovr;
-		return "file://" + file.getAbsolutePath();
+		try {
+			return "file://" + URLEncoder.encode(file.getAbsolutePath(), lspURLEncoding);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**

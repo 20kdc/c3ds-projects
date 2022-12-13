@@ -13,7 +13,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import rals.cctx.CodeWriter;
+import rals.caos.CAOSUtils;
 
 /**
  * CAOS into the game at maximum velocity!
@@ -21,7 +21,7 @@ import rals.cctx.CodeWriter;
  */
 public class Injector {
 	public static String cpxRequest(String req) throws IOException {
-		byte[] data = req.getBytes(CodeWriter.CAOS_CHARSET);
+		byte[] data = req.getBytes(CAOSUtils.CAOS_CHARSET);
 		String host = System.getenv("CPX_HOST");
 		if ((host == null) || (host.equals("")))
 			host = "127.0.0.1";
@@ -55,7 +55,7 @@ public class Injector {
 					break;
 				}
 			}
-			String resultText = new String(resultData, 0, cutPoint, CodeWriter.CAOS_CHARSET);
+			String resultText = new String(resultData, 0, cutPoint, CAOSUtils.CAOS_CHARSET);
 			if (resultCode != 0)
 				throw new CPXException(resultText);
 			return resultText;
