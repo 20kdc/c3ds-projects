@@ -13,6 +13,7 @@
 include "std/engine/consts.ral";
 
 // CA/Scent IDs
+//
 CA_CA0 = 0;
 CA_LIGHT = 1;
 CA_HEAT = 2;
@@ -57,7 +58,7 @@ STIM_CA_GADGET = STIM_CA_CA18;
 // STIM_CA_CA19 = STIM_CA_CA19;
 
 // Room types
-
+//
 RTYP_AIR = 0;
 RTYP_WALKWAY_WOOD = 1;
 RTYP_WALKWAY_CONCRETE = 2;
@@ -71,4 +72,60 @@ RTYP_WATER_SALT = 9;
 RTYP_ETTIN_HOME = 10;
 
 // Categories
+// TODO: Cross-reference with unofficial CDN.
+// Would be nice to note down expected actions and stims.
+//
+CATA_SELF = 0;
+CATA_HAND = 1;
+CATA_DOOR = 2;
+CATA_SEED = 3;
+// see also `STIM_ATE_PLANT`
+CATA_PLANT = 4;
+
+CATA_WEED = 5;
+CATA_LEAF = 6;
+CATA_FLOWER = 7;
+// see also `STIM_ATE_FRUIT`
+CATA_FRUIT = 8;
+CATA_MANKY = 9;
+
+// see also `STIM_ATE_DETRITUS`
+CATA_DETRITUS = 10;
+// see also `STIM_ATE_FOOD`
+CATA_FOOD = 11;
+CATA_BUTTON = 12;
+CATA_BUG = 13;
+CATA_PEST = 14;
+
+// see also `STIM_ATE_ANIMAL`
+CATA_CRITTER = 15;
+// see also `STIM_ATE_ANIMAL`
+CATA_BEAST = 16;
+CATA_NEST = 17;
+CATA_ANIMAL_EGG = 18;
+CATA_WEATHER = 19;
+
+CATA_BAD = 20;
+CATA_TOY = 21;
+CATA_INCUBATOR = 22;
+CATA_VENDOR = 23;
+CATA_TOOL = 24;
+
+CATA_POTION = 25;
+CATA_LIFT = 26;
+CATA_TELEPORTER = 27;
+CATA_MACHINERY = 28;
+CATA_CREATURE_EGG = 29;
+
+CATA_NORN_HOME = 30;
+CATA_GRENDEL_HOME = 31;
+CATA_ETTIN_HOME = 32;
+CATA_GADGET = 33;
+CATA_PORTAL = 34;
+
+CATA_VEHICLE = 35;
+CATA_NORN = 36;
+CATA_GRENDEL = 37;
+CATA_ETTIN = 38;
+CATA_GEAT = 39;
 
