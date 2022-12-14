@@ -1,19 +1,23 @@
 extends Node
 
-var requests: Dictionary
+var requests: Array
 
 func _init():
-	requests = {}
+	requests = []
 
 func _process(_delta):
-	for v in requests.keys():
-		var req: CPXRequest = v
+	# Process requests in sequence
+	# They used to be processed in parallel, but with named pipe stuff...
+	while len(requests) > 0:
+		var req: CPXRequest = requests[0]
 		if req.poll():
 			requests.erase(req)
+		else:
+			break
 
 func cpx_request(purpose: String, pba: PoolByteArray) -> CPXRequest:
 	var req = CPXRequest.new(purpose, pba)
-	requests[req] = true
+	requests.push_back(req)
 	return req
 
 func cpx_string_request(purpose: String, text: String) -> CPXRequest:

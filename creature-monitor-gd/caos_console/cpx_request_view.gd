@@ -18,7 +18,7 @@ func update_request_data(photosensitivity_lock):
 			var ctrl: CPXRequestViewEntry = request_controls[req]
 			ctrl.update_request(req)
 	if not photosensitivity_lock:
-		for req in reqs.keys():
+		for req in reqs:
 			if not request_controls.has(req):
 				var ctrl: CPXRequestViewEntry = preload("cpx_request_view_entry.tscn").instance()
 				add_child(ctrl)

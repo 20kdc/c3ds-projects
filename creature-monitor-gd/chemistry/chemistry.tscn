@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://chemistry/chemistry.gd" type="Script" id=1]
-[ext_resource path="res://lib/cpx_error_box.tscn" type="PackedScene" id=2]
+[ext_resource path="res://lib/cpx/cpx_error_box.tscn" type="PackedScene" id=2]
 [ext_resource path="res://lib/graph/graph.tscn" type="PackedScene" id=3]
 [ext_resource path="res://chemistry/drives.tscn" type="PackedScene" id=4]
 [ext_resource path="res://chemistry/lifecritical.tscn" type="PackedScene" id=5]
