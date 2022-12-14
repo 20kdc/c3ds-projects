@@ -38,6 +38,54 @@ libcpx_channel_t * libcpx_channelFromSocket(SOCKET skt) {
 	return (libcpx_channel_t *) st;
 }
 
+// Named pipe nonsense channels
+
+typedef struct {
+	libcpx_channel_t head;
+	HANDLE handle;
+} libcpx_channelW32H_t;
+
+static int handleSend(libcpx_channel_t * self, const char * buf, int len) {
+	HANDLE h = ((libcpx_channelW32H_t *) self)->handle;
+	DWORD res = 0;
+	if (WriteFile(h, buf, (DWORD) len, &res, NULL)) {
+		// Succeeded (supposedly)
+		return (int) res;
+	} else {
+		// Failed
+		return -1;
+	}
+}
+
+static int handleRecv(libcpx_channel_t * self, char * buf, int len) {
+	HANDLE h = ((libcpx_channelW32H_t *) self)->handle;
+	DWORD res = 0;
+	if (ReadFile(h, buf, (DWORD) len, &res, NULL)) {
+		// Succeeded (supposedly)
+		return (int) res;
+	} else {
+		// Failed
+		return -1;
+	}
+}
+
+static void handleClose(libcpx_channel_t * self) {
+	HANDLE h = ((libcpx_channelW32H_t *) self)->handle;
+	CloseHandle(h);
+	free(self);
+}
+
+libcpx_channel_t * libcpx_channelFromW32H(HANDLE skt) {
+	libcpx_channelW32H_t * st = malloc(sizeof(libcpx_channelW32H_t));
+	if (!st)
+		return NULL;
+	st->head.recv = handleRecv;
+	st->head.send = handleSend;
+	st->head.close = handleClose;
+	st->handle = skt;
+	return (libcpx_channel_t *) st;
+}
+
 // Utilities
 
 int libcpx_cGetA(libcpx_channel_t * s, void * target, int len) {

@@ -13,6 +13,25 @@
 
 static SOCKET serverSocket;
 
+static HANDLE namedPipe;
+
+#define NAMED_PIPE_BZ 0x10000
+
+static DWORD WINAPI cpxservl_pipeServer(void * param) {
+	while (1) {
+		// get a client
+		if (ConnectNamedPipe(namedPipe, NULL)) {
+			libcpx_channel_t * client = libcpx_channelFromW32H(namedPipe);
+			if (client) {
+				cpxservi_handleClient(client);
+				free(client);
+			}
+			DisconnectNamedPipe(namedPipe);
+		}
+	}
+	return 0;
+}
+
 // Initialize
 int cpxservl_serverInit(int host, int port) {
 	// deal with WS nonsense
@@ -39,6 +58,15 @@ int cpxservl_serverInit(int host, int port) {
 	if (listen(serverSocket, SOMAXCONN)) {
 		puts("caosprox failed to listen on socket");
 		return 1;
+	}
+	// If we've gotten this far, then we're confirmed to be starting.
+	// Prepare named pipe so we don't need admin access
+	namedPipe = CreateNamedPipeA("\\\\.\\pipe\\CAOSWorkaroundBecauseWindowsIsAFuckedUpPieceOfShit", PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, NAMED_PIPE_BZ, NAMED_PIPE_BZ, 0, NULL);
+	if (namedPipe != INVALID_HANDLE_VALUE) {
+		// start pipe server
+		CreateThread(NULL, 0, cpxservl_pipeServer, NULL, 0, NULL);
+	} else {
+		puts("caosprox failed to create named pipe, continuing anyway");
 	}
 	return 0;
 }

@@ -39,11 +39,14 @@ typedef void (*libcpx_channelClose_t)(libcpx_channel_t * self);
 struct libcpx_channel {
 	libcpx_channelRecv_t recv;
 	libcpx_channelSend_t send;
+	// If you want to just release without closing, use free()
 	libcpx_channelClose_t close;
 };
 
 // Can return NULL if malloc returns NULL (the socket is not closed in this case)
 libcpx_channel_t * libcpx_channelFromSocket(SOCKET skt);
+// Same.
+libcpx_channel_t * libcpx_channelFromW32H(HANDLE skt);
 
 inline static void libcpx_initWinsock() {
 	WSADATA dontcare = {};
