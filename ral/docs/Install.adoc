@@ -91,6 +91,13 @@ If you don't see `CPX connection OK`, RAL was probably unable to connect to the 
 
 _If you are connecting to Creatures 3, the script will not show the modules. This is because Creatures 3 uses an older version of the engine which doesn't have them._
 
+#### Some specific things that can go wrong...
+
+* The CAOS Proxy (`caosprox.exe` or `cpxciesv.py`) was not started.
+* You're running Windows and the firewall gets in your way.
+** It may work to run both RAL and `caosprox.exe` as Administrator.
+** Effort was made to try and to stop this happening, but there's no guarantee the extensions will work.
+
 ### RALjector
 
 You can start RALjector by simply running the RALjector launch script in some way.

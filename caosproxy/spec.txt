@@ -2,7 +2,7 @@ CPX: CAOS Proxy For Cross-Language And Operating System Use
 
 specification version number
 
-	2212140022
+	2212141155
 
 license of specification
 
@@ -25,12 +25,17 @@ connection methods
 protocol
 
 	1. The client connects via one of the given connection methods.
-	   Client applications should try to AVOID concurrent connections to prevent spurious errors.
+	   Client applications should try to AVOID concurrent connections to prevent spurious errors from overloading the recipient.
+	   (In particular, keeping to a budget of one connection per process or application is advised.)
 	2. The server will attempt to find an engine and lock the mutex.
-	3. It will then send the first 24 bytes of the shared memory (the header).
+	3. The server will then send the first 24 bytes of the shared memory (the header).
 	   See http://double.nz/creatures/developer/sharedmemory.htm
+	   The client is expected to read this before sending the request body, in order to check for errors and prevent TCP buffer deadlocking.
+	   In particular, the client should check the "c2e@" signature (this is particularly helpful for cases where IO errors are silent).
+	   The client need not check the capacity -- the server is expected to verify it in any case to prevent buffer overruns.
 	4. It is legal for the client to close the connection here if the client has no request to make (i.e. if the client is simply querying the PID or connection state).
 	5. The client will then send a little-endian 32-bit word indicating the length of the request data in bytes, and then send the request data.
+	   The server must receive all data even on error, as otherwise the client can deadlock.
 	6. The server will then perform the request (copy data, set size, signal request event and wait on response event).
 	7. The server will send the entire response (the 24-byte header and then the amount of data bytes that header specifies).
 	8. Finally, the server will close it's side of the socket and shutdown it's communications with the engine.

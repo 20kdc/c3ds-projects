@@ -17,6 +17,8 @@ import struct
 
 enc = "windows-1252"
 
+C2E_MAGIC = b"c2e@"
+
 class CSMIHead():
 	"""
 	Class to manage a shared memory interface header.
@@ -26,7 +28,7 @@ class CSMIHead():
 		Initializes a blank default shared memory interface header object.
 		If bytes are supplied, loads the contents of said bytes into this object via of_bytes.
 		"""
-		self.magic = b"c2e@"
+		self.magic = C2E_MAGIC
 		self.process_id = 0
 		self.result_code = 0
 		self.data_len = 0
@@ -38,7 +40,7 @@ class CSMIHead():
 		"""
 		Returns True if this header is valid.
 		"""
-		return self.magic == b"c2e@"
+		return self.magic == C2E_MAGIC
 	def of_bytes(self, b: bytes):
 		"""
 		Loads the contents of the given bytes into the fields of this object.
@@ -114,12 +116,16 @@ def raw_request(s: socket.socket, request: bytes) -> bytes:
 	Realistically, what you're sending is always going to be a *null-terminated* string.
 	The main purpose of this function is that it handles the fiddly bits (i.e. raising CPXError).
 	"""
-	recvall(s, csmihead_len)
+	hdr1 = CSMIHead(recvall(s, csmihead_len))
+	if not hdr1.is_valid():
+		raise Exception("Server description header not valid")
 	# send request
 	s.sendall(encode_cpxr(request))
-	hdr = CSMIHead(recvall(s, csmihead_len))
-	resp = recvall(s, hdr.data_len)
-	if hdr.result_code != 0:
+	hdr2 = CSMIHead(recvall(s, csmihead_len))
+	resp = recvall(s, hdr2.data_len)
+	if not hdr2.is_valid():
+		raise Exception("Response header not valid")
+	if hdr2.result_code != 0:
 		# Error
 		raise CPXError(cut_terminated(resp, b"\0")[0].decode(enc))
 	return resp

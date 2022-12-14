@@ -84,8 +84,13 @@ static void sendStringResponse(rGlobals_t * g, const char * text) {
 	transferAreaToClient(g, tmpErr, 0);
 }
 
-// Note! doubleSend is 1 if we haven't sent the initial 24-byte header.
-static void internalError(rGlobals_t * g, const char * text, int doubleSend) {
+#define EM_INIT 0
+#define EM_SENT_H1 1
+#define EM_RECEIVED_SIZE 2
+#define EM_RECEIVED_BODY 3
+
+static void internalError(rGlobals_t * g, const char * text, int errorMode, int reqSize) {
+	// initialize header buffer
 	libcpx_shmHeader_t * tmpErr = (libcpx_shmHeader_t *) g->tmpBuf;
 	memcpy(tmpErr->magic, "c2e@", 4);
 	snprintf(tmpErr->data, TMPBUF_RSPLEN, "caosprox: %s", text);
@@ -94,8 +99,33 @@ static void internalError(rGlobals_t * g, const char * text, int doubleSend) {
 	tmpErr->sizeBytes = strlen(tmpErr->data) + 1;
 	tmpErr->maxSizeBytes = 8192;
 	tmpErr->padding = 0;
-	if (doubleSend)
+	// alright, work out what to do based on error mode
+	if (errorMode == EM_INIT) {
 		transferAreaToClient(g, tmpErr, 1);
+		errorMode = EM_SENT_H1;
+	}
+	if (errorMode == EM_SENT_H1) {
+		if (libcpx_cGetA(g->client, &reqSize, 4) != 4) {
+			// no request size, so skip ahead
+			errorMode = EM_RECEIVED_BODY;
+		} else {
+			errorMode = EM_RECEIVED_SIZE;
+		}
+	}
+	if (errorMode == EM_RECEIVED_SIZE) {
+		// receive body
+		char req[1024];
+		while (reqSize > sizeof(req)) {
+			if (libcpx_cGetA(g->client, req, sizeof(req)) != sizeof(req))
+				break;
+			reqSize -= sizeof(req);
+		}
+		// if that didn't get interrupted, receive remainder
+		if (reqSize <= 1024)
+			libcpx_cGetA(g->client, req, reqSize);
+		// done!
+		errorMode = EM_RECEIVED_BODY;
+	}
 	transferAreaToClient(g, tmpErr, 0);
 }
 
@@ -105,17 +135,18 @@ static void handleClientWithEverything(rGlobals_t * g, const char * gameID, libc
 	// now we want a size back
 	int size;
 	if (libcpx_cGetA(g->client, &size, 4) != 4) {
-		internalError(g, "failed to get request size", 0);
+		// we failed to get request size, so skip ahead
+		internalError(g, "failed to get request size", EM_RECEIVED_BODY, 0);
 		return;
 	}
 	if (size > shm->maxSizeBytes) {
-		internalError(g, "request size exceeds maximum size", 0);
+		internalError(g, "request size exceeds maximum size", EM_RECEIVED_SIZE, size);
 		return;
 	}
 	// can't hurt
 	shm->sizeBytes = size;
 	if (libcpx_cGetA(g->client, shm->data, size) != size) {
-		internalError(g, "failed to get request body", 0);
+		internalError(g, "failed to get request body", EM_RECEIVED_BODY, 0);
 		return;
 	}
 	// WAIT! This could be intended for CPX.
@@ -133,7 +164,7 @@ static void handleClientWithEverything(rGlobals_t * g, const char * gameID, libc
 		return;
 	} else if ((size >= 4) && !memcmp(shm->data, "cpx-", 4)) {
 		// It's intended for CPX but we don't recognize it.
-		internalError(g, "Unrecognized CPX extension command.", 0);
+		internalError(g, "Unrecognized CPX extension command.", EM_RECEIVED_BODY, 0);
 		return;
 	}
 	// It's intended for the engine
@@ -144,7 +175,7 @@ static void handleClientWithEverything(rGlobals_t * g, const char * gameID, libc
 	if (result == WAIT_OBJECT_0) {
 		// This specific error means the process ended while the request was occuring.
 		// This can be tested with the "bang" CAOS command or some other crashing operation.
-		internalError(g, "game closed during request", 0);
+		internalError(g, "game closed during request", EM_RECEIVED_BODY, 0);
 	} else {
 		// send the results back to the client
 		transferAreaToClient(g, shm, 0);
@@ -154,20 +185,20 @@ static void handleClientWithEverything(rGlobals_t * g, const char * gameID, libc
 static void handleClientWithSHM(rGlobals_t * g, const char * gameID, libcpx_shmHeader_t * shm) {
 	HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, shm->pid);
 	if (!process) {
-		internalError(g, "failed to open process handle (game dead?)", 1);
+		internalError(g, "failed to open process handle (game dead?)", EM_INIT, 0);
 		return;
 	}
 	sprintf(g->tmpBuf, "%s_result", gameID);
 	HANDLE resultEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, g->tmpBuf);
 	if (!resultEvent) {
-		internalError(g, "failed to open result handle", 1);
+		internalError(g, "failed to open result handle", EM_INIT, 0);
 		CloseHandle(process);
 		return;
 	}
 	sprintf(g->tmpBuf, "%s_request", gameID);
 	HANDLE requestEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, g->tmpBuf);
 	if (!requestEvent) {
-		internalError(g, "failed to open request handle", 1);
+		internalError(g, "failed to open request handle", EM_INIT, 0);
 		CloseHandle(resultEvent);
 		CloseHandle(process);
 		return;
@@ -181,12 +212,12 @@ static void handleClientInsideMutex(rGlobals_t * g, const char * gameID) {
 	sprintf(g->tmpBuf, "%s_mem", gameID);
 	HANDLE fma = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, g->tmpBuf);
 	if (!fma) {
-		internalError(g, "could not open memory handle (game not running/detection failed?)", 1);
+		internalError(g, "could not open memory handle (game not running/detection failed?)", EM_INIT, 0);
 		return;
 	}
 	libcpx_shmHeader_t * shm = (libcpx_shmHeader_t *) MapViewOfFile(fma, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 	if (!shm) {
-		internalError(g, "could not map view of shared memory", 1);
+		internalError(g, "could not map view of shared memory", EM_INIT, 0);
 		CloseHandle(fma);
 		return;
 	}
@@ -207,7 +238,7 @@ void cpxservi_handleClient(libcpx_channel_t * client) {
 	sprintf(g.tmpBuf, "%s_mutex", gameID);
 	HANDLE mutex = OpenMutexA(MUTEX_ALL_ACCESS, TRUE, g.tmpBuf);
 	if (!mutex) {
-		internalError(&g, "could not open mutex (game not running/detection failed?)", 1);
+		internalError(&g, "could not open mutex (game not running/detection failed?)", EM_INIT, 0);
 		return;
 	}
 	// wait to acquire the mutex
