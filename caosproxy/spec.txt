@@ -2,7 +2,7 @@ CPX: CAOS Proxy For Cross-Language And Operating System Use
 
 specification version number
 
-	2212141155
+	2212141732
 
 license of specification
 
@@ -111,10 +111,11 @@ standardized API design
 		Ideally, the automatic CPX target should be localhost port 19960, unless environment variables CPX_HOST / CPX_PORT are provided, which override these.
 		However this is not required.
 
-		The Windows named pipe file method is an additional method. It should be the preferred method if all three of the following conditions are true:
+		The Windows named pipe file method is an additional method. It should be the preferred method if all of the following conditions are true:
 		1. The application is running on Windows
 		2. The application has not been given any host and port override
-		3. All IO operations on the named pipe file succeed (if any fail, retry the request the regular way)
+		3. The environment variable CPX_NO_PIPE is non-existent, empty, or "0"
+		4. All IO operations on the named pipe file succeed (if any fail, retry the request the regular way)
 		 THIS IS CRITICALLY IMPORTANT, AS NAMED PIPES DON'T HAVE A BACKLOG SYSTEM LIKE SOCKETS DO.
 		 (caosprox spins up 32 threads to hopefully prevent problems, and applications are being adjusted.)
 

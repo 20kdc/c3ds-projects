@@ -25,21 +25,27 @@ import rals.caos.CAOSUtils;
  */
 public class Injector {
 	public static String cpxRequest(String req) throws IOException {
-		boolean isDefaults = true;
+		boolean allowPipe = true;
 		String host = System.getenv("CPX_HOST");
 		if ((host == null) || (host.equals(""))) {
 			host = "127.0.0.1";
 		} else {
-			isDefaults = false;
+			allowPipe = false;
 		}
 		String port = System.getenv("CPX_PORT");
 		if ((port == null) || (port.equals(""))) {
 			port = "19960";
 		} else {
-			isDefaults = false;
+			allowPipe = false;
+		}
+		String pipe = System.getenv("CPX_NO_PIPE");
+		if ((pipe == null) || (pipe.equals("")) || (pipe.equals("0"))) {
+			// okay!
+		} else {
+			allowPipe = false;
 		}
 
-		if (isDefaults && checkIfLikelyWindows()) {
+		if (allowPipe && checkIfLikelyWindows()) {
 			// This is a HORRIBLE thing.
 			try (RandomAccessFile raf = new RandomAccessFile("\\\\.\\pipe\\CAOSWorkaroundBecauseWindowsIsAFuckedUpPieceOfShit", "rw")) {
 				return cpxRequestInternal(req, raf, raf, null);
