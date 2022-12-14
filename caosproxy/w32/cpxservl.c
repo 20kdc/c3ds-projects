@@ -14,6 +14,7 @@
 static SOCKET serverSocket;
 
 #define NAMED_PIPE_BZ 0x10000
+#define PIPE_SERVER_COUNT 32
 
 static DWORD WINAPI cpxservl_pipeServer(void * param) {
 	while (1) {
@@ -71,8 +72,10 @@ int cpxservl_serverInit(int host, int port) {
 		return 1;
 	}
 	// If we've gotten this far, then we're confirmed to be starting.
-	// Start pipe server
-	CreateThread(NULL, 0, cpxservl_pipeServer, NULL, 0, NULL);
+	// Start pipe server threads.
+	// Note that we start multiple. This is intended as it helps to reduce the risk of random failures.
+	for (int i = 0; i < PIPE_SERVER_COUNT; i++)
+		CreateThread(NULL, 0, cpxservl_pipeServer, NULL, 0, NULL);
 	return 0;
 }
 

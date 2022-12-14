@@ -2,7 +2,7 @@ CPX: CAOS Proxy For Cross-Language And Operating System Use
 
 specification version number
 
-	2212132121
+	2212140022
 
 license of specification
 
@@ -16,6 +16,7 @@ connection methods
 	 Support for this method is MANDATORY.
 
 	B. The client opens the (Windows-only) file "\\.\pipe\CAOSWorkaroundBecauseWindowsIsAFuckedUpPieceOfShit"
+	 IMPORTANT: Yes, this is a named pipe, but it's accessible with file APIs too.
 	 This is a workaround for Windows interfering with loopback TCP connections for non-Administrator tasks.
 	 Support for this method is OPTIONAL.
 
@@ -24,6 +25,7 @@ connection methods
 protocol
 
 	1. The client connects via one of the given connection methods.
+	   Client applications should try to AVOID concurrent connections to prevent spurious errors.
 	2. The server will attempt to find an engine and lock the mutex.
 	3. It will then send the first 24 bytes of the shared memory (the header).
 	   See http://double.nz/creatures/developer/sharedmemory.htm
@@ -104,14 +106,16 @@ standardized API design
 		Ideally, the automatic CPX target should be localhost port 19960, unless environment variables CPX_HOST / CPX_PORT are provided, which override these.
 		However this is not required.
 
-		The Windows named pipe method is an additional method. It should be the preferred method if all three of the following conditions are true:
+		The Windows named pipe file method is an additional method. It should be the preferred method if all three of the following conditions are true:
 		1. The application is running on Windows
 		2. The application has not been given any host and port override
-		3. Opening the named pipe succeeds (that is, allow for servers that do not support the named pipe method)
+		3. All IO operations on the named pipe file succeed (if any fail, retry the request the regular way)
+		 THIS IS CRITICALLY IMPORTANT, AS NAMED PIPES DON'T HAVE A BACKLOG SYSTEM LIKE SOCKETS DO.
+		 (caosprox spins up 32 threads to hopefully prevent problems, and applications are being adjusted.)
 
 		On Windows, the TCP method seems to be failure-prone due to what appears to be Windows interference.
-		Hence the recommendation of the named pipe method.
-		In the event that the named pipe method cannot be supported on Windows for an application:
+		Hence the recommendation of the named pipe file method.
+		In the event that the named pipe file method cannot be supported on Windows for an application:
 		Authors are advised to recommend Administrator permission for the application and CPX server.
 		This seems to tend to resolve the problem.
 

@@ -13,7 +13,7 @@
 // Schedule:
 // Breaded, Squeezed, Drunk, Underwater, Airlocked, Exported, Spliced
 //                    ^
-#define LIBCPX_VERSION_NAME "DrunkPREREL"
+#define LIBCPX_VERSION_NAME "Drunk"
 
 #define LIBCPX_VERSION LIBCPX_VERSION_NAME " [" __TIME__ " " __DATE__ "]"
 
