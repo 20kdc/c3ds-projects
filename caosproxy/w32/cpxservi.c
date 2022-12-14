@@ -121,8 +121,9 @@ static void internalError(rGlobals_t * g, const char * text, int errorMode, int 
 			reqSize -= sizeof(req);
 		}
 		// if that didn't get interrupted, receive remainder
-		if (reqSize <= 1024)
-			libcpx_cGetA(g->client, req, reqSize);
+		if (reqSize > 0)
+			if (reqSize <= 1024)
+				libcpx_cGetA(g->client, req, reqSize);
 		// done!
 		errorMode = EM_RECEIVED_BODY;
 	}
@@ -137,6 +138,11 @@ static void handleClientWithEverything(rGlobals_t * g, const char * gameID, libc
 	if (libcpx_cGetA(g->client, &size, 4) != 4) {
 		// we failed to get request size, so skip ahead
 		internalError(g, "failed to get request size", EM_RECEIVED_BODY, 0);
+		return;
+	}
+	if (size < 0) {
+		// deadlock bait, but what can you do?
+		internalError(g, "request size under 0", EM_RECEIVED_BODY, 0);
 		return;
 	}
 	if (size > shm->maxSizeBytes) {
