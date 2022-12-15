@@ -95,9 +95,9 @@ macro grid(Agent @a, int @d) @'grid {a, d}'!int;
 
 /*
 Gets the room adjacent to room `id` with the highest amount of CA `ca` (see `CA_` consts).
-If `horizontal` is true, up and down are not considered.
+Defaults to horizontal only. If `omni` is true, up and down are also considered.
 */
-macro hirp(int @id, int @ca, bool @horizontal) @'hirp {id, ca, horizontal}'!int;
+macro hirp(int @id, int @ca, bool @omni) @'hirp {id, ca, omni}'!int;
 
 /*
 Creates/modifies a CA link between rooms `r1` and `r2` with permability `p`.
@@ -111,9 +111,9 @@ macro link(int @r1, int @r2) @'link {r1, r2}'!int;
 
 /*
 Gets the room adjacent to room `id` with the lowest amount of CA `ca` (see `CA_` consts).
-If `horizontal` is true, up and down are not considered.
+Defaults to horizontal only. If `omni` is true, up and down are also considered.
 */
-macro lorp(int @id, int @ca, bool @horizontal) @'lorp {id, ca, horizontal}'!int;
+macro lorp(int @id, int @ca, bool @omni) @'lorp {id, ca, omni}'!int;
 
 /*
 Sets the map width and height.
