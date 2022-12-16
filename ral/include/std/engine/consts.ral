@@ -549,3 +549,19 @@ PUHL_Y = 2;
 //
 DBGA_TIMER = -1;
 DBGA_OV = 0;
+
+// CMRP pan modes
+// Teleport the camera to the destination.
+CMRP_SET = 0;
+// Scroll smoothly (if in same metaroom).
+CMRP_SCROLL = 1;
+// Scroll only if the target is already on-screen, otherwise jump.
+CMRP_SCROLL_IF_VISIBLE = 2;
+
+// TRCK tracking modes
+// If the target leaves the rectangle, stop tracking.
+TRCK_BREAK = 0;
+// When the target is in the rectangle, track, but pause tracking while it's outside.
+TRCK_GUIDE = 1;
+// The camera is not allowed to stop tracking the target.
+TRCK_FORCE = 2;

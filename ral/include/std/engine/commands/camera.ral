@@ -11,46 +11,149 @@
 
 include "std/engine/commands_inc.ral";
 
+/*
+This sets the `scam` camera's background for metaroom `id` to `img` -- note that `img` must be an existing background as added to the map.
+
+If the background is on-screen, then it's transitioned using transition `t` (see `META_` constants).
+*/
 macro () bkgd(int @id, str @img, int @t) @'bkgd {id, img, t}';
+// Returns the `scam` camera's background for metaroom `id`
 macro bkgd(int @id) @'bkgd {id}'!str;
 
+/*
+This sets the IDs to start looking at when allocating new metaroom `mb` and room `rb` IDs.
+
+Beware that this really should only ever be used by game bootstrap scripts -- Docking Station uses it to ensure the Docking Station metarooms occupy a consistent set of IDs.
+
+Also note that this cannot make the `addm` and `addr` commands re-use IDs that are presently in use.
+However, `addm` and `addr` will ignore unused IDs before the given base IDs (but won't ignore unused IDs after the given base IDs, even if those IDs become unused by the removal of a metaroom/room!)
+
+The initial bases are of course 0 and 0.
+*/
 macro () brmi(int @mb, int @rb) @'brmi {mb, rb}';
 
-macro () cmra(int @x, int @y, int @p) @'cmra {x, y, p}';
-macro () cmrp(int @x, int @y, int @p) @'cmrp {x, y, p}';
+/*
+Move `scam` camera's top-left corner to `x, y` in world coordinates.
+If `p` is true and in the same metaroom, smoothly scrolls.
+In any other case, always jumps to the target.
+*/
+macro () cmra(num @x, num @y, bool @p) @'cmra {x, y, p}';
+/*
+Move `scam` camera's centre to `x, y` in world coordinates with movement mode `p` (see `CMRP_` constants).
+*/
+macro () cmrp(num @x, num @y, int @p) @'cmrp {x, y, p}';
+/*
+Move `scam` camera's centre to `targ` centre, with movement mode `p` (see `CMRP_` constants).
+Note that `cmrt(0);` is nearly exactly equivalent to `cmrp(posx(), posy(), 0);` -- if you want continuous tracking, see: `trck`
+*/
 macro () cmrt(int @p) @'cmrt {p}';
 
+// Gets the X centre of the `scam` camera.
 macro cmrx() @'cmrx'!int;
+// Gets the Y centre of the `scam` camera.
 macro cmry() @'cmry'!int;
 
+// Redraws the screen. You shouldn't need to do this outside of a very long-running `inst` block, as the engine is quite capable of doing this on it's own every tick.
 macro () frsh() @'frsh';
 
-macro () line(int @x1, int @y1, int @x2, int @y2, int @r, int @g, int @b, int @so, int @sf) @'line {x1, y1, x2, y2, r, g, b, so, sf}';
+/*
+Manages lines on the `targ` agent.
 
+If the first point `x1, y1` _as integers_ is equal to the second `x2, y2` _as integers,_ then all lines on `targ` are deleted.
+
+Otherwise, adds a new line between the two points, with the given colour `r, g, b` and the stipple settings `so, sf` (these can be `0, 0` for a solid line).
+
+The points are given in world coordinates and do not move with the agent to which they are attached.
+
+These lines are a graphical effect only.
+
+New lines default to being on the plane specified by `engine\_plane\_for\_lines` until the next time their parent part (for compound agents this is always part 0) changes plane, in which case the plane of the existing lines is changed to match.
+*/
+macro () line(num @x1, num @y1, num @x2, num @y2, int @r, int @g, int @b, int @so, int @sf) @'line {x1, y1, x2, y2, r, g, b, so, sf}';
+
+/*
+Attempts to discard a file created with `snap` -- if it's presently in use somewhere, returns true (here, failure), otherwise returns false (here, success -- the file has been moved in preparation to be discarded).
+*/
 macro loft(str @fn) @'loft {fn}'!bool;
 
-macro () meta(int @id, int @x, int @y, int @t) @'meta {id, x, y, t}';
+/*
+Moves the `scam` camera to the given metaroom `id` with the top-left at `x, y` (in world coordinates) and transitioning across using method `t` (see `META_` constants).
+
+If either of `x, y` round to a negative integer, then the camera will be placed at the position the main camera was in the last time it left the metaroom.
+
+Note that the transition only applies if the `scam` camera is the main (user) camera.
+*/
+macro () meta(int @id, num @x, num @y, int @t) @'meta {id, x, y, t}';
+// Returns the current metaroom ID of the `scam` camera.
 macro meta() @'meta'!int;
 
+/*
+Sets the current camera to:
+
+* The `pat: cmra` with the given `agent` and `part` number.
+* On any kind of failure that is not an invalid part number (which raises an error), resets the current camera to the main viewport (that is, selects the game window camera). In particular `scam(null, 0);` would do this.
+
+Commands involving cameras use this to determine which camera to modify.
+*/
 macro () scam(Agent? @agent, int @part) @'scam {agent, part}';
 
-macro () snap(str @fn, int @x, int @y, int @w, int @h, int @z) @'snap {fn, x, y, w, h, z}';
+/*
+Takes a picture with the given `name` -- note that the name doesn't include the `.s16` suffix, which is appended onto it automatically.
 
+The picture is taken at the given `x, y` world position, with the given `w, h` size in pixels.
+
+`z` is completely ignored, but is conventionally intended to be between `0` and `100` defaulting to `100` -- best guess is you might be able to go indirectly via a camera part if you want to make this work.
+
+Using `snax` you can check for a potential filename conflict.
+*/
+macro () snap(str @name, num @x, num @y, int @w, int @h, int @z) @'snap {name, x, y, w, h, z}';
+
+/*
+Returns true if the given sprite name exists (without the `.s16` or `.c16` extension).
+
+Theoretically this is supposed to be for use with `snap` but it's general-purpose.
+*/
 macro snax(str @fn) @'snax {fn}'!bool;
 
+/*
+Sets the `scam` camera to track `agent` (or pass `null` to stop). `xp, yp` describe how much of the camera view, by percentage, the target can roam -- think of this like TV safe areas.
+
+`s` (see `TRCK_` constants) controls the rules of tracking the target, based on the `xp, yp` area.
+
+`t` controls the transition.
+*/
 macro () trck(Agent? @agent, int @xp, int @yp, int @s, int @t) @'scam {agent, xp, yp, s, t}';
+// Returns the agent set with `trck` on the `scam` camera (or `null` if none).
 macro trck() @'trck'!Agent?;
 
 // forms indistingulishable
+// Toggles between full-screen and windowed. See `wdowGet` regarding this.
 macro () wdowToggle() @'wdow';
+// Contrary to the name, returns true for full-screen.
 macro wdowGet() @'wdow'!bool;
 
-macro wndb() @'wndb'!int;
-macro wndh() @'wndh'!int;
-macro wndl() @'wndl'!int;
-macro wndr() @'wndr'!int;
-macro wndt() @'wndt'!int;
-macro wndw() @'wndw'!int;
+// wnd w/h moved forward
 
-macro () zoom(int @p, int @xp, int @yp) @'zoom {p, xp, yp}';
+// World Y of bottom of `scam` camera view
+macro wndb() @'wndb'!int;
+// World X of left of `scam` camera view
+macro wndl() @'wndl'!int;
+// World X of right of `scam` camera view
+macro wndr() @'wndr'!int;
+// World Y of top of `scam` camera view
+macro wndt() @'wndt'!int;
+
+// Width of `scam` camera view in world pixels
+macro wndw() @'wndw'!int;
+// Height of `scam` camera view in world pixels
+macro wndh() @'wndh'!int;
+
+/*
+For `scam` cameras which are not the main viewport, moves the centre to `xp, yp` and then zooms relatively by `p` -- this zoom operates by adjusting the view width and height by `p` pixels equally, which means that the zoom will not preserve aspect ratio except for square viewports.
+
+If one of `xp, yp` is exactly -1, -1, then the centre change is performed with the existing centre.
+
+Importantly, the centre move is not smooth or based on `p` -- it is a teleport to that centre such that `zoom(0, x, y);` is more or less equal to `cmrp(x, y);` (assuming a valid non-main `scam` camera).
+*/
+macro () zoom(int @p, num @xp, num @yp) @'zoom {p, xp, yp}';
 
