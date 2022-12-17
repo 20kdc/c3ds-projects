@@ -147,7 +147,11 @@ macro () patText(int @id, str @gallery, int @first, num @x, num @y, int @plane, 
 // Given a part ID (or -1 for the first), returns the next part ID (or -1 after the last part).
 macro pnxt(int @id) @'pnxt {id}'!int;
 
-// Sets the text of the selected text part. See `patFixd` and `patText`.
+/*
+Sets the text of the selected text part. See `patFixd` and `patText`.
+
+_WARNING: Easter eggs in the game's engine are implemented by scanning set ptxt for specific values and then modifying it accordingly._
+*/
 macro () ptxt(str @txt) @'ptxt {txt}';
 
 // Gets the text of the selected text part. See `patFixd` and `patText`.

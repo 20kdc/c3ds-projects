@@ -18,7 +18,7 @@ include "std/engine/commands/creatures.ral";
 include "std/engine/commands/debug.ral";
 include "std/engine/commands/files.ral";
 // flow omitted because compiler handles it
-include "std/engine/commands/genetics.ral"; // ud
+include "std/engine/commands/genetics.ral";
 include "std/engine/commands/history.ral"; // ud
 include "std/engine/commands/input.ral";
 include "std/engine/commands/map.ral";

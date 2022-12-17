@@ -11,13 +11,45 @@
 
 include "std/engine/commands_inc.ral";
 
+// Copies a genome from agent `src` slot `srcSlot` to `dst` slot `dstSlot` -- creating a new creature history for it with the Cloned event.
 macro () geneClon(Agent @dst, int @dstSlot, Agent @src, int @srcSlot) @'gene clon {dst, dstSlot, src, srcSlot}';
+// Splices a genome into `dst` slot `dstSlot` from agent `src1` slot `src1Slot` mutation chance `cm1` degree `dm1` and agent `src2` slot `src2Slot` mutation chance `cm2` degree `dm2` -- mutation chance and degree range from 0 to 255 inclusive. A creature history for the result is created with the Spliced event.
 macro () geneCros(Agent @dst, int @dstSlot, Agent @src1, int @src1Slot, Agent @src2, int @src2Slot, int @cm1, int @dm1, int @cm2, int @dm2) @'gene cros {dst, dstSlot, src1, src1Slot, src2, src2Slot, cm1, dm1, cm2, dm2}';
+// Deletes the genome in `dst` slot `dstSlot` (history might stick around though).
 macro () geneKill(Agent @victim, int @slot) @'gene kill {victim, slot}';
+/*
+Loads a genome from file `src` to agent `dst` slot `dstSlot` -- creating a new creature history for it with the Engineered event.
+
+Importantly, a genome filename can contain `*` and `?` -- misuse of this in official scripts is why you should never name any custom file beginning with `e` or `g` as these will be confused for ettin and grendel files.
+*/
 macro () geneLoad(Agent @dst, int @dstSlot, str @src) @'gene load {dst, dstSlot, src}';
+/*
+Moves a genome and history from agent `src` slot `srcSlot` to `dst` slot `dstSlot` -- the moniker is kept the same, etc.
+
+Note that there is something of a preservation of genome "uniqueness" -- the slot is emptied in the source, the same moniker is not supposed to be in two agents at once.
+*/
 macro () geneMove(Agent @dst, int @dstSlot, Agent @src, int @srcSlot) @'gene move {dst, dstSlot, src, srcSlot}';
 
+/*
+Returns the moniker of the genome in the `targ` agent's slot `slot` -- this is also linked into creature history and so forth.
+
+Returns an empty string if the slot doesn't contain anything.
+
+Worth keeping in mind is that `gtos(0)` gets the moniker of a creature.
+*/
 macro gtos(int @slot) @'gtos {slot}'!str;
+/*
+Returns the agent holding the genome with the moniker `mon` -- very useful if you want to know everything about every moniker, less useful otherwise.
+
+Consider using `mtoc` in most cases.
+
+Failure returns `null`.
+*/
 macro mtoa(str @mon) @'mtoa {mon}'!Agent?;
+/*
+Returns the creature with the moniker `mon` -- this only works if it's a creature and the moniker is in gene slot 0, pregnancies do not count.
+
+Failure returns `null`.
+*/
 macro mtoc(str @mon) @'mtoc {mon}'!Agent?;
 

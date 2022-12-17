@@ -14,3 +14,9 @@ include "std/engine.ral";
 // Include c3ds common headers
 include "std/c3ds/ca.ral";
 
+// assorted
+
+// Width of a life event photo.
+C3DS_PHOTO_W = 119;
+// Height of a life event photo.
+C3DS_PHOTO_H = 139;

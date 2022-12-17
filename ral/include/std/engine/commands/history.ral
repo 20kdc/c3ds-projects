@@ -18,16 +18,31 @@ macro () histEvnt(str @moniker, int @et, str @m1, str @m2) @'hist evnt {moniker,
 macro histFind(str @moniker, int @et, int @i) @'hist find {moniker, et, i}'!int;
 macro histFinr(str @moniker, int @et, int @i) @'hist finr {moniker, et, i}'!int;
 
+// Photo.
 macro histFoto(str @moniker, int @e) @'hist foto {moniker, e}'!str;
+/*
+Sets a photo for `moniker` life event `e` to `v` -- photos follow the creature in exports, etc.
+Photos can be created using `snap` and `HIST_TYPE_PHOTO` is what's used to carry them. (This includes birth/death photos, they don't get attached to the birth/death event.)
+Don't set a photo on an event that already has one unless it's okay to delete that one (as that's what happens) -- see `loft` if you need to check.
+
+Importantly, standard C3/DS life event photos are expected to be `119x139` in size. These constants are given as `C3DS_PHOTO_W` and `C3DS_PHOTO_H` for your convenience.
+*/
 macro () histFoto(str @moniker, int @e, str @v) @'hist foto {moniker, e, v}';
 
+// 1 is male, 2 is female, don't interpret the name literally.
 macro histGend(str @moniker) @'hist gend {moniker}'!int;
+// Returns the genus of creature `moniker`
 macro histGnus(str @moniker) @'hist gnus {moniker}'!int;
+// Returns the first string of life event index `e` of creature history `moniker`
 macro histMon1(str @moniker, int @e) @'hist mon1 {moniker, e}'!str;
+// Returns the second string of life event index `e` of creature history `moniker`
 macro histMon2(str @moniker, int @e) @'hist mon2 {moniker, e}'!str;
+// Returns the amount of point mutations that occurred for the given moniker.
 macro histMute(str @moniker) @'hist mute {moniker}'!int;
 
+// Returns the name of a creature by moniker. (This is considered an attribute of the history/genome, so the creature need not have lived.)
 macro histName(str @moniker) @'hist name {moniker}'!str;
+// Sets the name of the creature by moniker. (This is considered an attribute of the history/genome, so the creature need not have lived.)
 macro () histName(str @moniker, str @n) @'hist name {moniker, n}';
 
 macro histNetu(str @moniker, int @e) @'hist netu {moniker, e}'!str;

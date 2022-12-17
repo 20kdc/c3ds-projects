@@ -147,6 +147,10 @@ script Agent:pickedupAgnt 124;
 script Agent:droppedAgnt 125;
 
 // Misc
+/*
+Sent to all agents with the script when a creature speaks. `\_p1\_` is speech bubble text -- `\_p2\_` is the speaker.
+The speech bubble factory of a game can usually be directly messaged to simply cause speech bubbles (devoid of actual effects or sound).
+*/
 script Agent:speechBubble 126;
 script Agent:lifeEvent 127;
 script Agent:worldLoaded 128;
