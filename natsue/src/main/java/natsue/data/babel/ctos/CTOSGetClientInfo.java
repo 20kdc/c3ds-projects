@@ -7,12 +7,9 @@
 
 package natsue.data.babel.ctos;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 
 public class CTOSGetClientInfo extends TargetUIDCTOS {

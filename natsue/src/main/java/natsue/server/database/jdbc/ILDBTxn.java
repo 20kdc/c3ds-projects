@@ -8,12 +8,7 @@
 package natsue.server.database.jdbc;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-
-import natsue.config.Config;
-import natsue.log.ILogProvider;
-import natsue.log.ILogSource;
 
 /**
  * Represents a rerunnable transaction.

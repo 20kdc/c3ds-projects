@@ -17,7 +17,6 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Properties;
 
 /**
  * A change in approach.
@@ -32,73 +31,74 @@ public class NCFConfigProvider implements IConfigProvider {
 	public NCFConfigProvider(String src) throws IOException {
 		file = new File(src);
 		try {
-			InputStreamReader isr = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
-			LinkedList<String> tokens = new LinkedList<>();
-			StringBuilder buf = new StringBuilder();
-			int state = 0;
-			while (true) {
-				int chr = isr.read();
-				if (chr == -1)
-					break;
-				if (state == 0) {
-					// ready
-					if (chr == '#') {
-						state = 1;
-					} else if (chr <= 32) {
-						// do nothing
-					} else if (chr == '"') {
+			try (InputStreamReader isr = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+				LinkedList<String> tokens = new LinkedList<>();
+				StringBuilder buf = new StringBuilder();
+				int state = 0;
+				while (true) {
+					int chr = isr.read();
+					if (chr == -1)
+						break;
+					if (state == 0) {
+						// ready
+						if (chr == '#') {
+							state = 1;
+						} else if (chr <= 32) {
+							// do nothing
+						} else if (chr == '"') {
+							// string
+							state = 2;
+						} else {
+							// id
+							state = 4;
+							buf.append((char) chr);
+						}
+					} else if (state == 1) {
+						// comment
+						if (chr == '\n')
+							state = 0;
+					} else if (state == 2) {
 						// string
+						if (chr == '\\') {
+							state = 3;
+						} else if (chr == '\"') {
+							tokens.add(buf.toString());
+							buf.setLength(0);
+							state = 0;
+						} else {
+							buf.append((char) chr);
+						}
+					} else if (state == 3) {
+						// string escape
+						if (chr == 'n') {
+							buf.append(10);
+						} else {
+							buf.append((char) chr);
+						}
 						state = 2;
-					} else {
+					} else if (state == 4) {
 						// id
-						state = 4;
-						buf.append((char) chr);
-					}
-				} else if (state == 1) {
-					// comment
-					if (chr == '\n')
-						state = 0;
-				} else if (state == 2) {
-					// string
-					if (chr == '\\') {
-						state = 3;
-					} else if (chr == '\"') {
-						tokens.add(buf.toString());
-						buf.setLength(0);
-						state = 0;
-					} else {
-						buf.append((char) chr);
-					}
-				} else if (state == 3) {
-					// string escape
-					if (chr == 'n') {
-						buf.append(10);
-					} else {
-						buf.append((char) chr);
-					}
-					state = 2;
-				} else if (state == 4) {
-					// id
-					if (chr <= 32) {
-						tokens.add(buf.toString());
-						buf.setLength(0);
-						state = 0;
-					} else {
-						buf.append((char) chr);
+						if (chr <= 32) {
+							tokens.add(buf.toString());
+							buf.setLength(0);
+							state = 0;
+						} else {
+							buf.append((char) chr);
+						}
 					}
 				}
-			}
-			String key = null;
-			for (String s : tokens) {
-				if (key == null) {
-					key = s;
-				} else {
-					entries.put(key, s);
-					key = null;
+				String key = null;
+				for (String s : tokens) {
+					if (key == null) {
+						key = s;
+					} else {
+						entries.put(key, s);
+						key = null;
+					}
 				}
+				if (key != null)
+					throw new IOException("Key without value in configuration file!!!");
 			}
-			if (key != null)
-				throw new IOException("Key without value in configuration file!!!");
 		} catch (FileNotFoundException fnfe) {
 			needsSave = true;
 		}

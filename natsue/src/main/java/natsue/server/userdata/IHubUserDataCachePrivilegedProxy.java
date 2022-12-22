@@ -7,8 +7,6 @@
 
 package natsue.server.userdata;
 
-import natsue.server.userdata.INatsueUserData.Fixed;
-
 /**
  * Proxy for privileged user data APIs.
  */

@@ -13,7 +13,6 @@ import java.nio.ByteBuffer;
 
 import natsue.config.Config;
 import natsue.data.babel.PacketReader;
-import natsue.data.babel.UINUtils;
 
 public abstract class TargetUIDCTOS extends BaseCTOS {
 	public long targetUIN;

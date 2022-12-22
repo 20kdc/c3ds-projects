@@ -7,9 +7,6 @@
 
 package natsue.config;
 
-import natsue.config.BaseConfig.Bool;
-import natsue.config.BaseConfig.Int;
-
 /**
  * Configuration of allowed nickname format and registration
  */

@@ -7,7 +7,6 @@
 
 package natsue.server.firewall;
 
-import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.userdata.INatsueUserData;
 

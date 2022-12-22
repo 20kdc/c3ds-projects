@@ -8,8 +8,6 @@
 package natsue.data.babel;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Arrays;
 
 import natsue.data.IOUtils;
 import natsue.data.babel.ctos.BaseCTOS;

@@ -7,12 +7,10 @@
 
 package natsue.server.database.jdbc;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import natsue.server.database.NatsueDBCreatureInfo;
-import natsue.server.database.NatsueDBUserInfo;
 
 public class CreatureInfoRSC implements ILResultSetConverter<NatsueDBCreatureInfo> {
 	public static final CreatureInfoRSC INSTANCE = new CreatureInfoRSC();

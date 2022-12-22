@@ -10,7 +10,6 @@ package natsue.server.session;
 import java.io.IOException;
 
 import natsue.config.Config;
-import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSHandshake;

@@ -8,7 +8,6 @@
 package natsue.server.hubapi;
 
 import natsue.data.babel.BabelShortUserData;
-import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.userdata.INatsueUserData;
 
 /**

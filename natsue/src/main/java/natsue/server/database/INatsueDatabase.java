@@ -9,10 +9,7 @@ package natsue.server.database;
 
 import java.util.LinkedList;
 
-import natsue.config.IConfigProvider;
-import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.UINUtils;
-import natsue.data.babel.pm.PackedMessage;
 
 /**
  * Abstract interface to enforce clean separation of SQL-handling code from everything else.

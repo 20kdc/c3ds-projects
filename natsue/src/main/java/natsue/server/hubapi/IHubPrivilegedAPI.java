@@ -9,11 +9,8 @@ package natsue.server.hubapi;
 
 import java.util.LinkedList;
 
-import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.pm.PackedMessage;
-import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.firewall.IRejector;
-import natsue.server.userdata.IHubUserDataCache;
 import natsue.server.userdata.IHubUserDataCachePrivilegedProxy;
 import natsue.server.userdata.INatsueUserData;
 

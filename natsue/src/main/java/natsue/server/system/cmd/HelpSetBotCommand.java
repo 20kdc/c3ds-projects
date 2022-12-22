@@ -7,7 +7,6 @@
 package natsue.server.system.cmd;
 
 import natsue.data.hli.ChatColours;
-import natsue.server.system.SystemUserHubClient;
 
 /**
  * Help set bot command

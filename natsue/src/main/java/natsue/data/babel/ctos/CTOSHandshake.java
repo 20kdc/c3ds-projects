@@ -10,11 +10,9 @@ package natsue.data.babel.ctos;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 import natsue.config.Config;
 import natsue.data.babel.PacketReader;
-import natsue.data.babel.UINUtils;
 
 /**
  * Handshaking

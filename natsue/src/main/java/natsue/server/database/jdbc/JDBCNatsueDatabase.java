@@ -7,16 +7,11 @@
 
 package natsue.server.database.jdbc;
 
-import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.LinkedList;
 
-import natsue.config.Config;
 import natsue.config.ConfigDB;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;

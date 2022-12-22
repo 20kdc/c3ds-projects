@@ -7,9 +7,6 @@
 
 package natsue.log;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 /**
  * Always gotta be one.
  */

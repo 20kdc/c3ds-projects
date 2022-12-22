@@ -10,7 +10,6 @@ package natsue.data.hli;
 import java.util.Random;
 
 import natsue.data.babel.UINUtils;
-import natsue.data.babel.WritVal;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.data.babel.pm.PackedMessageWrit;

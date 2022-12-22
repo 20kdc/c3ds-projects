@@ -21,7 +21,6 @@ import natsue.server.database.UnixTime;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
-import natsue.server.userdata.IHubUserDataCachePrivileged;
 import natsue.server.userdata.INatsueUserData;
 import natsue.server.userdata.INatsueUserData.Fixed;
 import natsue.server.userdata.INatsueUserData.Root;

@@ -10,7 +10,6 @@ package natsue.server.hub;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import natsue.data.babel.BabelShortUserData;
-import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.names.PWHash;

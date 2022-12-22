@@ -8,7 +8,6 @@
 package natsue.data.babel;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 /**
  * The information on a user sent to the client.

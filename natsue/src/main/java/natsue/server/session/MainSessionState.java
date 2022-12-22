@@ -9,13 +9,9 @@ package natsue.server.session;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import natsue.config.Config;
-import natsue.data.IOUtils;
-import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.CreatureHistoryBlob;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.PacketWriter;

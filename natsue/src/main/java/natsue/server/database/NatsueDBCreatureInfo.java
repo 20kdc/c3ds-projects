@@ -7,8 +7,6 @@
 
 package natsue.server.database;
 
-import natsue.data.babel.CreatureHistoryBlob.LifeEvent;
-
 /**
  * Information on a creature.
  */

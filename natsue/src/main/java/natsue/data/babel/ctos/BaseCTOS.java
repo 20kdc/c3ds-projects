@@ -9,12 +9,10 @@ package natsue.data.babel.ctos;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.nio.*;
 
 import natsue.config.Config;
 import natsue.data.IOUtils;
-import natsue.data.babel.PacketReader;
 
 /**
  * Just the obvious bits...
