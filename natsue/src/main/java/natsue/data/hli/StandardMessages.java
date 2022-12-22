@@ -92,11 +92,18 @@ public class StandardMessages {
 	}
 
 	/**
+	 * Generates a PRAY block name.
+	 */
+	public static String generateBlockName(String type) {
+		long randomRes = generator.nextLong();
+		return "natsue_" + randomRes + "_intgen_" + System.currentTimeMillis() + "_" + type;
+	}
+
+	/**
 	 * Arbitrary PRAY tags message.
 	 */
 	public static PackedMessage tagsMessage(long senderUIN, String type, PRAYTags tags) {
-		long randomRes = generator.nextLong();
-		PRAYBlock pb = new PRAYBlock(type, "natsue_" + randomRes + "_intgen_" + System.currentTimeMillis() + "_" + type, tags.toByteArray());
+		PRAYBlock pb = new PRAYBlock(type, generateBlockName(type), tags.toByteArray());
 		return new PackedMessagePRAY(senderUIN, pb);
 	}
 }

@@ -20,6 +20,6 @@ public class SystemCheckBotCommand extends BaseBotCommand {
 
 	@Override
 	public void run(Context args) {
-		args.response.append(args.hub.runSystemCheck());
+		args.response.append(args.hub.runSystemCheck(false));
 	}
 }

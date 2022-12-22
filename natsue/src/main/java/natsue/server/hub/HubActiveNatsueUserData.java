@@ -37,6 +37,8 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 
 	private volatile String pwHash;
 	private volatile boolean isDead = false;
+	// While synchronized, this exists to help with lock tracking
+	private volatile String activity;
 
 	public HubActiveNatsueUserData(HubUserDataCache p, NatsueDBUserInfo ui) {
 		babel = ui.convertToBabel();
@@ -48,8 +50,11 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 		logged = parent.config.logUserCacheManagement.getValue();
 	}
 
-	public int debugGetRefCount() {
-		return refCount.get();
+	public String debugGetStatus() {
+		String sv = activity;
+		if (sv == null)
+			sv = "not busy";
+		return refCount.get() + " refs, " + sv;
 	}
 
 	@Override
@@ -110,11 +115,14 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 		synchronized (this) {
 			if (isDead)
 				return false;
+			activity = "updating password";
 			String newHash = PWHash.hash(uid, password);
 			if (parent.database.updateUserAuth(uid, newHash, flags)) {
 				pwHash = newHash;
+				activity = null;
 				return true;
 			}
+			activity = null;
 			return false;
 		}
 	}
@@ -124,11 +132,14 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 		synchronized (this) {
 			if (isDead)
 				return false;
+			activity = "updating flags";
 			int newFlags = (flags & and) ^ xor;
 			if (parent.database.updateUserAuth(uid, pwHash, newFlags)) {
 				flags = newFlags;
+				activity = null;
 				return true;
 			}
+			activity = null;
 			return false;
 		}
 	}

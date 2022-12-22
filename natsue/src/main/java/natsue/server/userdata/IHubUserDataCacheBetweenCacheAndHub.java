@@ -26,6 +26,7 @@ public interface IHubUserDataCacheBetweenCacheAndHub extends IHubUserDataCachePr
 
 	/**
 	 * UDC system check
+	 * @param detailed 
 	 */
-	void runSystemCheck(StringBuilder sb);
+	void runSystemCheck(StringBuilder sb, boolean detailed);
 }

@@ -71,17 +71,27 @@ public class QuotaManager {
 			ipd.currentConnections--;
 	}
 
-	public synchronized void runSystemCheck(StringBuilder sb) {
-		sb.append("QuotaManager\n");
-		for (Map.Entry<InetAddress, IPDetail> ipd : informationAbout.entrySet()) {
-			sb.append(ipd.getKey().toString());
-			sb.append("\n C");
-			sb.append(ipd.getValue().currentConnections);
-			sb.append(" T");
-			sb.append(ipd.getValue().connectionsThisMinute);
-			sb.append(" L");
-			sb.append(ipd.getValue().connectionsLastMinute);
-			sb.append('\n');
+	public synchronized void runSystemCheck(StringBuilder sb, boolean detailed) {
+		if (detailed) {
+			sb.append("-- QuotaManager --\n");
+			for (Map.Entry<InetAddress, IPDetail> ipd : informationAbout.entrySet()) {
+				sb.append(ipd.getKey().toString() + "\n");
+				sb.append(" currentConnections: " + ipd.getValue().currentConnections);
+				sb.append(" connectionsThisMinute: " + ipd.getValue().connectionsThisMinute);
+				sb.append(" connectionsLastMinute: " + ipd.getValue().connectionsLastMinute + "\n");
+			}
+		} else {
+			sb.append("QuotaManager:\n");
+			for (Map.Entry<InetAddress, IPDetail> ipd : informationAbout.entrySet()) {
+				sb.append(ipd.getKey().toString());
+				sb.append("\n C");
+				sb.append(ipd.getValue().currentConnections);
+				sb.append(" T");
+				sb.append(ipd.getValue().connectionsThisMinute);
+				sb.append(" L");
+				sb.append(ipd.getValue().connectionsLastMinute);
+				sb.append('\n');
+			}
 		}
 	}
 

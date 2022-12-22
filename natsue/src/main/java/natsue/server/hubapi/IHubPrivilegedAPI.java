@@ -34,7 +34,7 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 
 	/**
 	 * Route a message that is expected to *eventually* get to the target.
-	 * The message is assumed to be authenticated.
+	 * The message is assumed to be authenticated - this is considered to be past the firewall.
 	 * If temp is true, the message won't be archived on failure.
 	 * If fromRejector is true, then the message won't go through rejection *again*.
 	 * causeUIN is used for abuse tracking purposes.
@@ -64,7 +64,7 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	/**
 	 * Attempst to find anything unusual.
 	 */
-	String runSystemCheck();
+	String runSystemCheck(boolean detailed);
 
 	/**
 	 * Controls message behaviour.

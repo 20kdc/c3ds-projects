@@ -8,6 +8,7 @@
 package natsue.server.hub;
 
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Random;
 
 import natsue.config.Config;
@@ -441,18 +442,57 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public synchronized String runSystemCheck() {
+	public synchronized String runSystemCheck(boolean detailed) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(SystemCommands.VERSION + "\n");
-		sb.append("Random Pool:");
-		for (long entry : users.randomPool)
-			sb.append(" " + UINUtils.toString(entry));
-		sb.append("\n");
-		userDataCache.runSystemCheck(sb);
-		sb.append("Connected:\n");
+		// Preface
+		if (detailed) {
+			sb.append("-- Server Info --\n");
+			sb.append("Version: " + SystemCommands.VERSION + "\n");
+		} else {
+			sb.append(SystemCommands.VERSION + "\n");
+		}
+		// Threads (if a detailed report)
+		if (detailed) {
+			sb.append("-- Threads --\n");
+			for (Map.Entry<Thread, StackTraceElement[]> threads : Thread.getAllStackTraces().entrySet()) {
+				sb.append(threads.getKey());
+				sb.append("\n");
+				for (StackTraceElement ste : threads.getValue()) {
+					sb.append(" ");
+					sb.append(ste);
+					sb.append("\n");
+				}
+			}
+		}
+		// Random Pool
+		if (detailed) {
+			sb.append("-- Random Pool --\n");
+			for (long entry : users.randomPool) {
+				INatsueUserData nud = getUserDataByUIN(entry);
+				if (nud == null) {
+					sb.append(UINUtils.toString(entry) + " (unknown)\n");
+				} else {
+					sb.append(UINUtils.toString(entry) + " = " + nud.getNickname() + "\n");
+				}
+			}
+		} else {
+			sb.append("Random Pool:");
+			for (long entry : users.randomPool)
+				sb.append(" " + UINUtils.toString(entry));
+			sb.append("\n");
+		}
+		// User Data Cache
+		userDataCache.runSystemCheck(sb, detailed);
+		// Connected Users
+		if (detailed) {
+			sb.append("-- Connected --\n");
+		} else {
+			sb.append("Connected:\n");
+		}
 		for (IHubClient entry : users.connectedClients.values())
 			sb.append(UINUtils.toString(entry.getUIN()) + ": " + entry.getNickname() + "\n");
-		quotaManager.runSystemCheck(sb);
+		// Quota Manager
+		quotaManager.runSystemCheck(sb, detailed);
 		return sb.toString();
 	}
 }

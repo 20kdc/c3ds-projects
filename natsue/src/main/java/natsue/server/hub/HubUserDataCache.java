@@ -210,15 +210,19 @@ public class HubUserDataCache implements IHubUserDataCacheBetweenCacheAndHub, IL
 	}
 
 	@Override
-	public synchronized void runSystemCheck(StringBuilder sb) {
-		sb.append("UDC Content:\n");
+	public synchronized void runSystemCheck(StringBuilder sb, boolean detailed) {
+		if (detailed) {
+			sb.append("-- UserDataCache --\n");
+		} else {
+			sb.append("UDC Content:\n");
+		}
 		for (Map.Entry<Long, INatsueUserData.LongTermPrivileged> ent : cacheByUIN.entrySet()) {
 			INatsueUserData.LongTermPrivileged v = ent.getValue();
 			sb.append(UINUtils.toString(ent.getKey()) + ": " + v.getNickname() + ", ");
 			if (v instanceof Fixed) {
 				sb.append("FIXED\n");
 			} else if (v instanceof HubActiveNatsueUserData) {
-				sb.append(((HubActiveNatsueUserData) v).debugGetRefCount() + " refs\n");
+				sb.append(((HubActiveNatsueUserData) v).debugGetStatus() + "\n");
 			}
 		}
 	}
