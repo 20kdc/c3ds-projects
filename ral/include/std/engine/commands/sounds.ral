@@ -11,38 +11,84 @@
 
 include "std/engine/commands_inc.ral";
 
+// Fades out the `targ` agent's attached sound. (This is set by `sndc` and `sndl` but not other commands.)
 macro () fade() @'fade';
 
+// Equivalent to `mmsc(x, y, "none")`
 macro () mclr(int @x, int @y) @'mclr {x, y}';
 
+// Plays a MIDI file. If passed an empty string, stops playing a MIDI file.
 macro () midi(str @m) @'midi {m}';
 
+// Sets the music track of the metaroom at `x, y`
 macro () mmsc(int @x, int @y, str @t) @'mmsc {x, y, t}';
+// Gets the music track of the metaroom at `x, y`
 macro mmsc(int @x, int @y) @'mmsc {x, y}'!str;
 
+/*
+Like `wolf` before it, this controls bitflags in an `and then XOR` manner.
+
+See `MUTE_` constants, but note that having a value in the result means that channel is muted.
+*/
 macro mute(int @a, int @e) @'mute {a, e}'!int;
 
+// Equivalent to `rmsc(x, y, "none")`
 macro () rclr(int @x, int @y) @'rclr {x, y}';
 
+// Sets the music track of the room at `x, y` -- note that setting this to an empty string means it inherits the metaroom's music track.
 macro () rmsc(int @x, int @y, str @tn) @'rclr {x, y, tn}';
+// Gets the music track of the room at `x, y` -- note that this command does not automatically inherit the metaroom's music track, so can return an empty string when the metaroom music track might apply.
 macro rmsc(int @x, int @y) @'rmsc {x, y}'!str;
 
+/*
+The `targ` agent says the given text.
+
+Note that for creatures, this forces them to _actually_ say the sentence, including side effects of that.
+
+For other agents, it just triggers the relevant sounds if the agent has a loaded voice.
+*/
 macro () sezz(str @s) @'sezz {s}';
 
+// Plays sound `s` attached to the `targ` agent (thus moves with it, and volume is adjusted accordingly). Does not loop.
 macro () sndc(str @s) @'sndc {s}';
+// Plays sound `s` at the `targ` agent but not attached to it.
 macro () snde(str @s) @'snde {s}';
+// Plays sound `s` attached to the `targ` agent (thus moves with it, and volume is adjusted accordingly). Loops.
 macro () sndl(str @s) @'sndl {s}';
+// Plays sound `s` at the `targ` agent but not attached to it, with a delay of `d` ticks. See: `snde`
 macro () sndq(str @s, int @d) @'sndq {s, d}';
 
+// Immediately stops the `targ` agent's attached sound. (This is set by `sndc` and `sndl` but not other commands.)
 macro () stpc() @'stpc';
 
-macro () strk(int @l, str @s) @'strk {l, s}';
+// Plays music track `s` as a musical event. Plays for `seconds` and then will return to whatever would normally be played.
+macro () strk(int @seconds, str @s) @'strk {seconds, s}';
 
-macro () voic(int @f, int @g, int @a) @'voic {f, g, a}';
+/*
+Loads a voice by genus, species, age. In specific, looks for a catalogue tag of the form, say, `Norn Male Embryo` (yes, really).
 
+If the target voice doesn't exist, it will first try earlier-aged voices.
+
+Failing this, opposite species value, and failing that, earlier genuses.
+
+Each fallback stage has it retry the previous fallbacks with the new values.
+
+If all of that fails, then `DefaultVoice` is loaded, but this is basically a copy of `Norn Male Embryo` in real use.
+*/
+macro () voic(int @g, int @s, int @a) @'voic {g, s, a}';
+
+// Sets the voice of the `targ` agent. In practice, you use this with `MachineVoice` and `sezz` for making a machine say things.
 macro () vois(str @vn) @'vois {vn}';
+
+// If the `targ` agent has no voice, returns an empty string. Otherwise, returns some non-empty string which might be what you put in, but might be `Lozenged` instead.
 macro vois() @'vois'!str;
 
+/*
+Sets the volume of a given channel (see `VOLM_` constants).
+Oddly, this is intended as being in a somewhat unusual fixed-point form, with -10000 being a multiplier of 0 and 0 being a multiplier of 1.
+*/
 macro () volm(int @c, int @v) @'volm {c, v}';
+
+// Gets the volume of the given channel (see `VOLM_` constants) in the same -10000 through 0 range as you can set it in.
 macro volm(int @c) @'volm {c}'!int;
 

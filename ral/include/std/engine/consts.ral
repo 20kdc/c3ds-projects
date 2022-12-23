@@ -565,3 +565,16 @@ TRCK_BREAK = 0;
 TRCK_GUIDE = 1;
 // The camera is not allowed to stop tracking the target.
 TRCK_FORCE = 2;
+
+// VOLM channel volumes
+//
+VOLM_SFX = 0;
+VOLM_MID = 1;
+VOLM_MNG = 2;
+
+// MUTE channel IDs
+//
+MUTE_SOUND = 1;
+MUTE_MUSIC = 2;
+
+VOLM_MNG = 2;
