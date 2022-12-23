@@ -16,5 +16,6 @@ As such, this manual is intended to be written in distinct sections:
 * The *Language Reference* covers RAL as a language, and constructs universal to the compiler.
 * The *Language Technical Details* cover scary technical bits of RAL - this may be important to look at if you're encountering something weird.
 * The *Library Reference* covers RAL's standard library, which mainly consists of macros and constants describing Creatures 3/Docking Station.
+* The *Appendix* covers things that you probably don't need to know, such as the After-Shee date system.
 
 Parsing diagrams are created using https://github.com/GuntherRademacher/rr - PNG versions of the diagrams are stored in this repository for online browsing.

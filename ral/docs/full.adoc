@@ -35,3 +35,8 @@ include::Language/index.adoc[]
 <<<
 
 include::Library/index.adoc[]
+
+<<<
+
+include::Appendix/index.adoc[]
+

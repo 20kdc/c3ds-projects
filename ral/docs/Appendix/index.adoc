@@ -1,0 +1,47 @@
+<<<
+
+## The Appendix
+
+This is for assorted notes on things you probably didn't need to know.
+
+### The After-Shee Date System
+
+The After-Shee date system, revealed in Creature History by setting GAME variable `c3_after_shee_dates` to 1, is the underlying basis of the day and season cycle.
+
+Each day is 20 minutes long, paused when the game is paused, not running, etc.
+
+These 20 minutes are equally divided into 4-minute chunks, each one being a time of day:
+
+* Dawn (0)
+* Morning (1)
+* Afternoon (2)
+* Evening (3)
+* Night (4)
+
+Every 4 days makes up a season.
+
+There are four seasons:
+
+* Spring (0)
+* Summer (1)
+* Autumn (2)
+* Winter (3)
+
+Creatures 3 canonically starts at `1 Spr 127` (but this is considered to be `year` 0 -- add 127 to get the canon year).
+
+### Where Networking Stuff Goes
+
+Any and all networking-related documentation is part of Tower Of Babel.
+
+And as for server software and the maintenance thereof, that's Natsue.
+
+Please see the repository, as these aren't shipped in releases.
+
+### What Are Stimulus Numbers For?
+
+Stimulus numbers exist so that genetics can define the relation between objects and creature experiences.
+
+For example this is how Toxic Norns can... exist in any sense, really.
+
+Rather than an object directly specifying an effect, the object uses a stimulus number to specify what kind of object it is and what it's doing relative to the creature, and then the genetics can control how that affects the creature.
+

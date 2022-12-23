@@ -11,40 +11,103 @@
 
 include "std/engine/commands_inc.ral";
 
+/*
+Sets the expected amount of milliseconds between ticks. Supposedly, changing this from 50 does awful things.
+
+In reality, the only thing that is likely to go wrong is seasons, because they're dependent on the value directly.
+
+(Otherwise, anything else would break with, say, `wolf` too!)
+*/
 macro () buzz(int @ms) @'buzz {ms}';
+
+// Gets the expected amount of milliseconds between ticks.
 macro buzz() @'buzz'!int;
 
+// Gets the value of `date` (the After-Shee date) for the given value of `wtik` -- see relevant appendix
 macro date() @'date'!int;
 
+// The real-life day of the month, measured as 1 being the 1st.
 macro dayt() @'dayt'!int;
 
+// Gets the number of ticks since `engine.exe` / `lc2e` was launched.
 macro etik() @'etik'!int;
 
+// Gets the value of `date` (the After-Shee date) for the given value of `wtik` -- see relevant appendix
 macro histDate(int @v) @'hist date {v}'!int;
+// Gets the value of `sean` (the After-Shee season) for the given value of `wtik` -- see relevant appendix
 macro histSean(int @v) @'hist sean {v}'!int;
+// Gets the value of `time` (the After-Shee time) for the given value of `wtik` -- see relevant appendix
 macro histTime(int @v) @'hist time {v}'!int;
+// Gets the value of `year` (the After-Shee year) for the given value of `wtik` -- see relevant appendix
 macro histYear(int @v) @'hist year {v}'!int;
 
+// The real-life month, measured as 1 being January.
 macro mont() @'mont'!int;
+// Millisecond timer from some arbitrary point that can change on game load/save.
 macro msec() @'msec'!int;
+// Amount of "load" on the engine, measured based on the time it took to process a tick divided by the expected time of a tick.
 macro pace() @'pace'!float;
+// Milliseconds per tick, including engine-generated delays.
 macro race() @'race'!int;
 
+/*
+Formats Unix time into something human-readable, using the given format.
+
+You _should_ be very careful about using this, as valid formats are _system-dependent_. `strftime` is involved.
+
+Rather than attempt to exhaustively list every trustable option, please check both the Linux Programmer's Manual and MSDN documentation on this function and find those points _on which they agree_ to determine accurate inputs.
+
+The good news is that the main quirk is that `#` has no effect on Linux (thankfully, as opposed to outright breaking date strings) because `#` is an extension on both Windows, but they have different meanings.
+
+Realistically, you either want to start looking at manuals, or just use one of the following:
+
+* `"%c"` : `Thu Jan  1 01:00:00 1970`
+* `"%x"` : `01/01/70`
+* `"%X"` : `01:00:00`
+* `"%x %X %Z"` : `01/01/70 01:00:00 BST`
+* `"%d %b %Y %X %Z"` : `01 Jan 1970 01:00:00 BST`
+
+(Time-zone is that of whatever is running the game.)
+
+*/
 macro rtif(int @rt, str @fmt) @'rtif {rt, fmt}'!str;
 
+// Returns the current Unix time (seconds since 00:00 January 1st, 1970, UTC). This will break on January 19th, 2038, UTC.
 macro rtim() @'rtim'!int;
 
-// SCOL uses byte-strings. What is this doing in time, anyway?
+/*
+Sets main camera scrolling parameters and acceleration curves.
 
+`and` and `eor` work as with `wolf` basically. See `SCOL_` constants.
+
+If `up` is not empty it sets the acceleration curve.
+
+If `down` is not empty it sets the acceleration curve.
+
+Like `wolf` this uses an AND and XOR pair.
+*/
+macro scol(int @and, int @eor, bytes @up, bytes @down) @'scol {and, eor, up, down}'!int;
+
+// The in-game season as per the After-Shee date system. See `SEAN_` constants about this. Also please see appendix.
 macro sean() @'sean'!int;
 
+// The time of day as per the After-Shee time system. See `TIME_` constants about this. Also please see appendix.
 macro time() @'time'!int;
 
+/*
+This uses an AND and XOR pair to control wolfling run flags. See `WOLF_` constants about this.
+
+Specifically, the flags are grabbed, ANDed with `and` then XORed with `eor` _then_ written back, and finally returned.
+*/
 macro wolf(int @and, int @eor) @'wolf {and, eor}'!int;
 
-macro () wpau(int @p) @'wolf {p}';
-macro wpau() @'wpau'!int;
+// Pauses or unpauses "world stuff". This does not actually pause or unpause agents, so be careful with this as if agents aren't paused and the world is, things can get... interesting.
+macro () wpau(bool @p) @'wolf {p}';
+// Returns if the world stuff is paused.
+macro wpau() @'wpau'!bool;
 
+// Current tick since world creation.
 macro wtik() @'wtik'!int;
+// Number of in-game years as per the After-Shee date system. Please see appendix.
 macro year() @'year'!int;
 

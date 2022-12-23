@@ -27,8 +27,8 @@ include "std/engine/commands/net.ral";
 include "std/engine/commands/ports.ral";
 include "std/engine/commands/resources.ral";
 include "std/engine/commands/scripts.ral";
-include "std/engine/commands/sounds.ral"; // ud
-include "std/engine/commands/time.ral"; // ud
+include "std/engine/commands/sounds.ral";
+include "std/engine/commands/time.ral";
 include "std/engine/commands/variables.ral";
 include "std/engine/commands/vehicles.ral"; // ud
 include "std/engine/commands/world.ral";

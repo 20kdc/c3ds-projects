@@ -85,9 +85,13 @@ SEAN_WINTER = 3;
 
 // SCOL Scrolling flags
 //
+// Mouse at edge of screen scrolls.
 SCOL_EDGE = 1;
+// Arrow keys scroll.
 SCOL_KEYBOARD = 2;
+// Dragging with middle mouse button sccrolls.
 SCOL_DRAG = 4;
+// Mouse wheel up/down scrolls.
 SCOL_SCROLL = 8;
 
 // PRAY TEST Pray chunk codes
@@ -577,4 +581,3 @@ VOLM_MNG = 2;
 MUTE_SOUND = 1;
 MUTE_MUSIC = 2;
 
-VOLM_MNG = 2;
