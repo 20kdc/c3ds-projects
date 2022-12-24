@@ -82,9 +82,9 @@ public class HCMHoverDataGenerators {
 			}
 			sb.append(" ");
 			if (ma.isInline != null) {
-				sb.append("&");
+				sb.append("@");
 				if (ma.isInline == RALSlot.Perm.RW)
-					sb.append("&=");
+					sb.append("@=");
 			}
 			sb.append(ma.name);
 		}

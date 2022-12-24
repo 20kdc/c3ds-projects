@@ -77,9 +77,9 @@ image::images/diagram/AliasStmt.png[]
 
 ##### Inline Statements
 
-Inline statements, or `&`, are used to reasonably-directly write CAOS into the output.
+Inline statements, or `@`, are used to reasonably-directly write CAOS into the output.
 
-These statements start with `&`, followed by string-embeds containing the CAOS code, and finally ending with a semicolon (`;`).
+These statements start with `@`, followed by string-embeds containing the CAOS code, and finally ending with a semicolon (`;`).
 
 However, rather than the string embeds being real, the replacements are instead replaced with references to the values in CAOS.
 
