@@ -9,7 +9,7 @@ package rals.types;
 /**
  * A script identifier, or if you really like, a message identifier.
  */
-public final class ScriptIdentifier {
+public final class ScriptIdentifier implements Comparable<ScriptIdentifier> {
 	public final Classifier classifier;
 	public final int script;
 
@@ -37,5 +37,18 @@ public final class ScriptIdentifier {
 
 	public String toScrpLine() {
 		return "scrp " + classifier.family + " " + classifier.genus + " " + classifier.species + " " + script;
+	}
+
+	@Override
+	public int compareTo(ScriptIdentifier arg0) {
+		int cl = classifier.compareTo(arg0.classifier);
+		if (cl != 0)
+			return cl;
+		if (script < arg0.script) {
+			return -1;
+		} else if (script > arg0.script) {
+			return 1;
+		}
+		return 0;
 	}
 }

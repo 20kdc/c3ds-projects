@@ -9,7 +9,7 @@ package rals.types;
 /**
  * A classifier.
  */
-public final class Classifier {
+public final class Classifier implements Comparable<Classifier> {
 	public final int family, genus, species;
 
 	public Classifier(int f, int g, int s) {
@@ -96,5 +96,22 @@ public final class Classifier {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public int compareTo(Classifier o) {
+		if (family < o.family)
+			return -1;
+		if (family > o.family)
+			return 1;
+		if (genus < o.genus)
+			return -1;
+		if (genus > o.genus)
+			return 1;
+		if (species < o.species)
+			return -1;
+		if (species > o.species)
+			return 1;
+		return 0;
 	}
 }

@@ -6,6 +6,7 @@
  */
 package rals.code;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -44,8 +45,9 @@ public class Scripts {
 	 * Compiles the module's event scripts.
 	 */
 	public void compileEvents(OuterCompileContext ctx) {
-		for (Map.Entry<ScriptIdentifier, RALStatement> eventScript : eventScripts.entrySet()) {
-			ScriptIdentifier k = eventScript.getKey();
+		LinkedList<ScriptIdentifier> allScriptIDs = new LinkedList<>(eventScripts.keySet());
+		Collections.sort(allScriptIDs);
+		for (ScriptIdentifier k : allScriptIDs) {
 			ctx.out.append(" * ");
 			RALType.AgentClassifier type = typeSystem.byClassifier(k.classifier);
 			ctx.out.append(type.typeName);
