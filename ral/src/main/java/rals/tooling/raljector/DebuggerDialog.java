@@ -51,6 +51,9 @@ public class DebuggerDialog extends JFrame {
 		dbgCommandsMenu.add(new Macro("over", "so"));
 		dbgCommandsMenu.add(new Macro("stmt", "ns"));
 		dbgCommandsMenu.add(new Macro("continue", "c"));
+		dbgCommandsMenu.add(new JButtonWR("debug log", () -> {
+			new DebugLogDialog(ds).setVisible(true);
+		}));
 		final JLabel statusLine = new JLabel("Idle...");
 		dbgCommandsMenu.add(statusLine);
 		// VAs set

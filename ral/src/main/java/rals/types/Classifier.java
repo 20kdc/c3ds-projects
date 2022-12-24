@@ -79,6 +79,13 @@ public final class Classifier implements Comparable<Classifier> {
 		return "[" + family + " " + genus + " " + species + "]";
 	}
 
+	/**
+	 * Defined as the exact format "0 0 0" or "1 2 3" or w/e, i.e. will not change
+	 */
+	public String toCAOSString() {
+		return family + " " + genus + " " + species;
+	}
+
 	@Override
 	public int hashCode() {
 		return family ^ genus ^ species;

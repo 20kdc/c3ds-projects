@@ -11,11 +11,11 @@ import java.util.function.Function;
 /**
  * Stuff for deciding when to do debug steps
  */
-public class DebugStepDecider {
+public interface DebugStepDecider extends Function<RawDebugFrame, Boolean> {
 	/**
 	 * Skips metadata.
 	 */
-	public static final Function<RawDebugFrame, Boolean> SKIP_METADATA = (rdf) -> {
+	public static final DebugStepDecider SKIP_METADATA = (rdf) -> {
 		// determine if we should cheese things
 		if (rdf.caosOffset < rdf.caos.length())
 			if (rdf.caos.substring(rdf.caosOffset).startsWith("sets va99 \""))
@@ -26,22 +26,22 @@ public class DebugStepDecider {
 	/**
 	 * Useful for precision.
 	 */
-	public static final Function<RawDebugFrame, Boolean> NO_SKIP = (rdf) -> {
+	public static final DebugStepDecider NO_SKIP = (rdf) -> {
 		return false;
 	};
 
 	/**
 	 * Converts an immutable step decider to a mutable one
 	 */
-	public static Function<RawDebugFrame, Function<RawDebugFrame, Boolean>> immutableToMutable(Function<RawDebugFrame, Boolean> imm) {
+	public static Mut immToMut(DebugStepDecider imm) {
 		return (rdf) -> imm;
 	}
 	/**
 	 * Creates a mutable step decider that runs through another step decider a number of times.
 	 */
-	public static Function<RawDebugFrame, Function<RawDebugFrame, Boolean>> steps(final int sc, Function<RawDebugFrame, Function<RawDebugFrame, Boolean>> interior) {
+	public static Mut steps(final int sc, Mut interior) {
 		return (first) -> {
-			return new Function<RawDebugFrame, Boolean>() {
+			return new DebugStepDecider() {
 				// steps remaining. for a single step, this is 1, so becomes 0 and stop
 				int sc2 = sc;
 				Function<RawDebugFrame, Boolean> currentCycle = interior.apply(first);
@@ -64,7 +64,7 @@ public class DebugStepDecider {
 		};
 	}
 
-	public static Function<RawDebugFrame, Boolean> stepOver(ProcessedDebugFrame processedFrame) {
+	public static DebugStepDecider stepOver(ProcessedDebugFrame processedFrame) {
 		final String avoidLI = processedFrame.lineIdentifier;
 		return (rdf) -> {
 			if (SKIP_METADATA.apply(rdf))
@@ -77,8 +77,8 @@ public class DebugStepDecider {
 		};
 	}
 
-	public static Function<RawDebugFrame, Boolean> metadataAndThenOne() {
-		return new Function<RawDebugFrame, Boolean>() {
+	public static DebugStepDecider metadataAndThenOne() {
+		return new DebugStepDecider() {
 			boolean hasReachedAtLeastOneMD = false;
 			@Override
 			public Boolean apply(RawDebugFrame var1) {
@@ -96,5 +96,11 @@ public class DebugStepDecider {
 				}
 			}
 		};
+	}
+
+	/**
+	 * Mutable debug step decider. Calling this instances the mutable step decider.
+	 */
+	public static interface Mut extends Function<RawDebugFrame, DebugStepDecider> {
 	}
 }

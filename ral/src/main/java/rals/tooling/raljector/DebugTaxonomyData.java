@@ -57,6 +57,13 @@ public class DebugTaxonomyData {
 		return names.get(name);
 	}
 
+	/**
+	 * Gets all names as an Iterable.
+	 */
+	public Iterable<String> allNamesIterable() {
+		return names.keySet();
+	}
+
 	public class Entry {
 		public final String name;
 		public final Classifier classifier;

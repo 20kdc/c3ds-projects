@@ -52,7 +52,7 @@ As for the buttons at the top-left:
 * `stmt` skips until it _reaches_ the next debug metadata line, then skips that, too, so should roughly skip a single RAL statement in most cases.
 * `continue` is directly equivalent to `dbg: play`, and simply continues the game until the next breakpoint is hit (or some other thing happens to interrupt the game).
 
-RALjector also contains it's own somewhat limited CAOS command line, in the form of being able to use, say, `caos outs "Hello World!"` at the debug console.
+RALjector also contains it's own somewhat limited CAOS command line, in the form of being able to use, say, `/outs "Hello World!"` at the debug console.
 
 However, RALjector does not split up CAOS the way CAOS Tool and the CAOS Command Line do, so the `scrp` block divider is not functional.
 

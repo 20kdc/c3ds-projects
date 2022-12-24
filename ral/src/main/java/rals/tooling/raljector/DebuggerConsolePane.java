@@ -7,6 +7,9 @@
 package rals.tooling.raljector;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.LinkedList;
 import java.util.function.Function;
 
 import javax.swing.JPanel;
@@ -24,6 +27,8 @@ public class DebuggerConsolePane extends JPanel {
 	public final JTextPane textPane = new JTextPane();
 	public final JScrollPane scrollPane = new JScrollPane(textPane);
 	public final Function<String, String> communicator;
+	public LinkedList<String> history = new LinkedList<>();
+	public int historyIndex = -1;
 	public DebuggerConsolePane(Function<String, String> c) {
 		communicator = c;
 		textPane.setEditable(false);
@@ -33,11 +38,50 @@ public class DebuggerConsolePane extends JPanel {
 		add(textField, BorderLayout.SOUTH);
 		textField.addActionListener((a) -> {
 			String req = textField.getText();
+			// actual input, record to history if not equal to last
+			recordToHistoryIfNotDuplicate(req);
 			textField.setText("");
 			fakeInput(req);
 		});
+		textField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent var1) {
+				if (var1.getKeyCode() == KeyEvent.VK_UP) {
+					historyIndex--;
+					if (historyIndex < 0) {
+						historyIndex = 0;
+					} else {
+						historyIntoField();
+					}
+				} else if (var1.getKeyCode() == KeyEvent.VK_DOWN) {
+					historyIndex++;
+					if (historyIndex >= history.size()) {
+						historyIndex = history.size() - 1;
+					} else {
+						historyIntoField();
+					}
+				}
+			}
+		});
 		putText("RALjector Debug Console\n");
-		putText("Type 'help' for help\n");
+		putText("Type 'help' for help, 'cls' to clear buffer\n");
+		putText("Text prefixed with '/' is sent as CAOS\n");
+	}
+
+	private void recordToHistoryIfNotDuplicate(String req) {
+		if (!history.isEmpty())
+			if (history.getLast().equals(req))
+				return;
+		history.add(req);
+		historyIndex = history.size();
+	}
+
+	private void historyIntoField() {
+		if (historyIndex < 0)
+			return;
+		if (historyIndex >= history.size())
+			return;
+		textField.setText(history.get(historyIndex));
 	}
 
 	public void putText(String text) {
@@ -52,11 +96,15 @@ public class DebuggerConsolePane extends JPanel {
 
 	public void fakeInput(String req) {
 		putText("> " + req + "\n");
+		if (req.equalsIgnoreCase("cls")) {
+			textPane.setText("");
+			return;
+		}
 		try {
 			putText(communicator.apply(req));
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			putText("Exception: " + ex.getMessage() + "\n");
+			putText(ex.getMessage() + "\n");
 		}
 	}
 }
