@@ -52,15 +52,16 @@ script TalkingLemon:act1 {
 		text = "You ought not to see this...";
 		ownr.line = 0;
 	}
-	// The standard library doesn't yet have a complete class name set.
-	// However, SpeechBubbleFactory is particularly useful.
+	// targ the SpeechBubbleFactory...
 	rtar(SpeechBubbleFactory);
-	// targ is now SpeechBubbleFactory.
-	// RAL is not aware that targ is SpeechBubbleFactory, so we have to cast it here.
-	// Casting is of the form EXPRESSION!typeName, and causes RAL to treat it as if of the given type.
-	// Note that mesgWrtP exists, but the emit statement is more convenient.
-	// Emit statements have this form: EXPRESSION->message([p1[, p2]]) [after EXPRESSION];
-	(targ!SpeechBubbleFactory)->speechBubble("Hello! I'm a talking lemon!", ownr);
+	// Rather than `let`-ing a variable here, we can change how RAL sees `targ`'s type using the `alias` statement.
+	// The alias statement has the form `alias ID = EXPR;` -- and it can replace the existing meaning of a variable name.
+	// Note that this doesn't declare a variable, it just makes a variable name mean something else.
+	alias targ = targ!SpeechBubbleFactory;
+	// There's also a short version of this sort of statement:
+	// alias targ!SpeechBubbleFactory;
+	// And of course now we can just emit the message as so.
+	targ->speechBubble("Hello! I'm a talking lemon!", ownr);
 }
 
 remove {
