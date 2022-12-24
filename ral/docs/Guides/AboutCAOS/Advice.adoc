@@ -60,7 +60,7 @@ group DSAG "Example Docking Station Agent"
 (- The remove script. There's only one. Note that this is run as if it was an install script, so this should not be put into an rscr block or anything. -)
 "Remove script" @ "example_agent_del.cos"
 
-(- These lines embed files into the .agent file. -)
+(- These lines embed files into the .agents file. -)
 (- If the files are not embedded, then if the user doesn't have them, the agent will not be injected. -)
 
 inline FILE "example_agent_sprite.c16" "example_agent_sprite.c16"

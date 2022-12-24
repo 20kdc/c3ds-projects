@@ -6,6 +6,8 @@ The purpose of RAL is to allow for working on complex modding projects without h
 
 RAL is split into a compiler (itself written in Java) and a standard library (__incomplete__) covering Creatures 3 and Docking Station.
 
+And the compiler also can be used as a somewhat CAOS Tool-alike injection assistant.
+
 As such, this manual is intended to be written in distinct sections:
 
 * The *RAL/CPX Installation Guide* explains how to install RAL and CPX and ensure they are functioning properly.

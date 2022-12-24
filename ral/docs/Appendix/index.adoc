@@ -2,9 +2,13 @@
 
 ## The Appendix
 
+_it's not vestigial, honest!_
+
 This is for assorted notes on things you probably didn't need to know.
 
 ### The After-Shee Date System
+
+_creatures 3: invisible lore_
 
 The After-Shee date system, revealed in Creature History by setting GAME variable `c3_after_shee_dates` to 1, is the underlying basis of the day and season cycle.
 
