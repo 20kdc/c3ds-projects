@@ -118,6 +118,7 @@ public class RALjector extends JFrame {
 					StringBuilder sb = new StringBuilder();
 					try {
 						IncludeParseContext ipc = Parser.run(std, currentFile);
+						debugState.debugTaxonomy = new DebugTaxonomyData(ipc.typeSystem);
 						Scripts scr = ipc.module.resolve(ipc.typeSystem, ipc.diags, ipc.hcm);
 						StringBuilder finishedCode = new StringBuilder();
 						scr.compile(new OuterCompileContext(finishedCode, getDebugRecorder()));
@@ -177,7 +178,9 @@ public class RALjector extends JFrame {
 		if (currentFile == null) {
 			sb.append("No file!");
 		} else {
-			if (Main.inject(sb, stdLibDP, currentFile, injectWithDebugInfo ? new FullDebugRecorder() : new DummyDebugRecorder(), sections)) {
+			if (Main.inject(sb, stdLibDP, currentFile, injectWithDebugInfo ? new FullDebugRecorder() : new DummyDebugRecorder(), (ts) -> {
+				debugState.debugTaxonomy = new DebugTaxonomyData(ts);
+			}, sections)) {
 				sb.append("\nInject successful.");
 			} else {
 				sb.append("\nInject failed.");

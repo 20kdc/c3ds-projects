@@ -35,6 +35,11 @@ public class GameStateTracker {
 	public final Signal<Object> additionalRefreshTasks = new Signal<>();
 	private Function<RawDebugFrame, Boolean> stepDecider = DebugStepDecider.SKIP_METADATA;
 
+	/**
+	 * Taxonomy imported from last compile.
+	 */
+	public DebugTaxonomyData debugTaxonomy;
+
 	public void update() {
 		try {
 			String res = Injector.cpxRequest(

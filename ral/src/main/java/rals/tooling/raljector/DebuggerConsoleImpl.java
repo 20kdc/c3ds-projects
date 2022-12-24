@@ -10,6 +10,7 @@ import java.util.function.Function;
 
 import rals.tooling.Injector;
 import rals.tooling.raljector.DebuggerDialog.FilterLibMode;
+import rals.types.Classifier;
 
 /**
  * Implements the debugger console.
@@ -48,7 +49,8 @@ public class DebuggerConsoleImpl implements Function<String, String> {
 					"c: Unpauses the game.\n" +
 					"filterLib caos/stdlib/none: Controls scope filtering.\n" +
 					"caos (CAOS...): Sends CAOS directly to the game.\n" +
-					"vv VALUE: views agent with unid VALUE"
+					"vv VALUE: views agent with unid VALUE\n" +
+					"vr (F G S/NAME): views rtar'd agent with this classifier\n"
 			;
 		} else if (args[0].equalsIgnoreCase("bp+")) {
 			if (args.length != 5)
@@ -92,10 +94,40 @@ public class DebuggerConsoleImpl implements Function<String, String> {
 		} else if (args[0].equalsIgnoreCase("vv")) {
 			if (args.length != 2)
 				return "vv AGNT";
-			new ValueMonitorDialog(state, "vv", () -> args[1]);
+			doVV(args[1]);
+			return "Done.\n";
+		} else if (args[0].equalsIgnoreCase("vr")) {
+			if ((args.length != 2) && (args.length != 4))
+				return "vr (NAME/F G S)";
+			int f = -1;
+			int g = -1;
+			int s = -1;
+			if (args.length == 2) {
+				if (state.debugTaxonomy == null)
+					return "Hasn't compiled, so no debug taxonomy - use View CAOS or an inject button\n";
+				Classifier cls = state.debugTaxonomy.classifierByName(args[1]);
+				if (cls == null)
+					return "Unable to find classifier for " + args[1] + "\n";
+				f = cls.family;
+				g = cls.genus;
+				s = cls.species;
+			} else {
+				f = Integer.parseInt(args[1]);
+				g = Integer.parseInt(args[2]);
+				s = Integer.parseInt(args[3]);
+			}
+			try {
+				doVV(Injector.cpxRequest("execute\nrtar " + f + " " + g + " " + s + "\noutv unid\n").trim());
+			} catch (Exception ex) {
+				return "Error: " + ex.getMessage() + "\n";
+			}
 			return "Done.\n";
 		}
 		return "Unknown command: " + args[0] + " (try help?)\n";
+	}
+
+	private void doVV(final String arg) {
+		new ValueMonitorDialog(state, "vv:" + arg, () -> arg);
 	}
 
 	private String bp(String[] args, boolean b) {

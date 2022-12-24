@@ -16,6 +16,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 import rals.caos.CAOSUtils;
 import rals.code.*;
@@ -24,6 +25,7 @@ import rals.diag.DiagRecorder;
 import rals.parser.*;
 import rals.tooling.*;
 import rals.tooling.raljector.RALjector;
+import rals.types.TypeSystem;
 
 /**
  * The RAL compiler.
@@ -89,13 +91,13 @@ public class Main {
 			boolean ok = false;
 			DummyDebugRecorder ddr = new DummyDebugRecorder();
 			if (args[0].equals("inject")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), ddr, ScriptSection.Events, ScriptSection.Install);
+				ok = inject(sb, stdLibDP, new File(args[1]), ddr, null, ScriptSection.Events, ScriptSection.Install);
 			} else if (args[0].equals("injectInstall")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), ddr, ScriptSection.Install);
+				ok = inject(sb, stdLibDP, new File(args[1]), ddr, null, ScriptSection.Install);
 			} else if (args[0].equals("injectEvents")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), ddr, ScriptSection.Events);
+				ok = inject(sb, stdLibDP, new File(args[1]), ddr, null, ScriptSection.Events);
 			} else if (args[0].equals("injectRemove")) {
-				ok = inject(sb, stdLibDP, new File(args[1]), ddr, ScriptSection.Remove);
+				ok = inject(sb, stdLibDP, new File(args[1]), ddr, null, ScriptSection.Remove);
 			} else {
 				throw new RuntimeException("?");
 			}
@@ -163,10 +165,12 @@ public class Main {
 		return ralStandardLibrary;
 	}
 
-	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, IDebugRecorder di, ScriptSection... sections) {
+	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, IDebugRecorder di, Consumer<TypeSystem> exportTaxonomy, ScriptSection... sections) {
 		try {
 			IncludeParseContext ic = Parser.run(stdLibDP, f);
 			LinkedList<String> queuedRequests = new LinkedList<>();
+			if (exportTaxonomy != null)
+				exportTaxonomy.accept(ic.typeSystem);
 			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 			for (ScriptSection s : sections)
 				resolvedCode.compileSectionForInject(queuedRequests, di, s);
