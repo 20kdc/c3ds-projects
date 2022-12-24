@@ -33,4 +33,38 @@ public class CAOSUtils {
 	public static String vaToString(int va) {
 		return vaToString("va", va);
 	}
+
+	/**
+	 * Unescapes the result of the OUTX command.
+	 */
+	public static String unescapeOUTX(String string) {
+		StringBuilder sb = new StringBuilder();
+		if (!string.startsWith("\""))
+			throw new RuntimeException("unescapeOUTX: " + string);
+		if (!string.endsWith("\""))
+			throw new RuntimeException("unescapeOUTX: " + string);
+		string = string.substring(1, string.length() - 1);
+		boolean isEscaping = false;
+		for (char c : string.toCharArray()) {
+			if (isEscaping) {
+				char conv = c;
+				if (c == 'n') {
+					conv = '\n';
+				} else if (c == 'r') {
+					conv = '\r';
+				} else if (c == '0') {
+					conv = 0;
+				} else if (c == 't') {
+					conv = '\t';
+				}
+				sb.append(conv);
+				isEscaping = false;
+			} else if (c == '\\') {
+				isEscaping = true;
+			} else {
+				sb.append(c);
+			}
+		}
+		return sb.toString();
+	}
 }

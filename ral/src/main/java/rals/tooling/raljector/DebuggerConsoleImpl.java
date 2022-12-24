@@ -47,7 +47,8 @@ public class DebuggerConsoleImpl implements Function<String, String> {
 					"ns: Skips to the next RAL debug metadata (should be roughly the next statement).\n" +
 					"c: Unpauses the game.\n" +
 					"filterLib caos/stdlib/none: Controls scope filtering.\n" +
-					"caos (CAOS...): Sends CAOS directly to the game.\n"
+					"caos (CAOS...): Sends CAOS directly to the game.\n" +
+					"vv VALUE: views agent with unid VALUE"
 			;
 		} else if (args[0].equalsIgnoreCase("bp+")) {
 			if (args.length != 5)
@@ -88,6 +89,10 @@ public class DebuggerConsoleImpl implements Function<String, String> {
 				return "filterLib caos/stdlib/none";
 			dbg.filterLib = FilterLibMode.valueOf(args[1]);
 			return "Done.\n";
+		} else if (args[0].equalsIgnoreCase("vv")) {
+			if (args.length != 2)
+				return "vv AGNT";
+			dbg.openValueInspector("vv", () -> args[1]);
 		}
 		return "Unknown command: " + args[0] + " (try help?)\n";
 	}

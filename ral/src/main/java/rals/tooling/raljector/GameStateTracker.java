@@ -72,7 +72,7 @@ public class GameStateTracker {
 				" setv va00 -9\n" +
 				" targ tack\n" +
 				" reps 109\n" +
-				"  outs dbg# va00\n" +
+				"  outx dbg# va00\n" +
 				"  outs \"\\n\"\n" +
 				"  addv va00 1\n" +
 				" repe\n" +

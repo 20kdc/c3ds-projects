@@ -6,6 +6,7 @@
  */
 package rals.tooling.raljector;
 
+import rals.caos.CAOSUtils;
 import rals.types.Classifier;
 import rals.types.ScriptIdentifier;
 
@@ -33,9 +34,9 @@ public class RawDebugFrame {
 	public RawDebugFrame(String[] base, int bIdx, int codf, int codg, int cods, int code, int codp, String src) {
 		// copy intrinsics in reverse
 		for (int i = 0; i < intrinsics.length; i++)
-			intrinsics[8 - i] = base[bIdx + i];
-		bIdx += intrinsics.length;
-		System.arraycopy(base, bIdx, va, 0, va.length);
+			intrinsics[8 - i] = CAOSUtils.unescapeOUTX(base[bIdx++]);
+		for (int i = 0; i < va.length; i++)
+			va[i] = CAOSUtils.unescapeOUTX(base[bIdx++]);
 		inScript = new ScriptIdentifier(new Classifier(codf, codg, cods), code);
 		caos = src;
 		caosOffset = codp;

@@ -9,6 +9,7 @@ package rals.tooling.raljector;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.util.function.Supplier;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -19,6 +20,10 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextPane;
+
+import rals.caos.CAOSUtils;
+import rals.tooling.Injector;
 
 /**
  * RAL's debugger.
@@ -127,8 +132,100 @@ public class DebuggerDialog extends JFrame {
 		});
 	}
 
-	private void openValueInspector(String string, String string2) {
-		debugState.displayMessageToUser.fire(string + ":\n" + string2);
+	public void openValueInspector(final String sourceName, final Supplier<String> value) {
+		// SOURCE... TEXT... REFRESH
+		// (vars...)
+		JFrame frame = new JFrame(sourceName);
+		frame.setLayout(new BorderLayout());
+		// top bar
+		JPanel boxTop = new JPanel();
+		boxTop.setLayout(new BorderLayout());
+		JLabel sourceNameLabel = new JLabel(sourceName);
+		boxTop.add(sourceNameLabel, BorderLayout.WEST);
+		final JTextPane valuePane = new JTextPane();
+		valuePane.setEditable(false);
+		boxTop.add(valuePane, BorderLayout.CENTER);
+		frame.add(boxTop, BorderLayout.NORTH);
+		// agent details panel
+		JLabel agentHeader = new JLabel("");
+		JPanel agentDetailsPanel = new JPanel();
+		agentDetailsPanel.setLayout(new BorderLayout());
+		agentDetailsPanel.add(agentHeader, BorderLayout.NORTH);
+		// vars panel
+		JPanel varsPanel = new JPanel();
+		varsPanel.setLayout(new GridLayout(0, 4));
+		final JButton[] buttons = new JButton[100];
+		final String[] currentOV = new String[100];
+		for (int i = 0; i < buttons.length; i++) {
+			currentOV[i] = CAOSUtils.vaToString("ov", i);
+			buttons[i] = new JButton("--------");
+			final int myVarId = i;
+			buttons[i].addActionListener((a) -> {
+				String str = value.get();
+				if (str != null) {
+					try {
+						final int validUnid = Integer.parseInt(str);
+						// if we got this far, it's valid enough that we can make this happen
+						openValueInspector(validUnid + "." + currentOV[myVarId], () -> {
+							try {
+								String res = Injector.cpxRequest("execute\ntarg agnt " + validUnid + " outx dbga " + myVarId);
+								return CAOSUtils.unescapeOUTX(res.trim());
+							} catch (Exception ex) {
+								// do this because these errors can get weird
+								ex.printStackTrace();
+								return null;
+							}
+						});
+					} catch (Exception ex) {
+						// nope!
+					}
+				}
+			});
+			varsPanel.add(buttons[i]);
+		}
+		agentDetailsPanel.add(varsPanel, BorderLayout.CENTER);
+		frame.add(agentDetailsPanel, BorderLayout.CENTER);
+		// Initial refresh
+		Runnable refresh = () -> {
+			String res = value.get();
+			if (res != null) {
+				sourceNameLabel.setText(sourceName);
+				valuePane.setText(res);
+				try {
+					final int validUnid = Integer.parseInt(res);
+					// if we got this far, it's valid enough that we can make this happen
+					String code =
+							"execute\n" +
+							"targ agnt " + validUnid + "\n" +
+							"setv va00 0\n" +
+							"reps 100 outx dbga va00 outs \"\\n\" addv va00 1 repe\n";
+					String allAVarRes = Injector.cpxRequest(code);
+					String[] allAVarEsc = allAVarRes.split("\n");
+					for (int i = 0; i < buttons.length; i++) {
+						String unescaped = CAOSUtils.unescapeOUTX(allAVarEsc[i]);
+						String name = CAOSUtils.vaToString("ov", i);
+						currentOV[i] = name;
+						buttons[i].setText(name + ": " + unescaped);
+					}
+				} catch (Exception ex) {
+					// nope!
+					agentHeader.setText("unable to get AVars: " + ex.getMessage());
+				}
+			} else {
+				sourceNameLabel.setText(sourceName + " (INVALID)");
+			}
+		};
+		refresh.run();
+		// Add refresh button last
+		JButton jbtn = new JButton("Refresh");
+		jbtn.addActionListener((a) -> {
+			// Refresh
+			refresh.run();
+		});
+		boxTop.add(jbtn, BorderLayout.EAST);
+		// Done
+		frame.pack();
+		frame.setVisible(true);
 	}
 
 	public class Macro extends JButton {
@@ -153,7 +250,13 @@ public class DebuggerDialog extends JFrame {
 			});
 			addActionListener((a) -> {
 				if (processedFrame != null)
-					openValueInspector(getNameFromPDF(processedFrame), getValueFromPDF(processedFrame));
+					openValueInspector(getNameFromPDF(processedFrame), () -> {
+						if (processedFrame != null) {
+							return getValueFromPDF(processedFrame);
+						} else {
+							return null;
+						}
+					});
 			});
 		}
 		public abstract String getNameFromPDF(ProcessedDebugFrame pdf);

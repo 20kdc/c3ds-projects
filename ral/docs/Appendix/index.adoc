@@ -45,3 +45,49 @@ For example this is how Toxic Norns can... exist in any sense, really.
 
 Rather than an object directly specifying an effect, the object uses a stimulus number to specify what kind of object it is and what it's doing relative to the creature, and then the genetics can control how that affects the creature.
 
+### CAOS Debug Information Format
+
+RAL can embed debug information into scripts using commands such as:
+
+```
+sets va99 "H4sIAAAAAAAA/8WNwQ3CMAwAd/E7xZR+UNZgAisxYEicyAmVUNXdyZMJ4HfSSXcbVDLWDn77onAno9DZwJ8dXCUxeMDMUQhzia+Gl7eGExrX0qQXE24YltimauXBoTc0Stgo1zRMp/QUvU2Jc9FJSVY+DA8OkuhIL7v783L+wXI+7h/g/8/UbgEAAA=="
+```
+
+The presence of the command itself in the CAOS source is _not_ used for the debug information (but the sequence `sets va99 "` is used as a heuristic to skip these commands).
+
+What is used is specifically the content of `va99` as read using the debug functionality.
+
+The contents can be extracted by decoding the content as Base64 and then decompressing the GZip blob inside.
+
+The results of this are the following (this has been formatted for your viewing convenience):
+
+```
+{
+ "parent": {
+  "parent": {
+   "character": 8,
+   "file": "/media/modus/Sync2/repositories/c3ds-projects/ral/samples/talking-lemon-naive.ral",
+   "line": 3
+  },
+  "character": 8,
+  "file": "/media/modus/Sync2/repositories/c3ds-projects/ral/samples/talking-lemon-naive.ral",
+  "line": 3
+ },
+ "character": 1,
+ "file": "/media/modus/Sync2/repositories/c3ds-projects/ral/samples/talking-lemon-naive.ral",
+ "line": 10
+}
+```
+
+A frame is made up of the following elements:
+
+* `file`: The absolute file path.
+* `character`: The character number on the line (as per LSP).
+* `line`: The line number (as per LSP).
+* `parent`: Optional: The parent frame
+* `va00` through `va99`: Optional: Names of local variables. Specifying variables is optional on a per-variable basis.
+
+_Importantly, RALjector will accept any debug information supplied in the correct place and format if the file exists._
+
+_Also importantly, debug information is specific to the user writing the debug information._
+
