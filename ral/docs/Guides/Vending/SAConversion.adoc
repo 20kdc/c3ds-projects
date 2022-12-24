@@ -28,7 +28,8 @@ The first concepts we have to learn when translating to RAL are:
 * RAL requires explicit sections for each script: `install`, `remove`, and `script TalkingLemon 1`. The code in scripts is surrounded by `{}`, rather than using `endm`.
 ** This will make sense shortly.
 * RAL requires you to explicitly name the classifiers of scripts.
-** This will make a lot more sense shortly.
+** The named agent classifiers are called _classes_, and their names _class names_.
+** The requirement for them will make more sense shortly.
 * You can write a CAOS command inline by prefixing it with `@'` and ending with `';`.
 * You need to explicitly reserve and name any variable you wish to use using `let`.
 ** Right now, we're explicitly reserving `va00`. However, you don't _have_ to do this, as we'll see in the next section.
@@ -107,6 +108,23 @@ As such, finishing the conversion, the result is much cleaner.
 
 ```
 include::../../../samples/talking-lemon-stdlib.ral[]
+```
+
+#### Emit Statements
+
+In the above code, it was mentioned that a better way of performing the `mesgWrtP` will be shown.
+That appears here:
+
+```
+	// First of all, similar to previously, RAL is also not aware that `targ` is a SpeechBubbleFactory.
+	// Casting is of the form `EXPRESSION!typeName`, and causes RAL to treat the expression as if of the given type.
+	// Note that the type for `factory` is inferred from what's assigned to it, so you don't need to write it here.
+	let factory = targ!SpeechBubbleFactory;
+
+	// Secondly, emit statements have this form: `EXPRESSION->message([p1[, p2]]) [after EXPRESSION];`
+	// This is the more idiomatic equivalent to `mesgWrtP`.
+	// This is also why casting is important, as message names are dependent on agent type.
+	factory->speechBubble("Hello! I'm a talking lemon!", ownr);
 ```
 
 #### Constructor Script, Interface File

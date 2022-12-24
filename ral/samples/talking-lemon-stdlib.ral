@@ -41,15 +41,15 @@ script TalkingLemon:act1 {
 		text = "You ought not to see this...";
 		ownr.line = 0;
 	}
-	// The standard library doesn't yet have a complete class name set.
+	// The standard library doesn't have a complete set of class names.
+	// So not everything in Creatures 3 or Docking Station is named.
 	// However, SpeechBubbleFactory is particularly useful.
 	rtar(SpeechBubbleFactory);
-	// targ is now SpeechBubbleFactory.
-	// RAL is not aware that targ is SpeechBubbleFactory, so we have to cast it here.
-	// Casting is of the form EXPRESSION!typeName, and causes RAL to treat it as if of the given type.
-	// Note that mesgWrtP exists, but the emit statement is more convenient.
-	// Emit statements have this form: EXPRESSION->message([p1[, p2]]) [after EXPRESSION];
-	(targ!SpeechBubbleFactory)->speechBubble("Hello! I'm a talking lemon!", ownr);
+	// We have to write "targ!" here rather than just "targ" for one reason:
+	// RAL assumes that targ could be NULL at any given time.
+	// Specifying "!" after a value indicates to RAL that it can't be NULL.
+	mesgWrtP(targ!, 126, "Hello! I'm a talking lemon!", ownr, 0);
+	// A better way of writing this will be shown shortly.
 }
 
 remove {
