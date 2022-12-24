@@ -92,7 +92,8 @@ public class DebuggerConsoleImpl implements Function<String, String> {
 		} else if (args[0].equalsIgnoreCase("vv")) {
 			if (args.length != 2)
 				return "vv AGNT";
-			dbg.openValueInspector("vv", () -> args[1]);
+			new ValueMonitorDialog(state, "vv", () -> args[1]);
+			return "Done.\n";
 		}
 		return "Unknown command: " + args[0] + " (try help?)\n";
 	}

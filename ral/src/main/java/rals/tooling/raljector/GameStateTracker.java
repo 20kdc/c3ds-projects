@@ -32,6 +32,7 @@ public class GameStateTracker {
 	public RawDebugFrame lastDebugFrame;
 	public final Signal<RawDebugFrame> debugFrame = new Signal<>();
 	public final Signal<String> displayMessageToUser = new Signal<>();
+	public final Signal<Object> additionalRefreshTasks = new Signal<>();
 	private Function<RawDebugFrame, Boolean> stepDecider = DebugStepDecider.SKIP_METADATA;
 
 	public void update() {
@@ -140,6 +141,7 @@ public class GameStateTracker {
 			gameState = State.Offline;
 		}
 		updateGameState();
+		additionalRefreshTasks.fire(null);
 	}
 
 	public boolean doNotInject() {

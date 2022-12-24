@@ -17,6 +17,9 @@ public final class Signal<T> {
 	public void add(Consumer<T> ctl) {
 		listeners.add(ctl);
 	}
+	public void remove(Consumer<Object> refreshEv) {
+		listeners.remove(refreshEv);
+	}
 	public void fire(T o) {
 		for (Consumer<T> ct : listeners)
 			ct.accept(o);
