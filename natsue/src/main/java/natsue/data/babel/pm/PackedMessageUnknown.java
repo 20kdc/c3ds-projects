@@ -7,6 +7,8 @@
 
 package natsue.data.babel.pm;
 
+import natsue.config.ConfigMessages;
+
 /**
  * PackedMessage of an unknown type!
  */
@@ -27,7 +29,7 @@ public class PackedMessageUnknown extends PackedMessage {
 	}
 
 	@Override
-	public byte[] getOrPackContents() {
+	public byte[] getOrPackContents(ConfigMessages msg) {
 		return messageData;
 	}
 }

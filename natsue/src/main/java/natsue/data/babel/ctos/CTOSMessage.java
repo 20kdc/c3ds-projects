@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import natsue.config.Config;
+import natsue.config.ConfigMessages;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 
@@ -39,7 +39,7 @@ public class CTOSMessage extends BaseCTOS {
 	}
 
 	@Override
-	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
+	public void initializeAndReadRemainder(ConfigMessages pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
 		int msgDataSize = initial.getInt(BASE_FIELD_FDLEN);
 		if (msgDataSize < 0 || msgDataSize > pcfg.maxBabelBinaryMessageSize.getValue())

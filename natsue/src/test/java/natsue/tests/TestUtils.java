@@ -30,7 +30,7 @@ public class TestUtils {
 			byte[] header = new byte[PacketReader.PACKET_HEADER_SIZE];
 			bais.read(header);
 			Config defCfg = new Config();
-			return PacketReader.readPacket(defCfg, header, bais);
+			return PacketReader.readPacket(defCfg.messages, header, bais);
 		} catch (Exception ex) {
 			throw new RuntimeException("During " + hex, ex);
 		}

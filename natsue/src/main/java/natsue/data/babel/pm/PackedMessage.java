@@ -9,6 +9,7 @@ package natsue.data.babel.pm;
 
 import java.nio.ByteBuffer;
 
+import natsue.config.ConfigMessages;
 import natsue.data.IOUtils;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
@@ -64,10 +65,10 @@ public abstract class PackedMessage {
 		}
 	}
 
-	public abstract byte[] getOrPackContents();
+	public abstract byte[] getOrPackContents(ConfigMessages msg);
 
-	public byte[] toByteArray() {
-		byte[] messageData = getOrPackContents();
+	public byte[] toByteArray(ConfigMessages msg) {
+		byte[] messageData = getOrPackContents(msg);
 		int len = messageData.length + HEADER_LEN;
 		ByteBuffer bb = IOUtils.newBuffer(len);
 		bb.putInt(len);

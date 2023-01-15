@@ -163,7 +163,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	private void spoolMessage(long destinationUIN, PackedMessage message, int trueSenderUID, boolean fromRejector) {
 		NatsueDBUserInfo ui = database.getUserByUIN(destinationUIN);
 		if (ui != null) {
-			if (!database.spoolMessage(ui.uid, trueSenderUID, message.toByteArray())) {
+			if (!database.spoolMessage(ui.uid, trueSenderUID, message.toByteArray(config.messages))) {
 				if (!fromRejector) {
 					// Spooling failed. There is almost nothing we can do, but there is one last thing we can try.
 					rejectMessage(destinationUIN, message, "User " + UINUtils.toString(destinationUIN) + " spool failure");
@@ -259,7 +259,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				for (int i = 0; i < maxSpool; i++) {
 					byte[] pm = database.popFirstSpooledMessage(uid);
 					if (pm != null) {
-						PackedMessage pmi = PackedMessage.read(pm, config.maxDecompressedPRAYSize.getValue());
+						PackedMessage pmi = PackedMessage.read(pm, config.messages.maxDecompressedPRAYSize.getValue());
 						final int pmiSenderUID = UINUtils.asDBUID(pmi.senderUIN);
 						cc.incomingMessage(pmi, () -> {
 							// Note that BECAUSE THESE MESSAGES ARE ALREADY SPOOLED,
@@ -405,19 +405,19 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			int senderUID = UINUtils.uid(cc.getUIN());
 			if (history.state != null) {
 				// Initialize creature entry
-				String cName = CreatureDataVerifier.stripName(config, history.name);
+				String cName = CreatureDataVerifier.stripName(config.messages, history.name);
 				String cUserText = "";
 				if (history.userText != null)
-					cUserText = CreatureDataVerifier.stripUserText(config, history.userText);
+					cUserText = CreatureDataVerifier.stripUserText(config.messages, history.userText);
 				database.ensureCreature(history.moniker, senderUID, history.state[0], history.state[1], history.state[2], history.state[3], history.state[4], cName, cUserText);
 			} else {
 				// Update name/user text fields
 				String cName = null;
 				String cUserText = null;
 				if (!history.name.equals(""))
-					cName = CreatureDataVerifier.stripName(config, history.name);
+					cName = CreatureDataVerifier.stripName(config.messages, history.name);
 				if (history.userText != null)
-					cUserText = CreatureDataVerifier.stripUserText(config, history.userText);
+					cUserText = CreatureDataVerifier.stripUserText(config.messages, history.userText);
 				if (cName != null || cUserText != null)
 					database.updateCreatureText(senderUID, history.moniker, cName, cUserText);
 			}

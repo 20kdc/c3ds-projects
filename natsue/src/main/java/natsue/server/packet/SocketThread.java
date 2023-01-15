@@ -147,7 +147,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 					sendPacket(PacketWriter.writeDummy());
 					continue;
 				}
-				BaseCTOS packet = PacketReader.readPacket(config, header, socketInput);
+				BaseCTOS packet = PacketReader.readPacket(config.messages, header, socketInput);
 				if (config.logAllIncomingPackets.getValue())
 					log(packet.toString());
 				sessionState.handlePacket(packet);

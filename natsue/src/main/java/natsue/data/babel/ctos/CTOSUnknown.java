@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import natsue.config.Config;
+import natsue.config.ConfigMessages;
 import natsue.data.babel.PacketReader;
 
 /**
@@ -34,7 +34,7 @@ public class CTOSUnknown extends BaseCTOS {
 	}
 
 	@Override
-	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
+	public void initializeAndReadRemainder(ConfigMessages pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
 		type = initial.getInt(BASE_FIELD_TYPE);
 		PacketReader.getBytes(inputStream, additionalLength);

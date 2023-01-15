@@ -7,6 +7,7 @@
 
 package natsue.data.babel.pm;
 
+import natsue.config.ConfigMessages;
 import natsue.data.babel.WritVal;
 
 /**
@@ -35,7 +36,7 @@ public class PackedMessageWrit extends PackedMessage {
 	}
 
 	@Override
-	public byte[] getOrPackContents() {
+	public byte[] getOrPackContents(ConfigMessages msg) {
 		return WritVal.encodeWrit(channel, messageId, param1, param2);
 	}
 }

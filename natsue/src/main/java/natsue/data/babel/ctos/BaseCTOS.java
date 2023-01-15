@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.*;
 
-import natsue.config.Config;
+import natsue.config.ConfigMessages;
 import natsue.data.IOUtils;
 
 /**
@@ -32,7 +32,7 @@ public abstract class BaseCTOS {
 	/**
 	 * Called by PacketReader.
 	 */
-	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
+	public void initializeAndReadRemainder(ConfigMessages pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		ticketNumber = initial.getInt(BASE_FIELD_TICKET);
 	}
 

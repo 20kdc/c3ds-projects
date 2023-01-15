@@ -9,6 +9,7 @@ package natsue.data.babel.pm;
 
 import java.util.LinkedList;
 
+import natsue.config.ConfigMessages;
 import natsue.data.pray.PRAYBlock;
 
 /**
@@ -37,7 +38,7 @@ public class PackedMessagePRAY extends PackedMessage {
 	}
 
 	@Override
-	public byte[] getOrPackContents() {
-		return PRAYBlock.write(messageBlocks);
+	public byte[] getOrPackContents(ConfigMessages msg) {
+		return PRAYBlock.write(messageBlocks, msg);
 	}
 }

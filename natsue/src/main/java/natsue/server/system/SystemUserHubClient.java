@@ -43,7 +43,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	private final ILogProvider logParent;
 	public static final long UIN = UINUtils.SERVER_UIN;
 	public static final INatsueUserData.Root IDENTITY = new INatsueUserData.Fixed(new BabelShortUserData("", "", "!System", UIN), FLAG_RECEIVE_NB_NORNS | FLAG_NO_RANDOM);
-	public final int maxDecompressedPRAYSize;
 	public final HashMap<String, BaseBotCommand> botCommands = new HashMap<>();
 	public final LinkedList<BaseBotCommand> botCommandsHelp;
 
@@ -54,7 +53,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	public SystemUserHubClient(Config config, ILogProvider log, IHubPrivilegedClientAPI h) {
 		hub = h;
 		logParent = log;
-		maxDecompressedPRAYSize = config.maxDecompressedPRAYSize.getValue();
 		botCommandsHelp = new LinkedList<>();
 		// globalchat goes first
 		addBotCommand(new BaseBotCommand("globalchat", "",

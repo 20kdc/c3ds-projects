@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import natsue.config.Config;
+import natsue.config.ConfigMessages;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 
@@ -19,7 +19,7 @@ public class CTOSClientCommand extends TargetUIDCTOS {
 	public int param, subCommand;
 
 	@Override
-	public void initializeAndReadRemainder(Config pcfg, InputStream inputStream, ByteBuffer initial)
+	public void initializeAndReadRemainder(ConfigMessages pcfg, InputStream inputStream, ByteBuffer initial)
 			throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
 		ByteBuffer extra = PacketReader.getWrappedBytes(inputStream, 4);

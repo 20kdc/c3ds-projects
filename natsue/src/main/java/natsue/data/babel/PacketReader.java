@@ -16,7 +16,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import natsue.config.Config;
+import natsue.config.ConfigMessages;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSClientCommand;
 import natsue.data.babel.ctos.CTOSFeedHistory;
@@ -139,7 +139,7 @@ public class PacketReader {
 	/**
 	 * Given a packet header, reads the remainder of a packet from an input stream.
 	 */
-	public static BaseCTOS readPacket(Config cfg, byte[] initialData, InputStream packetSource) throws IOException {
+	public static BaseCTOS readPacket(ConfigMessages cfg, byte[] initialData, InputStream packetSource) throws IOException {
 		ByteBuffer initial = wrapLE(initialData);
 		// alright, what type is this?
 		int type = initial.getInt(BaseCTOS.BASE_FIELD_TYPE);

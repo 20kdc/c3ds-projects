@@ -8,11 +8,15 @@
 package natsue.data.pray;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import natsue.config.ConfigMessages;
 import natsue.data.IOUtils;
 
 /**
@@ -48,10 +52,6 @@ public class PRAYBlock {
 	}
 	public String getName() {
 		return IOUtils.getFixedLength(name);
-	}
-
-	public int calcSize() {
-		return 16 + 128 + data.length;
 	}
 
 	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, int maxDecompressedSize) {
@@ -107,29 +107,74 @@ public class PRAYBlock {
 		return block;
 	}
 
-	private static void putBlock(ByteBuffer total, PRAYBlock pb) {
-		total.put(pb.type);
-		total.put(pb.name);
-		total.putInt(pb.data.length);
-		total.putInt(pb.data.length);
-		total.putInt(0);
-		total.put(pb.data);
+	private static PRAYBlockPrepared prepareBlock(PRAYBlock pb, boolean compress) {
+		byte[] dataMod = pb.data;
+		if (compress) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try {
+				DeflaterOutputStream dos = new DeflaterOutputStream(baos);
+				dos.write(pb.data);
+				dos.close();
+			} catch (IOException ioe) {
+				throw new RuntimeException(ioe);
+			}
+			dataMod = baos.toByteArray();
+			return new PRAYBlockPrepared(pb, pb.data.length, true, dataMod);
+		} else {
+			return new PRAYBlockPrepared(pb, pb.data.length, false, pb.data);
+		}
 	}
-	public static byte[] write(Iterable<PRAYBlock> blocks) {
+	public static byte[] write(Iterable<PRAYBlock> blocks, ConfigMessages msg) {
 		int totalLen = 4;
-		for (PRAYBlock pb : blocks)
-			totalLen += pb.calcSize();
+		int blockCount = 0;
+		for (Iterator<PRAYBlock> iterator = blocks.iterator(); iterator.hasNext(); iterator.next())
+			blockCount++;
+		if (blockCount == 1)
+			return writeFileWithOneBlock(blocks.iterator().next(), msg);
+		PRAYBlockPrepared[] preparedBlocks = new PRAYBlockPrepared[blockCount];
+		int blockIndex = 0;
+		for (PRAYBlock pb : blocks) {
+			PRAYBlockPrepared pbp = prepareBlock(pb, msg.compressPRAYChunks.getValue());
+			preparedBlocks[blockIndex++] = pbp;
+			totalLen += pbp.calcSize();
+		}
 		ByteBuffer total = IOUtils.newBuffer(totalLen);
 		total.put((byte) 'P'); total.put((byte) 'R'); total.put((byte) 'A'); total.put((byte) 'Y');
-		for (PRAYBlock pb : blocks)
-			putBlock(total, pb);
+		for (PRAYBlockPrepared pb : preparedBlocks)
+			pb.put(total);
 		return total.array();
 	}
-	public static byte[] writeFileWithOneBlock(PRAYBlock pb) {
-		int totalLen = 4 + pb.calcSize();
+	public static byte[] writeFileWithOneBlock(PRAYBlock pb, ConfigMessages msg) {
+		PRAYBlockPrepared pbp = prepareBlock(pb, msg.compressPRAYChunks.getValue());
+		int totalLen = 4 + pbp.calcSize();
 		ByteBuffer total = IOUtils.newBuffer(totalLen);
 		total.put((byte) 'P'); total.put((byte) 'R'); total.put((byte) 'A'); total.put((byte) 'Y');
-		putBlock(total, pb);
+		pbp.put(total);
 		return total.array();
+	}
+	private static class PRAYBlockPrepared {
+		final byte[] type;
+		final byte[] name;
+		final int fullSize;
+		final boolean compressed;
+		final byte[] data;
+		private PRAYBlockPrepared(PRAYBlock base, int fs, boolean c, byte[] d) {
+			type = base.type;
+			name = base.name;
+			fullSize = fs;
+			compressed = c;
+			data = d;
+		}
+		private void put(ByteBuffer total) {
+			total.put(type);
+			total.put(name);
+			total.putInt(data.length);
+			total.putInt(fullSize);
+			total.putInt(compressed ? 1 : 0);
+			total.put(data);
+		}
+		public int calcSize() {
+			return 16 + 128 + data.length;
+		}
 	}
 }

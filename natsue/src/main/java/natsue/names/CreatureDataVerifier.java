@@ -7,7 +7,7 @@
 
 package natsue.names;
 
-import natsue.config.Config;
+import natsue.config.ConfigMessages;
 
 /**
  * Verifies monikers are sane.
@@ -87,14 +87,14 @@ public class CreatureDataVerifier {
 	/**
 	 * Verifies / strips a name.
 	 */
-	public static String stripName(Config config, String name) {
+	public static String stripName(ConfigMessages config, String name) {
 		return verifyHumanReadableLen(config.maxCreatureNameLen.getValue(), name, false);
 	}
 
 	/**
 	 * Verifies / strips user text.
 	 */
-	public static String stripUserText(Config config, String userText) {
+	public static String stripUserText(ConfigMessages config, String userText) {
 		return verifyHumanReadableLen(config.maxCreatureUserTextLen.getValue(), userText, true);
 	}
 }

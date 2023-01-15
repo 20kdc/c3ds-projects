@@ -96,7 +96,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 		} else if (packet instanceof CTOSMessage) {
 			CTOSMessage pkt = (CTOSMessage) packet;
 			try {
-				PackedMessage pm = PackedMessage.read(pkt.messageData, config.maxDecompressedPRAYSize.getValue());
+				PackedMessage pm = PackedMessage.read(pkt.messageData, config.messages.maxDecompressedPRAYSize.getValue());
 				hub.clientGiveMessage(this, pkt.targetUIN, pm);
 			} catch (Exception ex) {
 				log(ex);
@@ -104,7 +104,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 		} else if (packet instanceof CTOSFeedHistory) {
 			try {
 				ByteBuffer bb = PacketReader.wrapLE(((CTOSFeedHistory) packet).data);
-				CreatureHistoryBlob chb = new CreatureHistoryBlob(bb, config.maxCreatureHistoryEvents.getValue());
+				CreatureHistoryBlob chb = new CreatureHistoryBlob(bb, config.messages.maxCreatureHistoryEvents.getValue());
 				hub.clientSendHistory(this, chb);
 			} catch (Exception ex) {
 				log(ex);
@@ -146,7 +146,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	public void incomingMessage(PackedMessage message, Runnable reject) {
 		// First of all, send the message
 		try {
-			client.sendPacket(PacketWriter.writeMessage(message.toByteArray()));
+			client.sendPacket(PacketWriter.writeMessage(message.toByteArray(config.messages)));
 		} catch (Exception ex) {
 			log(ex);
 			if (reject != null)

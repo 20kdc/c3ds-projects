@@ -80,7 +80,7 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 			// Alright, this gets complicated
 			long uin = af.who.uin;
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, af.serverUIN, uin));
-			client.sendPacket(PacketWriter.writeMessage(StandardMessages.systemMessage(uin, config.accountFrozenText.getValue()).toByteArray()));
+			client.sendPacket(PacketWriter.writeMessage(StandardMessages.systemMessage(uin, config.accountFrozenText.getValue()).toByteArray(config.messages)));
 			try {
 				// We don't want the client to consider this a complete login.
 				// But we need enough time for the client to receive our message without the error coming up.
