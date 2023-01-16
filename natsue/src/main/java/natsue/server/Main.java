@@ -7,11 +7,13 @@
 
 package natsue.server;
 
+import java.io.File;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 import natsue.config.*;
 import natsue.log.*;
+import natsue.server.cryo.CryoFrontend;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.jdbc.JDBCNatsueDatabase;
 import natsue.server.firewall.*;
@@ -35,7 +37,7 @@ public class Main {
 		mySource.log("Started logger.");
 
 		Config config = new Config();
-		IConfigProvider configProvider = new NCFConfigProvider("ntsuconf.txt");
+		IConfigProvider configProvider = new NCFConfigProvider(new File("ntsuconf.txt"));
 		config.visit(configProvider);
 		configProvider.configFinished();
 
@@ -49,7 +51,11 @@ public class Main {
 
 		mySource.log("Quota management initialized.");
 
-		final ServerHub serverHub = new ServerHub(config, qm, ilp, actualDB);
+		CryoFrontend cryo = new CryoFrontend(config, ilp);
+
+		mySource.log("Cryogenics initialized.");
+
+		final ServerHub serverHub = new ServerHub(config, qm, ilp, actualDB, cryo);
 		// determine the firewall
 		IFWModule[] firewall = null;
 		switch (config.firewallLevel.getValue()) {
@@ -63,6 +69,7 @@ public class Main {
 			mySource.log("Firewall level: vanillaSafe: Should be safe enough.");
 			firewall = new IFWModule[] {
 				new PRAYBlockListsFWModule(serverHub, false),
+				new CreatureCheckingFWModule(serverHub),
 				new ComplexFWModule(serverHub),
 				new SpoolListFWModule(serverHub)
 			};
@@ -72,6 +79,7 @@ public class Main {
 			mySource.log("Firewall level: full: No fun allowed.");
 			firewall = new IFWModule[] {
 				new PRAYBlockListsFWModule(serverHub, true),
+				new CreatureCheckingFWModule(serverHub),
 				new ComplexFWModule(serverHub),
 				new SpoolListFWModule(serverHub)
 			};

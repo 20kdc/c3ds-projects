@@ -19,6 +19,7 @@ import natsue.data.babel.pm.PackedMessage;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.names.CreatureDataVerifier;
+import natsue.server.cryo.CryoFrontend;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.firewall.IFWModule;
@@ -61,10 +62,16 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	private final Random randomGen = new Random();
 
-	public ServerHub(Config cfg, QuotaManager qm, ILogProvider logProvider, INatsueDatabase db) {
+	/**
+	 * We only have this for debugging
+	 */
+	private final CryoFrontend cryo;
+
+	public ServerHub(Config cfg, QuotaManager qm, ILogProvider logProvider, INatsueDatabase db, CryoFrontend c) {
 		config = cfg;
 		logParent = logProvider;
 		quotaManager = qm;
+		cryo = c;
 		database = db;
 		userDataCache = new HubUserDataCache(database, cfg.accounts, logProvider);
 		users = new HubUserRegister(userDataCache);
@@ -73,6 +80,11 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public ILogProvider getLogParent() {
 		return logParent;
+	}
+
+	@Override
+	public CryoFrontend getCryoFE() {
+		return cryo;
 	}
 
 	public void setFirewall(IFWModule[] fw, IRejector ir) {
@@ -259,7 +271,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				for (int i = 0; i < maxSpool; i++) {
 					byte[] pm = database.popFirstSpooledMessage(uid);
 					if (pm != null) {
-						PackedMessage pmi = PackedMessage.read(pm, config.messages.maxDecompressedPRAYSize.getValue());
+						PackedMessage pmi = PackedMessage.read(pm, config.messages);
 						final int pmiSenderUID = UINUtils.asDBUID(pmi.senderUIN);
 						cc.incomingMessage(pmi, () -> {
 							// Note that BECAUSE THESE MESSAGES ARE ALREADY SPOOLED,
@@ -493,6 +505,9 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			sb.append(UINUtils.toString(entry.getUIN()) + ": " + entry.getNickname() + "\n");
 		// Quota Manager
 		quotaManager.runSystemCheck(sb, detailed);
+		// Cryo
+		if (detailed)
+			cryo.runSystemCheck(sb);
 		return sb.toString();
 	}
 }

@@ -53,8 +53,18 @@ public class PRAYBlock {
 	public String getName() {
 		return IOUtils.getFixedLength(name);
 	}
+	public PRAYBlock copy() {
+		return new PRAYBlock(getType(), getName(), data.clone());
+	}
 
-	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, int maxDecompressedSize) {
+	public static LinkedList<PRAYBlock> copyList(Iterable<PRAYBlock> src) {
+		LinkedList<PRAYBlock> blocks = new LinkedList<>();
+		for (PRAYBlock blk : src)
+			blocks.add(blk.copy());
+		return blocks;
+	}
+
+	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, ConfigMessages opts) {
 		if (dataSlice.get() != (byte) 'P')
 			throw new RuntimeException("Not a PRAY file!");
 		if (dataSlice.get() != (byte) 'R')
@@ -64,14 +74,16 @@ public class PRAYBlock {
 		if (dataSlice.get() != (byte) 'Y')
 			throw new RuntimeException("Not a PRAY file!");
 		LinkedList<PRAYBlock> blocks = new LinkedList<>();
+		int maxDecompressedSize = opts.maxDecompressedPRAYSize.getValue();
+		int remaining = maxDecompressedSize;
 		while (dataSlice.position() != dataSlice.limit()) {
-			PRAYBlock pb = readOne(dataSlice, maxDecompressedSize);
+			PRAYBlock pb = readOne(dataSlice, remaining, maxDecompressedSize);
 			blocks.add(pb);
-			maxDecompressedSize -= pb.data.length;
+			remaining -= pb.data.length;
 		}
 		return blocks;
 	}
-	public static PRAYBlock readOne(ByteBuffer dataSlice, int maxBlockSize) {
+	public static PRAYBlock readOne(ByteBuffer dataSlice, int maxBlockSize, int maxTotalSize) {
 		PRAYBlock block = new PRAYBlock();
 		dataSlice.get(block.type);
 		block.typeStr = IOUtils.getFixedLength(block.type);
@@ -81,7 +93,7 @@ public class PRAYBlock {
 		int flags = dataSlice.getInt();
 
 		if (decompressedDataSize > maxBlockSize)
-			throw new RuntimeException("Too much data in PRAY block!");
+			throw new RuntimeException("Too much data in PRAY block: DC:" + decompressedDataSize + ", MS:" + maxBlockSize + ", MT:" + maxTotalSize);
 
 		block.data = new byte[decompressedDataSize];
 

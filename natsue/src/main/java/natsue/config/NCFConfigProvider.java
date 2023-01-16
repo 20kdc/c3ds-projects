@@ -28,8 +28,8 @@ public class NCFConfigProvider implements IConfigProvider {
 	public final HashMap<String, String> descriptions = new HashMap<>();
 	public boolean needsSave = false;
 
-	public NCFConfigProvider(String src) throws IOException {
-		file = new File(src);
+	public NCFConfigProvider(File src) throws IOException {
+		file = src;
 		try {
 			try (InputStreamReader isr = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
 				LinkedList<String> tokens = new LinkedList<>();

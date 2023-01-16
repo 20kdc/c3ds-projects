@@ -21,7 +21,7 @@ import natsue.server.userdata.INatsueUserData;
  * Stuff them all here for now as part of refactor
  */
 public class SystemCommands {
-	public static final String VERSION = "Natsue 15/01/23 Side A (Compressed PRAY)";
+	public static final String VERSION = "Natsue 16/01/23";
 	public static final String VERSION_URL = "https://github.com/20kdc/c3ds-projects/tree/main/natsue";
 
 	public static final BaseBotCommand[] commands = new BaseBotCommand[] {
@@ -137,6 +137,8 @@ public class SystemCommands {
 		},
 		new RemoteFlagControlBotCommand(),
 		new SystemCheckBotCommand(),
-		new FullReportBotCommand()
+		new FullReportBotCommand(),
+		new DefrostBotCommand(),
+		new CryoGetBotCommand()
 	};
 }

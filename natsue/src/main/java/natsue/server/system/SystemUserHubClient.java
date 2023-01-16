@@ -22,6 +22,7 @@ import natsue.data.pray.PRAYBlock;
 import natsue.data.pray.PRAYTags;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
+import natsue.server.cryo.CryoFunctions;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
@@ -42,7 +43,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	public final IHubPrivilegedClientAPI hub;
 	private final ILogProvider logParent;
 	public static final long UIN = UINUtils.SERVER_UIN;
-	public static final INatsueUserData.Root IDENTITY = new INatsueUserData.Fixed(new BabelShortUserData("", "", "!System", UIN), FLAG_RECEIVE_NB_NORNS | FLAG_NO_RANDOM);
+	public static final INatsueUserData.Root IDENTITY = new INatsueUserData.Fixed(new BabelShortUserData("", "", "!System", UIN), FLAG_RECEIVE_NB_NORNS | FLAG_RECEIVE_GEATS | FLAG_NO_RANDOM);
 	public final HashMap<String, BaseBotCommand> botCommands = new HashMap<>();
 	public final LinkedList<BaseBotCommand> botCommandsHelp;
 
@@ -123,12 +124,20 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			try {
 				LinkedList<PRAYBlock> info = ((PackedMessagePRAY) message).messageBlocks;
 				// Detect creatures we're about to lose
-				for (PRAYBlock pb : info) {
-					if (pb.getType().equals("GLST")) {
+				if (CryoFunctions.expectedToContainACreature(info)) {
+					try {
+						INatsueUserData nud = hub.getUserDataByUIN(message.senderUIN);
+						String err = "unable to get user data for sender";
+						if (nud != null)
+							err = hub.getCryoFE().tryAcceptCreature(info, nud);
+						if (err != null)
+							hub.rejectMessage(UIN, message, err);
+					} catch (Exception ex) {
+						log(ex);
 						// Trapped creature - RETURN TO SENDER IMMEDIATELY
-						hub.rejectMessage(UIN, message, "!System isn't accepting creatures");
-						return;
+						hub.rejectMessage(UIN, message, "Exception in creature acceptor");
 					}
+					return;
 				}
 				// No? Ok, is it chat?
 				if (info.size() == 1) {

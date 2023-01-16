@@ -40,7 +40,7 @@ public abstract class PackedMessage {
 		messageType = t;
 	}
 
-	public static PackedMessage read(byte[] toDecode, int prayMaxDecompressedSize) {
+	public static PackedMessage read(byte[] toDecode, ConfigMessages cfg) {
 		ByteBuffer b = PacketReader.wrapLE(toDecode);
 		long senderUIN = UINUtils.make(b.getInt(8), b.getInt(4) & 0xFFFF);
 		// the removal of 12 bytes here is to account for the C2E message header
@@ -51,7 +51,7 @@ public abstract class PackedMessage {
 		// Do decoding
 		ByteBuffer messageDataSlice = PacketReader.wrapLE(toDecode, HEADER_LEN, messageDataLen);
 		if (messageType == TYPE_PRAY) {
-			return new PackedMessagePRAY(senderUIN, PRAYBlock.read(messageDataSlice, prayMaxDecompressedSize));
+			return new PackedMessagePRAY(senderUIN, PRAYBlock.read(messageDataSlice, cfg));
 		} else if (messageType == TYPE_WRIT) {
 			String channel = PacketReader.getString(messageDataSlice);
 			int messageId = messageDataSlice.getInt();

@@ -96,7 +96,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 		} else if (packet instanceof CTOSMessage) {
 			CTOSMessage pkt = (CTOSMessage) packet;
 			try {
-				PackedMessage pm = PackedMessage.read(pkt.messageData, config.messages.maxDecompressedPRAYSize.getValue());
+				PackedMessage pm = PackedMessage.read(pkt.messageData, config.messages);
 				hub.clientGiveMessage(this, pkt.targetUIN, pm);
 			} catch (Exception ex) {
 				log(ex);

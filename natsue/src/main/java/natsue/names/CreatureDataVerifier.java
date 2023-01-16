@@ -22,32 +22,22 @@ public class CreatureDataVerifier {
 	 * Note that the database limit for this is 64 characters, to add some room for updates.
 	 */
 	private static final int MAX_MONIKER_LEN = 39;
+	public static final int MONIKER_CREATURE_COMPONENTS = 6;
+	public static final int MONIKER_WORLD_COMPONENTS = 5;
+
 	public static boolean verifyMoniker(String moniker) {
 		if (moniker.length() < 32)
 			return false;
 		if (moniker.length() > MAX_MONIKER_LEN)
 			return false;
-		int componentCount = 1;
-		for (char c : moniker.toCharArray()) {
-			boolean ok = false;
-			if (c >= 'a' && c <= 'z')
-				ok = true;
-			if (c >= '0' && c <= '9')
-				ok = true;
-			if (c == '-') {
-				ok = true;
-				componentCount++;
-			}
-			if (!ok)
-				return false;
-		}
-		if (componentCount != 6)
-			return false;
-		return true;
+		return verifyMonikerBase(moniker, MONIKER_CREATURE_COMPONENTS);
 	}
 	public static boolean verifyWorldMoniker(String moniker) {
 		if (moniker.length() != 28)
 			return false;
+		return verifyMonikerBase(moniker, MONIKER_WORLD_COMPONENTS);
+	}
+	public static boolean verifyMonikerBase(String moniker, int targetComponents) {
 		int componentCount = 1;
 		for (char c : moniker.toCharArray()) {
 			boolean ok = false;
@@ -62,11 +52,10 @@ public class CreatureDataVerifier {
 			if (!ok)
 				return false;
 		}
-		if (componentCount != 5)
+		if (componentCount != targetComponents)
 			return false;
 		return true;
 	}
-
 	private static String verifyLimitLen(int l, String name) {
 		if (name.length() > l)
 			name = name.substring(0, l);

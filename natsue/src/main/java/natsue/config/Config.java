@@ -30,6 +30,11 @@ public class Config extends BaseConfig.Group {
 	public final ConfigMessages messages = new ConfigMessages();
 
 	/**
+	 * Cryogenics (System storing creatures)
+	 */
+	public final ConfigCryo cryo = new ConfigCryo();
+
+	/**
 	 * Nickname details
 	 */
 	public final ConfigAccounts accounts = new ConfigAccounts();

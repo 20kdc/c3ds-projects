@@ -51,27 +51,6 @@ public class ComplexFWModule implements IFWModule {
 						hub.sendMessage(message.senderUIN, pm, MsgSendType.Temp, message.senderUIN);
 						return true;
 					}
-				} else if (type.equals("warp")) {
-					// NB norn detector
-					PRAYTags pt = new PRAYTags();
-					pt.read(block.data);
-					// not checking Genus right now - patch it when someone breaks it, things are on fire rn
-					int reC = pt.intMap.get("Gender");
-					int reG = pt.intMap.get("Genus");
-					boolean isNB = reC != 1 && reC != 2;
-					boolean isGeat = reG == 4;
-					if (reG < 1 || reG > 4) {
-						hub.rejectMessage(destUser.getUIN(), message, "Invalid creature genus");
-						return true;
-					} else if (isGeat && !destUser.isReceivingGeats()) {
-						// Wasteland glitch prevention (CACL 4 4 0 19!!!!)
-						hub.rejectMessage(destUser.getUIN(), message, "Geat that target couldn't receive");
-						return true;
-					} else if (isNB && !destUser.isReceivingNBNorns()) {
-						// NB norns crash people who aren't prepared to receive them.
-						hub.rejectMessage(destUser.getUIN(), message, "NB norn that target couldn't receive");
-						return true;
-					}
 				}
 			}
 		}

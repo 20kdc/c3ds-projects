@@ -10,6 +10,7 @@ package natsue.server.hubapi;
 import java.util.LinkedList;
 
 import natsue.data.babel.pm.PackedMessage;
+import natsue.server.cryo.CryoFrontend;
 import natsue.server.firewall.IRejector;
 import natsue.server.userdata.IHubUserDataCachePrivilegedProxy;
 import natsue.server.userdata.INatsueUserData;
@@ -65,6 +66,11 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	 * Attempst to find anything unusual.
 	 */
 	String runSystemCheck(boolean detailed);
+
+	/**
+	 * Cryo frontend (used by System for cryo-related tasks)
+	 */
+	CryoFrontend getCryoFE();
 
 	/**
 	 * Controls message behaviour.
