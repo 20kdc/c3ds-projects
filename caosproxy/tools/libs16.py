@@ -900,8 +900,10 @@ def decode_blk(data: bytes) -> S16Image:
 if __name__ == "__main__":
 
 	def command_help():
-		print("libs16.py info <IN>")
-		print(" information on a c16/s16 file")
+		print("libs16.py info <IN...>")
+		print(" information on c16/s16 files")
+		print("libs16.py infoShort <IN...>")
+		print(" short information on c16/s16 files")
 		print("libs16.py encodeS16 <INDIR> <OUT> [<CDMODE> [<ADMODE>]]")
 		print(" encodes 565 S16 file from directory")
 		print("libs16.py encodeC16 <INDIR> <OUT> [<CDMODE> [<ADMODE>]]")
@@ -1021,19 +1023,32 @@ if __name__ == "__main__":
 
 	if len(sys.argv) >= 2:
 		if sys.argv[1] == "info":
-			data = _read_bytes(sys.argv[2])
-			info = identify_cs16(data)
-			if info == None:
-				print("Unknown!")
-			else:
-				print(info.desc)
-			# this COULD fail (no support for Mac files), do it late
-			images = decode_cs16(data)
-			idx = 0
-			print(str(len(images)) + " frames")
-			for v in images:
-				print(" " + str(idx) + ": " + str(v.width) + "x" + str(v.height))
-				idx += 1
+			for fn in sys.argv[2:]:
+				data = _read_bytes(fn)
+				info = identify_cs16(data)
+				if info == None:
+					print(fn + ": Unknown!")
+				else:
+					print(fn + ": " + info.desc)
+				# this COULD fail (no support for Mac files), do it late
+				images = decode_cs16(data)
+				idx = 0
+				print(str(len(images)) + " frames")
+				for v in images:
+					print(" " + str(idx) + ": " + str(v.width) + "x" + str(v.height))
+					idx += 1
+		elif sys.argv[1] == "infoShort":
+			for fn in sys.argv[2:]:
+				data = _read_bytes(fn)
+				info = identify_cs16(data)
+				if info == None:
+					print(fn + ": Unknown!")
+				else:
+					try:
+						images = decode_cs16(data)
+						print(fn + ": " + info.desc + ", " + str(len(images)) + " frames")
+					except:
+						print(info.desc)
 		elif sys.argv[1] == "encodeS16" or sys.argv[1] == "encodeC16":
 			cdmode = _opt_arg(4, CDMODE_DEFAULT)
 			admode = _opt_arg(5, ADMODE_DEFAULT)
