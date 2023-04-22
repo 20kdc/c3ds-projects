@@ -882,18 +882,27 @@ def decode_blk_blocks(data: bytes):
 
 	return blocks_w, blocks_h, results
 
+def stitch_blk(blocks_w: int, blocks_h: int, blocks: list) -> S16Image:
+	"""
+	Decodes a BLK file into a full image.
+	"""
+	block_w, block_h = 128, 128
+	if len(blocks) > 0:
+		block_w, block_h = blocks[0].width, blocks[0].height
+	full = S16Image(blocks_w * block_w, blocks_h * block_h)
+	idx = 0
+	for x in range(blocks_w):
+		for y in range(blocks_h):
+			full.blit(blocks[idx], x * block_w, y * block_h, False)
+			idx += 1
+	return full
+
 def decode_blk(data: bytes) -> S16Image:
 	"""
 	Decodes a BLK file into a full image.
 	"""
 	blocks_w, blocks_h, blocks = decode_blk_blocks(data)
-	full = S16Image(blocks_w * 128, blocks_h * 128)
-	idx = 0
-	for x in range(blocks_w):
-		for y in range(blocks_h):
-			full.blit(blocks[idx], x * 128, y * 128, False)
-			idx += 1
-	return full
+	return stitch_blk(blocks_w, blocks_h, blocks)
 
 # ---- Command Line ----
 
@@ -916,6 +925,8 @@ if __name__ == "__main__":
 		print(" decodes a single frame of a S16/C16 to a PNG file")
 		print("libs16.py decodeBLK <IN> <OUT>")
 		print(" decodes a BLK file to a PNG file")
+		print("libs16.py decodeC2B <IN> <OUT>")
+		print(" decodes a C2 background file to a PNG file")
 		print("libs16.py mask <SOURCE> <X> <Y> <VICTIM> <FRAME> [<CHECKPRE> [<CHECKPOST>]]")
 		print(" **REWRITES** the given FRAME of the VICTIM file to use the colours from SOURCE frame 0 at the given X/Y position, but basing alpha on the existing data in the frame.")
 		print(" CHECKPRE/CHECKPOST are useful for comparisons.")
@@ -1080,6 +1091,10 @@ if __name__ == "__main__":
 		elif sys.argv[1] == "decodeBLK":
 			blk = decode_blk(_read_bytes(sys.argv[2]))
 			vpil = blk.to_pil(alpha_aware = False)
+			vpil.save(sys.argv[3], "PNG")
+		elif sys.argv[1] == "decodeC2B":
+			images = _read_cs16_file(sys.argv[2])
+			vpil = stitch_blk(len(images) // 16, 16, images).to_pil(alpha_aware = False)
 			vpil.save(sys.argv[3], "PNG")
 		elif sys.argv[1] == "mask":
 			# args
