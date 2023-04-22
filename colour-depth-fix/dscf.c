@@ -89,6 +89,9 @@ static void attemptHooks() {
 	}
 	MessageBoxA(NULL, "engine.exe not supported, your window title should contain one of:\r\n"
 		"Engine 2.286 B195\r\n"
+		"Engine 1.162\r\n"
+		"Engine 1.158\r\n"
+		"Engine 1.147\r\n"
 		"", "colour-depth-fix", MB_OK);
 }
 
