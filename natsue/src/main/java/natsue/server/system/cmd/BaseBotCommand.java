@@ -55,6 +55,11 @@ public abstract class BaseBotCommand {
 		public final StringBuilder response = new StringBuilder();
 
 		/**
+		 * If the response message is inhibited.
+		 */
+		public boolean responseInhibited = false;
+
+		/**
 		 * Accumulated text.
 		 */
 		public final char[] text;
@@ -74,10 +79,10 @@ public abstract class BaseBotCommand {
 		 */
 		public final List<BaseBotCommand> helpInfo;
 
-		public Context(IHubPrivilegedClientAPI h, long s, String tex, ILogSource lSrc, List<BaseBotCommand> hi) {
+		public Context(IHubPrivilegedClientAPI hub, long s, String tex, ILogSource lSrc, List<BaseBotCommand> hi) {
 			log = lSrc;
 			response.append(ChatColours.CHAT);
-			hub = h;
+			this.hub = hub;
 			senderUIN = s;
 			helpInfo = hi;
 			// strip initial tint

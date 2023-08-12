@@ -18,8 +18,13 @@ import natsue.data.babel.PacketReader;
  */
 public class PWHash {
 	public static boolean verify(int uid, String hash, String password) {
-		if (hash.startsWith("G1:"))
+		if (hash.startsWith("G1:")) {
 			return hash.equals(hashG1(uid, password));
+		} else if (hash.startsWith("DEV:")) {
+			// For the dev instance ONLY. No part of Natsue should ever automatically write this.
+			// Basically, this allows a developer to use sqlitebrowser to initialize the passwords of their accounts.
+			return hash.equals("DEV:" + password);
+		}
 		return false;
 	}
 

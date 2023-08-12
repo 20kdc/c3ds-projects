@@ -51,6 +51,9 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	public final HashSet<Long> peopleInGroupChat = new HashSet<>();
 	public final Object peopleInGroupChatLock = new Object();
 
+	public final HashMap<Long, Long> userContactMap = new HashMap<>();
+	public final Object userContactMapLock = new Object();
+
 	public SystemUserHubClient(Config config, ILogProvider log, IHubPrivilegedClientAPI h) {
 		hub = h;
 		logParent = log;
@@ -74,6 +77,50 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				} else {
 					args.response.append("Please stand by.\n");
 					sendGlobalChatRequest(args.senderUIN, args.senderUIN);
+				}
+			}
+		});
+		addBotCommand(new BaseBotCommand("contact", "<users...>", "Add contacts", "Adds users to your contact list.", "Someone", Cat.Public) {
+			public void run(Context args) {
+				while (args.remaining()) {
+					String user = args.nextArg();
+					INatsueUserData userData = args.commandLookupUser(user);
+					if (userData != null) {
+						ContactAddStrategy cas = config.contactAddStrategy.getValue();
+						boolean sendNow = true;
+						switch (cas) {
+						case loud:
+							args.response.append("Adding ");
+							args.response.append(ChatColours.NICKNAME);
+							args.response.append(userData.getNickname());
+							args.response.append(ChatColours.CHAT);
+							args.response.append(" to your contact list...\n");
+							break;
+						case silent:
+							args.responseInhibited = true;
+							break;
+						default: // reconnect
+							sendNow = false;
+							Long alreadyAContact;
+							synchronized (userContactMapLock) {
+								alreadyAContact = userContactMap.put(args.senderUIN, userData.getUIN());
+							}
+							if (alreadyAContact != null)
+								args.response.append("(A contact you previously requested was overwritten.)\n");
+							args.response.append("Disconnect and reconnect to add ");
+							args.response.append(ChatColours.NICKNAME);
+							args.response.append(userData.getNickname());
+							args.response.append(ChatColours.CHAT);
+							args.response.append(" to your contact list.\n");
+							break;
+						}
+						if (sendNow) {
+							PackedMessage pm = StandardMessages.addToContactList(args.senderUIN, userData.getUIN());
+							args.hub.sendMessage(args.senderUIN, pm, MsgSendType.Temp, args.senderUIN);
+						}
+					} else {
+						args.appendNoSuchUser(user);
+					}
 				}
 			}
 		});
@@ -111,7 +158,13 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	@Override
 	public void wwrNotify(boolean online, INatsueUserData theirData) {
 		if (online) {
-			PackedMessage pm = StandardMessages.addToContactList(theirData.getUIN(), UIN);
+			Long whoAreWeAdding;
+			synchronized (userContactMapLock) {
+				Long theirUINObj = theirData.getUIN();
+				whoAreWeAdding = userContactMap.getOrDefault(theirUINObj, UIN);
+				userContactMap.remove(theirUINObj);
+			}
+			PackedMessage pm = StandardMessages.addToContactList(theirData.getUIN(), whoAreWeAdding);
 			hub.sendMessage(theirData.getUIN(), pm, MsgSendType.Temp, theirData.getUIN());
 		} else {
 			removeFromGlobalChat(theirData.getUIN(), "disconnected");

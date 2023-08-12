@@ -8,11 +8,8 @@
 package natsue.server.system;
 
 import natsue.data.babel.UINUtils;
-import natsue.data.babel.pm.PackedMessage;
 import natsue.data.hli.ChatColours;
-import natsue.data.hli.StandardMessages;
 import natsue.server.database.INatsueUserFlags;
-import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 import natsue.server.system.cmd.*;
 import natsue.server.system.cmd.BaseBotCommand.Cat;
 import natsue.server.userdata.INatsueUserData;
@@ -21,7 +18,7 @@ import natsue.server.userdata.INatsueUserData;
  * Stuff them all here for now as part of refactor
  */
 public class SystemCommands {
-	public static final String VERSION = "Natsue 16/01/23";
+	public static final String VERSION = "Natsue 12/08/23";
 	public static final String VERSION_URL = "https://github.com/20kdc/c3ds-projects/tree/main/natsue";
 
 	public static final BaseBotCommand[] commands = new BaseBotCommand[] {
@@ -35,26 +32,6 @@ public class SystemCommands {
 			}
 		},
 		new WhoisBotCommand(),
-		new BaseBotCommand("contact", "<users...>",
-				"Add contacts", "Adds users to your contact list.", "Someone", Cat.Public) {
-			public void run(Context args) {
-				while (args.remaining()) {
-					String user = args.nextArg();
-					INatsueUserData userData = args.commandLookupUser(user);
-					if (userData != null) {
-						args.response.append("Adding ");
-						args.response.append(ChatColours.NICKNAME);
-						args.response.append(userData.getNickname());
-						args.response.append(ChatColours.CHAT);
-						args.response.append(" to your contact list...\n");
-						PackedMessage pm = StandardMessages.addToContactList(args.senderUIN, userData.getUIN());
-						args.hub.sendMessage(args.senderUIN, pm, MsgSendType.Temp, args.senderUIN);
-					} else {
-						args.appendNoSuchUser(user);
-					}
-				}
-			}
-		},
 		new BaseBotCommand("kick", "<user>",
 				"Kicks a user", "Kicks (i.e. forcibly disconnects) a user from the server.", "kick JeremyRandomTroll", Cat.Admin) {
 			public void run(Context args) {

@@ -8,6 +8,7 @@
 package natsue.config;
 
 import natsue.server.firewall.FirewallLevel;
+import natsue.server.system.ContactAddStrategy;
 
 /**
  * All the config for everything everywhere.
@@ -126,6 +127,16 @@ public class Config extends BaseConfig.Group {
 					"vanillaSafe (blocks known dangerous PRAY blocks, + NB norn check),\n" +
 					"full (block any blocks vanilla wouldn't send, + NB norn check),\n" +
 					"rejectAll (TESTING ONLY, REJECTS EVERYTHING)");
+
+	/**
+	 * Contact add strategy
+	 */
+	public final Emu<ContactAddStrategy> contactAddStrategy = new Emu<>("contactAddStrategy", ContactAddStrategy.reconnect)
+			.describe("Strategy for adding contacts with contact command.\n" +
+					"Options are:\n" +
+					"loud: messages user when adding (could be interfering with engine?)\n" +
+					"silent: does not\n" +
+					"reconnect: the contact command changes which contact System will try to add on connect (as this mechanism has been extremely stable)");
 
 	/**
 	 * Log failed authentication attempts.
