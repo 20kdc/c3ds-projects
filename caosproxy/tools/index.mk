@@ -3,5 +3,5 @@ CAOSPROX_REL += caosproxy/tools/caosterm.py caosproxy/tools/cpxinfo.py caosproxy
 CAOSPROX_REL += caosproxy/tools/bdmptest.py caosproxy/tools/maprooms.py caosproxy/tools/maptypes.py
 CAOSPROX_REL += caosproxy/tools/wastemon.py
 
-CAOSPROX_REL += caosproxy/tools/libs16.py
+CAOSPROX_REL += caosproxy/tools/libs16.py caosproxy/tools/c3breedie.py
 

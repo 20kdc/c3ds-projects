@@ -13,6 +13,7 @@ import struct
 import array
 import PIL.Image
 import random
+import sys
 
 # ---- Constants ----
 
@@ -995,7 +996,6 @@ if __name__ == "__main__":
 			f.write(encode_s16(images))
 		f.close()
 
-	import sys
 	import os
 	import os.path
 
