@@ -11,6 +11,7 @@
 import struct
 import array
 import sys
+from . import bitdither
 
 # ---- Constants ----
 
@@ -439,6 +440,54 @@ def encode_c16(images) -> bytes:
 CDMODE_DEFAULT = "floor"
 ADMODE_DEFAULT = "nearest"
 
+def rgba_to_565(w, h, data_r, data_g, data_b, data_a, false_black: int = COL_BLACK, cdmode: str = CDMODE_DEFAULT, admode: str = ADMODE_DEFAULT) -> S16Image:
+	"""
+	Encodes R, G, B and A int sequences into a 565 S16Image.
+	Dithering is performed in-place, so the data arrays are modified.
+	Pixels that would be "accidentally transparent" are nudged to false_black.
+	cdmode and admode are dither modes as per the dither function.
+	These are for colours and alpha respectively.
+	"""
+	img = S16Image(w, h)
+	idx = 0
+	# skip the full dithering pass if we implement it ourselves
+	if cdmode != "floor":
+		bitdither.dither_channel(w, h, data_r, 5, cdmode)
+		bitdither.dither_channel(w, h, data_g, 6, cdmode)
+		bitdither.dither_channel(w, h, data_b, 5, cdmode)
+	if admode != "nearest":
+		bitdither.dither_channel(w, h, data_a, 1, admode)
+	for i in range(w * h):
+		v = 0
+		if data_a[i] >= 128:
+			v = ((data_r[i] << 8) & 0xF800) | ((data_g[i] << 3) & 0x07E0) | ((data_b[i] >> 3) & 0x001F)
+			if v == 0: # COL_MASK
+				v = false_black
+		img.data[idx] = v
+		idx += 1
+	return img
+
+def rgb_to_565_blk(w, h, data_r, data_g, data_b, cdmode: str = CDMODE_DEFAULT) -> S16Image:
+	"""
+	Encodes R, G, B int sequences into a 565 S16Image, assuming it will be a BLK file.
+	Therefore, alpha and collisions with the masking colour are ignored.
+	Dithering is performed in-place, so the data arrays are modified.
+	Note that this doesn't split the image into BLK chunks. encode_blk will do that.
+	And this is also useful for non-alpha-aware conversions.
+	cdmode is a dither mode as per the dither function.
+	"""
+	img = S16Image(w, h)
+	idx = 0
+	if cdmode != "floor":
+		bitdither.dither_channel(w, h, data_r, 5, cdmode)
+		bitdither.dither_channel(w, h, data_g, 6, cdmode)
+		bitdither.dither_channel(w, h, data_b, 5, cdmode)
+	for i in range(w * h):
+		v = ((data_r[i] << 8) & 0xF800) | ((data_g[i] << 3) & 0x07E0) | ((data_b[i] >> 3) & 0x001F)
+		img.data[idx] = v
+		idx += 1
+	return img
+
 # ---- BLK ----
 
 def encode_blk_blocks(images, blocks_w: int) -> bytes:
@@ -545,3 +594,4 @@ def decode_blk(data: bytes) -> S16Image:
 	"""
 	blocks_w, blocks_h, blocks = decode_blk_blocks(data)
 	return stitch_blk(blocks_w, blocks_h, blocks)
+

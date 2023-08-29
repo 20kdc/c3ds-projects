@@ -35,19 +35,6 @@ def s16image_to_pil_rgb(img: s16.S16Image):
 	pil.putdata(img.to_rgb())
 	return pil
 
-def _dither_565_if_not_floor(pil, cdmode: str):
-	w = pil.width
-	h = pil.height
-	data_r = list(pil.getdata(0))
-	data_g = list(pil.getdata(1))
-	data_b = list(pil.getdata(2))
-	# dither RGB, unless mode is floor
-	if cdmode != "floor":
-		bitdither.dither_channel(w, h, data_r, 5, cdmode)
-		bitdither.dither_channel(w, h, data_g, 6, cdmode)
-		bitdither.dither_channel(w, h, data_b, 5, cdmode)
-	return data_r, data_g, data_b
-
 def pil_to_565(pil: PIL.Image, false_black: int = s16.COL_BLACK, cdmode: str = s16.CDMODE_DEFAULT, admode: str = s16.ADMODE_DEFAULT) -> s16.S16Image:
 	"""
 	Encodes a PIL.Image into a 565 S16Image.
@@ -55,23 +42,8 @@ def pil_to_565(pil: PIL.Image, false_black: int = s16.COL_BLACK, cdmode: str = s
 	cdmode and admode are dither modes as per the dither function.
 	These are for colours and alpha respectively.
 	"""
-	img = s16.S16Image(pil.width, pil.height)
 	pil = pil.convert("RGBA")
-	idx = 0
-	data_a = list(pil.getdata(3))
-	# skip the full dithering pass if we implement it ourselves
-	data_r, data_g, data_b = _dither_565_if_not_floor(pil, cdmode)
-	if admode != "nearest":
-		bitdither.dither_channel(pil.width, pil.height, data_a, 1, admode)
-	for i in range(pil.width * pil.height):
-		v = 0
-		if data_a[i] >= 128:
-			v = ((data_r[i] << 8) & 0xF800) | ((data_g[i] << 3) & 0x07E0) | ((data_b[i] >> 3) & 0x001F)
-			if v == 0: # COL_MASK
-				v = false_black
-		img.data[idx] = v
-		idx += 1
-	return img
+	return s16.rgba_to_565(pil.width, pil.height, list(pil.getdata(0)), list(pil.getdata(1)), list(pil.getdata(2)), list(pil.getdata(3)), false_black = false_black, cdmode = cdmode, admode = admode)
 
 def pil_to_565_blk(pil: PIL.Image, cdmode: str = "floor") -> s16.S16Image:
 	"""
@@ -81,12 +53,6 @@ def pil_to_565_blk(pil: PIL.Image, cdmode: str = "floor") -> s16.S16Image:
 	And this is also useful for non-alpha-aware conversions.
 	cdmode is a dither mode as per the dither function.
 	"""
-	img = s16.S16Image(pil.width, pil.height)
 	pil = pil.convert("RGB")
-	idx = 0
-	data_r, data_g, data_b = _dither_565_if_not_floor(pil, cdmode)
-	for i in range(pil.width * pil.height):
-		v = ((data_r[i] << 8) & 0xF800) | ((data_g[i] << 3) & 0x07E0) | ((data_b[i] >> 3) & 0x001F)
-		img.data[idx] = v
-		idx += 1
-	return img
+	return s16.rgb_to_565_blk(pil.width, pil.height, list(pil.getdata(0)), list(pil.getdata(1)), list(pil.getdata(2)), cdmode = cdmode)
+
