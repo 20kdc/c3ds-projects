@@ -9,7 +9,7 @@
 import os
 import sys
 import socket
-from tools import libcpx # this is so silly but it keeps the file organization sane
+import libkc3ds.cpx as libcpx
 import traceback
 
 gamepath = "" # must be set

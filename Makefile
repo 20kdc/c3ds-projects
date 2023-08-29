@@ -37,6 +37,7 @@ rel-sdk: COPYING.txt README.md CREDITS.txt
 
 include colour-depth-fix/index.mk
 include caosproxy/index.mk
+include python/index.mk
 
 ifeq ($(HOST_GODOT),1)
 	include creature-monitor-gd-export/index.mk

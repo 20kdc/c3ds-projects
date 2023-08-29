@@ -8,7 +8,7 @@
 
 import argparse
 import PIL.Image
-import libs16
+import libkc3ds.s16 as libs16
 import sys
 import os
 
