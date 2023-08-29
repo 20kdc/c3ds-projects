@@ -8,7 +8,8 @@
 
 import argparse
 import PIL.Image
-import libkc3ds.s16 as libs16
+from libkc3ds.s16 import decode_cs16, S16Image
+from libkc3ds.s16pil import pil_to_565_blk, s16image_to_pil_rgb
 import sys
 import os
 
@@ -75,7 +76,7 @@ def load_spr(path):
 		f = open(path, "rb")
 		data = f.read()
 		f.close()
-		sprite_cache_dec = libs16.decode_cs16(data)
+		sprite_cache_dec = decode_cs16(data)
 	except Exception as ex:
 		print(ex)
 		sprite_cache_dec = []
@@ -84,7 +85,7 @@ def load_spr(path):
 def read_spr(path, frame, w, h):
 	frames = load_spr(path)
 	if frame < 0 or frame >= len(frames):
-		return libs16.S16Image(w, h)
+		return S16Image(w, h)
 	return frames[frame]
 
 # Command definition
@@ -116,14 +117,14 @@ if args.age is None:
 def bmp_single_sprite_file(spr, tree, genus, breed, sex, age, frame_base, frame_count):
 	for i in range(frame_count):
 		frame = read_spr(spr, i, 1, 1)
-		frame_pil = frame.to_pil(alpha_aware = False).convert("RGB")
+		frame_pil = s16image_to_pil_rgb(frame)
 		frame_pil.save(bmp_path(tree, frame_base + i), "BMP")
 
 def c16_single_sprite_file(spr, tree, genus, breed, sex, age, frame_base, frame_count):
 	frames = []
 	for i in range(frame_count):
 		bmp = read_bmp(tree, frame_base + i, 1, 1)
-		frames.append(libs16.pil_to_565_blk(bmp, cdmode = args.cdmode))
+		frames.append(pil_to_565_blk(bmp, cdmode = args.cdmode))
 	f = open(spr, "wb")
 	f.write(libs16.encode_c16(frames))
 	f.close()

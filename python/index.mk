@@ -7,7 +7,9 @@ PYTHON_REL += python/caosterm.py python/cpxinfo.py python/inject.py
 PYTHON_REL += python/bdmptest.py python/maprooms.py python/maptypes.py
 PYTHON_REL += python/wastemon.py
 
+PYTHON_REL += python/s16tool.py
 PYTHON_REL += python/c3breedie.py
+
 PYTHON_REL += python/cpxciesv.py
 
 rel: $(PYTHON_REL)

@@ -44,3 +44,7 @@ This is a library for doing all sorts of fun things:
 
 *Any library imports that wouldn't work in a stock Blender 3.x install need to avoid being loaded by that project.*
 
+If you're both developing the library and also using the tools, *do* symlink it to `.local/lib/python3.10/site-packages` or equivalent.
+
+Symlink, don't copy...
+
