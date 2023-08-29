@@ -67,7 +67,7 @@ def render_gizmo_frames(context, path_base, frames):
 		print("GIZMOBATCH: " + str(gizmo_idx) + " / " + str(len(gizmos)))
 		gz.activate()
 		try:
-			bpy.ops.render.render()
+			bpy.ops.render.render(context)
 			save_image_with_makedirs(bpy.data.images["Render Result"], gz.props["filepath"])
 		finally:
 			gz.deactivate()
