@@ -13,7 +13,7 @@ class PartInfo():
 	Information for how a part is identified in a game.
 	Each frame is a string -> arbitrary dictionary containing details.
 	Further details (self.part_id and self.frame_base) are filled out when the PartInfo is added to the Setup.
-	Frames gain {"part": X} keys during this point as well.
+	Frames gain "frame", "part" and "blank" keys during this point as well.
 	"""
 	def __init__(self, char, frames, blank = False):
 		self.char = char
@@ -26,8 +26,15 @@ class PartInfo():
 		Called during Setup constructor to attach this PartInfo
 		"""
 		self.part_id = part_id
+		frame_idx = base
 		for f in self.frames:
+			f["frame"] = frame_idx
 			f["part"] = self.part_id.name
+			if self.blank:
+				f["blank"] = 1
+			else:
+				f["blank"] = 0
+			frame_idx += 1
 		self.frame_base = base
 
 class PartID():
@@ -48,8 +55,8 @@ class PartID():
 def gen_c3_frames(details):
 	total = []
 	for detail in details:
-		for yaw in range(4):
-			for pitch in range(4):
+		for yaw in [1, -1, 0, 2]:
+			for pitch in [-1, 0, 1, 2]:
 				res = detail.copy()
 				res["pitch"] = pitch
 				res["yaw"] = yaw
@@ -99,12 +106,14 @@ class Setup():
 		self.name = name
 		self.part_ids = part_ids
 		self.part_infos = []
+		self.frames = []
 		frame = 0
 		for pi in part_ids:
 			pif = pi.games[name]
 			pif.setup_registers(pi, frame)
 			frame += len(pif.frames)
 			self.part_infos.append(pif)
+			self.frames += pif.frames
 		SETUP[name] = self
 
 C3 = Setup("c3", [C3_a, C3_0, C3_c, C3_d, C3_e, C3_f, C3_g, C3_h, C3_i, C3_j, C3_k, C3_l, C3_b, C3_m, C3_n])

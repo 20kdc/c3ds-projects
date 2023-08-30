@@ -16,17 +16,9 @@ args = parser.parse_args()
 
 for setup in SETUP:
 	res = SETUP[setup]
-	total = 0
-	for pi in res.part_infos:
-		total += len(pi.frames)
-	print(setup + ", " + str(total) + " frames:")
-	for pi in res.part_infos:
-		if pi.blank:
-			print("\t" + pi.part_id.name + ": '" + pi.char + "', BLANK, " + str(len(pi.frames)) + " frames:")
-		else:
-			print("\t" + pi.part_id.name + ": '" + pi.char + "', frames:")
-		frame_idx = pi.frame_base
-		for f in pi.frames:
-			print("\t\t" + str(f))
-			frame_idx += 1
+	print(setup + ", " + str(len(res.frames)) + " frames:")
+	frame_idx = 0
+	for f in res.frames:
+		print("\t" + str(frame_idx) + ": " + str(f))
+		frame_idx += 1
 
