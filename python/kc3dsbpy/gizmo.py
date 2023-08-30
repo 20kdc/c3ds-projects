@@ -46,76 +46,126 @@ def visscript_truthy(val):
 
 def visscript_compile(script):
 	script = script.strip()
+	# empty?
+	if script == "":
+		# 'Set' component (lighting cams etc.) : always valid
+		return lambda props: True
 	# try to find op
 	for op in VISSCRIPT_OPS:
-		op_idx = script.index(op)
+		op_idx = script.find(op)
 		if op_idx != -1:
 			return visscript_compile_op(script[:op_idx], op, script[op_idx + len(op):])
 	# flag: prop is present and non-zero
 	prop = script
 	return lambda props: (prop in props) and visscript_truthy(str(props[prop]))
 
-class Gizmo():
+def visscript_compile_and_bind(obj):
 	"""
-	Manipulation of objects made easy.
+	Creates a lambda which updates the object rendering status from Gizmo properties.
 	"""
-	def __init__(self, context, props):
-		self.context = context
-		self.props = props
-		if not "SelfieArm" in bpy.data.objects:
-			raise Exception("There needs to be an Empty called SelfieArm. This is moved about in order to position the camera, so the camera should be parented to it.")
-		self.selfie_arm = bpy.data.objects["SelfieArm"]
-		if not "RefCamera" in bpy.data.objects:
-			raise Exception("There needs to be a Camera called RefCamera. This is the reference camera from which data is copied.")
-		self.cam_ref = bpy.data.objects["RefCamera"]
-		if not "ActCamera" in bpy.data.objects:
-			raise Exception("There needs to be a Camera called ActCamera. This is the target camera used for real renders (and thus gets modified!).")
-		self.cam_act = bpy.data.objects["ActCamera"]
-		self.part_name = props["part_name"]
-		if not self.part_name in bpy.data.objects:
-			raise Exception("There needs to be some object called " + self.part_name + ". This is a targetted part. The location of this object will be used for the camera, any objects with names beginning with " + self.part_name + " will be rendered for this part.")
-		else:
-			self.target = bpy.data.objects[self.part_name]
+	compiled = visscript_compile(obj.kc3dsbpy_visscript)
+	def bound(props):
+		obj.hide_render = not compiled(props)
+		obj.hide_viewport = obj.hide_render
+	return bound
 
-	def activate(self):
-		# step 1. frame
-		self.frame_old = self.context.scene.frame_current
-		# step 2. camera
-		self.res_x_old = self.context.scene.render.resolution_x
-		self.res_y_old = self.context.scene.render.resolution_y
-		self.context.scene.render.resolution_x = self.props["size"]
-		self.context.scene.render.resolution_y = self.props["size"]
-		self.context.scene.camera = self.cam_act
-		# 100 is used as it's the value for a full adult head, so things properly cancel out.
-		# I am quite aware this is ugly and I may be eaten by a grue on some dark, stormy night.
-		# Scale is put on the division end because a smaller target part scale needs to mean a higher ortho scale.
-		# Could actually scale the part, but I think that would have adverse effects, and it would also break the test model r/n. Bad idea.
-		self.cam_act.data.ortho_scale = self.cam_ref.data.ortho_scale * self.props["size"] / (100.0 * self.props["scale"])
-		# step 3. position selfie arm
-		self.selfie_arm.location = self.target.location
-		# step 4. adjust hiddenness
-		self.hidden = []
-		for v in bpy.data.objects:
-			if (not v.name.startswith(self.part_name)) and not (v.name.startswith("SET.")):
-				if not v.hide_render:
-					v.hide_render = True
-					self.hidden.append(v)
-		# step 5. adjust target rotation
-		self.rotation_backup = self.target.rotation_euler
-		self.target.rotation_euler = mathutils.Euler((math.radians(self.props["pitch"]), 0, math.radians(self.props["yaw"])), "XYZ")
+class GizmoContext():
+	"""
+	A scan of the scene, etc.
+	"""
+	def __init__(self, scene):
+		self.scene = scene
+		self.camera = scene.camera
+		self.markers = {}
+		if self.camera is None:
+			raise Exception("Camera required!")
+		self.vis = []
+		for obj in scene.objects:
+			mk = obj.kc3dsbpy_part_marker
+			if mk != "":
+				if mk in self.markers:
+					raise Exception("Duplicate marker: " + self.markers[mk].name + " to " + obj.name)
+				self.markers[mk] = obj
+			self.vis.append(visscript_compile_and_bind(obj))
+
+	def verify(self, props):
+		"""
+		Checks that the given operation is possible.
+		"""
+		marker = props["part"]
+		if not marker in self.markers:
+			raise Exception("Marker " + marker + " does not exist")
+		burn = props["pitch"]
+		burn = props["roll"]
+		burn = props["yaw"]
+		burn = props["width"]
+		burn = props["height"]
+		burn = props["ortho_scale"]
+
+	def activate(self, props):
+		self.deactivate()
+		self.backup()
+		# Mirror all Gizmo properties to scene custom properties.
+		# This can be used to run Drivers for instance.
+		for k in props:
+			self.scene["kc3dsbpy." + k] = props[k]
+		# Setup target.
+		marker = self.markers[props["part"]]
+		marker.rotation_euler = mathutils.Euler((math.radians(props["pitch"]), math.radians(props["roll"]), math.radians(props["yaw"])), "YXZ")
+		# Setup camera/resolution.
+		self.scene.render.resolution_x = props["width"]
+		self.scene.render.resolution_y = props["height"]
+		self.camera.data.ortho_scale = props["ortho_scale"]
+		# Camera is kept away from model using parenting
+		# So Gizmo is deliberately kept not aware of it
+		# Would be nice if we had global marker location, but what can 'ya do
+		self.camera.location = marker.location
+		# Setup visibility.
+		for vis in self.vis:
+			vis(props)
+
+	def backup(self):
+		"""
+		Part of activation, performs backups.
+		"""
+		self.scene.kc3dsbpy_gizmo_resx_old = self.scene.render.resolution_x
+		self.scene.kc3dsbpy_gizmo_resy_old = self.scene.render.resolution_y
+		self.scene.kc3dsbpy_gizmo_activated = True
+		for obj in self.scene.objects:
+			obj.kc3dsbpy_gizmo_activated = True
+			obj.kc3dsbpy_gizmo_hide_render_old = obj.hide_render
+			obj.kc3dsbpy_gizmo_hide_viewport_old = obj.hide_viewport
+			obj.kc3dsbpy_gizmo_ex_old = obj.rotation_euler.x
+			obj.kc3dsbpy_gizmo_ey_old = obj.rotation_euler.y
+			obj.kc3dsbpy_gizmo_ez_old = obj.rotation_euler.z
+			obj.kc3dsbpy_gizmo_et_old = obj.rotation_euler.order
 
 	def deactivate(self):
-		# step 5. adjust target rotation
-		self.target.rotation_euler = mathutils.Euler((0, 0, 0), "XYZ")
-		# step 4. adjust hiddenness
-		for v in self.hidden:
-			v.hide_render = False
-		# step 3. position selfie arm
-		self.selfie_arm.location = mathutils.Vector((0, 0, 0))
-		# step 2. camera
-		self.context.scene.camera = self.cam_ref
-		self.context.scene.render.resolution_x = self.res_x_old
-		self.context.scene.render.resolution_y = self.res_y_old
-		# step 1. frame
-		self.context.scene.frame_current = self.frame_old
+		"""
+		Clean up the results of any Gizmo activation.
+		"""
+		if self.scene.kc3dsbpy_gizmo_activated:
+			self.scene.render.resolution_x = self.scene.kc3dsbpy_gizmo_resx_old
+			self.scene.render.resolution_y = self.scene.kc3dsbpy_gizmo_resy_old
+			self.scene.kc3dsbpy_gizmo_activated = False
+		for obj in self.scene.objects:
+			if obj.kc3dsbpy_gizmo_activated:
+				obj.hide_render = obj.kc3dsbpy_gizmo_hide_render_old
+				obj.hide_viewport = obj.kc3dsbpy_gizmo_hide_viewport_old
+				obj.kc3dsbpy_gizmo_activated = False
+				obj.rotation_euler = mathutils.Euler((obj.kc3dsbpy_gizmo_ex_old, obj.kc3dsbpy_gizmo_ey_old, obj.kc3dsbpy_gizmo_ez_old), obj.kc3dsbpy_gizmo_et_old)
+
+def register():
+	# Object
+	bpy.types.Object.kc3dsbpy_gizmo_activated = bpy.props.BoolProperty(name = "Gizmo Activated", default = False)
+	bpy.types.Object.kc3dsbpy_gizmo_hide_render_old = bpy.props.BoolProperty(name = "Gizmo Hide Render Backup", default = False)
+	bpy.types.Object.kc3dsbpy_gizmo_hide_viewport_old = bpy.props.BoolProperty(name = "Gizmo Hide Viewport Backup", default = False)
+	bpy.types.Object.kc3dsbpy_gizmo_ex_old = bpy.props.FloatProperty(name = "Gizmo EX Backup", default = 0)
+	bpy.types.Object.kc3dsbpy_gizmo_ey_old = bpy.props.FloatProperty(name = "Gizmo EY Backup", default = 0)
+	bpy.types.Object.kc3dsbpy_gizmo_ez_old = bpy.props.FloatProperty(name = "Gizmo EZ Backup", default = 0)
+	bpy.types.Object.kc3dsbpy_gizmo_et_old = bpy.props.StringProperty(name = "Gizmo ET Backup", default = "XYZ")
+	# Scene
+	bpy.types.Scene.kc3dsbpy_gizmo_activated = bpy.props.BoolProperty(name = "Gizmo Activated", default = False)
+	bpy.types.Scene.kc3dsbpy_gizmo_resx_old = bpy.props.IntProperty(name = "Gizmo ResX Backup", default = 512)
+	bpy.types.Scene.kc3dsbpy_gizmo_resy_old = bpy.props.IntProperty(name = "Gizmo ResY Backup", default = 512)
 

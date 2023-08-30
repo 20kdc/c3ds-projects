@@ -26,9 +26,10 @@ class PartInfo():
 		Called during Setup constructor to attach this PartInfo
 		"""
 		self.part_id = part_id
-		frame_idx = base
+		frame_idx = 0
 		for f in self.frames:
-			f["frame"] = frame_idx
+			f["frame"] = frame_idx + base
+			f["frame_rel"] = frame_idx
 			f["part"] = self.part_id.name
 			if self.blank:
 				f["blank"] = 1
@@ -58,8 +59,10 @@ def gen_c3_frames(details):
 		for yaw in [1, -1, 0, 2]:
 			for pitch in [-1, 0, 1, 2]:
 				res = detail.copy()
-				res["pitch"] = pitch
-				res["yaw"] = yaw
+				# these IDs have a somewhat more mathematical relation to rotations
+				# this should make maths easier
+				res["pitch_id"] = pitch
+				res["yaw_id"] = yaw
 				total.append(res)
 	return total
 
@@ -100,12 +103,14 @@ class Setup():
 	self.name is unique and doesn't contain spaces etc.
 	self.part_ids is a list of PartIDs.
 	self.part_infos is a list of PartInfos.
+	self.part_names_to_infos is a dictionary mapping PartID.name to PartInfos.
 	The constructor sets the frame bases up.
 	"""
 	def __init__(self, name, part_ids):
 		self.name = name
 		self.part_ids = part_ids
 		self.part_infos = []
+		self.part_names_to_infos = {}
 		self.frames = []
 		frame = 0
 		for pi in part_ids:
@@ -113,8 +118,22 @@ class Setup():
 			pif.setup_registers(pi, frame)
 			frame += len(pif.frames)
 			self.part_infos.append(pif)
+			self.part_names_to_infos[pi.name] = pif
 			self.frames += pif.frames
 		SETUP[name] = self
 
 C3 = Setup("c3", [C3_a, C3_0, C3_c, C3_d, C3_e, C3_f, C3_g, C3_h, C3_i, C3_j, C3_k, C3_l, C3_b, C3_m, C3_n])
+
+# ---- OTHER ----
+
+C3_GS_MAP = {
+	"maleNorn": "0",
+	"maleGrendel": "1",
+	"maleEttin": "2",
+	"maleGeat": "3",
+	"femaleNorn": "4",
+	"femaleGrendel": "5",
+	"femaleEttin": "6",
+	"femaleGeat": "7"
+}
 

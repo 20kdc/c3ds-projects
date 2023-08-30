@@ -10,7 +10,7 @@ import argparse
 import PIL.Image
 from libkc3ds.s16 import decode_cs16, S16Image, CDMODE_DEFAULT, encode_c16
 from libkc3ds.s16pil import pil_to_565_blk, s16image_to_pil_rgb
-from libkc3ds.parts import C3, C3_0
+from libkc3ds.parts import C3, C3_0, C3_GS_MAP
 import sys
 import os
 
@@ -22,17 +22,6 @@ for i in range(26):
 	BREEDS.append(chr(97 + i))
 SEXES = ["male", "female"]
 AGES = ["0", "1", "2", "3", "4", "5", "6"]
-
-GS_MAP = {
-	"maleNorn": "0",
-	"maleGrendel": "1",
-	"maleEttin": "2",
-	"maleGeat": "3",
-	"femaleNorn": "4",
-	"femaleGrendel": "5",
-	"femaleEttin": "6",
-	"femaleGeat": "7"
-}
 
 DESCRIPTION = """
 Imports and exports breed BMP trees in the QuickNorn/SpriteBuilder convention.
@@ -58,7 +47,7 @@ sprite_cache_path = None
 sprite_cache_dec = None
 
 def spr_path(base, genus, breed_char, sex, age_char, part_char):
-	return os.path.join(base, part_char + GS_MAP[sex + genus] + age_char + breed_char + ".c16")
+	return os.path.join(base, part_char + C3_GS_MAP[sex + genus] + age_char + breed_char + ".c16")
 
 def load_spr(path):
 	global sprite_cache_path, sprite_cache_dec

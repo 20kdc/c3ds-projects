@@ -1,27 +1,34 @@
-* Database: "Gizmo tree", takes in dictionaries, creates annotated dictionaries
-* GizmoNode: Node that ultimately contributes to Gizmo Frame List
-* Gizmo Frame List: List of dictionaries describing frames. Frames can be "real" or "fake". Fake frames are blank, they just make QuickNorn happy.
-* Gizmo: Stored scene reconfiguration parameters to prepare for the *actual* render
-* Controller: `__init__.py`
+* `database.py`: Defines classes to bind together Setup, ages, and image sizes
+* `chichi.py`: ChiChi Norn metrics
+* `gizmo.py`: VisScript, camera positioning, and scene manipulation runtime
+* `dataext.py`: UI, defines properties used by init, responsible for constructing Gizmo property sets
+* `__init__.py`: and outer render functions
 
-## ALL PROPS
+## PROPS EMITTED BY LIBKC3DS
 
-* C: Read by Controller
-* G: Read by Gizmo
-* U: Userflag, Gizmo is intended to in future forward these to corresponding Empties for user driver control
-* D: Read by Database
+* `"part"`: Part name.
+* `"frame"`: Frame number.
+* `"frame_rel"`: Frame number, relative to part (C16 frame number).
+* `"pitch_id"`: Pitch ID. Has a relationship to actual pitch.
+* `"yaw_id"`: Yaw ID. Has a relationship to actual yaw.
+* `"blank"`: 1 for "Face" part 0 otherwise
+* `"expr"`: normal/happy/sad/angry/scared/sleepy
+* `"egg"`: 0-3
+* `"eyes"`: 0/1
 
-now for the props
+## PROPS READ BY GIZMO
 
-* "caid": D: Object used by Database to allocate the actual CAxxxx.bmp files in the proper order.
-* "real": C: As opposed to fake. Fake frames have this set to false and filepath set but nothing else.
-* "filepath": CD: In anything but a frame, sort of a "current working directory" input. In frames, the final filepath to put this BMP file into.
-* "pitch", "yaw": G: Controls part rotation.
-* "part_name": G: Object ID for part anchor, prefix for part vis.
-* "frame": G: Frame of specific body part (facial expressions etc.) 1-based.
-* "size": G: Size of image.
-* "male": U: 1 if male, 0 otherwise
-* "female": U: 1 if female, 0 otherwise
-* "age": U: age number
-* "scale": UG: age scale control value
+All of these critical props are infused by `dataext.py`, except for `"part"` which comes from libkc3ds.
+
+* `"part"`: Part name / marker.
+* `"pitch"`, `"yaw"`, `"roll"`: Marker rotation in degrees.
+* `"width"`: Camera width.
+* `"height"`: Camera height.
+* `"ortho_scale"`: Camera ortho-scale.
+
+Gizmo will also read whatever the user asks for using VisScript.
+
+## PROPS EMITTED BY DATAEXT
+
+TODO
 

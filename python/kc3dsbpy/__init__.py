@@ -16,107 +16,109 @@ bl_info = {
 }
 
 import bpy
-import imbuf
 import os
 from . import dataext
 from . import gizmo
-from . import database
-from . import chichi
+from . import imaging
 
 BRAND = bl_info["name"]
 
-from bpy_extras.io_utils import ExportHelper
-from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, PointerProperty
-from bpy.types import Operator, Panel
+from bpy.types import Operator
 
-def debug_activate(idx):
-	"""
-	Debug the state of a specific Gizmo activation.
-	"""
-	frames = []
-	chichi.CHICHI.gen_frames(frames, {"filepath": ""})
-	gizmos = []
-	for v in frames:
-		if not (v is None):
-			gizmos.append(gizmo.Gizmo(bpy.context, v))
-	gizmos[idx].activate()
+class RenderKC3DSBPY(Operator):
+	# indirectly bound
+	bl_idname = "kc3dsbpy.render"
+	bl_label = "Render"
+	bl_description = "Renders the breed"
 
-def save_image_with_makedirs(image, filepath):
-	try:
-		os.makedirs(os.path.dirname(filepath))
-	except:
-		pass
-	image.save_render(filepath)
-
-def render_gizmo_frames(context, path_base, frames):
-	# initial setup
-	context.scene.render.image_settings.file_format = "BMP"
-	context.scene.render.image_settings.color_mode = "RGB"
-	if not "PaddingFrame" in bpy.data.images:
-		padding_frame = bpy.data.images.new("PaddingFrame", 1, 1)
-	else:
-		padding_frame = bpy.data.images["PaddingFrame"]
-	# continue...
-	gizmos = []
-	for v in frames:
-		if v["real"]:
-			gizmos.append(gizmo.Gizmo(context, v))
+	def invoke(self, context, event):
+		scene = context.scene
+		# setup rendering stuff
+		scene.render.image_settings.file_format = "PNG"
+		scene.render.image_settings.color_mode = "RGBA"
+		we_own_padding_frame = False
+		if not "PaddingFrame" in bpy.data.images:
+			padding_frame = bpy.data.images.new("PaddingFrame", 1, 1, alpha = True)
+			padding_frame.pixels[0:4] = (0, 0, 0, 0)
+			padding_frame.update()
+			we_own_padding_frame = True
 		else:
-			save_image_with_makedirs(padding_frame, v["filepath"])
-	gizmo_idx = 0
-	for gz in gizmos:
-		print("GIZMOBATCH: " + str(gizmo_idx) + " / " + str(len(gizmos)))
-		gz.activate()
-		try:
-			bpy.ops.render.render(context)
-			save_image_with_makedirs(bpy.data.images["Render Result"], gz.props["filepath"])
-		finally:
-			gz.deactivate()
-		gizmo_idx += 1
-
-class DoTheThingKC3DSBPY(Operator):
-	bl_idname = "kc3dsbpy.dothething"
-	bl_label = BRAND + ": Do The Thing"
-	bl_description = "Renders out a creature to the render output directory. Assumes everything is already perfectly configured."
-
-	def invoke(self, context, event):
-		path_base = os.path.join(bpy.path.abspath(context.scene.render.filepath), "Norn", "z")
-		frames = []
-		chichi.CHICHI.gen_frames(frames, {"filepath": path_base})
-		render_gizmo_frames(context, path_base, frames)
+			padding_frame = bpy.data.images["PaddingFrame"]
+		# actually prepare
+		path_base = bpy.path.abspath(scene.render.filepath)
+		framereqs = dataext.calc_req_group(scene)
+		gizmo_idx = 0
+		# Main rendering phase
+		for frame in framereqs:
+			print("GIZMOBATCH: " + str(gizmo_idx) + " / " + str(len(framereqs)))
+			path_png = os.path.join(path_base, frame.paths.png)
+			if type(frame) == dataext.FrameReq:
+				frame.activate()
+				bpy.ops.render.render()
+				frame.deactivate()
+				imaging.save_image_with_makedirs(bpy.data.images["Render Result"], path_png)
+			else:
+				imaging.save_image_with_makedirs(padding_frame, path_png)
+			gizmo_idx += 1
+		# Export phase
+		if scene.kc3dsbpy_render_bmp:
+			for frame in framereqs:
+				imaging.convert_png_to_bmp(os.path.join(path_base, frame.paths.bmp), os.path.join(path_base, frame.paths.png))
+		if scene.kc3dsbpy_render_c16:
+			c16_names = {}
+			for frame in framereqs:
+				c16_names[frame.paths.c16] = True
+			for c16 in c16_names:
+				inpaths = []
+				for frame in framereqs:
+					if frame.paths.c16 != c16:
+						continue
+					inpaths.append(os.path.join(path_base, frame.paths.png))
+				imaging.convert_pngs_to_c16(inpaths, os.path.join(path_base, frame.paths.c16))
+		# Done!
+		if we_own_padding_frame:
+			bpy.data.images.remove(padding_frame)
 		return {"FINISHED"}
 
-class OneSkeletonKC3DSBPY(Operator):
-	bl_idname = "kc3dsbpy.oneskeleton"
-	bl_label = BRAND + ": One Skeleton Only"
-	bl_description = "Renders out one creature skeleton to the render output directory. Assumes everything is already perfectly configured."
+class ActivateFKC3DSBPY(Operator):
+	# indirectly bound
+	bl_idname = "kc3dsbpy.activate_frame"
+	bl_label = "Setup Frame"
+	bl_description = "Sets up a specific frame of breed rendering. Useful for troubleshooting."
 
 	def invoke(self, context, event):
-		path_base = os.path.join(bpy.path.abspath(context.scene.render.filepath), "Norn", "z")
-		frames = []
-		# TODO: Actually allow configuring any of this
-		chichi.CHICHI.ages[0].gen_frames(frames, {"filepath": path_base, "male": 1, "female": 0})
-		render_gizmo_frames(context, path_base, frames)
+		scene = context.scene
+		frame = dataext.calc_req_frame(scene)
+		if type(frame) == dataext.FrameReq:
+			frame.activate()
+			self.report({"INFO"}, "Viewing: " + str(frame.paths))
+		else:
+			self.report({"WARNING"}, "Missing marker '" + frame.part_name + "' @ " + str(frame.paths))
 		return {"FINISHED"}
 
-def menu_render(self, context):
-	self.layout.operator(DoTheThingKC3DSBPY.bl_idname)
-	self.layout.operator(OneSkeletonKC3DSBPY.bl_idname)
+class DeactivateFKC3DSBPY(Operator):
+	# indirectly bound
+	bl_idname = "kc3dsbpy.deactivate_frame"
+	bl_label = "Revert Frame"
+	bl_description = "Tries to revert changes caused by Setup Frame."
+
+	def invoke(self, context, event):
+		gizmo.GizmoContext(context.scene).deactivate()
+		return {"FINISHED"}
 
 # Register/Unregister
 def register():
+	gizmo.register()
 	dataext.register()
-	# UI
-	bpy.utils.register_class(DoTheThingKC3DSBPY)
-	bpy.utils.register_class(OneSkeletonKC3DSBPY)
-	bpy.types.TOPBAR_MT_render.append(menu_render)
+	bpy.utils.register_class(RenderKC3DSBPY)
+	bpy.utils.register_class(ActivateFKC3DSBPY)
+	bpy.utils.register_class(DeactivateFKC3DSBPY)
 
 def unregister():
 	dataext.unregister()
-	# UI
-	bpy.utils.unregister_class(DoTheThingKC3DSBPY)
-	bpy.utils.unregister_class(OneSkeletonKC3DSBPY)
-	bpy.types.TOPBAR_MT_render.remove(menu_render)
+	bpy.utils.unregister_class(RenderKC3DSBPY)
+	bpy.utils.unregister_class(ActivateFKC3DSBPY)
+	bpy.utils.unregister_class(DeactivateFKC3DSBPY)
 
 if __name__ == "__main__":
 	register()
