@@ -15,9 +15,10 @@ class PartInfo():
 	Further details (self.part_id and self.frame_base) are filled out when the PartInfo is added to the Setup.
 	Frames gain {"part": X} keys during this point as well.
 	"""
-	def __init__(self, char, frames):
+	def __init__(self, char, frames, blank = False):
 		self.char = char
 		self.frames = frames
+		self.blank = blank
 		self.part_id = None
 		self.frame_base = None
 	def setup_registers(self, part_id, base):
@@ -50,8 +51,8 @@ def gen_c3_frames(details):
 		for yaw in range(4):
 			for pitch in range(4):
 				res = detail.copy()
-				res["pitch"] = str(pitch)
-				res["yaw"] = str(yaw)
+				res["pitch"] = pitch
+				res["yaw"] = yaw
 				total.append(res)
 	return total
 
@@ -63,7 +64,9 @@ C3_a = PartID("Head",          c3 = PartInfo("a", gen_c3_frames([
 	{"expr": "scared", "eyes": 1}, {"expr": "scared", "eyes": 0},
 	{"expr": "sleepy", "eyes": 1}, {"expr": "sleepy", "eyes": 0}
 ])))
-C3_b = PartID("Body",          c3 = PartInfo("b", gen_c3_frames([{}])))
+C3_b = PartID("Body",          c3 = PartInfo("b", gen_c3_frames([
+	{"egg": 0}, {"egg": 1}, {"egg": 2}, {"egg": 3}
+])))
 C3_c = PartID("LeftThigh",     c3 = PartInfo("c", gen_c3_frames([{}])))
 C3_d = PartID("LeftShin",      c3 = PartInfo("d", gen_c3_frames([{}])))
 C3_e = PartID("LeftFoot",      c3 = PartInfo("e", gen_c3_frames([{}])))
@@ -78,7 +81,7 @@ C3_m = PartID("TailRoot",      c3 = PartInfo("m", gen_c3_frames([{}])))
 C3_n = PartID("TailTip",       c3 = PartInfo("n", gen_c3_frames([{}])))
 C3_0 = PartID("Mouth",         c3 = PartInfo("0", gen_c3_frames([
 	{"expr": "normal"}, {"expr": "happy"}, {"expr": "sad"}, {"expr": "angry"}, {"expr": "scared"}, {"expr": "sleepy"}
-])))
+]), blank = True))
 
 # ---- Setups ----
 
