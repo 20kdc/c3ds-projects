@@ -18,6 +18,7 @@ bl_info = {
 import bpy
 import imbuf
 import os
+from . import dataext
 from . import gizmo
 from . import database
 from . import chichi
@@ -25,8 +26,8 @@ from . import chichi
 BRAND = bl_info["name"]
 
 from bpy_extras.io_utils import ExportHelper
-from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty
-from bpy.types import Operator
+from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, PointerProperty
+from bpy.types import Operator, Panel
 
 def debug_activate(idx):
 	"""
@@ -102,12 +103,17 @@ def menu_render(self, context):
 	self.layout.operator(DoTheThingKC3DSBPY.bl_idname)
 	self.layout.operator(OneSkeletonKC3DSBPY.bl_idname)
 
+# Register/Unregister
 def register():
+	dataext.register()
+	# UI
 	bpy.utils.register_class(DoTheThingKC3DSBPY)
 	bpy.utils.register_class(OneSkeletonKC3DSBPY)
 	bpy.types.TOPBAR_MT_render.append(menu_render)
 
 def unregister():
+	dataext.unregister()
+	# UI
 	bpy.utils.unregister_class(DoTheThingKC3DSBPY)
 	bpy.utils.unregister_class(OneSkeletonKC3DSBPY)
 	bpy.types.TOPBAR_MT_render.remove(menu_render)

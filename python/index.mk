@@ -1,9 +1,13 @@
 PYTHON_REL += python/README.md
 
 PYTHON_REL += python/libkc3ds/s16.py
+PYTHON_REL += python/libkc3ds/s16pil.py
 PYTHON_REL += python/libkc3ds/cpx.py
+PYTHON_REL += python/libkc3ds/bitdither.py
+PYTHON_REL += python/libkc3ds/parts.py
 
 PYTHON_REL += python/kc3dsbpy/__init__.py
+PYTHON_REL += python/kc3dsbpy/bpydata.py
 PYTHON_REL += python/kc3dsbpy/chichi.py
 PYTHON_REL += python/kc3dsbpy/database.py
 PYTHON_REL += python/kc3dsbpy/c3ds.py

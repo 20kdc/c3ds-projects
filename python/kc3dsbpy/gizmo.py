@@ -10,6 +10,51 @@ import bpy
 import mathutils
 import math
 
+# See VISSCRIPT.md
+
+VISSCRIPT_OPS = ["|", "&", "!", "="]
+
+def visscript_compile_op(l, op, r):
+	if op == "|":
+		ls = visscript_compile(l)
+		rs = visscript_compile(r)
+		return lambda props: ls(props) or rs(props)
+	elif op == "&":
+		ls = visscript_compile(l)
+		rs = visscript_compile(r)
+		return lambda props: ls(props) and rs(props)
+	elif op == "=":
+		prop = l.strip()
+		val = r.strip()
+		return lambda props: (prop in props) and (str(props[prop]) == val)
+	elif op == "!":
+		if l != "":
+			raise Exception("cannot use ! after something")
+		rs = visscript_compile(r)
+		return lambda props: rs(props)
+	else:
+		# shouldn't even be possible
+		raise Exception("Unknown op: " + op)
+
+def visscript_truthy(val):
+	val = str(val)
+	if val == "":
+		return False
+	elif val == "0":
+		return False
+	return True
+
+def visscript_compile(script):
+	script = script.strip()
+	# try to find op
+	for op in VISSCRIPT_OPS:
+		op_idx = script.index(op)
+		if op_idx != -1:
+			return visscript_compile_op(script[:op_idx], op, script[op_idx + len(op):])
+	# flag: prop is present and non-zero
+	prop = script
+	return lambda props: (prop in props) and visscript_truthy(str(props[prop]))
+
 class Gizmo():
 	"""
 	Manipulation of objects made easy.
