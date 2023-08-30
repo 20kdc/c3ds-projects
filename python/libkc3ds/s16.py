@@ -245,6 +245,19 @@ class S16Image():
 		elif amount > 0:
 			self.crop_pad_y(0, self.height, amount, 0, pad_colour)
 
+	def flip_y(self):
+		"""
+		Flips the image on the Y axis.
+		(No X variant was implemented, this just exists because Blender shenanigans)
+		"""
+		rows = []
+		for row_base in range(0, self.width * self.height, self.width):
+			rows.append(self.data[0:row_base + self.width])
+		rows.reverse()
+		self.data = []
+		for row in rows:
+			self.data += row
+
 	def colours_from(self, srci, srcx: int, srcy: int):
 		"""
 		Transfers colours from a given source image.

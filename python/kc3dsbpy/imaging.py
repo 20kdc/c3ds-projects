@@ -7,7 +7,7 @@
 # You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 import bpy
-import imbuf
+from libkc3ds import s16
 import os
 
 def save_image_with_makedirs(image, filepath):
@@ -17,9 +17,33 @@ def save_image_with_makedirs(image, filepath):
 		pass
 	image.save_render(filepath)
 
-def convert_png_to_bmp(srcpath, dstpath):
-	pass
+def save_c16_with_makedirs(frames, filepath):
+	try:
+		os.makedirs(os.path.dirname(filepath))
+	except:
+		pass
+	of = open(filepath, "wb")
+	of.write(s16.encode_c16(frames))
+	of.close()
+	
+def bpy_to_s16image(image, cdmode: str = s16.CDMODE_DEFAULT, admode: str = s16.ADMODE_DEFAULT) -> s16.S16Image:
+	"""
+	Converts a Blender Image to an S16Image.
+	"""
+	w = image.size[0]
+	h = image.size[1]
+	data_r = [0] * (w * h)
+	data_g = [0] * (w * h)
+	data_b = [0] * (w * h)
+	data_a = [0] * (w * h)
+	aind = [data_r, data_g, data_b, data_a]
+	tumbler = 0
+	for v in image.pixels:
+		# ignore value range checks for performance, what could go wrong?
+		aind[tumbler].append(int(v * 255))
+		tumbler = (tumbler + 1) & 3
+	res = s16.rgba_to_565(w, h, data_r, data_g, data_b, data_a, cdmode = cdmode, admode = admode)
+	res.flip_y()
+	return res
 
-def convert_pngs_to_c16(srcpaths, dstpaths):
-	pass
 

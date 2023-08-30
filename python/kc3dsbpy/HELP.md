@@ -2,6 +2,12 @@
 
 ## Scene
 
+This is divided into three rough sections.
+
+### Rendering
+
+BMP: Outputs `CAxxxx.bmp` files, for use with QuickNorn or SpriteBuilder
+
 Genus: Controls which genus is being rendered.
 
 Breed Slot: Controls which breed slot is being rendered.
@@ -10,9 +16,29 @@ Sexes: Controls which sexes are rendered.
 
 Ages: Controls which ages are rendered.
 
-Render Breeds: Renders the breed as selected above.
+Render: Renders the breed as selected above. Note that conversion to C16 is *not* performed by this button, only PNG and BMP.
 
-Setup Frame: Sets up the frame according to settings. Useful for inspecting the render of a specific part.
+Renders are saved to subdirectories of your render output directory.
+
+### PNG to C16
+
+Dither C16 Colour: Dithers colours using 2x2 Bayer. Makes C16 conversion take much longer and probably isn't noticable.
+
+Dither C16 Alpha: Dithers alpha using 2x2 Bayer. You *probably* don't want to do this unless your breed has transparency.
+
+PNG -> C16: Converts PNG files to C16 files. Importantly, this works with the same set of targets as breed rendering.
+
+### Inspection
+
+This section is useful for inspecting the render of a specific part.
+
+Sex: Controls which sex is being rendered.
+
+Age: Controls which age is being rendered.
+
+Frame: Controls which skeleton frame (`x` of `CAxxxx.bmp`) is being rendered.
+
+Setup Frame: Sets up the frame according to settings.
 
 Revert Frame: Undoes visibility changes made during Setup Frame. (warning: If you press this after making changes or if you didn't setup a frame, you'll probably hose whatever you were trying to restore)
 

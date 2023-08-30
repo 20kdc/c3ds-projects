@@ -17,6 +17,7 @@ bl_info = {
 
 import bpy
 import os
+from libkc3ds import s16
 from . import dataext
 from . import gizmo
 from . import imaging
@@ -34,8 +35,6 @@ class RenderKC3DSBPY(Operator):
 	def invoke(self, context, event):
 		scene = context.scene
 		# setup rendering stuff
-		scene.render.image_settings.file_format = "PNG"
-		scene.render.image_settings.color_mode = "RGBA"
 		we_own_padding_frame = False
 		if not "PaddingFrame" in bpy.data.images:
 			padding_frame = bpy.data.images.new("PaddingFrame", 1, 1, alpha = True)
@@ -52,32 +51,68 @@ class RenderKC3DSBPY(Operator):
 		for frame in framereqs:
 			print("GIZMOBATCH: " + str(gizmo_idx) + " / " + str(len(framereqs)))
 			path_png = os.path.join(path_base, frame.paths.png)
+			scene.render.image_settings.file_format = "PNG"
+			scene.render.image_settings.color_mode = "RGBA"
+			out_image = padding_frame
 			if type(frame) == dataext.FrameReq:
 				frame.activate()
 				bpy.ops.render.render()
 				frame.deactivate()
-				imaging.save_image_with_makedirs(bpy.data.images["Render Result"], path_png)
-			else:
-				imaging.save_image_with_makedirs(padding_frame, path_png)
+				out_image = bpy.data.images["Render Result"]
+			imaging.save_image_with_makedirs(out_image, path_png)
+			if scene.kc3dsbpy_render_bmp:
+				path_bmp = os.path.join(path_base, frame.paths.bmp)
+				scene.render.image_settings.file_format = "BMP"
+				scene.render.image_settings.color_mode = "RGB"
+				tmp_img = bpy.data.images.load(path_png)
+				imaging.save_image_with_makedirs(tmp_img, path_bmp)
+				bpy.data.images.remove(tmp_img)
 			gizmo_idx += 1
-		# Export phase
-		if scene.kc3dsbpy_render_bmp:
-			for frame in framereqs:
-				imaging.convert_png_to_bmp(os.path.join(path_base, frame.paths.bmp), os.path.join(path_base, frame.paths.png))
-		if scene.kc3dsbpy_render_c16:
-			c16_names = {}
-			for frame in framereqs:
-				c16_names[frame.paths.c16] = True
-			for c16 in c16_names:
-				inpaths = []
-				for frame in framereqs:
-					if frame.paths.c16 != c16:
-						continue
-					inpaths.append(os.path.join(path_base, frame.paths.png))
-				imaging.convert_pngs_to_c16(inpaths, os.path.join(path_base, frame.paths.c16))
 		# Done!
 		if we_own_padding_frame:
 			bpy.data.images.remove(padding_frame)
+		self.report({"INFO"}, "Completed render, " + str(gizmo_idx) + " frames handled")
+		return {"FINISHED"}
+
+class PNG2C16KC3DSBPY(Operator):
+	# indirectly bound
+	bl_idname = "kc3dsbpy.png2c16"
+	bl_label = "PNG -> C16"
+	bl_description = "Converts PNGs to C16s. Uses the rendering configuration for inputs."
+
+	def invoke(self, context, event):
+		scene = context.scene
+		# actually prepare
+		path_ib = bpy.path.abspath(scene.render.filepath)
+		path_cb = bpy.path.abspath(scene.kc3dsbpy_c16_outpath)
+		framereqs = dataext.calc_req_group(scene)
+		# dithering modes
+		if scene.kc3dsbpy_c16_dither_colour:
+			cdmode = "bayer2"
+		else:
+			cdmode = "floor"
+		if scene.kc3dsbpy_c16_dither_alpha:
+			admode = "bayer2"
+		else:
+			admode = "nearest"
+		# actually do the thing
+		c16_names = {}
+		for frame in framereqs:
+			c16_names[frame.paths.c16] = True
+		for c16 in c16_names:
+			print(c16)
+			c16_frames = []
+			# load and dither
+			for frame in framereqs:
+				if frame.paths.c16 != c16:
+					continue
+				path_png = os.path.join(path_ib, frame.paths.png)
+				tmp_img = bpy.data.images.load(path_png)
+				c16_frames.append(imaging.bpy_to_s16image(tmp_img, cdmode = cdmode, admode = admode))
+				bpy.data.images.remove(tmp_img)
+			# finish
+			imaging.save_c16_with_makedirs(c16_frames, os.path.join(path_cb, c16))
+		self.report({"INFO"}, "Completed PNG->C16, " + str(len(c16_names)) + " files written")
 		return {"FINISHED"}
 
 class ActivateFKC3DSBPY(Operator):
@@ -111,12 +146,14 @@ def register():
 	gizmo.register()
 	dataext.register()
 	bpy.utils.register_class(RenderKC3DSBPY)
+	bpy.utils.register_class(PNG2C16KC3DSBPY)
 	bpy.utils.register_class(ActivateFKC3DSBPY)
 	bpy.utils.register_class(DeactivateFKC3DSBPY)
 
 def unregister():
 	dataext.unregister()
 	bpy.utils.unregister_class(RenderKC3DSBPY)
+	bpy.utils.unregister_class(PNG2C16KC3DSBPY)
 	bpy.utils.unregister_class(ActivateFKC3DSBPY)
 	bpy.utils.unregister_class(DeactivateFKC3DSBPY)
 

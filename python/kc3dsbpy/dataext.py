@@ -169,7 +169,6 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 	bl_context = "scene"
 	bl_label = BRAND
 	def draw(self, context):
-		self.layout.prop(context.scene, "kc3dsbpy_render_c16")
 		self.layout.prop(context.scene, "kc3dsbpy_render_bmp")
 		self.layout.prop(context.scene, "kc3dsbpy_render_genus")
 		self.layout.prop(context.scene, "kc3dsbpy_render_breed")
@@ -177,6 +176,13 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 		self.layout.prop(context.scene, "kc3dsbpy_render_ages")
 		self.layout.prop(context.scene, "kc3dsbpy_render_ppu")
 		self.layout.operator("kc3dsbpy.render")
+		self.layout.separator()
+		row = self.layout.row()
+		row.prop(context.scene, "kc3dsbpy_c16_dither_colour")
+		row.prop(context.scene, "kc3dsbpy_c16_dither_alpha")
+		self.layout.prop(context.scene, "kc3dsbpy_c16_outpath")
+		self.layout.operator("kc3dsbpy.png2c16")
+		self.layout.separator()
 		self.layout.prop(context.scene, "kc3dsbpy_render_sex")
 		self.layout.prop(context.scene, "kc3dsbpy_render_age")
 		self.layout.prop(context.scene, "kc3dsbpy_render_frame")
@@ -209,8 +215,10 @@ def register():
 	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Marker", default = "")
 	bpy.types.Object.kc3dsbpy_visscript = StringProperty(name = "VisScript", default = "")
 	# Data
-	bpy.types.Scene.kc3dsbpy_render_c16 = BoolProperty(name = "C16 (TODO!)", default = False)
-	bpy.types.Scene.kc3dsbpy_render_bmp = BoolProperty(name = "BMP (for QuickNorn) (TODO!)", default = False)
+	bpy.types.Scene.kc3dsbpy_c16_dither_colour = BoolProperty(name = "Dither C16 Colour", default = False)
+	bpy.types.Scene.kc3dsbpy_c16_dither_alpha = BoolProperty(name = "Dither C16 Alpha", default = False)
+	bpy.types.Scene.kc3dsbpy_c16_outpath = StringProperty(name = "C16 Output Directory", default = "//Sprites", subtype = "DIR_PATH")
+	bpy.types.Scene.kc3dsbpy_render_bmp = BoolProperty(name = "BMP (for QuickNorn)", default = False)
 	bpy.types.Scene.kc3dsbpy_render_genus = EnumProperty(items = [("Norn", "Norn", "Norn"), ("Grendel", "Grendel", "Grendel"), ("Ettin", "Ettin", "Ettin"), ("Geat", "Geat", "Geat")], name = "Genus", default = "Norn")
 	bpy.types.Scene.kc3dsbpy_render_sexes = EnumProperty(items = [("male", "Male", "Male"), ("female", "Female", "Female"), ("both", "Both", "Both")], name = "Sexes", default = "both")
 	bpy.types.Scene.kc3dsbpy_render_ppu = FloatProperty(name = "Pixels Per Unit", description = "Pixels Per Unit (for adult creatures)", default = 100)
