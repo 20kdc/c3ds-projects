@@ -12,6 +12,7 @@
 * `"yaw_id"`: Yaw ID. Has a relationship to actual yaw.
 * `"blank"`: 1 for "Face" part 0 otherwise
 * `"expr"`: normal/happy/sad/angry/scared/sleepy
+* `"normal"`/`"happy"`/`"sad"`/`"angry"`/`"scared"`/`"sleepy"`: 0/1 proxies for expr
 * `"egg"`: 0-3
 * `"eyes"`: 0/1
 
@@ -29,5 +30,12 @@ Gizmo will also read whatever the user asks for using VisScript.
 
 ## PROPS EMITTED BY DATAEXT
 
-TODO
+Firstly, everything read by Gizmo. But also:
+
+* `"mode"`
+* `"female"`
+* `"male"`
+* `"age"`
+* `"genus"`
+* `"breed"`
 

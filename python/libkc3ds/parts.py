@@ -69,13 +69,13 @@ def gen_c3_frames(details, base = {}):
 	return total
 
 C3_a = PartID("Head",          c3 = PartInfo("a", gen_c3_frames([
-	{"expr": "normal", "eyes": 1, "expr_normal": 1}, {"expr": "normal", "eyes": 0, "expr_normal": 1},
-	{"expr": "happy",  "eyes": 1, "expr_happy": 1},  {"expr": "happy",  "eyes": 0, "expr_happy": 1},
-	{"expr": "sad",    "eyes": 1, "expr_sad": 1},    {"expr": "sad",    "eyes": 0, "expr_sad": 1},
-	{"expr": "angry",  "eyes": 1, "expr_angry": 1},  {"expr": "angry",  "eyes": 0, "expr_angry": 1},
-	{"expr": "scared", "eyes": 1, "expr_scared": 1}, {"expr": "scared", "eyes": 0, "expr_scared": 1},
-	{"expr": "sleepy", "eyes": 1, "expr_sleepy": 1}, {"expr": "sleepy", "eyes": 0, "expr_sleepy": 1}
-], {"expr_normal": 0, "expr_happy": 0, "expr_sad": 0, "expr_angry": 0, "expr_scared": 0, "expr_sleepy": 0})))
+	{"expr": "normal", "eyes": 1, "normal": 1}, {"expr": "normal", "eyes": 0, "normal": 1},
+	{"expr": "happy",  "eyes": 1, "happy": 1},  {"expr": "happy",  "eyes": 0, "happy": 1},
+	{"expr": "sad",    "eyes": 1, "sad": 1},    {"expr": "sad",    "eyes": 0, "sad": 1},
+	{"expr": "angry",  "eyes": 1, "angry": 1},  {"expr": "angry",  "eyes": 0, "angry": 1},
+	{"expr": "scared", "eyes": 1, "scared": 1}, {"expr": "scared", "eyes": 0, "scared": 1},
+	{"expr": "sleepy", "eyes": 1, "sleepy": 1}, {"expr": "sleepy", "eyes": 0, "sleepy": 1}
+], {"normal": 0, "happy": 0, "sad": 0, "angry": 0, "scared": 0, "sleepy": 0})))
 C3_b = PartID("Body",          c3 = PartInfo("b", gen_c3_frames([
 	{"egg": 0}, {"egg": 1}, {"egg": 2}, {"egg": 3}
 ])))
@@ -92,13 +92,13 @@ C3_l = PartID("RightLowerArm", c3 = PartInfo("l", gen_c3_frames([{}])))
 C3_m = PartID("TailRoot",      c3 = PartInfo("m", gen_c3_frames([{}])))
 C3_n = PartID("TailTip",       c3 = PartInfo("n", gen_c3_frames([{}])))
 C3_0 = PartID("Mouth",         c3 = PartInfo("0", gen_c3_frames([
-	{"expr": "normal", "expr_normal": 1},
-	{"expr": "happy",  "expr_happy": 1},
-	{"expr": "sad",    "expr_sad": 1},
-	{"expr": "angry",  "expr_angry": 1},
-	{"expr": "scared", "expr_scared": 1},
-	{"expr": "sleepy", "expr_sleepy": 1}
-], {"expr_normal": 0, "expr_happy": 0, "expr_sad": 0, "expr_angry": 0, "expr_scared": 0, "expr_sleepy": 0}), blank = True))
+	{"expr": "normal", "normal": 1},
+	{"expr": "happy",  "happy": 1},
+	{"expr": "sad",    "sad": 1},
+	{"expr": "angry",  "angry": 1},
+	{"expr": "scared", "scared": 1},
+	{"expr": "sleepy", "sleepy": 1}
+], {"normal": 0, "happy": 0, "sad": 0, "angry": 0, "scared": 0, "sleepy": 0}), blank = True))
 
 # ---- Setups ----
 
