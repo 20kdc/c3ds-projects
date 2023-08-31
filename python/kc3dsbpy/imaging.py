@@ -32,10 +32,10 @@ def bpy_to_s16image(image, cdmode: str = s16.CDMODE_DEFAULT, admode: str = s16.A
 	"""
 	w = image.size[0]
 	h = image.size[1]
-	data_r = [0] * (w * h)
-	data_g = [0] * (w * h)
-	data_b = [0] * (w * h)
-	data_a = [0] * (w * h)
+	data_r = []
+	data_g = []
+	data_b = []
+	data_a = []
 	aind = [data_r, data_g, data_b, data_a]
 	tumbler = 0
 	for v in image.pixels:

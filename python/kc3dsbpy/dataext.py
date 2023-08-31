@@ -186,6 +186,14 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 		self.layout.prop(context.scene, "kc3dsbpy_render_sex")
 		self.layout.prop(context.scene, "kc3dsbpy_render_age")
 		self.layout.prop(context.scene, "kc3dsbpy_render_frame")
+		frame_idx = context.scene.kc3dsbpy_render_frame
+		frame_set = chichi.CHICHI.setup.frames
+		if frame_idx < 0 or frame_idx >= len(frame_set):
+			frame_status = str(frame_idx) + "/" + str(len(frame_set)) + " out of range"
+		else:
+			frame_props = chichi.CHICHI.setup.frames[frame_idx]
+			frame_status = str(frame_idx) + "/" + str(len(frame_set)) + "=" + frame_props["part"] + "." + str(frame_props["frame_rel"])
+		self.layout.label(text = frame_status)
 		row = self.layout.row()
 		row.operator("kc3dsbpy.activate_frame")
 		row.operator("kc3dsbpy.deactivate_frame")
