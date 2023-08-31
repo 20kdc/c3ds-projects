@@ -120,12 +120,15 @@ def sexes_str_to_array(sexes):
 		return ["male", "female"]
 	return [sexes]
 
+def scene_to_cset(scene):
+	return chichi.CHICHI
+
 def calc_req_group(scene):
 	"""
 	Calculates an all-frame operation requested by the given Scene.
 	"""
 	gizmo_context = gizmo.GizmoContext(scene)
-	cset = chichi.CHICHI
+	cset = scene_to_cset(scene)
 	group = []
 	for sex in sexes_str_to_array(scene.kc3dsbpy_render_sexes):
 		for age_char in scene.kc3dsbpy_render_ages:
@@ -139,7 +142,7 @@ def calc_req_frame(scene):
 	Calculates a single-frame operation requested by the given Scene.
 	"""
 	gizmo_context = gizmo.GizmoContext(scene)
-	cset = chichi.CHICHI
+	cset = scene_to_cset(scene)
 	frc = SkeletonReqContext(gizmo_context, cset, scene.kc3dsbpy_render_sex, scene.kc3dsbpy_render_age)
 	return frc.frame_req(cset.setup.frames[scene.kc3dsbpy_render_frame])
 
@@ -187,12 +190,15 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 		self.layout.prop(context.scene, "kc3dsbpy_render_age")
 		self.layout.prop(context.scene, "kc3dsbpy_render_frame")
 		frame_idx = context.scene.kc3dsbpy_render_frame
-		frame_set = chichi.CHICHI.setup.frames
+		cset = scene_to_cset(context.scene)
+		frame_set = cset.setup.frames
 		if frame_idx < 0 or frame_idx >= len(frame_set):
 			frame_status = str(frame_idx) + "/" + str(len(frame_set)) + " out of range"
 		else:
-			frame_props = chichi.CHICHI.setup.frames[frame_idx]
-			frame_status = str(frame_idx) + "/" + str(len(frame_set)) + "=" + frame_props["part"] + "." + str(frame_props["frame_rel"])
+			frame_props = frame_set[frame_idx]
+			part_name = frame_props["part"]
+			part_char = cset.setup.part_names_to_infos[part_name].char
+			frame_status = str(frame_idx) + "/" + str(len(frame_set)) + "=" + part_name + "(" + part_char + ")." + str(frame_props["frame_rel"])
 		self.layout.label(text = frame_status)
 		row = self.layout.row()
 		row.operator("kc3dsbpy.activate_frame")
