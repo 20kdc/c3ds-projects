@@ -32,10 +32,13 @@ Gizmo will also read whatever the user asks for using VisScript.
 
 Firstly, everything read by Gizmo. But also:
 
-* `"mode"`
-* `"female"`
-* `"male"`
-* `"age"`
-* `"genus"`
-* `"breed"`
+* `"mode"`: As supplied by user
+* `"female"`: 1 if female else 0
+* `"male"`: 1 if male else 0
+* `"age"`: Age number
+* `"genus"`: Genus, as string
+* `"gs_num"`: Genus/Sex number (0-7, as in sprite files)
+* `"breed"`: Breed, as string
+* `"breed_num"`: Breed, as 0-25 (for the letters A-Z, as in PoseEditor)
+* `"part_ascii"`: Part ID, as the ASCII number, i.e. head (`a`) would be 97
 

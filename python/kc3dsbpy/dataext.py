@@ -35,9 +35,12 @@ class SkeletonReqContext():
 		self.path_gb = os.path.join(scene.kc3dsbpy_render_genus, scene.kc3dsbpy_render_breed, sex, age_char)
 		self.age_data = cset.ages[age_char]
 		self.pixels_per_unit = scene.kc3dsbpy_render_ppu
+		gs_char = libkc3ds.parts.C3_GS_MAP[sex + scene.kc3dsbpy_render_genus]
 		self.props = {
 			"genus": scene.kc3dsbpy_render_genus,
 			"breed": scene.kc3dsbpy_render_breed,
+			"breed_num": ord(scene.kc3dsbpy_render_breed) - 97,
+			"gs_num": int(gs_char),
 			"male": 0,
 			"female": 0,
 			"age": int(age_char),
@@ -45,7 +48,7 @@ class SkeletonReqContext():
 		}
 		self.props[sex] = 1
 		# Last 3 characters as per QuickNorn.
-		self.xyz = libkc3ds.parts.C3_GS_MAP[sex + scene.kc3dsbpy_render_genus] + age_char + scene.kc3dsbpy_render_breed
+		self.xyz = gs_char + age_char + scene.kc3dsbpy_render_breed
 
 	def frame_req(self, frame_props):
 		"""
@@ -67,6 +70,8 @@ class SkeletonReqContext():
 		# check part name exists as a marker, if not, we'll have to skip
 		if not (part_name in self.gizmo_context.markers):
 			return BlankReq(part_name, paths)
+		# infuse part ASCII
+		new_props["part_ascii"] = ord(part_char)
 		# infuse age data
 		aged_part = self.age_data.parts[new_props["part"]]
 		new_props["width"] = aged_part.size
@@ -176,6 +181,23 @@ class CouplePartToVisKC3DSBPY(Operator):
 		context.object.kc3dsbpy_visscript = "part=" + context.object.kc3dsbpy_part_marker
 		return {"FINISHED"}
 
+def calc_frame_status(scene):
+	try:
+		frame_idx = context.scene.kc3dsbpy_render_frame
+		cset = scene_to_cset(context.scene)
+		frame_set = cset.setup.frames
+		frame_status = str(frame_idx) + "/" + str(len(frame_set))
+		if frame_idx < 0 or frame_idx >= len(frame_set):
+			frame_status += " out of range"
+		else:
+			frame_props = frame_set[frame_idx]
+			part_name = frame_props["part"]
+			part_char = cset.setup.part_names_to_infos[part_name].char
+			frame_status += "=" + part_name + "(" + part_char + ")." + str(frame_props["frame_rel"])
+		return frame_status
+	except:
+		return "(unknown)"
+
 class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 	bl_space_type = "PROPERTIES"
 	bl_region_type = "WINDOW"
@@ -206,17 +228,7 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 		row.prop(context.scene, "kc3dsbpy_render_age")
 		row = self.layout.row()
 		row.prop(context.scene, "kc3dsbpy_render_frame")
-		frame_idx = context.scene.kc3dsbpy_render_frame
-		cset = scene_to_cset(context.scene)
-		frame_set = cset.setup.frames
-		if frame_idx < 0 or frame_idx >= len(frame_set):
-			frame_status = str(frame_idx) + "/" + str(len(frame_set)) + " out of range"
-		else:
-			frame_props = frame_set[frame_idx]
-			part_name = frame_props["part"]
-			part_char = cset.setup.part_names_to_infos[part_name].char
-			frame_status = str(frame_idx) + "/" + str(len(frame_set)) + "=" + part_name + "(" + part_char + ")." + str(frame_props["frame_rel"])
-		row.label(text = frame_status)
+		row.label(text = calc_frame_status(context.scene))
 		row = self.layout.row()
 		row.operator("kc3dsbpy.activate_frame")
 		row.operator("kc3dsbpy.deactivate_frame")
@@ -260,7 +272,7 @@ def register():
 	bpy.types.Scene.kc3dsbpy_render_breed = EnumProperty(items = breed_slot_items, name = "Slot", default = "z")
 	bpy.types.Scene.kc3dsbpy_render_ages = StringProperty(name = "Ages", default = "0245")
 	bpy.types.Scene.kc3dsbpy_render_age = StringProperty(name = "Age", default = "4")
-	bpy.types.Scene.kc3dsbpy_render_mode = StringProperty(name = "Mode", default = "")
+	bpy.types.Scene.kc3dsbpy_render_mode = IntProperty(name = "Mode", default = 0)
 	# uhhhhh would it be bad if I were to just use a random coin flip here
 	# idk male is listed first so I guess it balances out
 	bpy.types.Scene.kc3dsbpy_render_sex = EnumProperty(items = [("male", "Male", "Male"), ("female", "Female", "Female")], name = "Sex", default = "female")

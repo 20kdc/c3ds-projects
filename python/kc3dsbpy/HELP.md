@@ -24,7 +24,7 @@ Render: Renders the breed as selected above. Note that conversion to C16 is *not
 
 Renders are saved to subdirectories of your render output directory.
 
-Mode: Arbitrary text. You can use this field to quickly control VisScripts/etc.
+Mode: Arbitrary number, which is written to a Custom Property. As such, you can use this field to quickly control VisScripts/etc. This has to be a number so that it can be read by Drivers.
 
 ### PNG to C16
 
@@ -73,6 +73,8 @@ If empty, the object is always rendered.
 * `A`: A is present and not empty or "0"
 
 VisScripts source their values from the Custom Properties beginning with `kc3dsbpy.`; this means you can add your own custom properties with this prefix to exposre your own switches to VisScripts.
+
+See WORKINGS.md for a hopefully full reference on the custom properties set by the addon.
 
 ### Into VisScript
 
