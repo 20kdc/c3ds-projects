@@ -14,24 +14,29 @@ import math
 
 VISSCRIPT_OPS = ["|", "&", "!", "="]
 
+def visscript_prop_exists(ctx, prop):
+	return ("kc3dsbpy." + prop) in ctx
+def visscript_prop_get(ctx, prop):
+	return str(ctx["kc3dsbpy." + prop])
+
 def visscript_compile_op(l, op, r):
 	if op == "|":
 		ls = visscript_compile(l)
 		rs = visscript_compile(r)
-		return lambda props: ls(props) or rs(props)
+		return lambda ctx: ls(ctx) or rs(ctx)
 	elif op == "&":
 		ls = visscript_compile(l)
 		rs = visscript_compile(r)
-		return lambda props: ls(props) and rs(props)
+		return lambda ctx: ls(ctx) and rs(ctx)
 	elif op == "=":
 		prop = l.strip()
 		val = r.strip()
-		return lambda props: (prop in props) and (str(props[prop]) == val)
+		return lambda ctx: visscript_prop_exists(ctx, prop) and (visscript_prop_get(ctx, prop) == val)
 	elif op == "!":
 		if l != "":
 			raise Exception("cannot use ! after something")
 		rs = visscript_compile(r)
-		return lambda props: rs(props)
+		return lambda ctx: not rs(ctx)
 	else:
 		# shouldn't even be possible
 		raise Exception("Unknown op: " + op)
@@ -49,7 +54,7 @@ def visscript_compile(script):
 	# empty?
 	if script == "":
 		# 'Set' component (lighting cams etc.) : always valid
-		return lambda props: True
+		return lambda ctx: True
 	# try to find op
 	for op in VISSCRIPT_OPS:
 		op_idx = script.find(op)
@@ -57,15 +62,15 @@ def visscript_compile(script):
 			return visscript_compile_op(script[:op_idx], op, script[op_idx + len(op):])
 	# flag: prop is present and non-zero
 	prop = script
-	return lambda props: (prop in props) and visscript_truthy(str(props[prop]))
+	return lambda ctx: visscript_prop_exists(ctx, prop) and visscript_truthy(visscript_prop_get(ctx, prop))
 
-def visscript_compile_and_bind(obj):
+def visscript_compile_and_bind(scene, obj):
 	"""
 	Creates a lambda which updates the object rendering status from Gizmo properties.
 	"""
 	compiled = visscript_compile(obj.kc3dsbpy_visscript)
-	def bound(props):
-		obj.hide_render = not compiled(props)
+	def bound():
+		obj.hide_render = not compiled(scene)
 		obj.hide_viewport = obj.hide_render
 	return bound
 
@@ -86,7 +91,7 @@ class GizmoContext():
 				if mk in self.markers:
 					raise Exception("Duplicate marker: " + self.markers[mk].name + " to " + obj.name)
 				self.markers[mk] = obj
-			self.vis.append(visscript_compile_and_bind(obj))
+			self.vis.append(visscript_compile_and_bind(scene, obj))
 
 	def verify(self, props):
 		"""
@@ -122,7 +127,7 @@ class GizmoContext():
 		self.camera.location = marker.location
 		# Setup visibility.
 		for vis in self.vis:
-			vis(props)
+			vis()
 
 	def backup(self):
 		"""

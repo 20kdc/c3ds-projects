@@ -16,7 +16,7 @@ from bpy.types import Operator, Panel
 import libkc3ds.parts
 
 from . import gizmo
-from . import chichi
+from . import database
 
 # need to import this here, bleh
 # still better than polluting the mess that is __init__
@@ -40,7 +40,8 @@ class SkeletonReqContext():
 			"breed": scene.kc3dsbpy_render_breed,
 			"male": 0,
 			"female": 0,
-			"age": self.age_data.val
+			"age": int(age_char),
+			"mode": scene.kc3dsbpy_render_mode
 		}
 		self.props[sex] = 1
 		# Last 3 characters as per QuickNorn.
@@ -120,8 +121,17 @@ def sexes_str_to_array(sexes):
 		return ["male", "female"]
 	return [sexes]
 
+CSETS_ITEM_LIST = []
+
+CSETS = {}
+for cset in database.CSETS_ALL:
+	CSETS_ITEM_LIST.append((cset.name, cset.desc, "Template: " + cset.desc))
+	CSETS[cset.name] = cset
+
 def scene_to_cset(scene):
-	return chichi.CHICHI
+	if not scene.kc3dsbpy_cset in CSETS:
+		return database.CHICHI
+	return CSETS[scene.kc3dsbpy_cset]
 
 def calc_req_group(scene):
 	"""
@@ -172,13 +182,18 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 	bl_context = "scene"
 	bl_label = BRAND
 	def draw(self, context):
-		self.layout.prop(context.scene, "kc3dsbpy_render_bmp")
-		self.layout.prop(context.scene, "kc3dsbpy_render_genus")
-		self.layout.prop(context.scene, "kc3dsbpy_render_breed")
-		self.layout.prop(context.scene, "kc3dsbpy_render_sexes")
-		self.layout.prop(context.scene, "kc3dsbpy_render_ages")
+		self.layout.prop(context.scene, "kc3dsbpy_cset")
+		row = self.layout.row()
+		row.prop(context.scene, "kc3dsbpy_render_genus")
+		row.prop(context.scene, "kc3dsbpy_render_breed")
+		row = self.layout.row()
+		row.prop(context.scene, "kc3dsbpy_render_sexes")
+		row.prop(context.scene, "kc3dsbpy_render_ages")
 		self.layout.prop(context.scene, "kc3dsbpy_render_ppu")
-		self.layout.operator("kc3dsbpy.render")
+		self.layout.prop(context.scene, "kc3dsbpy_render_bmp")
+		row = self.layout.row()
+		row.operator("kc3dsbpy.render")
+		row.prop(context.scene, "kc3dsbpy_render_mode")
 		self.layout.separator()
 		row = self.layout.row()
 		row.prop(context.scene, "kc3dsbpy_c16_dither_colour")
@@ -186,9 +201,11 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 		self.layout.prop(context.scene, "kc3dsbpy_c16_outpath")
 		self.layout.operator("kc3dsbpy.png2c16")
 		self.layout.separator()
-		self.layout.prop(context.scene, "kc3dsbpy_render_sex")
-		self.layout.prop(context.scene, "kc3dsbpy_render_age")
-		self.layout.prop(context.scene, "kc3dsbpy_render_frame")
+		row = self.layout.row()
+		row.prop(context.scene, "kc3dsbpy_render_sex")
+		row.prop(context.scene, "kc3dsbpy_render_age")
+		row = self.layout.row()
+		row.prop(context.scene, "kc3dsbpy_render_frame")
 		frame_idx = context.scene.kc3dsbpy_render_frame
 		cset = scene_to_cset(context.scene)
 		frame_set = cset.setup.frames
@@ -199,7 +216,7 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 			part_name = frame_props["part"]
 			part_char = cset.setup.part_names_to_infos[part_name].char
 			frame_status = str(frame_idx) + "/" + str(len(frame_set)) + "=" + part_name + "(" + part_char + ")." + str(frame_props["frame_rel"])
-		self.layout.label(text = frame_status)
+		row.label(text = frame_status)
 		row = self.layout.row()
 		row.operator("kc3dsbpy.activate_frame")
 		row.operator("kc3dsbpy.deactivate_frame")
@@ -240,13 +257,15 @@ def register():
 	for i in range(26):
 		char = chr(65 + i)
 		breed_slot_items.append((char.lower(), char, char))
-	bpy.types.Scene.kc3dsbpy_render_breed = EnumProperty(items = breed_slot_items, name = "Breed Slot", default = "z")
+	bpy.types.Scene.kc3dsbpy_render_breed = EnumProperty(items = breed_slot_items, name = "Slot", default = "z")
 	bpy.types.Scene.kc3dsbpy_render_ages = StringProperty(name = "Ages", default = "0245")
 	bpy.types.Scene.kc3dsbpy_render_age = StringProperty(name = "Age", default = "4")
+	bpy.types.Scene.kc3dsbpy_render_mode = StringProperty(name = "Mode", default = "")
 	# uhhhhh would it be bad if I were to just use a random coin flip here
 	# idk male is listed first so I guess it balances out
 	bpy.types.Scene.kc3dsbpy_render_sex = EnumProperty(items = [("male", "Male", "Male"), ("female", "Female", "Female")], name = "Sex", default = "female")
 	bpy.types.Scene.kc3dsbpy_render_frame = IntProperty(name = "Frame", default = 0)
+	bpy.types.Scene.kc3dsbpy_cset = EnumProperty(items = CSETS_ITEM_LIST, name = "Template", default = "CHICHI")
 	# Data UI
 	bpy.utils.register_class(CouplePartToVisKC3DSBPY)
 	bpy.utils.register_class(ObjectHelpKC3DSBPY)

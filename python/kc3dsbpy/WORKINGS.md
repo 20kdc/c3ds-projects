@@ -1,5 +1,4 @@
-* `database.py`: Defines classes to bind together Setup, ages, and image sizes
-* `chichi.py`: ChiChi Norn metrics
+* `database.py`: Defines classes to bind together Setup, ages, and image sizes, along with ChiChi Norn metrics
 * `gizmo.py`: VisScript, camera positioning, and scene manipulation runtime
 * `dataext.py`: UI, defines properties used by init, responsible for constructing Gizmo property sets
 * `__init__.py`: and outer render functions

@@ -7,10 +7,9 @@ PYTHON_REL += python/libkc3ds/bitdither.py
 PYTHON_REL += python/libkc3ds/parts.py
 
 PYTHON_REL += python/kc3dsbpy/__init__.py
-PYTHON_REL += python/kc3dsbpy/bpydata.py
-PYTHON_REL += python/kc3dsbpy/chichi.py
+PYTHON_REL += python/kc3dsbpy/imaging.py
 PYTHON_REL += python/kc3dsbpy/database.py
-PYTHON_REL += python/kc3dsbpy/c3ds.py
+PYTHON_REL += python/kc3dsbpy/dataext.py
 PYTHON_REL += python/kc3dsbpy/gizmo.py
 
 PYTHON_REL += python/caosterm.py python/cpxinfo.py python/inject.py

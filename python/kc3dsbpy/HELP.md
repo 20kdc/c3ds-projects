@@ -6,19 +6,25 @@ This is divided into three rough sections.
 
 ### Rendering
 
+Template: The template controls image sizes and age scaling. This is here so if someone needs to crowbar in a new template, they can.
+
 BMP: Outputs `CAxxxx.bmp` files, for use with QuickNorn or SpriteBuilder
 
 Genus: Controls which genus is being rendered.
 
-Breed Slot: Controls which breed slot is being rendered.
+Slot: Controls which breed slot is being rendered.
 
 Sexes: Controls which sexes are rendered.
 
-Ages: Controls which ages are rendered.
+Ages: Controls which ages are rendered. Each digit in this text is a single age. Beware: Templates don't universally support all ages.
+
+Pixels Per Unit: This is essentially the mapping from Blender Units to pixels. You can test this using Setup Frame.
 
 Render: Renders the breed as selected above. Note that conversion to C16 is *not* performed by this button, only PNG and BMP.
 
 Renders are saved to subdirectories of your render output directory.
+
+Mode: Arbitrary text. You can use this field to quickly control VisScripts/etc.
 
 ### PNG to C16
 
@@ -65,4 +71,10 @@ If empty, the object is always rendered.
 * `!A`: not A
 * `A=B`: A is equal to literal "B"
 * `A`: A is present and not empty or "0"
+
+VisScripts source their values from the Custom Properties beginning with `kc3dsbpy.`; this means you can add your own custom properties with this prefix to exposre your own switches to VisScripts.
+
+### Into VisScript
+
+The "Into VisScript" button just templates a VisScript of the form `part=ThePartSetAsMarker`.
 
