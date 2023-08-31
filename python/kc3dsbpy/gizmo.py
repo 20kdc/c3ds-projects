@@ -123,8 +123,8 @@ class GizmoContext():
 		self.camera.data.ortho_scale = props["ortho_scale"]
 		# Camera is kept away from model using parenting
 		# So Gizmo is deliberately kept not aware of it
-		# Would be nice if we had global marker location, but what can 'ya do
-		self.camera.location = marker.location
+		# Meanwhile Marker DOES use world matrix
+		self.camera.location = marker.matrix_world.translation
 		# Setup visibility.
 		for vis in self.vis:
 			vis()

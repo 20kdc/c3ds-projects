@@ -60,7 +60,15 @@ There can only be one marker per part, and parts with no marker aren't rendered 
 
 Marker doesn't control visibility, VisScript does.
 
-Pitch Adjust adjusts pitch (in degrees). This can be used to nudge elements into alignment if they otherwise aren't.
+If the object is a marker, some options are added:
+
+Inherit From: Sources the following two options from another object. (Inherit From is only respected for the "outermost" marker. A marker cannot inherit a marker inheriting a marker.)
+
+Pitch Mul: Multiplies the pitch, for more... drastic pitch handling differences.
+
+Add: Adjusts pitch (in degrees). This can be used to nudge elements into alignment if they otherwise aren't.
+
+Pixels Per Unit Multiplier: Multiplier onto Pixels Per Unit in Scene while rendering this marker. If you're building a consistent model this should always be 1, but not all models are consistent.
 
 ### VisScript
 

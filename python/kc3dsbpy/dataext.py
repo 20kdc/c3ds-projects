@@ -10,7 +10,7 @@ import os
 import webbrowser
 
 import bpy
-from bpy.props import StringProperty, EnumProperty, IntProperty, FloatProperty, BoolProperty
+from bpy.props import StringProperty, EnumProperty, IntProperty, FloatProperty, BoolProperty, PointerProperty
 from bpy.types import Operator, Panel
 
 import libkc3ds.parts
@@ -70,16 +70,23 @@ class SkeletonReqContext():
 		# check part name exists as a marker, if not, we'll have to skip
 		if not (part_name in self.gizmo_context.markers):
 			return BlankReq(part_name, paths)
+		# determine inheritance
 		marker = self.gizmo_context.markers[part_name]
+		marker_o = marker
+		if not (marker.kc3dsbpy_marker_inherit is None):
+			marker = marker.kc3dsbpy_marker_inherit
+			# stop infinite loops the easy way
+			if not (marker.kc3dsbpy_marker_inherit is None):
+				raise Exception("Marker " + marker_o.name + " inherits from " + marker.name + " which also inherits, this is not allowed")
 		# infuse part ASCII
 		new_props["part_ascii"] = ord(part_char)
 		# infuse age data
 		aged_part = self.age_data.parts[new_props["part"]]
 		new_props["width"] = aged_part.size
 		new_props["height"] = aged_part.size
-		new_props["ortho_scale"] = aged_part.size / (self.age_data.scale * self.pixels_per_unit)
+		new_props["ortho_scale"] = aged_part.size / (self.age_data.scale * self.pixels_per_unit * marker.kc3dsbpy_ppu_factor)
 		# infuse rotation data
-		new_props["pitch"] = (new_props["pitch_id"] * -22.5) + marker.kc3dsbpy_pitch_trim
+		new_props["pitch"] = (new_props["pitch_id"] * -22.5 * marker.kc3dsbpy_pitch_mul) + marker.kc3dsbpy_pitch_trim
 		new_props["yaw"] = new_props["yaw_id"] * 90
 		new_props["roll"] = 0
 		return FrameReq(self.gizmo_context, new_props, part_name, paths)
@@ -244,7 +251,13 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 		row = self.layout.row()
 		row.prop(context.object, "kc3dsbpy_part_marker")
 		row.operator(CouplePartToVisKC3DSBPY.bl_idname)
-		self.layout.prop(context.object, "kc3dsbpy_pitch_trim")
+		if context.object.kc3dsbpy_part_marker != "0":
+			self.layout.prop(context.object, "kc3dsbpy_marker_inherit")
+			if context.object.kc3dsbpy_marker_inherit is None:
+				row = self.layout.row()
+				row.prop(context.object, "kc3dsbpy_pitch_mul")
+				row.prop(context.object, "kc3dsbpy_pitch_trim")
+				self.layout.prop(context.object, "kc3dsbpy_ppu_factor")
 		self.layout.prop(context.object, "kc3dsbpy_visscript")
 		self.layout.operator(ObjectHelpKC3DSBPY.bl_idname)
 
@@ -258,7 +271,10 @@ def register():
 		all_part_ids.append((name, name, "Used as camera location for part: " + name))
 	# Kind of shared with Gizmo but will just have to live with it due to the items
 	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Marker", default = "0")
-	bpy.types.Object.kc3dsbpy_pitch_trim = FloatProperty(name = "Pitch Adjust", default = 0)
+	bpy.types.Object.kc3dsbpy_marker_inherit = PointerProperty(type = bpy.types.Object, name = "Inherit From", description = "Will use properties of this marker instead")
+	bpy.types.Object.kc3dsbpy_pitch_mul = FloatProperty(name = "Pitch Mul", default = 1)
+	bpy.types.Object.kc3dsbpy_pitch_trim = FloatProperty(name = "Add", default = 0)
+	bpy.types.Object.kc3dsbpy_ppu_factor = FloatProperty(name = "Pixels Per Unit Multiplier", description = "Multiplies the Pixels Per Unit while rendering this marker", default = 1)
 	bpy.types.Object.kc3dsbpy_visscript = StringProperty(name = "VisScript", default = "")
 	# Data
 	bpy.types.Scene.kc3dsbpy_c16_dither_colour = BoolProperty(name = "Dither C16 Colour", default = False)
