@@ -53,12 +53,14 @@ class PartID():
 
 # ---- ALL PARTS ----
 
-def gen_c3_frames(details):
+def gen_c3_frames(details, base = {}):
 	total = []
 	for detail in details:
 		for yaw in [1, -1, 0, 2]:
 			for pitch in [-1, 0, 1, 2]:
-				res = detail.copy()
+				res = base.copy()
+				for k in detail:
+					res[k] = detail[k]
 				# these IDs have a somewhat more mathematical relation to rotations
 				# this should make maths easier
 				res["pitch_id"] = pitch
@@ -67,13 +69,13 @@ def gen_c3_frames(details):
 	return total
 
 C3_a = PartID("Head",          c3 = PartInfo("a", gen_c3_frames([
-	{"expr": "normal", "eyes": 1}, {"expr": "normal", "eyes": 0},
-	{"expr": "happy",  "eyes": 1}, {"expr": "happy",  "eyes": 0},
-	{"expr": "sad",    "eyes": 1}, {"expr": "sad",    "eyes": 0},
-	{"expr": "angry",  "eyes": 1}, {"expr": "angry",  "eyes": 0},
-	{"expr": "scared", "eyes": 1}, {"expr": "scared", "eyes": 0},
-	{"expr": "sleepy", "eyes": 1}, {"expr": "sleepy", "eyes": 0}
-])))
+	{"expr": "normal", "eyes": 1, "expr_normal": 1}, {"expr": "normal", "eyes": 0, "expr_normal": 1},
+	{"expr": "happy",  "eyes": 1, "expr_happy": 1},  {"expr": "happy",  "eyes": 0, "expr_happy": 1},
+	{"expr": "sad",    "eyes": 1, "expr_sad": 1},    {"expr": "sad",    "eyes": 0, "expr_sad": 1},
+	{"expr": "angry",  "eyes": 1, "expr_angry": 1},  {"expr": "angry",  "eyes": 0, "expr_angry": 1},
+	{"expr": "scared", "eyes": 1, "expr_scared": 1}, {"expr": "scared", "eyes": 0, "expr_scared": 1},
+	{"expr": "sleepy", "eyes": 1, "expr_sleepy": 1}, {"expr": "sleepy", "eyes": 0, "expr_sleepy": 1}
+], {"expr_normal": 0, "expr_happy": 0, "expr_sad": 0, "expr_angry": 0, "expr_scared": 0, "expr_sleepy": 0})))
 C3_b = PartID("Body",          c3 = PartInfo("b", gen_c3_frames([
 	{"egg": 0}, {"egg": 1}, {"egg": 2}, {"egg": 3}
 ])))
@@ -90,8 +92,13 @@ C3_l = PartID("RightLowerArm", c3 = PartInfo("l", gen_c3_frames([{}])))
 C3_m = PartID("TailRoot",      c3 = PartInfo("m", gen_c3_frames([{}])))
 C3_n = PartID("TailTip",       c3 = PartInfo("n", gen_c3_frames([{}])))
 C3_0 = PartID("Mouth",         c3 = PartInfo("0", gen_c3_frames([
-	{"expr": "normal"}, {"expr": "happy"}, {"expr": "sad"}, {"expr": "angry"}, {"expr": "scared"}, {"expr": "sleepy"}
-]), blank = True))
+	{"expr": "normal", "expr_normal": 1},
+	{"expr": "happy",  "expr_happy": 1},
+	{"expr": "sad",    "expr_sad": 1},
+	{"expr": "angry",  "expr_angry": 1},
+	{"expr": "scared", "expr_scared": 1},
+	{"expr": "sleepy", "expr_sleepy": 1}
+], {"expr_normal": 0, "expr_happy": 0, "expr_sad": 0, "expr_angry": 0, "expr_scared": 0, "expr_sleepy": 0}), blank = True))
 
 # ---- Setups ----
 
