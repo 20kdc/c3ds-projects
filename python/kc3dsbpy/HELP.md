@@ -60,6 +60,8 @@ There can only be one marker per part, and parts with no marker aren't rendered 
 
 Marker doesn't control visibility, VisScript does.
 
+Pitch Adjust adjusts pitch (in degrees). This can be used to nudge elements into alignment if they otherwise aren't.
+
 ### VisScript
 
 The VisScript controls when an object is rendered.

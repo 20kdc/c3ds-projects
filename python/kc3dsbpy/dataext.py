@@ -61,7 +61,7 @@ class SkeletonReqContext():
 		# get this
 		part_name = new_props["part"]
 		# calculate file paths
-		cv = os.path.join(self.path_gb, "CV%04d" % new_props["frame"])
+		cv = os.path.join(self.path_gb, "CA%04d" % new_props["frame"])
 		path_png = cv + ".png"
 		path_bmp = cv + ".bmp"
 		part_char = self.setup.part_names_to_infos[part_name].char
@@ -70,6 +70,7 @@ class SkeletonReqContext():
 		# check part name exists as a marker, if not, we'll have to skip
 		if not (part_name in self.gizmo_context.markers):
 			return BlankReq(part_name, paths)
+		marker = self.gizmo_context.markers[part_name]
 		# infuse part ASCII
 		new_props["part_ascii"] = ord(part_char)
 		# infuse age data
@@ -78,7 +79,7 @@ class SkeletonReqContext():
 		new_props["height"] = aged_part.size
 		new_props["ortho_scale"] = aged_part.size / (self.age_data.scale * self.pixels_per_unit)
 		# infuse rotation data
-		new_props["pitch"] = new_props["pitch_id"] * -22.5
+		new_props["pitch"] = (new_props["pitch_id"] * -22.5) + marker.kc3dsbpy_pitch_trim
 		new_props["yaw"] = new_props["yaw_id"] * 90
 		new_props["roll"] = 0
 		return FrameReq(self.gizmo_context, new_props, part_name, paths)
@@ -183,8 +184,8 @@ class CouplePartToVisKC3DSBPY(Operator):
 
 def calc_frame_status(scene):
 	try:
-		frame_idx = context.scene.kc3dsbpy_render_frame
-		cset = scene_to_cset(context.scene)
+		frame_idx = scene.kc3dsbpy_render_frame
+		cset = scene_to_cset(scene)
 		frame_set = cset.setup.frames
 		frame_status = str(frame_idx) + "/" + str(len(frame_set))
 		if frame_idx < 0 or frame_idx >= len(frame_set):
@@ -243,6 +244,7 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 		row = self.layout.row()
 		row.prop(context.object, "kc3dsbpy_part_marker")
 		row.operator(CouplePartToVisKC3DSBPY.bl_idname)
+		self.layout.prop(context.object, "kc3dsbpy_pitch_trim")
 		self.layout.prop(context.object, "kc3dsbpy_visscript")
 		self.layout.operator(ObjectHelpKC3DSBPY.bl_idname)
 
@@ -251,11 +253,12 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 def register():
 	# Part IDs
 	all_part_ids = []
-	all_part_ids.append(("", "(None)", "Disabled"))
+	all_part_ids.append(("0", "(None)", "Disabled"))
 	for name in libkc3ds.parts.ALL:
 		all_part_ids.append((name, name, "Used as camera location for part: " + name))
 	# Kind of shared with Gizmo but will just have to live with it due to the items
-	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Marker", default = "")
+	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Marker", default = "0")
+	bpy.types.Object.kc3dsbpy_pitch_trim = FloatProperty(name = "Pitch Adjust", default = 0)
 	bpy.types.Object.kc3dsbpy_visscript = StringProperty(name = "VisScript", default = "")
 	# Data
 	bpy.types.Scene.kc3dsbpy_c16_dither_colour = BoolProperty(name = "Dither C16 Colour", default = False)

@@ -87,7 +87,7 @@ class GizmoContext():
 		self.vis = []
 		for obj in scene.objects:
 			mk = obj.kc3dsbpy_part_marker
-			if mk != "":
+			if mk != "" and mk != "0":
 				if mk in self.markers:
 					raise Exception("Duplicate marker: " + self.markers[mk].name + " to " + obj.name)
 				self.markers[mk] = obj
