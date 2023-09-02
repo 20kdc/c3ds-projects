@@ -258,7 +258,7 @@ class PNG2C16KC3DSBPY(Operator):
 	# indirectly bound
 	bl_idname = "kc3dsbpy.png2c16"
 	bl_label = "PNG -> C16"
-	bl_description = "Converts PNGs to C16s. Uses the rendering configuration for inputs."
+	bl_description = "Converts PNGs to C16s. Uses the rendering configuration for inputs"
 
 	def invoke(self, context, event):
 		scene = context.scene
@@ -299,7 +299,7 @@ class ActivateFKC3DSBPY(Operator):
 	# indirectly bound
 	bl_idname = "kc3dsbpy.activate_frame"
 	bl_label = "Setup Frame"
-	bl_description = "Sets up a specific frame of breed rendering. Useful for troubleshooting."
+	bl_description = "Sets up a specific frame of breed rendering. Useful for troubleshooting"
 
 	def invoke(self, context, event):
 		scene = context.scene

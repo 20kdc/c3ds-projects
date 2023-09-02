@@ -12,7 +12,7 @@ import math
 
 # See VISSCRIPT.md
 
-VISSCRIPT_OPS = ["|", "&", "!", "="]
+VISSCRIPT_OPS = ["&&", "|", "&", "!", "="]
 
 def visscript_prop_exists(ctx, prop):
 	return ("kc3dsbpy." + prop) in ctx
@@ -24,7 +24,7 @@ def visscript_compile_op(l, op, r):
 		ls = visscript_compile(l)
 		rs = visscript_compile(r)
 		return lambda ctx: ls(ctx) or rs(ctx)
-	elif op == "&":
+	elif op == "&" or op == "&&":
 		ls = visscript_compile(l)
 		rs = visscript_compile(r)
 		return lambda ctx: ls(ctx) and rs(ctx)
@@ -45,7 +45,7 @@ def visscript_truthy(val):
 	val = str(val)
 	if val == "":
 		return False
-	elif val == "0":
+	elif val == "0" or val == "0.0":
 		return False
 	return True
 
@@ -164,13 +164,14 @@ class DeactivateFKC3DSBPY(bpy.types.Operator):
 	# indirectly bound
 	bl_idname = "kc3dsbpy.deactivate_frame"
 	bl_label = "Revert Frame"
-	bl_description = "Tries to revert changes caused by Setup Frame."
+	bl_description = "Tries to revert changes caused by Setup Frame"
 
 	def invoke(self, context, event):
 		GizmoContext(context.scene).deactivate()
 		return {"FINISHED"}
 
 def register():
+	# All of these are hidden and internal!
 	# Object
 	bpy.types.Object.kc3dsbpy_gizmo_activated = bpy.props.BoolProperty(name = "Gizmo Activated", default = False)
 	bpy.types.Object.kc3dsbpy_gizmo_hide_render_old = bpy.props.BoolProperty(name = "Gizmo Hide Render Backup", default = False)

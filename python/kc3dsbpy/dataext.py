@@ -51,7 +51,7 @@ class CouplePartToVisKC3DSBPY(Operator):
 class PitchAutomaticToManualKC3DSBPY(Operator):
 	bl_idname = "kc3dsbpy.pitchautomatictomanual"
 	bl_label = "Convert To Manual"
-	bl_description = "Converts automatic pitch to manual pitch."
+	bl_description = "Converts automatic pitch to manual pitch"
 
 	def invoke(self, context, event):
 		context.object.kc3dsbpy_pitch_manual = True
@@ -68,7 +68,7 @@ class PitchAutomaticToManualKC3DSBPY(Operator):
 class PitchManualToAutomaticKC3DSBPY(Operator):
 	bl_idname = "kc3dsbpy.pitchmanualtoautomatic"
 	bl_label = "Convert To Automatic"
-	bl_description = "Converts manual pitch to automatic pitch, based on FM1 and F2."
+	bl_description = "Converts manual pitch to automatic pitch, based on FM1 and F2"
 
 	def invoke(self, context, event):
 		context.object.kc3dsbpy_pitch_manual = False
@@ -177,43 +177,72 @@ def register():
 	for name in libkc3ds.parts.ALL:
 		all_part_ids.append((name, name, "Used as camera location for part: " + name))
 	# Kind of shared with Gizmo but will just have to live with it due to the items
-	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Marker", default = "0")
-	bpy.types.Object.kc3dsbpy_marker_inherit = PointerProperty(type = bpy.types.Object, name = "Inherit From", description = "Will use properties of this marker instead")
-	bpy.types.Object.kc3dsbpy_pitch_manual = BoolProperty(name = "Manual Pitch", default = False)
-	bpy.types.Object.kc3dsbpy_pitch_mul = FloatProperty(name = "Pitch Mul", default = 1)
-	bpy.types.Object.kc3dsbpy_pitch_trim = FloatProperty(name = "Add", default = 0)
-	bpy.types.Object.kc3dsbpy_ppu_factor = FloatProperty(name = "Pixels Per Unit Multiplier", description = "Multiplies the Pixels Per Unit while rendering this marker", default = 1)
-	bpy.types.Object.kc3dsbpy_visscript = StringProperty(name = "VisScript", default = "")
+	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Marker", default = "0",
+	description = "If set, the camera uses this object as the reference point for rendering images of the given part. In addition, this object will be rotated for pitch/yaw, and this object acts as the per-part settings. There can only be one of these for each part in the scene")
+	bpy.types.Object.kc3dsbpy_marker_inherit = PointerProperty(type = bpy.types.Object, name = "Inherit From",
+	description = "Instead of supplying settings, inherits the settings of this marker instead. Good for left vs. right markers. A marker cannot inherit a marker inheriting a marker")
+	bpy.types.Object.kc3dsbpy_pitch_manual = BoolProperty(name = "Manual Pitch", default = False,
+	description = "Manual pitch allows specifying the angles in degrees for all 4 pitches, for front/side separately, while automatic pitch modifies a default -22.5 to 45-degree scale")
+	bpy.types.Object.kc3dsbpy_pitch_mul = FloatProperty(name = "Pitch Mul", default = 1,
+	description = "Multiplies the pitch given by the -22.5 to 45-degree scale")
+	bpy.types.Object.kc3dsbpy_pitch_trim = FloatProperty(name = "Add", default = 0,
+	description = "An angle added to the -22.5 to 45-degree scale to offset it")
+	bpy.types.Object.kc3dsbpy_ppu_factor = FloatProperty(name = "Pixels Per Unit Multiplier", default = 1,
+	description = "Multiplies the Pixels Per Unit while rendering this marker, important for inconsistent models and useless otherwise")
+	bpy.types.Object.kc3dsbpy_visscript = StringProperty(name = "VisScript", default = "",
+	description = "VisScript controls if a part can or can't be seen (see help file for language details)")
 	# Pitch, manual
-	bpy.types.Object.kc3dsbpy_pitch_fm1 = FloatProperty(name = "F-1", default = -22.5)
-	bpy.types.Object.kc3dsbpy_pitch_f0 = FloatProperty(name = "F0", default = 0)
-	bpy.types.Object.kc3dsbpy_pitch_f1 = FloatProperty(name = "F1", default = 22.5)
-	bpy.types.Object.kc3dsbpy_pitch_f2 = FloatProperty(name = "F2", default = 45)
-	bpy.types.Object.kc3dsbpy_pitch_sm1 = FloatProperty(name = "S-1", default = -22.5)
-	bpy.types.Object.kc3dsbpy_pitch_s0 = FloatProperty(name = "S0", default = 0)
-	bpy.types.Object.kc3dsbpy_pitch_s1 = FloatProperty(name = "S1", default = 22.5)
-	bpy.types.Object.kc3dsbpy_pitch_s2 = FloatProperty(name = "S2", default = 45)
+	bpy.types.Object.kc3dsbpy_pitch_fm1 = FloatProperty(name = "F-1", default = 22.5,
+	description = "Pitch in degrees, front/back view, downward")
+	bpy.types.Object.kc3dsbpy_pitch_f0 = FloatProperty(name = "F0", default = 0,
+	description = "Pitch in degrees, front/back view, centre")
+	bpy.types.Object.kc3dsbpy_pitch_f1 = FloatProperty(name = "F1", default = -22.5,
+	description = "Pitch in degrees, front/back view, upward")
+	bpy.types.Object.kc3dsbpy_pitch_f2 = FloatProperty(name = "F2", default = -45,
+	description = "Pitch in degrees, front/back view, far upward")
+	bpy.types.Object.kc3dsbpy_pitch_sm1 = FloatProperty(name = "S-1", default = 22.5,
+	description = "Pitch in degrees, side view, downward")
+	bpy.types.Object.kc3dsbpy_pitch_s0 = FloatProperty(name = "S0", default = 0,
+	description = "Pitch in degrees, side view, centre")
+	bpy.types.Object.kc3dsbpy_pitch_s1 = FloatProperty(name = "S1", default = -22.5,
+	description = "Pitch in degrees, side view, upward")
+	bpy.types.Object.kc3dsbpy_pitch_s2 = FloatProperty(name = "S2", default = -45,
+	description = "Pitch in degrees, side view, far upward")
 	# Data
-	bpy.types.Scene.kc3dsbpy_c16_dither_colour = BoolProperty(name = "Dither C16 Colour", default = False)
-	bpy.types.Scene.kc3dsbpy_c16_dither_alpha = BoolProperty(name = "Dither C16 Alpha", default = False)
-	bpy.types.Scene.kc3dsbpy_c16_outpath = StringProperty(name = "C16 Output Directory", default = "//Sprites", subtype = "DIR_PATH")
-	bpy.types.Scene.kc3dsbpy_render_bmp = BoolProperty(name = "BMP (for QuickNorn)", default = False)
-	bpy.types.Scene.kc3dsbpy_render_genus = EnumProperty(items = [("Norn", "Norn", "Norn"), ("Grendel", "Grendel", "Grendel"), ("Ettin", "Ettin", "Ettin"), ("Geat", "Geat", "Geat")], name = "Genus", default = "Norn")
-	bpy.types.Scene.kc3dsbpy_render_sexes = EnumProperty(items = [("male", "Male", "Male"), ("female", "Female", "Female"), ("both", "Both", "Both")], name = "Sexes", default = "both")
-	bpy.types.Scene.kc3dsbpy_render_ppu = FloatProperty(name = "Pixels Per Unit", description = "Pixels Per Unit (for adult creatures)", default = 100)
+	bpy.types.Scene.kc3dsbpy_c16_dither_colour = BoolProperty(name = "Dither C16 Colour", default = False,
+	description = "!!!VERY SLOW!!! Enables Bayer 2x2 dithering. Useful if you run into banding")
+	bpy.types.Scene.kc3dsbpy_c16_dither_alpha = BoolProperty(name = "Dither C16 Alpha", default = False,
+	description = "!!!SLOW!!! Uses Bayer 2x2 dithering on alpha. This may screw up your sprite edges, so use with extreme care and a good compositor setup")
+	bpy.types.Scene.kc3dsbpy_c16_outpath = StringProperty(name = "C16 Output Directory", default = "//Sprites", subtype = "DIR_PATH",
+	description = "C16 files are written here")
+	bpy.types.Scene.kc3dsbpy_render_bmp = BoolProperty(name = "BMP (for QuickNorn)", default = False,
+	description = "If true, BMP files are written during rendering")
+	bpy.types.Scene.kc3dsbpy_render_genus = EnumProperty(items = [("Norn", "Norn", "Norn"), ("Grendel", "Grendel", "Grendel"), ("Ettin", "Ettin", "Ettin"), ("Geat", "Geat", "Geat")], name = "Genus", default = "Norn",
+	description = "Selects the genus to render")
+	bpy.types.Scene.kc3dsbpy_render_sexes = EnumProperty(items = [("male", "Male", "Male"), ("female", "Female", "Female"), ("both", "Both", "Both")], name = "Sexes", default = "both",
+	description = "Selects the sexes to render")
+	bpy.types.Scene.kc3dsbpy_render_ppu = FloatProperty(name = "Pixels Per Unit", default = 100,
+	description = "The Pixels Per Unit describes the scale of the scene (for adult creatures). The real value is affected by per-part PPU multipliers, so be aware of that")
 	breed_slot_items = []
 	for i in range(26):
 		char = chr(65 + i)
 		breed_slot_items.append((char.lower(), char, char))
-	bpy.types.Scene.kc3dsbpy_render_breed = EnumProperty(items = breed_slot_items, name = "Slot", default = "z")
-	bpy.types.Scene.kc3dsbpy_render_ages = StringProperty(name = "Ages", default = "0245")
-	bpy.types.Scene.kc3dsbpy_render_age = StringProperty(name = "Age", default = "4")
-	bpy.types.Scene.kc3dsbpy_render_mode = IntProperty(name = "Mode", default = 0)
+	bpy.types.Scene.kc3dsbpy_cset = EnumProperty(items = CSETS_ITEM_LIST, name = "Template", default = "CHICHI",
+	description = "Selects the template, which decides age scaling and sprite sizes")
+	bpy.types.Scene.kc3dsbpy_render_breed = EnumProperty(items = breed_slot_items, name = "Slot", default = "z",
+	description = "Selects the breed slot to render")
+	bpy.types.Scene.kc3dsbpy_render_ages = StringProperty(name = "Ages", default = "0245",
+	description = "Selects the ages to render")
+	bpy.types.Scene.kc3dsbpy_render_mode = IntProperty(name = "Mode", default = 0,
+	description = "Controls the 'kc3dsbpy.mode' property that exists just so you can read it")
 	# uhhhhh would it be bad if I were to just use a random coin flip here
 	# idk male is listed first so I guess it balances out
-	bpy.types.Scene.kc3dsbpy_render_sex = EnumProperty(items = [("male", "Male", "Male"), ("female", "Female", "Female")], name = "Sex", default = "female")
-	bpy.types.Scene.kc3dsbpy_render_frame = IntProperty(name = "Frame", default = 0)
-	bpy.types.Scene.kc3dsbpy_cset = EnumProperty(items = CSETS_ITEM_LIST, name = "Template", default = "CHICHI")
+	bpy.types.Scene.kc3dsbpy_render_sex = EnumProperty(items = [("male", "Male", "Male"), ("female", "Female", "Female")], name = "Sex", default = "female",
+	description = "Setup Frame: Controls the sex to activate for debugging")
+	bpy.types.Scene.kc3dsbpy_render_age = StringProperty(name = "Age", default = "4",
+	description = "Setup Frame: Selects the age to activate for debugging")
+	bpy.types.Scene.kc3dsbpy_render_frame = IntProperty(name = "Frame", default = 0,
+	description = "Setup Frame: Controls the frame to activate for debugging")
 	# Data UI
 	bpy.utils.register_class(PitchAutomaticToManualKC3DSBPY)
 	bpy.utils.register_class(PitchManualToAutomaticKC3DSBPY)
