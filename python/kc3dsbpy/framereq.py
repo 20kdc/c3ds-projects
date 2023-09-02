@@ -295,6 +295,14 @@ class PNG2C16KC3DSBPY(Operator):
 		self.report({"INFO"}, "Completed PNG->C16, " + str(len(c16_names)) + " files written")
 		return {"FINISHED"}
 
+def activate_frame_op(operator, scene):
+	frame = calc_req_frame(scene)
+	if type(frame) == FrameReq:
+		frame.activate()
+		operator.report({"INFO"}, "Viewing: " + str(frame.paths))
+	else:
+		operator.report({"WARNING"}, "Missing marker '" + frame.part_name + "' @ " + str(frame.paths))
+
 class ActivateFKC3DSBPY(Operator):
 	# indirectly bound
 	bl_idname = "kc3dsbpy.activate_frame"
@@ -302,13 +310,7 @@ class ActivateFKC3DSBPY(Operator):
 	bl_description = "Sets up a specific frame of breed rendering. Useful for troubleshooting"
 
 	def invoke(self, context, event):
-		scene = context.scene
-		frame = calc_req_frame(scene)
-		if type(frame) == FrameReq:
-			frame.activate()
-			self.report({"INFO"}, "Viewing: " + str(frame.paths))
-		else:
-			self.report({"WARNING"}, "Missing marker '" + frame.part_name + "' @ " + str(frame.paths))
+		activate_frame_op(self, context.scene)
 		return {"FINISHED"}
 
 # Registration

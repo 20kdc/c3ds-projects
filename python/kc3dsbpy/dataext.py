@@ -76,6 +76,18 @@ class PitchManualToAutomaticKC3DSBPY(Operator):
 		context.object.kc3dsbpy_pitch_trim = framereq.calc_pitch_trim(context.object.kc3dsbpy_pitch_fm1, context.object.kc3dsbpy_pitch_f2)
 		return {"FINISHED"}
 
+class FrameRelativeSeekKC3DSBPY(Operator):
+	bl_idname = "kc3dsbpy.frame_relative_seek"
+	bl_label = "Frame Relative Seek"
+	bl_description = "Seeks between frames and auto-activates the frame."
+
+	adjustment: IntProperty(name="Adjustment", description="Adjustment in frames.", default=16)
+
+	def invoke(self, context, event):
+		context.scene.kc3dsbpy_render_frame += self.adjustment
+		framereq.activate_frame_op(self, context.scene)
+		return {"FINISHED"}
+
 def calc_frame_status(scene):
 	try:
 		frame_idx = scene.kc3dsbpy_render_frame
@@ -125,8 +137,16 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 		row.prop(context.scene, "kc3dsbpy_render_frame")
 		row.label(text = calc_frame_status(context.scene))
 		row = self.layout.row()
-		row.operator("kc3dsbpy.activate_frame")
-		row.operator("kc3dsbpy.deactivate_frame")
+		opp = row.operator(FrameRelativeSeekKC3DSBPY.bl_idname, text="-16")
+		opp["adjustment"] = -16
+		opp = row.operator(FrameRelativeSeekKC3DSBPY.bl_idname, text="-1")
+		opp["adjustment"] = -1
+		row.operator("kc3dsbpy.activate_frame", text="0")
+		opp = row.operator(FrameRelativeSeekKC3DSBPY.bl_idname, text="+1")
+		opp["adjustment"] = 1
+		opp = row.operator(FrameRelativeSeekKC3DSBPY.bl_idname, text="+16")
+		opp["adjustment"] = 16
+		row.operator("kc3dsbpy.deactivate_frame", text="Revert")
 		self.layout.operator(ObjectHelpKC3DSBPY.bl_idname)
 
 class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
@@ -213,7 +233,7 @@ def register():
 	description = "!!!VERY SLOW!!! Enables Bayer 2x2 dithering. Useful if you run into banding")
 	bpy.types.Scene.kc3dsbpy_c16_dither_alpha = BoolProperty(name = "Dither C16 Alpha", default = False,
 	description = "!!!SLOW!!! Uses Bayer 2x2 dithering on alpha. This may screw up your sprite edges, so use with extreme care and a good compositor setup")
-	bpy.types.Scene.kc3dsbpy_c16_outpath = StringProperty(name = "C16 Output Directory", default = "//Sprites", subtype = "DIR_PATH",
+	bpy.types.Scene.kc3dsbpy_c16_outpath = StringProperty(name = "C16 Directory", default = "//Sprites", subtype = "DIR_PATH",
 	description = "C16 files are written here")
 	bpy.types.Scene.kc3dsbpy_render_bmp = BoolProperty(name = "BMP (for QuickNorn)", default = False,
 	description = "If true, BMP files are written during rendering")
@@ -248,6 +268,7 @@ def register():
 	bpy.utils.register_class(PitchManualToAutomaticKC3DSBPY)
 	bpy.utils.register_class(CouplePartToVisKC3DSBPY)
 	bpy.utils.register_class(ObjectHelpKC3DSBPY)
+	bpy.utils.register_class(FrameRelativeSeekKC3DSBPY)
 	bpy.utils.register_class(OBJECT_PT_ObjectPanelKC3DSBPY)
 	bpy.utils.register_class(SCENE_PT_ScenePanelKC3DSBPY)
 
@@ -257,6 +278,7 @@ def unregister():
 	bpy.utils.unregister_class(PitchManualToAutomaticKC3DSBPY)
 	bpy.utils.unregister_class(CouplePartToVisKC3DSBPY)
 	bpy.utils.unregister_class(ObjectHelpKC3DSBPY)
+	bpy.utils.unregister_class(FrameRelativeSeekKC3DSBPY)
 	bpy.utils.unregister_class(OBJECT_PT_ObjectPanelKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelKC3DSBPY)
 
