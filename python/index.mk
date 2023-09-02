@@ -11,6 +11,7 @@ PYTHON_REL += python/kc3dsbpy/imaging.py
 PYTHON_REL += python/kc3dsbpy/database.py
 PYTHON_REL += python/kc3dsbpy/dataext.py
 PYTHON_REL += python/kc3dsbpy/gizmo.py
+PYTHON_REL += python/kc3dsbpy/framereq.py
 
 PYTHON_REL += python/caosterm.py python/cpxinfo.py python/inject.py
 PYTHON_REL += python/bdmptest.py python/maprooms.py python/maptypes.py

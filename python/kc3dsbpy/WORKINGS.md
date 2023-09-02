@@ -1,7 +1,9 @@
 * `database.py`: Defines classes to bind together Setup, ages, and image sizes, along with ChiChi Norn metrics
 * `gizmo.py`: VisScript, camera positioning, and scene manipulation runtime
-* `dataext.py`: UI, defines properties used by init, responsible for constructing Gizmo property sets
-* `__init__.py`: and outer render functions
+  * Defines GizmoContext, housekeeping properties and `kc3dsbpy.deactivate_frame`
+* `framereq.py`: Responsible for constructing Gizmo property sets, main operators
+* `dataext.py`: Defines properties used by init and migration path stuff, most UI
+* `__init__.py`: outer render operators
 
 ## PROPS EMITTED BY LIBKC3DS
 

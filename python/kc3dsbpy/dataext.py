@@ -17,157 +17,16 @@ import libkc3ds.parts
 
 from . import gizmo
 from . import database
+from . import framereq
 
 # need to import this here, bleh
 # still better than polluting the mess that is __init__
 BRAND = "C3/DS Breed Exporter"
 
-# Skeleton Request Calculator
-
-class SkeletonReqContext():
-	"""
-	Contains information collated for a part.
-	"""
-	def __init__(self, gizmo_context, cset, sex, age_char):
-		scene = gizmo_context.scene
-		self.setup = cset.setup
-		self.gizmo_context = gizmo_context
-		self.path_gb = os.path.join(scene.kc3dsbpy_render_genus, scene.kc3dsbpy_render_breed, sex, age_char)
-		self.age_data = cset.ages[age_char]
-		self.pixels_per_unit = scene.kc3dsbpy_render_ppu
-		gs_char = libkc3ds.parts.C3_GS_MAP[sex + scene.kc3dsbpy_render_genus]
-		self.props = {
-			"genus": scene.kc3dsbpy_render_genus,
-			"breed": scene.kc3dsbpy_render_breed,
-			"breed_num": ord(scene.kc3dsbpy_render_breed) - 97,
-			"gs_num": int(gs_char),
-			"male": 0,
-			"female": 0,
-			"age": int(age_char),
-			"mode": scene.kc3dsbpy_render_mode
-		}
-		self.props[sex] = 1
-		# Last 3 characters as per QuickNorn.
-		self.xyz = gs_char + age_char + scene.kc3dsbpy_render_breed
-
-	def frame_req(self, frame_props):
-		"""
-		Takes frame properties from libkc3ds and turns them into a resolved FrameReq.
-		"""
-		# attach frame props to skeleton props
-		new_props = self.props.copy()
-		for k in frame_props:
-			new_props[k] = frame_props[k]
-		# get this
-		part_name = new_props["part"]
-		# calculate file paths
-		cv = os.path.join(self.path_gb, "CA%04d" % new_props["frame"])
-		path_png = cv + ".png"
-		path_bmp = cv + ".bmp"
-		part_char = self.setup.part_names_to_infos[part_name].char
-		path_c16 = part_char + self.xyz + ".c16"
-		paths = ReqPaths(path_png, path_bmp, path_c16, new_props["frame_rel"])
-		# check part name exists as a marker, if not, we'll have to skip
-		if not (part_name in self.gizmo_context.markers):
-			return BlankReq(part_name, paths)
-		# determine inheritance
-		marker = self.gizmo_context.markers[part_name]
-		marker_o = marker
-		if not (marker.kc3dsbpy_marker_inherit is None):
-			marker = marker.kc3dsbpy_marker_inherit
-			# stop infinite loops the easy way
-			if not (marker.kc3dsbpy_marker_inherit is None):
-				raise Exception("Marker " + marker_o.name + " inherits from " + marker.name + " which also inherits, this is not allowed")
-		# infuse part ASCII
-		new_props["part_ascii"] = ord(part_char)
-		# infuse age data
-		aged_part = self.age_data.parts[new_props["part"]]
-		new_props["width"] = aged_part.size
-		new_props["height"] = aged_part.size
-		new_props["ortho_scale"] = aged_part.size / (self.age_data.scale * self.pixels_per_unit * marker.kc3dsbpy_ppu_factor)
-		# infuse rotation data
-		new_props["pitch"] = (new_props["pitch_id"] * -22.5 * marker.kc3dsbpy_pitch_mul) + marker.kc3dsbpy_pitch_trim
-		new_props["yaw"] = new_props["yaw_id"] * 90
-		new_props["roll"] = 0
-		return FrameReq(self.gizmo_context, new_props, part_name, paths)
-
-class ReqPaths():
-	"""
-	Describes file paths.
-	"""
-	def __init__(self, path_png, path_bmp, path_c16, frame_c16):
-		self.png = path_png
-		self.bmp = path_bmp
-		self.c16 = path_c16
-		self.c16_frame = frame_c16
-
-	def __str__(self):
-		return self.png + " (" + self.c16 + "/" + str(self.c16_frame) + ")"
-
-class BlankReq():
-	"""
-	Describes a blank frame request.
-	"""
-	def __init__(self, part_name, paths):
-		self.part_name = part_name
-		self.paths = paths
-
-class FrameReq(BlankReq):
-	"""
-	Describes a single frame request.
-	Frame requests must be in C16 order so they collate properly.
-	"""
-	def __init__(self, gizmo_context, gizmo_props, part_name, paths):
-		super().__init__(part_name, paths)
-		self.gizmo_context = gizmo_context
-		self.gizmo_props = gizmo_props
-		self.gizmo_context.verify(gizmo_props)
-
-	def activate(self):
-		self.gizmo_context.activate(self.gizmo_props)
-
-	def deactivate(self):
-		self.gizmo_context.deactivate()
-
-def sexes_str_to_array(sexes):
-	if sexes == "both":
-		return ["male", "female"]
-	return [sexes]
-
 CSETS_ITEM_LIST = []
 
-CSETS = {}
 for cset in database.CSETS_ALL:
 	CSETS_ITEM_LIST.append((cset.name, cset.desc, "Template: " + cset.desc))
-	CSETS[cset.name] = cset
-
-def scene_to_cset(scene):
-	if not scene.kc3dsbpy_cset in CSETS:
-		return database.CHICHI
-	return CSETS[scene.kc3dsbpy_cset]
-
-def calc_req_group(scene):
-	"""
-	Calculates an all-frame operation requested by the given Scene.
-	"""
-	gizmo_context = gizmo.GizmoContext(scene)
-	cset = scene_to_cset(scene)
-	group = []
-	for sex in sexes_str_to_array(scene.kc3dsbpy_render_sexes):
-		for age_char in scene.kc3dsbpy_render_ages:
-			frc = SkeletonReqContext(gizmo_context, cset, sex, age_char)
-			for frame_props in cset.setup.frames:
-				group.append(frc.frame_req(frame_props))
-	return group
-
-def calc_req_frame(scene):
-	"""
-	Calculates a single-frame operation requested by the given Scene.
-	"""
-	gizmo_context = gizmo.GizmoContext(scene)
-	cset = scene_to_cset(scene)
-	frc = SkeletonReqContext(gizmo_context, cset, scene.kc3dsbpy_render_sex, scene.kc3dsbpy_render_age)
-	return frc.frame_req(cset.setup.frames[scene.kc3dsbpy_render_frame])
 
 # Data UI
 
@@ -189,10 +48,38 @@ class CouplePartToVisKC3DSBPY(Operator):
 		context.object.kc3dsbpy_visscript = "part=" + context.object.kc3dsbpy_part_marker
 		return {"FINISHED"}
 
+class PitchAutomaticToManualKC3DSBPY(Operator):
+	bl_idname = "kc3dsbpy.pitchautomatictomanual"
+	bl_label = "Convert To Manual"
+	bl_description = "Converts automatic pitch to manual pitch."
+
+	def invoke(self, context, event):
+		context.object.kc3dsbpy_pitch_manual = True
+		context.object.kc3dsbpy_pitch_fm1 = framereq.calc_pitch_auto(context.object, -1)
+		context.object.kc3dsbpy_pitch_f0 = framereq.calc_pitch_auto(context.object, 0)
+		context.object.kc3dsbpy_pitch_f1 = framereq.calc_pitch_auto(context.object, 1)
+		context.object.kc3dsbpy_pitch_f2 = framereq.calc_pitch_auto(context.object, 2)
+		context.object.kc3dsbpy_pitch_sm1 = context.object.kc3dsbpy_pitch_fm1
+		context.object.kc3dsbpy_pitch_s0 = context.object.kc3dsbpy_pitch_f0
+		context.object.kc3dsbpy_pitch_s1 = context.object.kc3dsbpy_pitch_f1
+		context.object.kc3dsbpy_pitch_s2 = context.object.kc3dsbpy_pitch_f2
+		return {"FINISHED"}
+
+class PitchManualToAutomaticKC3DSBPY(Operator):
+	bl_idname = "kc3dsbpy.pitchmanualtoautomatic"
+	bl_label = "Convert To Automatic"
+	bl_description = "Converts manual pitch to automatic pitch, based on FM1 and F2."
+
+	def invoke(self, context, event):
+		context.object.kc3dsbpy_pitch_manual = False
+		context.object.kc3dsbpy_pitch_mul = framereq.calc_pitch_mul(context.object.kc3dsbpy_pitch_fm1, context.object.kc3dsbpy_pitch_f2)
+		context.object.kc3dsbpy_pitch_trim = framereq.calc_pitch_trim(context.object.kc3dsbpy_pitch_fm1, context.object.kc3dsbpy_pitch_f2)
+		return {"FINISHED"}
+
 def calc_frame_status(scene):
 	try:
 		frame_idx = scene.kc3dsbpy_render_frame
-		cset = scene_to_cset(scene)
+		cset = framereq.scene_to_cset(scene)
 		frame_set = cset.setup.frames
 		frame_status = str(frame_idx) + "/" + str(len(frame_set))
 		if frame_idx < 0 or frame_idx >= len(frame_set):
@@ -254,9 +141,29 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 		if context.object.kc3dsbpy_part_marker != "0":
 			self.layout.prop(context.object, "kc3dsbpy_marker_inherit")
 			if context.object.kc3dsbpy_marker_inherit is None:
-				row = self.layout.row()
-				row.prop(context.object, "kc3dsbpy_pitch_mul")
-				row.prop(context.object, "kc3dsbpy_pitch_trim")
+				if context.object.kc3dsbpy_pitch_manual:
+					row = self.layout.row()
+					row.prop(context.object, "kc3dsbpy_pitch_manual")
+					row.operator(PitchManualToAutomaticKC3DSBPY.bl_idname)
+					row = self.layout.row()
+					row.prop(context.object, "kc3dsbpy_pitch_fm1")
+					row.prop(context.object, "kc3dsbpy_pitch_sm1")
+					row = self.layout.row()
+					row.prop(context.object, "kc3dsbpy_pitch_f0")
+					row.prop(context.object, "kc3dsbpy_pitch_s0")
+					row = self.layout.row()
+					row.prop(context.object, "kc3dsbpy_pitch_f1")
+					row.prop(context.object, "kc3dsbpy_pitch_s1")
+					row = self.layout.row()
+					row.prop(context.object, "kc3dsbpy_pitch_f2")
+					row.prop(context.object, "kc3dsbpy_pitch_s2")
+				else:
+					row = self.layout.row()
+					row.prop(context.object, "kc3dsbpy_pitch_manual")
+					row.operator(PitchAutomaticToManualKC3DSBPY.bl_idname)
+					row = self.layout.row()
+					row.prop(context.object, "kc3dsbpy_pitch_mul")
+					row.prop(context.object, "kc3dsbpy_pitch_trim")
 				self.layout.prop(context.object, "kc3dsbpy_ppu_factor")
 		self.layout.prop(context.object, "kc3dsbpy_visscript")
 		self.layout.operator(ObjectHelpKC3DSBPY.bl_idname)
@@ -272,10 +179,20 @@ def register():
 	# Kind of shared with Gizmo but will just have to live with it due to the items
 	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Marker", default = "0")
 	bpy.types.Object.kc3dsbpy_marker_inherit = PointerProperty(type = bpy.types.Object, name = "Inherit From", description = "Will use properties of this marker instead")
+	bpy.types.Object.kc3dsbpy_pitch_manual = BoolProperty(name = "Manual Pitch", default = False)
 	bpy.types.Object.kc3dsbpy_pitch_mul = FloatProperty(name = "Pitch Mul", default = 1)
 	bpy.types.Object.kc3dsbpy_pitch_trim = FloatProperty(name = "Add", default = 0)
 	bpy.types.Object.kc3dsbpy_ppu_factor = FloatProperty(name = "Pixels Per Unit Multiplier", description = "Multiplies the Pixels Per Unit while rendering this marker", default = 1)
 	bpy.types.Object.kc3dsbpy_visscript = StringProperty(name = "VisScript", default = "")
+	# Pitch, manual
+	bpy.types.Object.kc3dsbpy_pitch_fm1 = FloatProperty(name = "F-1", default = -22.5)
+	bpy.types.Object.kc3dsbpy_pitch_f0 = FloatProperty(name = "F0", default = 0)
+	bpy.types.Object.kc3dsbpy_pitch_f1 = FloatProperty(name = "F1", default = 22.5)
+	bpy.types.Object.kc3dsbpy_pitch_f2 = FloatProperty(name = "F2", default = 45)
+	bpy.types.Object.kc3dsbpy_pitch_sm1 = FloatProperty(name = "S-1", default = -22.5)
+	bpy.types.Object.kc3dsbpy_pitch_s0 = FloatProperty(name = "S0", default = 0)
+	bpy.types.Object.kc3dsbpy_pitch_s1 = FloatProperty(name = "S1", default = 22.5)
+	bpy.types.Object.kc3dsbpy_pitch_s2 = FloatProperty(name = "S2", default = 45)
 	# Data
 	bpy.types.Scene.kc3dsbpy_c16_dither_colour = BoolProperty(name = "Dither C16 Colour", default = False)
 	bpy.types.Scene.kc3dsbpy_c16_dither_alpha = BoolProperty(name = "Dither C16 Alpha", default = False)
@@ -298,6 +215,8 @@ def register():
 	bpy.types.Scene.kc3dsbpy_render_frame = IntProperty(name = "Frame", default = 0)
 	bpy.types.Scene.kc3dsbpy_cset = EnumProperty(items = CSETS_ITEM_LIST, name = "Template", default = "CHICHI")
 	# Data UI
+	bpy.utils.register_class(PitchAutomaticToManualKC3DSBPY)
+	bpy.utils.register_class(PitchManualToAutomaticKC3DSBPY)
 	bpy.utils.register_class(CouplePartToVisKC3DSBPY)
 	bpy.utils.register_class(ObjectHelpKC3DSBPY)
 	bpy.utils.register_class(OBJECT_PT_ObjectPanelKC3DSBPY)
@@ -305,6 +224,8 @@ def register():
 
 def unregister():
 	# Data UI
+	bpy.utils.unregister_class(PitchAutomaticToManualKC3DSBPY)
+	bpy.utils.unregister_class(PitchManualToAutomaticKC3DSBPY)
 	bpy.utils.unregister_class(CouplePartToVisKC3DSBPY)
 	bpy.utils.unregister_class(ObjectHelpKC3DSBPY)
 	bpy.utils.unregister_class(OBJECT_PT_ObjectPanelKC3DSBPY)

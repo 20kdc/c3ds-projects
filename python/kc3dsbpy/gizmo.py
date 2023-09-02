@@ -160,6 +160,16 @@ class GizmoContext():
 				obj.kc3dsbpy_gizmo_activated = False
 				obj.rotation_euler = mathutils.Euler((obj.kc3dsbpy_gizmo_ex_old, obj.kc3dsbpy_gizmo_ey_old, obj.kc3dsbpy_gizmo_ez_old), obj.kc3dsbpy_gizmo_et_old)
 
+class DeactivateFKC3DSBPY(bpy.types.Operator):
+	# indirectly bound
+	bl_idname = "kc3dsbpy.deactivate_frame"
+	bl_label = "Revert Frame"
+	bl_description = "Tries to revert changes caused by Setup Frame."
+
+	def invoke(self, context, event):
+		GizmoContext(context.scene).deactivate()
+		return {"FINISHED"}
+
 def register():
 	# Object
 	bpy.types.Object.kc3dsbpy_gizmo_activated = bpy.props.BoolProperty(name = "Gizmo Activated", default = False)
@@ -173,4 +183,9 @@ def register():
 	bpy.types.Scene.kc3dsbpy_gizmo_activated = bpy.props.BoolProperty(name = "Gizmo Activated", default = False)
 	bpy.types.Scene.kc3dsbpy_gizmo_resx_old = bpy.props.IntProperty(name = "Gizmo ResX Backup", default = 512)
 	bpy.types.Scene.kc3dsbpy_gizmo_resy_old = bpy.props.IntProperty(name = "Gizmo ResY Backup", default = 512)
+	# Operators
+	bpy.utils.register_class(DeactivateFKC3DSBPY)
+
+def unregister():
+	bpy.utils.unregister_class(DeactivateFKC3DSBPY)
 
