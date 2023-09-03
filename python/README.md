@@ -52,3 +52,5 @@ This is a Blender addon based on `libkc3ds` for rendering creatures.
 
 *Since it's based on `libkc3ds`, you need to copy both directories into your Blender addons directory.*
 
+`project_moon.blend` is an example project.
+

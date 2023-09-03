@@ -1,5 +1,9 @@
 # kc3dsbpy
 
+## I want an example file!
+
+Check `project_moon.blend`.
+
 ## Where To Find Stuff
 
 Ok, so, since there's a lot of stuff, I've embedded most information into the addon so you can see it when you hover over stuff.

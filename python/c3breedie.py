@@ -9,7 +9,7 @@
 import argparse
 import PIL.Image
 from libkc3ds.s16 import decode_cs16, S16Image, CDMODE_DEFAULT, encode_c16
-from libkc3ds.s16pil import pil_to_565_blk, s16image_to_pil_rgb
+from libkc3ds.s16pil import pil_to_565, pil_to_565_blk, s16image_to_pil_rgb
 from libkc3ds.parts import C3, C3_0, C3_GS_MAP
 import sys
 import os
@@ -26,20 +26,19 @@ AGES = ["0", "1", "2", "3", "4", "5", "6"]
 DESCRIPTION = """
 Imports and exports breed BMP trees in the QuickNorn/SpriteBuilder convention.
 All missing frames are replaced with 1x1 blanks to avoid crashes.
-When converting to C16, 
 """
 
 # Image IO
 
-def bmp_path(base, frame):
+def img_path(base, frame, fmt):
 	fs = str(frame)
 	while len(fs) < 4:
 		fs = "0" + fs
-	return os.path.join(base, "CA" + fs + ".bmp")
+	return os.path.join(base, "CA" + fs + "." + fmt)
 
-def read_bmp(base, frame, w, h):
+def read_img(base, frame, w, h, img_fmt):
 	try:
-		return PIL.Image.open(bmp_path(base, frame))
+		return PIL.Image.open(img_path(base, frame, img_fmt))
 	except:
 		return PIL.Image.new("RGB", (w, h))
 
@@ -75,7 +74,8 @@ def read_spr(path, frame, w, h):
 parser = argparse.ArgumentParser(prog="c3breedie.py", description=DESCRIPTION)
 parser.add_argument("IMAGES", help="S16/C16 files are stored/loaded here.")
 parser.add_argument("TREE", help="Root of the tree. For, say, '/home/grendelhugger/Grendel/z/male/4/CAxxxx.bmp', this would be '/home/grendelhugger/'.")
-parser.add_argument("OPERATOR", help="Conversion direction; this is the output file type. Careful not to get this wrong, or you'll overwrite all your files!", choices=["c16", "bmp"])
+parser.add_argument("INFMT", help="Conversion direction; this is the input file type. Careful not to get this wrong, or you'll overwrite all your files!", choices=["c16", "bmp", "png"])
+parser.add_argument("OUTFMT", help="Conversion direction; this is the output file type. Careful not to get this wrong, or you'll overwrite all your files!", choices=["c16", "bmp", "png"])
 parser.add_argument("-g", "--genus", help="Limits to a specific genus.", choices=GENUSES, action="append")
 parser.add_argument("-b", "--breed", help="Limits to a specific breed slot.", choices=BREEDS, action="append")
 parser.add_argument("-s", "--sex", help="Limits to a specific sex.", choices=SEXES, action="append")
@@ -96,17 +96,32 @@ if args.age is None:
 
 # main operator
 
-def bmp_single_sprite_file(spr, tree, genus, breed, sex, age, frame_base, frame_count):
-	for i in range(frame_count):
-		frame = read_spr(spr, i, 1, 1)
-		frame_pil = s16image_to_pil_rgb(frame)
-		frame_pil.save(bmp_path(tree, frame_base + i), "BMP")
-
-def c16_single_sprite_file(spr, tree, genus, breed, sex, age, frame_base, frame_count):
+def img_reader(tree, frame_base, frame_count, img_fmt):
 	frames = []
 	for i in range(frame_count):
-		bmp = read_bmp(tree, frame_base + i, 1, 1)
-		frames.append(pil_to_565_blk(bmp, cdmode = args.cdmode))
+		img = read_img(tree, frame_base + i, 1, 1, img_fmt)
+		if img_fmt == "png":
+			frames.append(pil_to_565(img, cdmode = args.cdmode))
+		else:
+			frames.append(pil_to_565_blk(img, cdmode = args.cdmode))
+	return frames
+
+def img_writer(tree, frame_base, frames, img_fmt):
+	for frame in frames:
+		if img_fmt == "png":
+			frame_pil = s16image_to_pil_rgba(frame)
+		else:
+			frame_pil = s16image_to_pil_rgb(frame)
+		frame_pil.save(img_path(tree, frame_base + i, img_fmt), img_fmt.upper())
+		frame_base += 1
+
+def c16_reader(spr, frame_count):
+	frames = []
+	for i in range(frame_count):
+		frames.append(read_spr(spr, i, 1, 1))
+	return frames
+
+def c16_writer(spr, frames):
 	f = open(spr, "wb")
 	f.write(encode_c16(frames))
 	f.close()
@@ -121,7 +136,7 @@ for genus in args.genus:
 			for age in args.age:
 				sprites = args.IMAGES
 				tree = os.path.join(args.TREE, genus, breed, sex, age)
-				if args.OPERATOR == "bmp":
+				if args.INFMT == "c16":
 					any_part_exists = False
 					for part_info in C3.part_infos:
 						if os.path.exists(spr_path(sprites, genus, breed, sex, age, part_info.char)):
@@ -134,28 +149,30 @@ for genus in args.genus:
 						os.makedirs(tree)
 					except:
 						pass
-				if args.OPERATOR == "c16":
+				else:
 					if not os.path.exists(tree):
 						print("Skipping " + tree + " as the base directory doesn't exist.")
 						continue
+				if args.OUTFMT == "c16":
 					try:
 						os.makedirs(sprites)
 					except:
 						pass
 				for part_info in C3.part_infos:
-					spr = spr_path(sprites, genus, breed, sex, age, part_info.char)
-					if args.OPERATOR == "bmp":
-						# we don't want to skip parts of this because QuickNorn gets salty when images are missing
-						print(spr + " -> " + bmp_path(tree, part_info.frame_base) + " (...)")
-						bmp_single_sprite_file(spr, tree, genus, breed, sex, age, part_info.frame_base, len(part_info.frames))
-					elif args.OPERATOR == "c16":
+					if args.OUTFMT == "c16":
 						if part_info.part_id == C3_0:
 							if not args.c16_include_0:
 								continue
-						print(bmp_path(tree, part_info.frame_base) + " (...) -> " + spr)
-						c16_single_sprite_file(spr, tree, genus, breed, sex, age, part_info.frame_base, len(part_info.frames))
+					print(tree + " ...")
+					spr = spr_path(sprites, genus, breed, sex, age, part_info.char)
+					if args.INFMT == "c16":
+						frames = c16_reader(spr, len(part_info.frames))
 					else:
-						raise Exception("Unknown operator " + args.OPERATOR)
+						frames = img_reader(tree, part_info.frame_base, len(part_info.frames), args.INFMT)
+					if args.OUTFMT == "c16":
+						c16_writer(spr, frames)
+					else:
+						img_writer(tree, part_info.frame_base, frames, args.OUTFMT)
 					did_anything = True
 
 if not did_anything:

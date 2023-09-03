@@ -5,5 +5,7 @@ wastemon.json
 *.blend
 *.blend1
 
+!project_moon.blend
+
 /moon
 
