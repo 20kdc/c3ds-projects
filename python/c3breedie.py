@@ -9,7 +9,7 @@
 import argparse
 import PIL.Image
 from libkc3ds.s16 import decode_cs16, S16Image, CDMODE_DEFAULT, encode_c16
-from libkc3ds.s16pil import pil_to_565, pil_to_565_blk, s16image_to_pil_rgb
+from libkc3ds.s16pil import pil_to_565, pil_to_565_blk, s16image_to_pil_rgb, s16image_to_pil_rgba
 from libkc3ds.parts import C3, C3_0, C3_GS_MAP
 import sys
 import os
