@@ -89,7 +89,7 @@ VisScripts source their values from the Custom Properties beginning with `kc3dsb
 
 Properties are always converted to strings when VisScript evaluates them.
 
-See WORKINGS.md for a hopefully full reference on the custom properties set by the addon.
+See (WORKINGS.md)[WORKINGS.md] for a hopefully full reference on the custom properties set by the addon.
 
 ## General Tips
 
