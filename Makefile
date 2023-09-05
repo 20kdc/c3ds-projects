@@ -40,11 +40,16 @@ include caosproxy/index.mk
 include python/index.mk
 
 ifeq ($(HOST_GODOT),1)
-	include creature-monitor-gd-export/index.mk
+include creature-monitor-gd-export/index.mk
 endif
 
 ifeq ($(HOST_JAVA),1)
-	include ral/index.mk
+.PHONY: java
+java:
+	mvn clean
+	mvn install
+	mvn package
+include ral/index.mk
 endif
 
 # Stuff that has compilation steps that require Linux.
@@ -52,7 +57,7 @@ endif
 # Note that I'm saying "Linux" here, not BSDs - this stuff won't work for 'em anyway.
 # Sorry! ^.^;
 ifeq ($(HOST_LINUX),1)
-	include ciesetup/index.mk
+include ciesetup/index.mk
 endif
 
 clean:

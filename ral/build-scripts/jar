@@ -1,5 +1,9 @@
 #!/bin/sh
 # RAL build script
 mvn package || exit
-cp target/cdsp-ral-0.666-SNAPSHOT-jar-with-dependencies.jar ral.jar
+# FOR LATER
+#cd .. || exit
+#./java-package-all || exit
+#cd ral || exit
+cp target/cdsp-ral-0.666-SNAPSHOT-jar-with-dependencies.jar ral.jar || exit
 
