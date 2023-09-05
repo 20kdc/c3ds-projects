@@ -7,4 +7,5 @@ release-id.txt
 *.dxvk-cache
 *.log
 COPYING-godot.txt
+/target/
 

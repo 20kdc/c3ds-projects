@@ -1,4 +1,5 @@
 #!/bin/sh
+mvn install || exit
 mvn package || exit
 mvn javadoc:javadoc || exit
 

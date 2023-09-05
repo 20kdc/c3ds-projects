@@ -20,21 +20,45 @@ import java.util.zip.InflaterInputStream;
 import cdsp.common.data.IOUtils;
 
 /**
- * Not all into the details, but good enough
+ * PRAY Block (and utilities for PRAY files).
  */
 public class PRAYBlock {
+    /**
+     * Character set. Typically StandardCharsets.ISO_8859_1.
+     */
 	public final Charset charset;
+
+	/**
+	 * Type as bytes.
+	 */
 	private final byte[] type = new byte[4];
-	// mirror of type, keep up to date!
-	// exists just as a way to reduce unnecessary conversion.
+
+	/**
+	 * Mirror of type, keep up to date!
+	 * Exists just as a way to reduce unnecessary conversion.
+	 */
 	private String typeStr;
+
+	/**
+	 * Name as bytes.
+	 */
 	public final byte[] name = new byte[128];
+
+	/**
+	 * Data as bytes.
+	 */
 	public byte[] data;
 
+	/**
+	 * Creates an empty PRAY block.
+	 */
 	public PRAYBlock(Charset charset) {
 		this.charset = charset;
 	}
 
+    /**
+     * Initializes a new PRAY block.
+     */
 	public PRAYBlock(String string, String str2, byte[] byteArray, Charset charset) {
 		this.charset = charset;
 		setType(string);
@@ -42,23 +66,45 @@ public class PRAYBlock {
 		data = byteArray;
 	}
 
+	/**
+	 * Sets the type of this PRAY block, as a string.
+	 */
 	public void setType(String t) {
 		IOUtils.setFixedLength(type, t, charset);
 		typeStr = t;
 	}
+
+	/**
+     * Sets the name of this PRAY block, as a string.
+     */
 	public void setName(String t) {
 		IOUtils.setFixedLength(name, t, charset);
 	}
+
+    /**
+     * Gets the type of this PRAY block, as a string.
+     */
 	public String getType() {
 		return typeStr;
 	}
+
+	/**
+     * Gets the name of this PRAY block, as a string.
+     */
 	public String getName() {
 		return IOUtils.getFixedLength(name, charset);
 	}
+
+	/**
+     * Copies this PRAY block.
+     */
 	public PRAYBlock copy() {
 		return new PRAYBlock(getType(), getName(), data.clone(), charset);
 	}
 
+    /**
+     * Copies a list of PRAY blocks.
+     */
 	public static LinkedList<PRAYBlock> copyList(Iterable<PRAYBlock> src) {
 		LinkedList<PRAYBlock> blocks = new LinkedList<>();
 		for (PRAYBlock blk : src)
@@ -66,6 +112,9 @@ public class PRAYBlock {
 		return blocks;
 	}
 
+    /**
+     * Reads a PRAY file into a list of PRAY blocks.
+     */
 	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, int maxDecompressedSize, Charset charset) {
 		if (dataSlice.get() != (byte) 'P')
 			throw new RuntimeException("Not a PRAY file!");
@@ -84,6 +133,10 @@ public class PRAYBlock {
 		}
 		return blocks;
 	}
+
+    /**
+     * Reads a PRAY block from a ByteBuffer.
+     */
 	public static PRAYBlock readOne(ByteBuffer dataSlice, int maxBlockSize, int maxTotalSize, Charset charset) {
 		PRAYBlock block = new PRAYBlock(charset);
 		dataSlice.get(block.type);
@@ -137,6 +190,10 @@ public class PRAYBlock {
 			return new PRAYBlockPrepared(pb, pb.data.length, false, pb.data);
 		}
 	}
+
+    /**
+     * Writes a PRAY file to a byte array.
+     */
 	public static byte[] write(Iterable<PRAYBlock> blocks, boolean compressPRAYChunks) {
 		int totalLen = 4;
 		int blockCount = 0;
@@ -157,6 +214,10 @@ public class PRAYBlock {
 			pb.put(total);
 		return total.array();
 	}
+
+    /**
+     * Writes a PRAY file to a byte array, for a simpler PRAY file (more efficient GC/RAM-wise)
+     */
 	public static byte[] writeFileWithOneBlock(PRAYBlock pb, boolean compressPRAYChunks) {
 		PRAYBlockPrepared pbp = prepareBlock(pb, compressPRAYChunks);
 		int totalLen = 4 + pbp.calcSize();
@@ -165,6 +226,7 @@ public class PRAYBlock {
 		pbp.put(total);
 		return total.array();
 	}
+
 	private static class PRAYBlockPrepared {
 		final byte[] type;
 		final byte[] name;

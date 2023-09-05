@@ -17,18 +17,35 @@ import java.util.Map.Entry;
 import cdsp.common.data.IOUtils;
 
 /**
- * Going all-out on this...
+ * PRAY tags block manipulator.
  */
 public class PRAYTags {
+    /**
+     * Character set, see PRAYBlock
+     */
 	public final Charset charset;
 
+	/**
+	 * Integer keys.
+	 */
 	public final HashMap<String, Integer> intMap = new HashMap<String, Integer>();
+
+	/**
+	 * String keys.
+	 */
 	public final HashMap<String, String> strMap = new HashMap<String, String>();
 
+	/**
+	 * Creates a PRAY tags block manipulator.
+	 */
 	public PRAYTags(Charset charset) {
 		this.charset = charset;
 	}
 
+	/**
+	 * Reads block contents into this manipulator.
+	 * The manipulator is not cleared.
+	 */
 	public void read(byte[] block) {
 		ByteBuffer bb = IOUtils.wrapLE(block);
 		int intValNo = bb.getInt();
@@ -44,6 +61,9 @@ public class PRAYTags {
 		}
 	}
 
+    /**
+     * Writes this manipulator's contents into a block byte array.
+     */
 	public byte[] toByteArray() {
 		LinkedList<byte[]> intKeyByteArrays = new LinkedList<byte[]>();
 		LinkedList<Integer> intValues = new LinkedList<Integer>();
