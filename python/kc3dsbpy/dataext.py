@@ -8,6 +8,7 @@
 
 import os
 import webbrowser
+import shutil
 
 import bpy
 from bpy.props import StringProperty, EnumProperty, IntProperty, FloatProperty, BoolProperty, PointerProperty
@@ -79,13 +80,42 @@ class PitchManualToAutomaticKC3DSBPY(Operator):
 class FrameRelativeSeekKC3DSBPY(Operator):
 	bl_idname = "kc3dsbpy.frame_relative_seek"
 	bl_label = "Frame Relative Seek"
-	bl_description = "Seeks between frames and auto-activates the frame."
+	bl_description = "Seeks between frames and auto-activates the frame"
 
-	adjustment: IntProperty(name="Adjustment", description="Adjustment in frames.", default=16)
+	adjustment: IntProperty(name="Adjustment", description="Adjustment in frames", default=16)
 
 	def invoke(self, context, event):
 		context.scene.kc3dsbpy_render_frame += self.adjustment
 		framereq.activate_frame_op(self, context.scene)
+		return {"FINISHED"}
+
+class CopyBodyDataKC3DSBPY(Operator):
+	bl_idname = "kc3dsbpy.copy_body_data"
+	bl_label = "Copy Body Data"
+	bl_description = "Copies ATT files from the specified source breed slot to the target breed slot, as determined by the Breed ID"
+
+	def invoke(self, context, event):
+		inpath = bpy.path.abspath(context.scene.kc3dsbpy_att_inpath)
+		outpath = bpy.path.abspath(context.scene.kc3dsbpy_att_outpath)
+		try:
+			os.makedirs(outpath)
+		except:
+			pass
+		cset = framereq.scene_to_cset(context.scene)
+		for sex in framereq.sexes_str_to_array(context.scene.kc3dsbpy_render_sexes):
+			src_sgc = libkc3ds.parts.C3_GS_MAP[sex + context.scene.kc3dsbpy_bdc_genus]
+			dst_sgc = libkc3ds.parts.C3_GS_MAP[sex + context.scene.kc3dsbpy_render_genus]
+			for age in context.scene.kc3dsbpy_render_ages:
+				for part_info in cset.setup.part_infos:
+					src_id = part_info.char + src_sgc + age + context.scene.kc3dsbpy_bdc_breed
+					dst_id = part_info.char + dst_sgc + age + context.scene.kc3dsbpy_render_breed
+					src_path = os.path.join(inpath, src_id + ".att")
+					dst_path = os.path.join(outpath, dst_id + ".att")
+					try:
+						shutil.copy(src_path, dst_path)
+					except:
+						# there tends to be missing files (for say part '0')
+						pass
 		return {"FINISHED"}
 
 def calc_frame_status(scene):
@@ -119,6 +149,7 @@ class SCENE_PT_ScenePanelRiggingKC3DSBPY(Panel):
 	bl_context = "scene"
 	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
 	bl_label = "Rigging"
+	bl_options = {"DEFAULT_CLOSED"}
 	def draw(self, context):
 		self.layout.prop(context.scene, "kc3dsbpy_cset")
 		self.layout.prop(context.scene, "kc3dsbpy_render_ppu")
@@ -129,6 +160,7 @@ class SCENE_PT_ScenePanelRangeKC3DSBPY(Panel):
 	bl_context = "scene"
 	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
 	bl_label = "Breed ID"
+	bl_options = {"DEFAULT_CLOSED"}
 	def draw(self, context):
 		row = self.layout.row()
 		row.prop(context.scene, "kc3dsbpy_render_genus")
@@ -143,6 +175,7 @@ class SCENE_PT_ScenePanelAlignmentKC3DSBPY(Panel):
 	bl_context = "scene"
 	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
 	bl_label = "Rig Tester"
+	bl_options = {"DEFAULT_CLOSED"}
 	def draw(self, context):
 		row = self.layout.row()
 		row.prop(context.scene, "kc3dsbpy_render_sex")
@@ -168,6 +201,7 @@ class SCENE_PT_ScenePanelRenderConvertKC3DSBPY(Panel):
 	bl_context = "scene"
 	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
 	bl_label = "Render / Convert"
+	bl_options = {"DEFAULT_CLOSED"}
 	def draw(self, context):
 		self.layout.prop(context.scene, "kc3dsbpy_render_bmp")
 		row = self.layout.row()
@@ -179,6 +213,21 @@ class SCENE_PT_ScenePanelRenderConvertKC3DSBPY(Panel):
 		row.prop(context.scene, "kc3dsbpy_c16_dither_alpha")
 		self.layout.prop(context.scene, "kc3dsbpy_c16_outpath")
 		self.layout.operator("kc3dsbpy.png2c16")
+
+class SCENE_PT_ScenePanelBodyDataCopyKC3DSBPY(Panel):
+	bl_space_type = "PROPERTIES"
+	bl_region_type = "WINDOW"
+	bl_context = "scene"
+	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
+	bl_label = "Body Data Copier"
+	bl_options = {"DEFAULT_CLOSED"}
+	def draw(self, context):
+		self.layout.prop(context.scene, "kc3dsbpy_att_inpath", text = "Src.")
+		row = self.layout.row()
+		row.prop(context.scene, "kc3dsbpy_bdc_genus", text = "Genus")
+		row.prop(context.scene, "kc3dsbpy_bdc_breed", text = "Slot")
+		self.layout.prop(context.scene, "kc3dsbpy_att_outpath", text = "Dest.")
+		self.layout.operator(CopyBodyDataKC3DSBPY.bl_idname)
 
 class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 	bl_space_type = "PROPERTIES"
@@ -294,12 +343,23 @@ def register():
 	description = "Setup Frame: Selects the age to activate for debugging")
 	bpy.types.Scene.kc3dsbpy_render_frame = IntProperty(name = "Frame", default = 0,
 	description = "Setup Frame: Controls the frame to activate for debugging")
+	# BDC
+	bpy.types.Scene.kc3dsbpy_bdc_genus = EnumProperty(items = [("Norn", "Norn", "Norn"), ("Grendel", "Grendel", "Grendel"), ("Ettin", "Ettin", "Ettin"), ("Geat", "Geat", "Geat")], name = "Source Genus", default = "Norn",
+	description = "Selects the genus to copy body data from")
+	bpy.types.Scene.kc3dsbpy_bdc_breed = EnumProperty(items = breed_slot_items, name = "Source Breed Slot", default = "d",
+	description = "Selects the breed slot to copy body data from")
+	bpy.types.Scene.kc3dsbpy_att_inpath = StringProperty(name = "Body Data Input Directory", default = "//Body Data", subtype = "DIR_PATH",
+	description = "ATT files are read from here")
+	bpy.types.Scene.kc3dsbpy_att_outpath = StringProperty(name = "Body Data Output Directory", default = "//Body Data", subtype = "DIR_PATH",
+	description = "ATT files are written here")
 	# Data UI
 	bpy.utils.register_class(PitchAutomaticToManualKC3DSBPY)
 	bpy.utils.register_class(PitchManualToAutomaticKC3DSBPY)
 	bpy.utils.register_class(CouplePartToVisKC3DSBPY)
 	bpy.utils.register_class(ObjectHelpKC3DSBPY)
 	bpy.utils.register_class(FrameRelativeSeekKC3DSBPY)
+	bpy.utils.register_class(CopyBodyDataKC3DSBPY)
+	# -
 	bpy.utils.register_class(OBJECT_PT_ObjectPanelKC3DSBPY)
 	bpy.utils.register_class(SCENE_PT_ScenePanelKC3DSBPY)
 	# order matters here {
@@ -307,6 +367,7 @@ def register():
 	bpy.utils.register_class(SCENE_PT_ScenePanelRiggingKC3DSBPY)
 	bpy.utils.register_class(SCENE_PT_ScenePanelAlignmentKC3DSBPY)
 	bpy.utils.register_class(SCENE_PT_ScenePanelRenderConvertKC3DSBPY)
+	bpy.utils.register_class(SCENE_PT_ScenePanelBodyDataCopyKC3DSBPY)
 	# }
 
 def unregister():
@@ -316,10 +377,13 @@ def unregister():
 	bpy.utils.unregister_class(CouplePartToVisKC3DSBPY)
 	bpy.utils.unregister_class(ObjectHelpKC3DSBPY)
 	bpy.utils.unregister_class(FrameRelativeSeekKC3DSBPY)
+	bpy.utils.unregister_class(CopyBodyDataKC3DSBPY)
+	# -
 	bpy.utils.unregister_class(OBJECT_PT_ObjectPanelKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelRiggingKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelRangeKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelAlignmentKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelRenderConvertKC3DSBPY)
+	bpy.utils.unregister_class(SCENE_PT_ScenePanelBodyDataCopyKC3DSBPY)
 
