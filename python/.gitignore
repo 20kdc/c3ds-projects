@@ -5,6 +5,8 @@ wastemon.json
 *.blend
 *.blend1
 
+blender-addons.zip
+
 !project_moon.blend
 
 /moon
