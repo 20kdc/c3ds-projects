@@ -111,25 +111,39 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 	bl_context = "scene"
 	bl_label = BRAND
 	def draw(self, context):
+		self.layout.operator(ObjectHelpKC3DSBPY.bl_idname)
+
+class SCENE_PT_ScenePanelRiggingKC3DSBPY(Panel):
+	bl_space_type = "PROPERTIES"
+	bl_region_type = "WINDOW"
+	bl_context = "scene"
+	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
+	bl_label = "Rigging"
+	def draw(self, context):
 		self.layout.prop(context.scene, "kc3dsbpy_cset")
+		self.layout.prop(context.scene, "kc3dsbpy_render_ppu")
+
+class SCENE_PT_ScenePanelRangeKC3DSBPY(Panel):
+	bl_space_type = "PROPERTIES"
+	bl_region_type = "WINDOW"
+	bl_context = "scene"
+	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
+	bl_label = "Breed ID"
+	def draw(self, context):
 		row = self.layout.row()
 		row.prop(context.scene, "kc3dsbpy_render_genus")
 		row.prop(context.scene, "kc3dsbpy_render_breed")
 		row = self.layout.row()
 		row.prop(context.scene, "kc3dsbpy_render_sexes")
 		row.prop(context.scene, "kc3dsbpy_render_ages")
-		self.layout.prop(context.scene, "kc3dsbpy_render_ppu")
-		self.layout.prop(context.scene, "kc3dsbpy_render_bmp")
-		row = self.layout.row()
-		row.operator("kc3dsbpy.render")
-		row.prop(context.scene, "kc3dsbpy_render_mode")
-		self.layout.separator()
-		row = self.layout.row()
-		row.prop(context.scene, "kc3dsbpy_c16_dither_colour")
-		row.prop(context.scene, "kc3dsbpy_c16_dither_alpha")
-		self.layout.prop(context.scene, "kc3dsbpy_c16_outpath")
-		self.layout.operator("kc3dsbpy.png2c16")
-		self.layout.separator()
+
+class SCENE_PT_ScenePanelAlignmentKC3DSBPY(Panel):
+	bl_space_type = "PROPERTIES"
+	bl_region_type = "WINDOW"
+	bl_context = "scene"
+	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
+	bl_label = "Rig Tester"
+	def draw(self, context):
 		row = self.layout.row()
 		row.prop(context.scene, "kc3dsbpy_render_sex")
 		row.prop(context.scene, "kc3dsbpy_render_age")
@@ -147,7 +161,24 @@ class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 		opp = row.operator(FrameRelativeSeekKC3DSBPY.bl_idname, text="+16")
 		opp["adjustment"] = 16
 		row.operator("kc3dsbpy.deactivate_frame", text="Revert")
-		self.layout.operator(ObjectHelpKC3DSBPY.bl_idname)
+
+class SCENE_PT_ScenePanelRenderConvertKC3DSBPY(Panel):
+	bl_space_type = "PROPERTIES"
+	bl_region_type = "WINDOW"
+	bl_context = "scene"
+	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
+	bl_label = "Render / Convert"
+	def draw(self, context):
+		self.layout.prop(context.scene, "kc3dsbpy_render_bmp")
+		row = self.layout.row()
+		row.operator("kc3dsbpy.render")
+		row.prop(context.scene, "kc3dsbpy_render_mode")
+		self.layout.separator()
+		row = self.layout.row()
+		row.prop(context.scene, "kc3dsbpy_c16_dither_colour")
+		row.prop(context.scene, "kc3dsbpy_c16_dither_alpha")
+		self.layout.prop(context.scene, "kc3dsbpy_c16_outpath")
+		self.layout.operator("kc3dsbpy.png2c16")
 
 class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 	bl_space_type = "PROPERTIES"
@@ -271,6 +302,12 @@ def register():
 	bpy.utils.register_class(FrameRelativeSeekKC3DSBPY)
 	bpy.utils.register_class(OBJECT_PT_ObjectPanelKC3DSBPY)
 	bpy.utils.register_class(SCENE_PT_ScenePanelKC3DSBPY)
+	# order matters here {
+	bpy.utils.register_class(SCENE_PT_ScenePanelRangeKC3DSBPY)
+	bpy.utils.register_class(SCENE_PT_ScenePanelRiggingKC3DSBPY)
+	bpy.utils.register_class(SCENE_PT_ScenePanelAlignmentKC3DSBPY)
+	bpy.utils.register_class(SCENE_PT_ScenePanelRenderConvertKC3DSBPY)
+	# }
 
 def unregister():
 	# Data UI
@@ -281,4 +318,8 @@ def unregister():
 	bpy.utils.unregister_class(FrameRelativeSeekKC3DSBPY)
 	bpy.utils.unregister_class(OBJECT_PT_ObjectPanelKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelKC3DSBPY)
+	bpy.utils.unregister_class(SCENE_PT_ScenePanelRiggingKC3DSBPY)
+	bpy.utils.unregister_class(SCENE_PT_ScenePanelRangeKC3DSBPY)
+	bpy.utils.unregister_class(SCENE_PT_ScenePanelAlignmentKC3DSBPY)
+	bpy.utils.unregister_class(SCENE_PT_ScenePanelRenderConvertKC3DSBPY)
 
