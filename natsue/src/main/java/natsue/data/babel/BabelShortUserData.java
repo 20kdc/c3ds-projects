@@ -9,6 +9,8 @@ package natsue.data.babel;
 
 import java.nio.ByteBuffer;
 
+import cdsp.common.data.IOUtils;
+
 /**
  * The information on a user sent to the client.
  */
@@ -54,7 +56,7 @@ public class BabelShortUserData {
 		System.arraycopy(fn, 0, total, 24, fn.length);
 		System.arraycopy(ln, 0, total, 24 + fn.length, ln.length);
 		System.arraycopy(nn, 0, total, 24 + fn.length + ln.length, nn.length);
-		ByteBuffer bb = PacketReader.wrapLE(total);
+		ByteBuffer bb = IOUtils.wrapLE(total);
 		bb.putInt(0, total.length);
 		bb.putInt(4, UINUtils.uid(uin));
 		bb.putInt(8, UINUtils.hid(uin));

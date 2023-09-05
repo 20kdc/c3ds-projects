@@ -8,10 +8,11 @@ package natsue.server.system.cmd;
 
 import java.nio.charset.StandardCharsets;
 
+import cdsp.common.data.pray.PRAYBlock;
+import natsue.data.babel.PacketReader;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.data.hli.StandardMessages;
-import natsue.data.pray.PRAYBlock;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 
 /**
@@ -29,7 +30,7 @@ public class FullReportBotCommand extends BaseBotCommand {
 	@Override
 	public void run(Context args) {
 		byte[] data = args.hub.runSystemCheck(true).getBytes(StandardCharsets.UTF_8);
-		PRAYBlock pray = new PRAYBlock("INVI", StandardMessages.generateBlockName("INVI") + ".txt", data);
+		PRAYBlock pray = new PRAYBlock("INVI", StandardMessages.generateBlockName("INVI") + ".txt", data, PacketReader.CHARSET);
 		PackedMessage pm = new PackedMessagePRAY(args.senderUIN, pray);
 		args.hub.sendMessage(args.senderUIN, pm, MsgSendType.Temp, args.senderUIN);
 		args.response.append("Check your Warp In directory!");

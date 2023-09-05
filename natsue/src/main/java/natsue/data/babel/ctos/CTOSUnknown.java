@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import cdsp.common.data.IOUtils;
 import natsue.config.ConfigMessages;
-import natsue.data.babel.PacketReader;
 
 /**
  * This is used for any packet we don't particularly care about (or don't care about *yet*).
@@ -37,7 +37,7 @@ public class CTOSUnknown extends BaseCTOS {
 	public void initializeAndReadRemainder(ConfigMessages pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
 		type = initial.getInt(BASE_FIELD_TYPE);
-		PacketReader.getBytes(inputStream, additionalLength);
+		IOUtils.getBytes(inputStream, additionalLength);
 		if (furtherDataFlag) {
 			int wantedFurtherData = initial.getInt(BASE_FIELD_FDLEN);
 			if (wantedFurtherData < 0 || wantedFurtherData > pcfg.maxUnknownCTOSFurtherDataSize.getValue())

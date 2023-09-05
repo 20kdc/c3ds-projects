@@ -7,11 +7,12 @@
 
 package natsue.server.firewall;
 
+import cdsp.common.data.pray.PRAYBlock;
+import cdsp.common.data.pray.PRAYTags;
+import natsue.data.babel.PacketReader;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.data.hli.StandardMessages;
-import natsue.data.pray.PRAYBlock;
-import natsue.data.pray.PRAYTags;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 import natsue.server.system.SystemUserHubClient;
@@ -41,7 +42,7 @@ public class ComplexFWModule implements IFWModule {
 				if (type.equals("MESG")) {
 					sanitizeMESG(sourceUser, block);
 				} else if (type.equals("REQU")) {
-					PRAYTags pt = new PRAYTags();
+					PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 					pt.read(block.data);
 					String chatID = pt.strMap.getOrDefault("ChatID", "?");
 					String reqType = pt.strMap.getOrDefault("Request Type", "?");
@@ -61,7 +62,7 @@ public class ComplexFWModule implements IFWModule {
 	 * Sanitizes a MESG block to make sure the sender isn't faked.
 	 */
 	public void sanitizeMESG(INatsueUserData sourceUser, PRAYBlock mesgBlock) {
-		PRAYTags pt = new PRAYTags();
+		PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 		pt.read(mesgBlock.data);
 		pt.strMap.put("Sender UserID", sourceUser.getUINString());
 		pt.strMap.put("Sender Nickname", sourceUser.getNickname());

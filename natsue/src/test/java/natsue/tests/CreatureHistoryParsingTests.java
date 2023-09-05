@@ -10,8 +10,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import cdsp.common.data.IOUtils;
 import natsue.data.babel.CreatureHistoryBlob;
-import natsue.data.babel.PacketReader;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSFeedHistory;
 
@@ -31,6 +31,6 @@ public class CreatureHistoryParsingTests {
 		// User text packet
 		BaseCTOS data = TestUtils.packetHex(packet);
 		CTOSFeedHistory cfh = TestUtils.checkedCastPacket(CTOSFeedHistory.class, data);
-		return new CreatureHistoryBlob(PacketReader.wrapLE(cfh.data), 256);
+		return new CreatureHistoryBlob(IOUtils.wrapLE(cfh.data), 256);
 	}
 }

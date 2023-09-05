@@ -9,11 +9,12 @@ package natsue.server.firewall;
 
 import java.util.LinkedList;
 
+import cdsp.common.data.pray.PRAYBlock;
+import cdsp.common.data.pray.PRAYTags;
+import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
-import natsue.data.pray.PRAYBlock;
-import natsue.data.pray.PRAYTags;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 import natsue.server.userdata.INatsueUserData;
@@ -50,7 +51,7 @@ public class Rejector implements IRejector {
 	}
 
 	private void rejectWarpedCreature(long destinationUIN, PackedMessage message, String reason, PRAYBlock last) {
-		PRAYTags pt = new PRAYTags();
+		PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 		pt.read(last.data);
 		pt.strMap.put("Last Network User", UINUtils.toString(destinationUIN));
 		pt.intMap.put("Pray Extra foe", 0);
@@ -60,7 +61,7 @@ public class Rejector implements IRejector {
 	}
 
 	private void rejectMail(long destinationUIN, PackedMessage message, String reason, PRAYBlock last) {
-		PRAYTags pt = new PRAYTags();
+		PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 		pt.read(last.data);
 		pt.strMap.put("Subject", "ERR: " + pt.strMap.get("Subject"));
 		pt.strMap.put("Sender UserID", UINUtils.toString(onBehalfOf.getUIN()));

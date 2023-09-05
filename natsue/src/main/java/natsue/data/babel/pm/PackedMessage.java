@@ -9,12 +9,12 @@ package natsue.data.babel.pm;
 
 import java.nio.ByteBuffer;
 
+import cdsp.common.data.IOUtils;
+import cdsp.common.data.pray.PRAYBlock;
 import natsue.config.ConfigMessages;
-import natsue.data.IOUtils;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.WritVal;
-import natsue.data.pray.PRAYBlock;
 
 /**
  * Yes, these have to be decoded. If only to verify the sender.
@@ -41,7 +41,7 @@ public abstract class PackedMessage {
 	}
 
 	public static PackedMessage read(byte[] toDecode, ConfigMessages cfg) {
-		ByteBuffer b = PacketReader.wrapLE(toDecode);
+		ByteBuffer b = IOUtils.wrapLE(toDecode);
 		long senderUIN = UINUtils.make(b.getInt(8), b.getInt(4) & 0xFFFF);
 		// the removal of 12 bytes here is to account for the C2E message header
 		int messageDataLen = b.getInt(12) - HEADER_C2E_LEN;
@@ -49,9 +49,9 @@ public abstract class PackedMessage {
 			throw new IndexOutOfBoundsException("Not going to work");
 		int messageType = b.getInt(28);
 		// Do decoding
-		ByteBuffer messageDataSlice = PacketReader.wrapLE(toDecode, HEADER_LEN, messageDataLen);
+		ByteBuffer messageDataSlice = IOUtils.wrapLE(toDecode, HEADER_LEN, messageDataLen);
 		if (messageType == TYPE_PRAY) {
-			return new PackedMessagePRAY(senderUIN, PRAYBlock.read(messageDataSlice, cfg));
+			return new PackedMessagePRAY(senderUIN, PRAYBlock.read(messageDataSlice, cfg.maxDecompressedPRAYSize.getValue(), PacketReader.CHARSET));
 		} else if (messageType == TYPE_WRIT) {
 			String channel = PacketReader.getString(messageDataSlice);
 			int messageId = messageDataSlice.getInt();

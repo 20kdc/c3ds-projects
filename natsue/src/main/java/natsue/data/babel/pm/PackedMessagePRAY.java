@@ -9,8 +9,8 @@ package natsue.data.babel.pm;
 
 import java.util.LinkedList;
 
+import cdsp.common.data.pray.PRAYBlock;
 import natsue.config.ConfigMessages;
-import natsue.data.pray.PRAYBlock;
 
 /**
  * PRAY PackedMessage!
@@ -39,6 +39,6 @@ public class PackedMessagePRAY extends PackedMessage {
 
 	@Override
 	public byte[] getOrPackContents(ConfigMessages msg) {
-		return PRAYBlock.write(messageBlocks, msg);
+		return PRAYBlock.write(messageBlocks, msg.compressPRAYChunks.getValue());
 	}
 }

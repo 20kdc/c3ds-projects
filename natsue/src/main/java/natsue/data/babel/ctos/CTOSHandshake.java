@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import cdsp.common.data.IOUtils;
 import natsue.config.ConfigMessages;
 import natsue.data.babel.PacketReader;
 
@@ -39,13 +40,13 @@ public class CTOSHandshake extends BaseCTOS {
 	@Override
 	public void initializeAndReadRemainder(ConfigMessages pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
 		super.initializeAndReadRemainder(pcfg, inputStream, initial);
-		ByteBuffer hdrExt = PacketReader.getWrappedBytes(inputStream, 20);
+		ByteBuffer hdrExt = IOUtils.getWrappedBytes(inputStream, 20);
 		int usernameLen = hdrExt.getInt(12);
 		int passwordLen = hdrExt.getInt(16);
 		int totalLen = usernameLen + passwordLen;
 		if (totalLen < 0 || totalLen > pcfg.maxLoginInfoSize.getValue())
 			throw new IOException("Invalid message size!");
-		byte[] data = PacketReader.getBytes(inputStream, totalLen);
+		byte[] data = IOUtils.getBytes(inputStream, totalLen);
 		username = new String(data, 0, usernameLen - 1, PacketReader.CHARSET);
 		password = new String(data, usernameLen, passwordLen - 1, PacketReader.CHARSET);
 	}

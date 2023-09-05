@@ -11,9 +11,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cdsp.common.data.IOUtils;
 import natsue.config.Config;
 import natsue.data.babel.CreatureHistoryBlob;
-import natsue.data.babel.PacketReader;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSFeedHistory;
@@ -103,7 +103,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			}
 		} else if (packet instanceof CTOSFeedHistory) {
 			try {
-				ByteBuffer bb = PacketReader.wrapLE(((CTOSFeedHistory) packet).data);
+				ByteBuffer bb = IOUtils.wrapLE(((CTOSFeedHistory) packet).data);
 				CreatureHistoryBlob chb = new CreatureHistoryBlob(bb, config.messages.maxCreatureHistoryEvents.getValue());
 				hub.clientSendHistory(this, chb);
 			} catch (Exception ex) {

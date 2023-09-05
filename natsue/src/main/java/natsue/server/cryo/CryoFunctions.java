@@ -8,9 +8,10 @@ package natsue.server.cryo;
 
 import java.util.LinkedList;
 
+import cdsp.common.data.pray.PRAYBlock;
+import cdsp.common.data.pray.PRAYTags;
+import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
-import natsue.data.pray.PRAYBlock;
-import natsue.data.pray.PRAYTags;
 import natsue.names.CreatureDataVerifier;
 import natsue.server.database.UnixTime;
 import natsue.server.userdata.INatsueUserData;
@@ -70,7 +71,7 @@ public class CryoFunctions {
 			return "no creature root";
 		// check creature root is sane
 		try {
-			PRAYTags pt = new PRAYTags();
+			PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 			pt.read(creatureRoot.data);
 			int reG = pt.intMap.get("Genus");
 			if (reG < 1 || reG > 4)
@@ -155,7 +156,7 @@ public class CryoFunctions {
 	 * Stash data in the root. In case of abuse of Cryo this data can be retrieved.
 	 */
 	public static void cryoUpdateRootStorage(PRAYBlock inp, long fromUIN) {
-		PRAYTags pt = new PRAYTags();
+		PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 		pt.read(inp.data);
 		pt.strMap.put("Pray Extra natsueCryoSubmitter", UINUtils.toString(fromUIN));
 		pt.intMap.put("Pray Extra natsueCryoSubmitTime", (int) UnixTime.get());
@@ -165,7 +166,7 @@ public class CryoFunctions {
 	 * Remove stashed data.
 	 */
 	public static void cryoUpdateRootRetrieval(PRAYBlock inp, long fromUIN) {
-		PRAYTags pt = new PRAYTags();
+		PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 		pt.read(inp.data);
 		pt.strMap.remove("Pray Extra natsueCryoSubmitter");
 		pt.intMap.remove("Pray Extra natsueCryoSubmitTime");
@@ -178,7 +179,7 @@ public class CryoFunctions {
 		PRAYBlock block = CryoFunctions.findCreatureRootBlock(messageBlocks);
 		// Handle tags and so forth
 		// NB norn detector
-		PRAYTags pt = new PRAYTags();
+		PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 		pt.read(block.data);
 		int reC = pt.intMap.get("Gender");
 		int reG = pt.intMap.get("Genus");

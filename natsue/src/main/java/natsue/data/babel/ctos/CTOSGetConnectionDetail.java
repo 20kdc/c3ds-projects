@@ -9,7 +9,7 @@ package natsue.data.babel.ctos;
 
 import java.nio.ByteBuffer;
 
-import natsue.data.IOUtils;
+import cdsp.common.data.IOUtils;
 import natsue.data.babel.UINUtils;
 
 public class CTOSGetConnectionDetail extends TargetUIDCTOS {

@@ -7,9 +7,9 @@
 
 package natsue.server.firewall;
 
+import cdsp.common.data.pray.PRAYBlock;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
-import natsue.data.pray.PRAYBlock;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 import natsue.server.userdata.INatsueUserData;

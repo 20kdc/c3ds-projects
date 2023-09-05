@@ -9,12 +9,13 @@ package natsue.data.hli;
 
 import java.util.Random;
 
+import cdsp.common.data.pray.PRAYBlock;
+import cdsp.common.data.pray.PRAYTags;
+import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.data.babel.pm.PackedMessageWrit;
-import natsue.data.pray.PRAYBlock;
-import natsue.data.pray.PRAYTags;
 
 /**
  * For interacting with the default Bootstrap.
@@ -42,7 +43,7 @@ public class StandardMessages {
 	 * A chat request.
 	 */
 	public static PackedMessage chatRequest(long senderUIN, String nickname, String chatID) {
-		PRAYTags res = new PRAYTags();
+		PRAYTags res = new PRAYTags(PacketReader.CHARSET);
 		res.strMap.put("Sender UserID", UINUtils.toString(senderUIN));
 		// vanilla really does NOT care, but it *does* read this field in for some reason
 		res.strMap.put("Date Sent", "19551101000000");
@@ -56,7 +57,7 @@ public class StandardMessages {
 	 * Accept chat request.
 	 */
 	public static PackedMessage acceptChatRequest(long senderUIN, String nickname, String chatID) {
-		PRAYTags res = new PRAYTags();
+		PRAYTags res = new PRAYTags(PacketReader.CHARSET);
 		res.strMap.put("Sender UserID", UINUtils.toString(senderUIN));
 		res.strMap.put("ChatID", chatID);
 		res.strMap.put("Request Type", "Accept");
@@ -68,7 +69,7 @@ public class StandardMessages {
 	 * Chat message.
 	 */
 	public static PackedMessage chatMessage(long senderUIN, String senderNick, String chatID, String text) {
-		PRAYTags res = new PRAYTags();
+		PRAYTags res = new PRAYTags(PacketReader.CHARSET);
 		res.strMap.put("Chat Message Type", "Message");
 		res.strMap.put("Sender UserID", UINUtils.toString(senderUIN));
 		res.strMap.put("ChatID", chatID);
@@ -81,7 +82,7 @@ public class StandardMessages {
 	 * Leaving chat.
 	 */
 	public static PackedMessage chatLeave(long senderUIN, String senderNick, String chatID, long targetUIN, String targetNick) {
-		PRAYTags res = new PRAYTags();
+		PRAYTags res = new PRAYTags(PacketReader.CHARSET);
 		res.strMap.put("ChatID", chatID);
 		res.strMap.put("Sender Nickname", senderNick);
 		res.strMap.put("Sender UserID", UINUtils.toString(senderUIN));
@@ -103,7 +104,7 @@ public class StandardMessages {
 	 * Arbitrary PRAY tags message.
 	 */
 	public static PackedMessage tagsMessage(long senderUIN, String type, PRAYTags tags) {
-		PRAYBlock pb = new PRAYBlock(type, generateBlockName(type), tags.toByteArray());
+		PRAYBlock pb = new PRAYBlock(type, generateBlockName(type), tags.toByteArray(), PacketReader.CHARSET);
 		return new PackedMessagePRAY(senderUIN, pb);
 	}
 }

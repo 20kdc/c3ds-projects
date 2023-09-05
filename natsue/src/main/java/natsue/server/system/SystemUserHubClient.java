@@ -11,15 +11,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import cdsp.common.data.pray.PRAYBlock;
+import cdsp.common.data.pray.PRAYTags;
 import natsue.config.Config;
 import natsue.data.babel.BabelShortUserData;
+import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.data.hli.ChatColours;
 import natsue.data.hli.StandardMessages;
-import natsue.data.pray.PRAYBlock;
-import natsue.data.pray.PRAYTags;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.cryo.CryoFunctions;
@@ -198,7 +199,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 					String chatType = chatMaybe.getType();
 					if (chatType.equals("REQU")) {
 						// Chat request to System?
-						PRAYTags pt = new PRAYTags();
+						PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 						pt.read(chatMaybe.data);
 						String str = pt.strMap.get("Request Type");
 						String chatID = pt.strMap.get("ChatID");
@@ -216,7 +217,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 							}
 						}
 					} else if (chatType.equals("CHAT")) {
-						PRAYTags pt = new PRAYTags();
+						PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 						pt.read(chatMaybe.data);
 						String cmt = pt.strMap.get("Chat Message Type");
 						String chatID = pt.strMap.get("ChatID");
@@ -231,7 +232,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 							}
 						}
 					} else if (chatType.equals("MESG")) {
-						PRAYTags pt = new PRAYTags();
+						PRAYTags pt = new PRAYTags(PacketReader.CHARSET);
 						pt.read(chatMaybe.data);
 						String subject = pt.strMap.get("Subject");
 						String msg = pt.strMap.get("Message");

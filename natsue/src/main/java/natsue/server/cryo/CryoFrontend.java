@@ -11,9 +11,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 
+import cdsp.common.data.IOUtils;
+import cdsp.common.data.pray.PRAYBlock;
 import natsue.config.Config;
 import natsue.data.babel.PacketReader;
-import natsue.data.pray.PRAYBlock;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.names.CreatureDataVerifier;
@@ -65,7 +66,7 @@ public class CryoFrontend implements ILogSource {
 			if (!CreatureDataVerifier.verifyMoniker(moniker))
 				return "invalid moniker";
 			CryoFunctions.cryoUpdateRootStorage(convertedRoot, who.getUIN());
-			return performActualSubmit(who.getUINString() + "." + moniker, PRAYBlock.write(converted, config.messages));
+			return performActualSubmit(who.getUINString() + "." + moniker, PRAYBlock.write(converted, config.messages.compressPRAYChunks.getValue()));
 		} catch (Exception ex) {
 			log(ex);
 			return "Exception: " + ex.toString();
@@ -107,7 +108,7 @@ public class CryoFrontend implements ILogSource {
 	private LockedFN lockedFNByFNInSync(String optV, INatsueUserData receiver) {
 		try {
 			byte[] data = storage.readFromCryo(optV);
-			LinkedList<PRAYBlock> pb = PRAYBlock.read(PacketReader.wrapLE(data), config.messages);
+			LinkedList<PRAYBlock> pb = PRAYBlock.read(IOUtils.wrapLE(data), config.messages.maxDecompressedPRAYSize.getValue(), PacketReader.CHARSET);
 			// do this check early b/c otherwise it turns into an exception in rcc
 			PRAYBlock root = CryoFunctions.findCreatureRootBlock(pb);
 			if (root == null) {

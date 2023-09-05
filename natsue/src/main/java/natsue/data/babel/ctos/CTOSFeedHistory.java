@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import cdsp.common.data.IOUtils;
 import natsue.config.ConfigMessages;
-import natsue.data.babel.PacketReader;
 
 /**
  * Note that the dummy response is just fine.
@@ -32,7 +32,7 @@ public class CTOSFeedHistory extends BaseCTOS {
 		int bytes = initial.getInt(BASE_FIELD_FDLEN);
 		if (bytes < 0 || bytes > pcfg.maxFeedHistorySize.getValue())
 			throw new IOException("Invalid history size!");
-		data = PacketReader.getBytes(inputStream, bytes);
+		data = IOUtils.getBytes(inputStream, bytes);
 	}
 
 	@Override

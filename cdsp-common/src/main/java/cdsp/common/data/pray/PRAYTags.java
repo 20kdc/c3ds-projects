@@ -5,36 +5,42 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.data.pray;
+package cdsp.common.data.pray;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 
-import natsue.data.IOUtils;
-import natsue.data.babel.PacketReader;
+import cdsp.common.data.IOUtils;
 
 /**
  * Going all-out on this...
  */
 public class PRAYTags {
+	public final Charset charset;
+
 	public final HashMap<String, Integer> intMap = new HashMap<String, Integer>();
 	public final HashMap<String, String> strMap = new HashMap<String, String>();
 
+	public PRAYTags(Charset charset) {
+		this.charset = charset;
+	}
+
 	public void read(byte[] block) {
-		ByteBuffer bb = PacketReader.wrapLE(block);
+		ByteBuffer bb = IOUtils.wrapLE(block);
 		int intValNo = bb.getInt();
 		for (int i = 0; i < intValNo; i++) {
-			String key = PacketReader.getString(bb);
+			String key = IOUtils.getString(bb, charset);
 			int val = bb.getInt();
 			intMap.put(key, val);
 		}
 		int strValNo = bb.getInt();
 		for (int i = 0; i < strValNo; i++) {
-			String key = PacketReader.getString(bb);
-			strMap.put(key, PacketReader.getString(bb));
+			String key = IOUtils.getString(bb, charset);
+			strMap.put(key, IOUtils.getString(bb, charset));
 		}
 	}
 
@@ -44,16 +50,16 @@ public class PRAYTags {
 		LinkedList<byte[]> stringByteArrays = new LinkedList<byte[]>();
 		int totalSize = 8;
 		for (Entry<String, Integer> ent : intMap.entrySet()) {
-			byte[] k = ent.getKey().getBytes(PacketReader.CHARSET);
+			byte[] k = ent.getKey().getBytes(charset);
 			intKeyByteArrays.add(k);
 			intValues.add(ent.getValue());
 			totalSize += 8 + k.length;
 		}
 		for (Entry<String, String> ent : strMap.entrySet()) {
-			byte[] k = ent.getKey().getBytes(PacketReader.CHARSET);
-			byte[] v = ent.getValue().getBytes(PacketReader.CHARSET);
-			stringByteArrays.add(ent.getKey().getBytes(PacketReader.CHARSET));
-			stringByteArrays.add(ent.getValue().getBytes(PacketReader.CHARSET));
+			byte[] k = ent.getKey().getBytes(charset);
+			byte[] v = ent.getValue().getBytes(charset);
+			stringByteArrays.add(k);
+			stringByteArrays.add(v);
 			totalSize += 8 + k.length + v.length;
 		}
 

@@ -5,24 +5,25 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.data.pray;
+package cdsp.common.data.pray;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import natsue.config.ConfigMessages;
-import natsue.data.IOUtils;
+import cdsp.common.data.IOUtils;
 
 /**
  * Not all into the details, but good enough
  */
 public class PRAYBlock {
+	public final Charset charset;
 	private final byte[] type = new byte[4];
 	// mirror of type, keep up to date!
 	// exists just as a way to reduce unnecessary conversion.
@@ -30,31 +31,32 @@ public class PRAYBlock {
 	public final byte[] name = new byte[128];
 	public byte[] data;
 
-	public PRAYBlock() {
-		
+	public PRAYBlock(Charset charset) {
+		this.charset = charset;
 	}
 
-	public PRAYBlock(String string, String str2, byte[] byteArray) {
+	public PRAYBlock(String string, String str2, byte[] byteArray, Charset charset) {
+		this.charset = charset;
 		setType(string);
 		setName(str2);
 		data = byteArray;
 	}
 
 	public void setType(String t) {
-		IOUtils.setFixedLength(type, 4, t);
+		IOUtils.setFixedLength(type, t, charset);
 		typeStr = t;
 	}
 	public void setName(String t) {
-		IOUtils.setFixedLength(name, 128, t);
+		IOUtils.setFixedLength(name, t, charset);
 	}
 	public String getType() {
 		return typeStr;
 	}
 	public String getName() {
-		return IOUtils.getFixedLength(name);
+		return IOUtils.getFixedLength(name, charset);
 	}
 	public PRAYBlock copy() {
-		return new PRAYBlock(getType(), getName(), data.clone());
+		return new PRAYBlock(getType(), getName(), data.clone(), charset);
 	}
 
 	public static LinkedList<PRAYBlock> copyList(Iterable<PRAYBlock> src) {
@@ -64,7 +66,7 @@ public class PRAYBlock {
 		return blocks;
 	}
 
-	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, ConfigMessages opts) {
+	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, int maxDecompressedSize, Charset charset) {
 		if (dataSlice.get() != (byte) 'P')
 			throw new RuntimeException("Not a PRAY file!");
 		if (dataSlice.get() != (byte) 'R')
@@ -74,19 +76,18 @@ public class PRAYBlock {
 		if (dataSlice.get() != (byte) 'Y')
 			throw new RuntimeException("Not a PRAY file!");
 		LinkedList<PRAYBlock> blocks = new LinkedList<>();
-		int maxDecompressedSize = opts.maxDecompressedPRAYSize.getValue();
 		int remaining = maxDecompressedSize;
 		while (dataSlice.position() != dataSlice.limit()) {
-			PRAYBlock pb = readOne(dataSlice, remaining, maxDecompressedSize);
+			PRAYBlock pb = readOne(dataSlice, remaining, maxDecompressedSize, charset);
 			blocks.add(pb);
 			remaining -= pb.data.length;
 		}
 		return blocks;
 	}
-	public static PRAYBlock readOne(ByteBuffer dataSlice, int maxBlockSize, int maxTotalSize) {
-		PRAYBlock block = new PRAYBlock();
+	public static PRAYBlock readOne(ByteBuffer dataSlice, int maxBlockSize, int maxTotalSize, Charset charset) {
+		PRAYBlock block = new PRAYBlock(charset);
 		dataSlice.get(block.type);
-		block.typeStr = IOUtils.getFixedLength(block.type);
+		block.typeStr = IOUtils.getFixedLength(block.type, charset);
 		dataSlice.get(block.name);
 		int compressedDataSize = dataSlice.getInt();
 		int decompressedDataSize = dataSlice.getInt();
@@ -136,17 +137,17 @@ public class PRAYBlock {
 			return new PRAYBlockPrepared(pb, pb.data.length, false, pb.data);
 		}
 	}
-	public static byte[] write(Iterable<PRAYBlock> blocks, ConfigMessages msg) {
+	public static byte[] write(Iterable<PRAYBlock> blocks, boolean compressPRAYChunks) {
 		int totalLen = 4;
 		int blockCount = 0;
 		for (Iterator<PRAYBlock> iterator = blocks.iterator(); iterator.hasNext(); iterator.next())
 			blockCount++;
 		if (blockCount == 1)
-			return writeFileWithOneBlock(blocks.iterator().next(), msg);
+			return writeFileWithOneBlock(blocks.iterator().next(), compressPRAYChunks);
 		PRAYBlockPrepared[] preparedBlocks = new PRAYBlockPrepared[blockCount];
 		int blockIndex = 0;
 		for (PRAYBlock pb : blocks) {
-			PRAYBlockPrepared pbp = prepareBlock(pb, msg.compressPRAYChunks.getValue());
+			PRAYBlockPrepared pbp = prepareBlock(pb, compressPRAYChunks);
 			preparedBlocks[blockIndex++] = pbp;
 			totalLen += pbp.calcSize();
 		}
@@ -156,8 +157,8 @@ public class PRAYBlock {
 			pb.put(total);
 		return total.array();
 	}
-	public static byte[] writeFileWithOneBlock(PRAYBlock pb, ConfigMessages msg) {
-		PRAYBlockPrepared pbp = prepareBlock(pb, msg.compressPRAYChunks.getValue());
+	public static byte[] writeFileWithOneBlock(PRAYBlock pb, boolean compressPRAYChunks) {
+		PRAYBlockPrepared pbp = prepareBlock(pb, compressPRAYChunks);
 		int totalLen = 4 + pbp.calcSize();
 		ByteBuffer total = IOUtils.newBuffer(totalLen);
 		total.put((byte) 'P'); total.put((byte) 'R'); total.put((byte) 'A'); total.put((byte) 'Y');

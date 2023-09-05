@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>natsue.server</groupId>
+	<groupId>kdc-c3ds-projects</groupId>
 	<artifactId>natsue-server</artifactId>
 	<version>0.666-SNAPSHOT</version>
 
@@ -16,6 +16,11 @@
 	</properties>
 
 	<dependencies>
+		<dependency> 
+			<groupId>kdc-c3ds-projects</groupId>
+			<artifactId>cdsp-common</artifactId>
+			<version>0.666-SNAPSHOT</version>
+		</dependency>
 		<!--
 			JDBC drivers. These are included in binaries to ease personal setup.
 			And that's why you won't be seeing any official JARs of Natsue...

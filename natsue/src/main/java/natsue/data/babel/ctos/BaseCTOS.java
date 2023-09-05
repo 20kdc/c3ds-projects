@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.*;
 
+import cdsp.common.data.IOUtils;
 import natsue.config.ConfigMessages;
-import natsue.data.IOUtils;
 
 /**
  * Just the obvious bits...

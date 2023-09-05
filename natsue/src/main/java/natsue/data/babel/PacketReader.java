@@ -7,15 +7,14 @@
 
 package natsue.data.babel;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+import cdsp.common.data.IOUtils;
 import natsue.config.ConfigMessages;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSClientCommand;
@@ -39,67 +38,16 @@ public class PacketReader {
 	 */
 	public static final Charset CHARSET = StandardCharsets.ISO_8859_1;
 
-	/**
-	 * Makes sure to read the given amount of bytes from the input stream (no more or less).
-	 */
-	public static void readFully(InputStream socketInput, byte[] data, int ofs, int len) throws IOException {
-		int end = ofs + len;
-		while (ofs < end) {
-			int amount = socketInput.read(data, ofs, end - ofs);
-			if (amount <= 0)
-				throw new EOFException("Out of data");
-			ofs += amount;
-		}
-	}
-
-	/**
-	 * Makes sure to read the given amount of bytes from the input stream (no more or less).
-	 */
-	public static byte[] getBytes(InputStream socketInput, int len) throws IOException {
-		byte[] data = new byte[len];
-		readFully(socketInput, data, 0, len);
-		return data;
-	}
-
-	/**
-	 * Makes sure to read the given amount of bytes from the input stream (no more or less).
-	 * Returns a little-endian ByteBuffer.
-	 */
-	public static ByteBuffer getWrappedBytes(InputStream socketInput, int len) throws IOException {
-		return wrapLE(getBytes(socketInput, len));
-	}
-
-	/**
-	 * Converts a byte[] to a little-endian ByteBuffer.
-	 */
-	public static ByteBuffer wrapLE(byte[] total) {
-		return wrapLE(total, 0, total.length);
-	}
-
-	/**
-	 * Converts a byte[] to a little-endian ByteBuffer.
-	 */
-	public static ByteBuffer wrapLE(byte[] total, int ofs, int len) {
-		ByteBuffer bb = ByteBuffer.wrap(total, ofs, len);
-		bb.order(ByteOrder.LITTLE_ENDIAN);
-		return bb;
-	}
-
 	public static long getUIN(ByteBuffer initial, int ofs) {
 		// HID gets masked in this, which is good and important
 		return UINUtils.make(initial.getInt(ofs), initial.getInt(ofs + 4));
 	}
 
 	/**
-	 * Gets a string with "stream-like" ByteBuffer access
+	 * Wrapper using the default charset.
 	 */
-	public static String getString(ByteBuffer bb) {
-		int len = bb.getInt();
-		byte[] baseArray = bb.array();
-		int pos = bb.position();
-		String str = new String(baseArray, bb.arrayOffset() + pos, len, PacketReader.CHARSET);
-		bb.position(pos + len);
-		return str;
+	public static String getString(ByteBuffer dataToRead) {
+		return IOUtils.getString(dataToRead, CHARSET);
 	}
 
 	/**
@@ -132,7 +80,7 @@ public class PacketReader {
 		// compensate for the manually read byte
 		if (firstByte != -1)
 			res++;
-		readFully(skt.getInputStream(), data, res, PACKET_HEADER_SIZE - res);
+		IOUtils.readFully(skt.getInputStream(), data, res, PACKET_HEADER_SIZE - res);
 		return data;
 	}
 
@@ -140,7 +88,7 @@ public class PacketReader {
 	 * Given a packet header, reads the remainder of a packet from an input stream.
 	 */
 	public static BaseCTOS readPacket(ConfigMessages cfg, byte[] initialData, InputStream packetSource) throws IOException {
-		ByteBuffer initial = wrapLE(initialData);
+		ByteBuffer initial = IOUtils.wrapLE(initialData);
 		// alright, what type is this?
 		int type = initial.getInt(BaseCTOS.BASE_FIELD_TYPE);
 		BaseCTOS packetBase = packetInstanceByType(type);

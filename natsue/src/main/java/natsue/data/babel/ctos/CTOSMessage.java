@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import cdsp.common.data.IOUtils;
 import natsue.config.ConfigMessages;
-import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
 
 /**
@@ -44,9 +44,9 @@ public class CTOSMessage extends BaseCTOS {
 		int msgDataSize = initial.getInt(BASE_FIELD_FDLEN);
 		if (msgDataSize < 0 || msgDataSize > pcfg.maxBabelBinaryMessageSize.getValue())
 			throw new IOException("Invalid message size!");
-		ByteBuffer data = PacketReader.getWrappedBytes(inputStream, 8);
+		ByteBuffer data = IOUtils.getWrappedBytes(inputStream, 8);
 		targetUIN = UINUtils.make(data.getInt(0), data.getInt(4));
-		messageData = PacketReader.getBytes(inputStream, msgDataSize);
+		messageData = IOUtils.getBytes(inputStream, msgDataSize);
 	}
 
 	@Override
