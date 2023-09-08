@@ -12,6 +12,7 @@
 
 	<modules>
 		<module>cdsp-common</module>
+		<module>cdsp-tools</module>
 		<module>ral</module>
 		<module>natsue</module>
 	</modules>
