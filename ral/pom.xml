@@ -16,6 +16,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>kdc-c3ds-projects</groupId>
+			<artifactId>cdsp-common</artifactId>
+			<version>0.666-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20220924</version>

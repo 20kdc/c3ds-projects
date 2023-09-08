@@ -20,6 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
+import cdsp.common.swing.JButtonWR;
+
 /**
  * RAL's debugger.
  */
