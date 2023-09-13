@@ -15,6 +15,7 @@ import java.io.File;
 public interface DirLookup {
     public File findFile(Location location, String name);
     public static enum Location {
+        // nameInternal is saved into files.
         BACKGROUNDS("Backgrounds", "Backgrounds", false),
         BODY_DATA("Body Data", "Body Data", false),
         BOOTSTRAP("Bootstrap", "Bootstrap", false),

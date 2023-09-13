@@ -7,70 +7,42 @@
 
 package cdsp.tools;
 
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.FileDialog;
-import java.awt.Graphics;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
+import java.awt.GridLayout;
 import java.io.IOException;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 
-import cdsp.common.s16.CS16IO;
-import cdsp.common.s16.S16Image;
+import cdsp.common.app.GameInfo;
+import cdsp.common.app.JButtonWR;
+import cdsp.common.app.JGameInfo;
 
-public class Main {
-    S16Image[] fr;
-    BufferedImage bi;
-    int frI = 0;
-
-    public Main(S16Image[] fr) {
-        this.fr = fr;
+@SuppressWarnings("serial")
+public class Main extends JFrame {
+    public final GameInfo gameInfo = new GameInfo();
+    public Main() {
+        // Load config
+        gameInfo.loadFromDefaultLocation();
+        // Continue
+        setTitle("cdsp-tools");
+        setLayout(new GridLayout(0, 1));
+        setAlwaysOnTop(true);
+        add(new JButtonWR("Configuration", () -> {
+            JDialog configPage = new JDialog(Main.this, "Configuration");
+            configPage.add(new JGameInfo(gameInfo));
+            configPage.setSize(800, 600);
+            configPage.setVisible(true);
+        }));
+        add(new JButtonWR("View C16/S16", () -> {
+            
+        }));
+        pack();
+        setLocationByPlatform(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(true);
     }
 
     public static void main(String[] args) throws IOException {
-        FileDialog fd = new FileDialog((JFrame) null);
-        fd.setVisible(true);
-        S16Image[] fr = CS16IO.decodeCS16(fd.getFiles()[0]);
-        new Main(fr).doTheThing();
-    }
-
-    public void doTheThing() {
-        JFrame testFrame = new JFrame();
-        testFrame.setSize(400, 400);
-        Canvas testCanvas = new Canvas() {
-            @Override
-            public void paint(Graphics g) {
-                super.paint(g);
-                int w = getWidth();
-                int h = getHeight();
-                g.setColor(Color.black);
-                g.fillRect(0, 0, w, h);
-                g.setColor(Color.white);
-                g.drawString(Integer.toString(frI), 8, 16);
-                if (bi != null)
-                    g.drawImage(bi, 0, 24, null);
-            }
-        };
-        testFrame.add(testCanvas);
-        testFrame.setVisible(true);
-        testCanvas.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    frI--;
-                } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    frI++;
-                }
-                if (frI < 0 || frI >= fr.length) {
-                    bi = null;
-                } else {
-                    bi = fr[frI].toBI(true);
-                }
-                testCanvas.repaint();
-            }
-        });
+        new Main();
     }
 }
