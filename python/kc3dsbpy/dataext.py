@@ -15,9 +15,9 @@ from bpy.props import StringProperty, EnumProperty, IntProperty, FloatProperty, 
 from bpy.types import Operator, Panel
 
 import libkc3ds.parts
+import libkc3ds.aging
 
 from . import gizmo
-from . import database
 from . import framereq
 
 # need to import this here, bleh
@@ -26,7 +26,7 @@ BRAND = "C3/DS Breed Exporter"
 
 CSETS_ITEM_LIST = []
 
-for cset in database.CSETS_ALL:
+for cset in libkc3ds.aging.CSETS_ALL:
 	CSETS_ITEM_LIST.append((cset.name, cset.desc, "Template: " + cset.desc))
 
 # Data UI

@@ -1,4 +1,8 @@
-* `database.py`: Defines classes to bind together Setup, ages, and image sizes, along with ChiChi Norn metrics
+* `aging.py`: Defines classes to bind together Setup, ages, and image sizes, along with ChiChi Norn metrics
+* `aging_chichi.py`: ChiChi Norn metrics
+* `aging_ettin.py`: Ettin metrics
+* `aging_grendel.py`: Grendel metrics
+* `aging_all.py`: Aging central index
 * `gizmo.py`: VisScript, camera positioning, and scene manipulation runtime
   * Defines GizmoContext, housekeeping properties and `kc3dsbpy.deactivate_frame`
 * `framereq.py`: Responsible for constructing Gizmo property sets, main operators

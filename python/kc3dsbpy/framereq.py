@@ -12,9 +12,9 @@ import bpy
 from bpy.types import Operator
 
 import libkc3ds.parts
+import libkc3ds.aging
 
 from . import gizmo
-from . import database
 from . import imaging
 
 def calc_pitch_auto(marker, pid):
@@ -173,12 +173,12 @@ def sexes_str_to_array(sexes):
 	return [sexes]
 
 CSETS = {}
-for cset in database.CSETS_ALL:
+for cset in libkc3ds.aging.CSETS_ALL:
 	CSETS[cset.name] = cset
 
 def scene_to_cset(scene):
 	if not scene.kc3dsbpy_cset in CSETS:
-		return database.CHICHI
+		return libkc3ds.aging.CHICHI
 	return CSETS[scene.kc3dsbpy_cset]
 
 def calc_req_group(scene):
