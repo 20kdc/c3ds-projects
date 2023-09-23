@@ -15,6 +15,7 @@ KC3DSBPY_PY += kc3dsbpy/__init__.py
 KC3DSBPY_PY += kc3dsbpy/imaging.py
 KC3DSBPY_PY += kc3dsbpy/dataext.py
 KC3DSBPY_PY += kc3dsbpy/gizmo.py
+KC3DSBPY_PY += kc3dsbpy/visscript.py
 KC3DSBPY_PY += kc3dsbpy/framereq.py
 KC3DSBPY_ABS = $(addprefix python/,$(KC3DSBPY_PY))
 

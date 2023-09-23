@@ -10,67 +10,27 @@ import bpy
 import mathutils
 import math
 
-# See VISSCRIPT.md
+from . import visscript
 
-VISSCRIPT_OPS = ["&&", "|", "&", "!", "="]
+# See visscript section of HELP.md
 
-def visscript_prop_exists(ctx, prop):
-	return ("kc3dsbpy." + prop) in ctx
-def visscript_prop_get(ctx, prop):
-	return str(ctx["kc3dsbpy." + prop])
-
-def visscript_compile_op(l, op, r):
-	if op == "|":
-		ls = visscript_compile(l)
-		rs = visscript_compile(r)
-		return lambda ctx: ls(ctx) or rs(ctx)
-	elif op == "&" or op == "&&":
-		ls = visscript_compile(l)
-		rs = visscript_compile(r)
-		return lambda ctx: ls(ctx) and rs(ctx)
-	elif op == "=":
-		prop = l.strip()
-		val = r.strip()
-		return lambda ctx: visscript_prop_exists(ctx, prop) and (visscript_prop_get(ctx, prop) == val)
-	elif op == "!":
-		if l != "":
-			raise Exception("cannot use ! after something")
-		rs = visscript_compile(r)
-		return lambda ctx: not rs(ctx)
-	else:
-		# shouldn't even be possible
-		raise Exception("Unknown op: " + op)
-
-def visscript_truthy(val):
-	val = str(val)
-	if val == "":
-		return False
-	elif val == "0" or val == "0.0":
-		return False
-	return True
-
-def visscript_compile(script):
-	script = script.strip()
-	# empty?
-	if script == "":
-		# 'Set' component (lighting cams etc.) : always valid
-		return lambda ctx: True
-	# try to find op
-	for op in VISSCRIPT_OPS:
-		op_idx = script.find(op)
-		if op_idx != -1:
-			return visscript_compile_op(script[:op_idx], op, script[op_idx + len(op):])
-	# flag: prop is present and non-zero
-	prop = script
-	return lambda ctx: visscript_prop_exists(ctx, prop) and visscript_truthy(visscript_prop_get(ctx, prop))
+class VisScriptBPYCtx():
+	def __init__(self, ctx):
+		self.ctx = ctx
+	def exists(self, prop):
+		return ("kc3dsbpy." + prop) in self.ctx
+	def get(self, prop):
+		return str(self.ctx["kc3dsbpy." + prop])
 
 def visscript_compile_and_bind(scene, obj):
 	"""
 	Creates a lambda which updates the object rendering status from Gizmo properties.
 	"""
-	compiled = visscript_compile(obj.kc3dsbpy_visscript)
+	tkns = visscript.visscript_tokenize(obj.kc3dsbpy_visscript)
+	compiled = visscript.visscript_compile(tkns)
+	scene_vsc = VisScriptBPYCtx(scene)
 	def bound():
-		obj.hide_render = not compiled(scene)
+		obj.hide_render = not compiled(scene_vsc)
 		obj.hide_viewport = obj.hide_render
 	return bound
 

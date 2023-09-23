@@ -80,10 +80,13 @@ VisScript breaks down the input in a specific order:
 * `A|B`: A or B
 * `A&B`: A and B
 * `!A`: not A
-* `A=B`: A is equal to literal "B"
+* `A=B`: A is equal to literal "B". The value of B is not case-sensitive.
+* `()`
 * `A`: A is present and not empty, "0", or "0.0".
 
-There's no `()` at this time, but here's some examples of how these would parse if there was (and why that's immportant):
+Instances of the above operators within `()` are ignored until as late as possible.
+
+To understand the precedence, see these examples:
 
 * `A | B & C | D`: `A | (B & C) | D`: OR of multiple branches, with their own individual list of ANDed conditions.
 * `part=Head&&happy|sad`: `(part=Head) & (happy | sad)`: Multiple different branches, but with an overarching condition.
