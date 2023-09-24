@@ -2,8 +2,13 @@
 
 This is designed to avert the 16-bit colour problem without using Xephyr (slow and potentially not available on Mac).
 
-This version is rated ONLY for use with the Docking Station engine "2.286".
-Usage with Creatures 3 "1.147" or "1.162" WILL FAIL. (It should be possible to implement, though.)
+This version should work with:
+
+* Docking Station engine "2.286"
+* Creatures 3 engine "1.162"
+* Creatures 3 engine "1.158"
+* Creatures 3 engine "1.147"
+
 Note that it will NOT do checksumming or anything like that, to avoid interference with other patches.
 However it does check that the bytes it's replacing are what it expects them to be, and this should be enough safety.
 
@@ -29,19 +34,20 @@ This patches the CreateSurface calls to go to elsewhere which patches them to ha
 I HAVE attempted to shim DirectDraw, this was really unstable and not a good idea
 The use of an external DLL avoids having to do anything too complex
 
-## Creatures 3 and so forth
+## Alternatives
 
-colour-depth-fix doesn't support other versions of Creatures 3 at present, but solutions exist that should work.
-
-### DxWrapper
-
-My recommendation is to use elishacloud's DxWrapper: https://github.com/elishacloud/dxwrapper/wiki/Creatures-2%3A-The-Albian-Years
+elishacloud's DxWrapper: https://github.com/elishacloud/dxwrapper/wiki/Creatures-2%3A-The-Albian-Years
 
 Yes, I'm aware that's for Creatures 2, but it works just as well for Creatures 3.
 
 But there's a problem, you need to go into `winecfg` and set the ddraw DLL to `native, builtin`. This may not be ideal, especially if you ended up with a native Windows `ddraw.dll`.
 
-### Using the Docking Station engine on C3
+### Where has the "Using the Docking Station engine on C3" section gone?
 
-This one's simpler - copy `Catalogue/vocab constructs.catalogue` from Docking Station to Creatures 3, and copy Docking Station's `engine.exe` across.
+~~This one's simpler - copy `Catalogue/vocab constructs.catalogue` from Docking Station to Creatures 3, and copy Docking Station's `engine.exe` across.~~
 
+*This method* is hilariously unstable in the face of Steam updates or literally any error or circumstance that calls upon catalogues that changed with DS.
+
+Perform at your own risk.
+
+In theory a more comprehensive catalogue fix could be created, as the necessary patching is in the purview of `ciesetup`. Maybe this time with something to make it more override-y to stop the previous issues.
