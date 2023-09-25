@@ -3,6 +3,10 @@ bits 32
 section .text
 
 global _ddraw_hook_table
+global _enforce_window_xy
+global _april_fools_24
+
+extern _specialFixWindowRect@4
 
 ; Null-terminated list of hook suite/string pairs.
 _ddraw_hook_table:
@@ -40,7 +44,7 @@ db "Engine 1.147 - Creatures 3 (with check)", 0
 suite_1p147_name:
 db "Engine 1.147 - Creatures 3 (no check)", 0
 
-; These tables contain sets of 3: the absolute address, a pointer to the jump target, and a pointer to the expected 5 bytes.
+; These tables contain sets of 3: the absolute address, a pointer to the call target, and a pointer to the expected 5 bytes.
 suite_2p286_b195cd:
 dd 0x00556030, cfcd_hook_code, cfcd_hook_test_ds
 suite_2p286_b195:
@@ -57,6 +61,8 @@ dd 0x004737D6, cs_hook_code, cs_hook_edx_test
 ; CreateSurface
 dd 0x0047626E, cs_hook_code, cs_hook_edx_test
 dd 0x0047628C, cs_hook_code, cs_hook_edx_test
+; Fix user.cfg corruption bug by not trusting the metrics
+dd 0x0057DC6D, special_usercfg_code, special_usercfg_test
 ; done!
 dd 0, 0, 0
 
@@ -192,4 +198,47 @@ pop eax ; this is the address of 84 C0 0F 84/85 .. .. .. ..
 add eax, [eax + 4]
 add eax, 8
 jmp eax
+
+; the window parameter validity test doesn't work for some extreme cases, i.e.
+; WindowBottom -31976
+; WindowLeft -32000
+; WindowRight -31840
+; WindowTop -32000
+; this can cause crashes when the backbuffer never shows up
+; interestingly C3 isn't susceptible?
+; anyways, presumably this is a rogue compositor shunting the window into the shadow realm (this was seen on what I believe is Mint Linux)
+special_usercfg_test:
+db 0x7E, 0x1D, 0x2B, 0xCE, 0x85
+special_usercfg_code:
+; remove old return address
+pop eax
+; locate and push rectangle location
+lea eax, [ebp - 0x20]
+push eax
+push 0x57DCA0
+jmp _specialFixWindowRect@4
+
+; -- Settings --
+align 16
+db "                "
+db "                "
+
+db "LimitWindowXY:"
+_enforce_window_xy:
+db "Y "
+
+db "                "
+db "                "
+; --
+
+align 16
+db "                "
+db "                "
+
+db "RegCode:"
+_april_fools_24:
+db "1234 "
+
+db "                "
+db "                "
 

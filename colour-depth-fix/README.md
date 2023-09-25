@@ -22,6 +22,18 @@ See below section for ideas in regards to C3/etc.
 4. Copy bin/ddrhk.dll into your Docking Station directory
 5. See if it works
 
+## Hexeditable settings
+
+This is just here in case anyone *really* needs it.
+
+There are settings which can be modified by hex-editing the binary.
+
+`LimitWindowXY:Y` tries to avoid the window being placed off-screen. This may, however, act in an unwanted way on multi-monitor setups.
+
+It can thus be disabled by changing the `Y` to `N`.
+
+Also, imagine there's a convenient blank space here on the manual with `5678` printed, as if by a different printer.
+
 ## Technical Summary
 
 ddrhk.c -> ddrhk.exe: injector
@@ -33,6 +45,8 @@ dscf.c & dscf_a.asm -> ddrhk.dll: the actual hook DLL
 This patches the CreateSurface calls to go to elsewhere which patches them to have a 565 pixel format
 I HAVE attempted to shim DirectDraw, this was really unstable and not a good idea
 The use of an external DLL avoids having to do anything too complex
+
+An additional benefit of the patch is that (presently for DS only) it prevents errors due to the window being made too small if the window was minimized or such when closing the game.
 
 ## Alternatives
 
