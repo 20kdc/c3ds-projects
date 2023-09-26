@@ -48,6 +48,9 @@ struct_cs16_lofs = struct.Struct("<I")
 
 struct_blk_header = struct.Struct("<IHHH")
 
+struct_bmp_header = struct.Struct("<BBIII")
+struct_bmp_bitmapv2infoheader = struct.Struct("<IIIHHIIIIIIIII")
+
 # short enc/dec
 def _decode_shorts(b: bytes, cfmt: str, endian: str, expected: int) -> array.array:
 	"""
@@ -130,6 +133,23 @@ class S16Image():
 			b |= b >> 5
 			pixseq[i] = (r, g, b)
 		return pixseq
+
+	def to_bmp(self):
+		"""
+		Converts the image to an RGB565 BMP.
+		This is useful to get data out when PIL is not available.
+		"""
+		cdata = b""
+		for i in range(self.height):
+			ir = self.height - (i + 1)
+			row = self.data[(ir * self.width):((ir + 1) * self.width)]
+			if self.width & 1:
+				cdata += _encode_shorts(row) + b"\x00\x00"
+			else:
+				cdata += _encode_shorts(row)
+		head1 = struct_bmp_header.pack(0x42, 0x4D, struct_bmp_header.size + struct_bmp_bitmapv2infoheader.size + len(cdata), 0, struct_bmp_header.size + struct_bmp_bitmapv2infoheader.size)
+		head2 = struct_bmp_bitmapv2infoheader.pack(struct_bmp_bitmapv2infoheader.size, self.width, self.height, 1, 16, 3, len(cdata), 0, 0, 0, 0, 0xF800, 0x07E0, 0x001F)
+		return head1 + head2 + cdata
 
 	def to_rgba(self):
 		"""

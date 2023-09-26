@@ -37,6 +37,8 @@ def command_help():
 	print(" decodes S16 or C16 files")
 	print("s16tool.py decodeFrame <IN> <FRAME> <OUT>")
 	print(" decodes a single frame of a S16/C16 to a PNG file")
+	print("s16tool.py decodeFrameBMP <IN> <FRAME> <OUT>")
+	print(" decodes a single frame of a S16/C16 to a BMP file")
 	print("s16tool.py decodeBLK <IN> <OUT>")
 	print(" decodes a BLK file to a PNG file")
 	print("s16tool.py decodeC2B <IN> <OUT>")
@@ -201,6 +203,13 @@ if len(sys.argv) >= 2:
 		images = _read_cs16_file(sys.argv[2])
 		vpil = s16image_to_pil_rgba(images[frame])
 		vpil.save(sys.argv[4], "PNG")
+	elif sys.argv[1] == "decodeFrameBMP":
+		frame = int(sys.argv[3])
+		images = _read_cs16_file(sys.argv[2])
+		bmp = images[frame].to_bmp()
+		f = open(sys.argv[4], "wb")
+		f.write(bmp)
+		f.close()
 	elif sys.argv[1] == "decodeBLK":
 		blk = decode_blk(_read_bytes(sys.argv[2]))
 		vpil = s16image_to_pil_rgba(blk, alpha_aware = False)
