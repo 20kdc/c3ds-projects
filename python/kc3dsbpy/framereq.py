@@ -254,6 +254,37 @@ class RenderKC3DSBPY(Operator):
 		self.report({"INFO"}, "Completed render, " + str(gizmo_idx) + " frames handled")
 		return {"FINISHED"}
 
+def _iterate_framelists(scene, cb):
+	# actually prepare
+	path_ib = bpy.path.abspath(scene.render.filepath)
+	framereqs = calc_req_group(scene)
+	# dithering modes
+	if scene.kc3dsbpy_c16_dither_colour:
+		cdmode = "bayer2"
+	else:
+		cdmode = "floor"
+	if scene.kc3dsbpy_c16_dither_alpha:
+		admode = "bayer2"
+	else:
+		admode = "nearest"
+	# actually do the thing
+	c16_names = {}
+	for frame in framereqs:
+		c16_names[frame.paths.c16] = True
+	for c16 in c16_names:
+		print(c16)
+		c16_frames = []
+		# load and dither
+		for frame in framereqs:
+			if frame.paths.c16 != c16:
+				continue
+			path_png = os.path.join(path_ib, frame.paths.png)
+			tmp_img = bpy.data.images.load(path_png)
+			c16_frames.append(imaging.bpy_to_s16image(tmp_img, cdmode = cdmode, admode = admode))
+			bpy.data.images.remove(tmp_img)
+		# finish
+		cb(c16, c16_frames)
+
 class PNG2C16KC3DSBPY(Operator):
 	# indirectly bound
 	bl_idname = "kc3dsbpy.png2c16"
@@ -263,36 +294,13 @@ class PNG2C16KC3DSBPY(Operator):
 	def invoke(self, context, event):
 		scene = context.scene
 		# actually prepare
-		path_ib = bpy.path.abspath(scene.render.filepath)
 		path_cb = bpy.path.abspath(scene.kc3dsbpy_c16_outpath)
-		framereqs = calc_req_group(scene)
-		# dithering modes
-		if scene.kc3dsbpy_c16_dither_colour:
-			cdmode = "bayer2"
-		else:
-			cdmode = "floor"
-		if scene.kc3dsbpy_c16_dither_alpha:
-			admode = "bayer2"
-		else:
-			admode = "nearest"
-		# actually do the thing
-		c16_names = {}
-		for frame in framereqs:
-			c16_names[frame.paths.c16] = True
-		for c16 in c16_names:
-			print(c16)
-			c16_frames = []
-			# load and dither
-			for frame in framereqs:
-				if frame.paths.c16 != c16:
-					continue
-				path_png = os.path.join(path_ib, frame.paths.png)
-				tmp_img = bpy.data.images.load(path_png)
-				c16_frames.append(imaging.bpy_to_s16image(tmp_img, cdmode = cdmode, admode = admode))
-				bpy.data.images.remove(tmp_img)
-			# finish
+		state = {"files_written": 0}
+		def x(c16, c16_frames):
 			imaging.save_c16_with_makedirs(c16_frames, os.path.join(path_cb, c16))
-		self.report({"INFO"}, "Completed PNG->C16, " + str(len(c16_names)) + " files written")
+			state["files_written"] += 1
+		_iterate_framelists(scene, x)
+		self.report({"INFO"}, "Completed PNG->C16, " + str(state["files_written"]) + " files written")
 		return {"FINISHED"}
 
 def activate_frame_op(operator, scene):
