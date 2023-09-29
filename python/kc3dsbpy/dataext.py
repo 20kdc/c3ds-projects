@@ -212,7 +212,9 @@ class SCENE_PT_ScenePanelRenderConvertKC3DSBPY(Panel):
 		row.prop(context.scene, "kc3dsbpy_c16_dither_colour")
 		row.prop(context.scene, "kc3dsbpy_c16_dither_alpha")
 		self.layout.prop(context.scene, "kc3dsbpy_c16_outpath")
-		self.layout.operator("kc3dsbpy.png2c16")
+		row = self.layout.row()
+		row.operator("kc3dsbpy.png2c16")
+		row.operator("kc3dsbpy.make_sheets")
 
 class SCENE_PT_ScenePanelBodyDataCopyKC3DSBPY(Panel):
 	bl_space_type = "PROPERTIES"

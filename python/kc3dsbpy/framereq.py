@@ -13,6 +13,7 @@ from bpy.types import Operator
 
 import libkc3ds.parts
 import libkc3ds.aging
+import libkc3ds.s16
 
 from . import gizmo
 from . import imaging
@@ -258,6 +259,26 @@ def _iterate_framelists(scene, cb):
 	# actually prepare
 	path_ib = bpy.path.abspath(scene.render.filepath)
 	framereqs = calc_req_group(scene)
+	# actually do the thing
+	c16_names = {}
+	for frame in framereqs:
+		c16_names[frame.paths.c16] = True
+	for c16 in c16_names:
+		print(c16)
+		relevant_frames = []
+		for frame in framereqs:
+			if frame.paths.c16 == c16:
+				relevant_frames.append(frame)
+		def inner(cb):
+			# load and dither
+			for frame in relevant_frames:
+				path_png = os.path.join(path_ib, frame.paths.png)
+				tmp_img = bpy.data.images.load(path_png)
+				cb(tmp_img)
+				bpy.data.images.remove(tmp_img)
+		cb(c16, inner, relevant_frames)
+
+def _iterate_framelists_c16ify(scene, inner):
 	# dithering modes
 	if scene.kc3dsbpy_c16_dither_colour:
 		cdmode = "bayer2"
@@ -267,23 +288,12 @@ def _iterate_framelists(scene, cb):
 		admode = "bayer2"
 	else:
 		admode = "nearest"
-	# actually do the thing
-	c16_names = {}
-	for frame in framereqs:
-		c16_names[frame.paths.c16] = True
-	for c16 in c16_names:
-		print(c16)
-		c16_frames = []
-		# load and dither
-		for frame in framereqs:
-			if frame.paths.c16 != c16:
-				continue
-			path_png = os.path.join(path_ib, frame.paths.png)
-			tmp_img = bpy.data.images.load(path_png)
-			c16_frames.append(imaging.bpy_to_s16image(tmp_img, cdmode = cdmode, admode = admode))
-			bpy.data.images.remove(tmp_img)
-		# finish
-		cb(c16, c16_frames)
+	# the core
+	c16_frames = []
+	def y(tmp_img):
+		c16_frames.append(imaging.bpy_to_s16image(tmp_img, cdmode = cdmode, admode = admode))
+	inner(y)
+	return c16_frames
 
 class PNG2C16KC3DSBPY(Operator):
 	# indirectly bound
@@ -296,11 +306,32 @@ class PNG2C16KC3DSBPY(Operator):
 		# actually prepare
 		path_cb = bpy.path.abspath(scene.kc3dsbpy_c16_outpath)
 		state = {"files_written": 0}
-		def x(c16, c16_frames):
+		def x(c16, inner, relevant_frames):
+			c16_frames = _iterate_framelists_c16ify(scene, inner)
+			# finish
 			imaging.save_c16_with_makedirs(c16_frames, os.path.join(path_cb, c16))
 			state["files_written"] += 1
 		_iterate_framelists(scene, x)
 		self.report({"INFO"}, "Completed PNG->C16, " + str(state["files_written"]) + " files written")
+		return {"FINISHED"}
+
+class MakeSheetsKC3DSBPY(Operator):
+	# indirectly bound
+	bl_idname = "kc3dsbpy.make_sheets"
+	bl_label = "To Sheets"
+	bl_description = "Converts PNGs to BMP sheets. Uses the rendering configuration for inputs"
+
+	def invoke(self, context, event):
+		scene = context.scene
+		# actually prepare
+		path_cb = bpy.path.abspath(scene.kc3dsbpy_c16_outpath)
+		columns = 16
+		def x(c16, inner, relevant_frames):
+			c16_frames = _iterate_framelists_c16ify(scene, inner)
+			# finish
+			imaging.save_png_with_makedirs(imaging.make_sheet(c16_frames, columns), os.path.join(path_cb, c16 + ".png"))
+		_iterate_framelists(scene, x)
+		self.report({"INFO"}, "Completed sheets")
 		return {"FINISHED"}
 
 def activate_frame_op(operator, scene):
@@ -326,10 +357,12 @@ class ActivateFKC3DSBPY(Operator):
 def register():
 	bpy.utils.register_class(RenderKC3DSBPY)
 	bpy.utils.register_class(PNG2C16KC3DSBPY)
+	bpy.utils.register_class(MakeSheetsKC3DSBPY)
 	bpy.utils.register_class(ActivateFKC3DSBPY)
 
 def unregister():
 	bpy.utils.unregister_class(RenderKC3DSBPY)
 	bpy.utils.unregister_class(PNG2C16KC3DSBPY)
+	bpy.utils.unregister_class(MakeSheetsKC3DSBPY)
 	bpy.utils.unregister_class(ActivateFKC3DSBPY)
 

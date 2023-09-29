@@ -1,5 +1,6 @@
 LIBKC3DS_PY += libkc3ds/__init__.py
 LIBKC3DS_PY += libkc3ds/s16.py
+LIBKC3DS_PY += libkc3ds/piw.py
 LIBKC3DS_PY += libkc3ds/s16pil.py
 LIBKC3DS_PY += libkc3ds/cpx.py
 LIBKC3DS_PY += libkc3ds/bitdither.py

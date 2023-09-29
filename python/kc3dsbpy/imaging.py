@@ -7,7 +7,7 @@
 # You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 import bpy
-from libkc3ds import s16
+from libkc3ds import s16, piw
 import os
 
 def save_image_with_makedirs(image, filepath):
@@ -25,7 +25,16 @@ def save_c16_with_makedirs(frames, filepath):
 	of = open(filepath, "wb")
 	of.write(s16.encode_c16(frames))
 	of.close()
-	
+
+def save_png_with_makedirs(frame, filepath):
+	try:
+		os.makedirs(os.path.dirname(filepath))
+	except:
+		pass
+	of = open(filepath, "wb")
+	of.write(piw.rgba_to_png(frame.width, frame.height, frame.to_rgba()))
+	of.close()
+
 def bpy_to_s16image(image, cdmode: str = s16.CDMODE_DEFAULT, admode: str = s16.ADMODE_DEFAULT) -> s16.S16Image:
 	"""
 	Converts a Blender Image to an S16Image.
@@ -46,4 +55,21 @@ def bpy_to_s16image(image, cdmode: str = s16.CDMODE_DEFAULT, admode: str = s16.A
 	res.flip_y()
 	return res
 
+def make_sheet(frames, columns) -> s16.S16Image:
+	"""
+	Creates a spritesheet.
+	"""
+	if len(frames) == 0:
+		return s16.S16Image(0, 0)
+	w = frames[0].width
+	h = frames[0].height
+	rows = (len(frames) + columns - 1) // columns
+	sheet = s16.S16Image(w * columns, h * rows)
+	idx = 0
+	for frame in frames:
+		row = idx // columns
+		col = idx % columns
+		sheet.blit(frame, col * w, row * h, False)
+		idx += 1
+	return sheet
 
