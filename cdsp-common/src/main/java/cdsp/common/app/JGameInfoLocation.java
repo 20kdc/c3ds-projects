@@ -10,7 +10,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 
 import javax.swing.BoxLayout;
