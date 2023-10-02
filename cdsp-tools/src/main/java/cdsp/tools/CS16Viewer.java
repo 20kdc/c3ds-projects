@@ -37,10 +37,10 @@ public class CS16Viewer {
         new CS16Viewer(fr).doTheThing();
     }
 
+    @SuppressWarnings("serial")
     public void doTheThing() {
         JFrame testFrame = new JFrame();
         testFrame.setSize(400, 400);
-        @SuppressWarnings("serial")
         Canvas testCanvas = new Canvas() {
             @Override
             public void paint(Graphics g) {
