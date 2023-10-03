@@ -7,10 +7,20 @@
 # You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 import bpy
+from bpy_extras.object_utils import world_to_camera_view
 import mathutils
 import math
 
 from . import visscript
+
+ATT_ROLES = {
+	"ATT0": 0,
+	"ATT1": 1,
+	"ATT2": 2,
+	"ATT3": 3,
+	"ATT4": 4,
+	"ATT5": 5
+}
 
 # See visscript section of HELP.md
 
@@ -34,6 +44,19 @@ def visscript_compile_and_bind(scene, obj):
 		obj.hide_viewport = obj.hide_render
 	return bound
 
+def get_att_outside_of_context(scene, camera, obj):
+	"""
+	Returns the ATT string for a given scene/camera/point as objects.
+	"""
+	vec = world_to_camera_view(scene, camera, obj.matrix_world.translation)
+	# flip & scale
+	x = (vec[0]) * scene.render.resolution_x
+	y = (1 - vec[1]) * scene.render.resolution_y
+	# fit
+	x = round(x)
+	y = round(y)
+	return str(x) + " " + str(y)
+
 class GizmoContext():
 	"""
 	A scan of the scene, etc.
@@ -42,15 +65,28 @@ class GizmoContext():
 		self.scene = scene
 		self.camera = scene.camera
 		self.markers = {}
+		# [marker][point]
+		self.att_points = {}
 		if self.camera is None:
 			raise Exception("Camera required!")
 		self.vis = []
 		for obj in scene.objects:
 			mk = obj.kc3dsbpy_part_marker
 			if mk != "" and mk != "0":
-				if mk in self.markers:
-					raise Exception("Duplicate marker: " + self.markers[mk].name + " to " + obj.name)
-				self.markers[mk] = obj
+				role = obj.kc3dsbpy_part_role
+				if role == "MARKER":
+					if mk in self.markers:
+						raise Exception("Duplicate marker: " + self.markers[mk].name + " to " + obj.name)
+					self.markers[mk] = obj
+				elif role in ATT_ROLES:
+					att_role_idx = ATT_ROLES[role]
+					if not (mk in self.att_points):
+						self.att_points[mk] = {}
+					outer = self.att_points[mk]
+					if att_role_idx in outer:
+						conflict = outer[att_role_idx].name
+						raise Exception("Duplicate ATT point: " + conflict + " to " + obj.name)
+					outer[att_role_idx] = obj
 			self.vis.append(visscript_compile_and_bind(scene, obj))
 
 	def verify(self, props):
@@ -104,6 +140,20 @@ class GizmoContext():
 			obj.kc3dsbpy_gizmo_ey_old = obj.rotation_euler.y
 			obj.kc3dsbpy_gizmo_ez_old = obj.rotation_euler.z
 			obj.kc3dsbpy_gizmo_et_old = obj.rotation_euler.order
+
+	def get_att(self, marker, point_idx):
+		"""
+		Returns the ATT string for a given marker/point, or "0 0"
+		Only do this while activated (or at least try to).
+		Like context creation, read-only so it's safe to use anytime.
+		"""
+		if not (marker in self.att_points):
+			return "0 0"
+		outer = self.att_points[marker]
+		if not (point_idx in outer):
+			return "0 0"
+		obj = outer[point_idx]
+		return get_att_outside_of_context(self.scene, self.camera, obj)
 
 	def deactivate(self):
 		"""

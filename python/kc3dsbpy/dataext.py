@@ -240,33 +240,53 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 		row = self.layout.row()
 		row.prop(context.object, "kc3dsbpy_part_marker")
 		row.operator(CouplePartToVisKC3DSBPY.bl_idname)
-		if context.object.kc3dsbpy_part_marker != "0":
-			self.layout.prop(context.object, "kc3dsbpy_marker_inherit")
-			if context.object.kc3dsbpy_marker_inherit is None:
-				if context.object.kc3dsbpy_pitch_manual:
-					row = self.layout.row()
-					row.prop(context.object, "kc3dsbpy_pitch_manual")
-					row.operator(PitchManualToAutomaticKC3DSBPY.bl_idname)
-					row = self.layout.row()
-					row.prop(context.object, "kc3dsbpy_pitch_fm1")
-					row.prop(context.object, "kc3dsbpy_pitch_sm1")
-					row = self.layout.row()
-					row.prop(context.object, "kc3dsbpy_pitch_f0")
-					row.prop(context.object, "kc3dsbpy_pitch_s0")
-					row = self.layout.row()
-					row.prop(context.object, "kc3dsbpy_pitch_f1")
-					row.prop(context.object, "kc3dsbpy_pitch_s1")
-					row = self.layout.row()
-					row.prop(context.object, "kc3dsbpy_pitch_f2")
-					row.prop(context.object, "kc3dsbpy_pitch_s2")
-				else:
-					row = self.layout.row()
-					row.prop(context.object, "kc3dsbpy_pitch_manual")
-					row.operator(PitchAutomaticToManualKC3DSBPY.bl_idname)
-					row = self.layout.row()
-					row.prop(context.object, "kc3dsbpy_pitch_mul")
-					row.prop(context.object, "kc3dsbpy_pitch_trim")
-				self.layout.prop(context.object, "kc3dsbpy_ppu_factor")
+		part_name = context.object.kc3dsbpy_part_marker
+		if part_name != "0":
+			self.layout.prop(context.object, "kc3dsbpy_part_role")
+			role = context.object.kc3dsbpy_part_role
+			if role == "MARKER":
+				self.layout.prop(context.object, "kc3dsbpy_marker_inherit")
+				if context.object.kc3dsbpy_marker_inherit is None:
+					if context.object.kc3dsbpy_pitch_manual:
+						row = self.layout.row()
+						row.prop(context.object, "kc3dsbpy_pitch_manual")
+						row.operator(PitchManualToAutomaticKC3DSBPY.bl_idname)
+						row = self.layout.row()
+						row.prop(context.object, "kc3dsbpy_pitch_fm1")
+						row.prop(context.object, "kc3dsbpy_pitch_sm1")
+						row = self.layout.row()
+						row.prop(context.object, "kc3dsbpy_pitch_f0")
+						row.prop(context.object, "kc3dsbpy_pitch_s0")
+						row = self.layout.row()
+						row.prop(context.object, "kc3dsbpy_pitch_f1")
+						row.prop(context.object, "kc3dsbpy_pitch_s1")
+						row = self.layout.row()
+						row.prop(context.object, "kc3dsbpy_pitch_f2")
+						row.prop(context.object, "kc3dsbpy_pitch_s2")
+					else:
+						row = self.layout.row()
+						row.prop(context.object, "kc3dsbpy_pitch_manual")
+						row.operator(PitchAutomaticToManualKC3DSBPY.bl_idname)
+						row = self.layout.row()
+						row.prop(context.object, "kc3dsbpy_pitch_mul")
+						row.prop(context.object, "kc3dsbpy_pitch_trim")
+					self.layout.prop(context.object, "kc3dsbpy_ppu_factor")
+			elif role in gizmo.ATT_ROLES:
+				att_role_idx = gizmo.ATT_ROLES[role]
+				# Show ATT role info
+				cset = framereq.scene_to_cset(context.scene)
+				point_name = "<unknown>"
+				if part_name in cset.setup.part_names_to_infos:
+					part_info = cset.setup.part_names_to_infos[part_name]
+					if att_role_idx < len(part_info.att_point_names):
+						point_name = part_info.att_point_names[att_role_idx]
+				self.layout.label(text = "Point Name: " + point_name)
+				location = ""
+				try:
+					location = get_att_outside_of_context(context.scene, context.scene.camera, context.object)
+				except:
+					pass
+				self.layout.label(text = "Location: " + location)
 		self.layout.prop(context.object, "kc3dsbpy_visscript")
 		self.layout.operator(ObjectHelpKC3DSBPY.bl_idname)
 
@@ -277,10 +297,19 @@ def register():
 	all_part_ids = []
 	all_part_ids.append(("0", "(None)", "Disabled"))
 	for name in libkc3ds.parts.ALL:
-		all_part_ids.append((name, name, "Used as camera location for part: " + name))
+		all_part_ids.append((name, name, name))
 	# Kind of shared with Gizmo but will just have to live with it due to the items
-	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Marker", default = "0",
-	description = "If set, the camera uses this object as the reference point for rendering images of the given part. In addition, this object will be rotated for pitch/yaw, and this object acts as the per-part settings. There can only be one of these for each part in the scene")
+	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Part", default = "0")
+	bpy.types.Object.kc3dsbpy_part_role = EnumProperty(items = [
+		("MARKER", "Marker", "The camera uses this object as the reference point for rendering images of the given part. In addition, this object will be rotated for pitch/yaw, and this object acts as the per-part settings. There can only be one of these for each part in the scene."),
+		("ATT0", "ATT[0]", "Attachment point 0"),
+		("ATT1", "ATT[1]", "Attachment point 1"),
+		("ATT2", "ATT[2]", "Attachment point 2"),
+		("ATT3", "ATT[3]", "Attachment point 3"),
+		("ATT4", "ATT[4]", "Attachment point 4"),
+		("ATT5", "ATT[5]", "Attachment point 5")
+	], name = "Role", default = "MARKER",
+	description = "Role of this object for the given part")
 	bpy.types.Object.kc3dsbpy_marker_inherit = PointerProperty(type = bpy.types.Object, name = "Inherit From",
 	description = "Instead of supplying settings, inherits the settings of this marker instead. Good for left vs. right markers. A marker cannot inherit a marker inheriting a marker")
 	bpy.types.Object.kc3dsbpy_pitch_manual = BoolProperty(name = "Manual Pitch", default = False,

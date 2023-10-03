@@ -8,7 +8,7 @@
 
 import argparse
 from libkc3ds.s16 import decode_cs16, S16Image
-from libkc3ds.parts import C3_0, C3_GS_MAP, SETUP
+from libkc3ds.parts import C3_GS_MAP, SETUP
 import sys
 import os
 
