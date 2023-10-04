@@ -292,7 +292,7 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 				self.layout.label(text = "Point Name: " + point_name)
 				location = ""
 				try:
-					location = get_att_outside_of_context(context.scene, context.scene.camera, context.object)
+					location = gizmo.get_att_outside_of_context(context.scene, context.scene.camera, context.object)
 				except:
 					pass
 				self.layout.label(text = "Location: " + location)
