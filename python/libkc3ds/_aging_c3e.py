@@ -7,12 +7,13 @@
 # You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 from ._aging_defs import CSet, CAge, AgedPart
-from libkc3ds.parts import C3, C3_a, C3_b, C3_c, C3_d, C3_e, C3_f, C3_g, C3_h, C3_i, C3_j, C3_k, C3_l, C3_m, C3_n
+from libkc3ds.parts import C3, C3_a, C3_0, C3_b, C3_c, C3_d, C3_e, C3_f, C3_g, C3_h, C3_i, C3_j, C3_k, C3_l, C3_m, C3_n
 
 C3_ETTIN = CSet("C3_ETTIN", "Desert Ettin", C3, [
 	# 0
 	CAge("01", 0.75, [
 		AgedPart(C3_a, 60),
+		AgedPart(C3_0, 60),
 		AgedPart(C3_c, 24),
 		AgedPart(C3_d, 24),
 		AgedPart(C3_e, 24),
@@ -30,6 +31,7 @@ C3_ETTIN = CSet("C3_ETTIN", "Desert Ettin", C3, [
 	# 2
 	CAge("23", 0.875, [
 		AgedPart(C3_a, 70),
+		AgedPart(C3_0, 70),
 		AgedPart(C3_c, 28),
 		AgedPart(C3_d, 28),
 		AgedPart(C3_e, 28),
@@ -47,6 +49,7 @@ C3_ETTIN = CSet("C3_ETTIN", "Desert Ettin", C3, [
 	# 4, 5
 	CAge("456789", 1.0, [
 		AgedPart(C3_a, 80),
+		AgedPart(C3_0, 80),
 		AgedPart(C3_c, 32),
 		AgedPart(C3_d, 32),
 		AgedPart(C3_e, 32),

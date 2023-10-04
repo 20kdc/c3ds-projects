@@ -10,7 +10,7 @@ import argparse
 import PIL.Image
 from libkc3ds.s16 import decode_cs16, S16Image, CDMODE_DEFAULT, encode_c16, encode_s16
 from libkc3ds.s16pil import pil_to_565, pil_to_565_blk, s16image_to_pil_rgb, s16image_to_pil_rgba
-from libkc3ds.parts import C3_GS_MAP, SETUP
+from libkc3ds.parts import C3_0, C3_GS_MAP, SETUP
 import sys
 import os
 
@@ -84,6 +84,7 @@ parser.add_argument("-g", "--genus", help="Limits to a specific genus.", choices
 parser.add_argument("-b", "--breed", help="Limits to a specific breed slot.", choices=BREEDS, action="append")
 parser.add_argument("-s", "--sex", help="Limits to a specific sex.", choices=SEXES, action="append")
 parser.add_argument("-a", "--age", help="Limits to a specific age.", choices=AGES, action="append")
+parser.add_argument("--c16-include-0", action="store_true", help="Includes part 0 files for C16 operator. (BMP operator always includes them.)")
 parser.add_argument("-m", "--cdmode", help="Colour dither mode as per s16tool.py (defaults to " + CDMODE_DEFAULT + ")", default=CDMODE_DEFAULT)
 parser.add_argument("-e", "--engine", "--game", "--setup", help="Selects the 'setup' (game skeleton configuration).", choices=SETUPS, default="c3")
 args = parser.parse_args()
@@ -171,6 +172,10 @@ for genus in args.genus:
 					except:
 						pass
 				for part_info in setup.part_infos:
+					if outfmt_spr:
+						if part_info.part_id == C3_0:
+							if not args.c16_include_0:
+								continue
 					print(tree + " ...")
 					spr_in = spr_path(sprites, genus, breed, sex, age, part_info.char, args.INFMT)
 					spr_out = spr_path(sprites, genus, breed, sex, age, part_info.char, args.OUTFMT)

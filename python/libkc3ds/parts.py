@@ -153,24 +153,16 @@ c2 = PartInfo("n", ATT_LIMB, gen_c2_frames(1)))
 # You didn't hear this from me, but the file lookup function couldn't even
 #  lookup a part with ID '0' anyway
 
-# CV... leftovers? possibly investigate, definitely include
-C3_o = PartID("CV_LeftEar", c3 = PartInfo("o", ATT_LIMB, gen_c3_frames([
-	{},
-	{},
-	{},
-	{}
-]), blank = True))
-C3_p = PartID("CV_RightEar", c3 = PartInfo("p", ATT_LIMB, gen_c3_frames([
-	{},
-	{},
-	{},
-	{}
-]), blank = True))
-C3_q = PartID("CV_Hair", c3 = PartInfo("q", ATT_LIMB, gen_c3_frames([
-	{},
-	{},
-	{}
-]), blank = True))
+
+C3_0 = PartID("Mouth",
+c3 = PartInfo("0", gen_c3_frames([
+	{"expr": "normal", "normal": 1},
+	{"expr": "happy",  "happy": 1},
+	{"expr": "sad",    "sad": 1},
+	{"expr": "angry",  "angry": 1},
+	{"expr": "scared", "scared": 1},
+	{"expr": "sleepy", "sleepy": 1}
+], {"normal": 0, "happy": 0, "sad": 0, "angry": 0, "scared": 0, "sleepy": 0}), blank = True))
 
 # ---- Setups ----
 
