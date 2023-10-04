@@ -45,13 +45,16 @@ class PartID():
 	Creating a PartID auto-registers it with libkc3ds.parts.ALL!
 	So don't create them...
 	"""
-	def __init__(self, name, c3 = None, c2 = None):
+	def __init__(self, name, c3 = None, c2 = None, cv = None, unused = False):
 		self.name = name
 		self.games = {}
 		if not (c3 is None):
 			self.games["c3"] = c3
 		if not (c2 is None):
 			self.games["c2"] = c2
+		if not (cv is None):
+			self.games["cv"] = cv
+		self.unused = unused
 		ALL[name] = self
 
 # ---- ALL PARTS ----
@@ -71,18 +74,22 @@ def gen_c3_frames(details, base = {}):
 				total.append(res)
 	return total
 
-def gen_c2_frames(count):
-	# until someone really needs this
+def gen_pad_frames(count):
 	total = []
-	for i in range(count * 10):
+	for i in range(count):
 		total.append({})
 	return total
 
-ATT_C3HEAD = ["Body", "Mouth", "LeftEar (CV)", "RightEar (CV)", "Hair (CV)"]
-ATT_C3BODY = ["Head", "LeftThigh", "RightThigh", "LeftUpperArm", "RightUpperArm", "TailRoot"]
+def gen_c2_frames(count):
+	# until someone really needs this
+	return gen_pad_frames(count * 10)
+
+ATT_C2EHEAD = ["Body", "Mouth", "LeftEar (CV)", "RightEar (CV)", "Hair (CV)"]
+ATT_C2EBODY = ["Head", "LeftThigh", "RightThigh", "LeftUpperArm", "RightUpperArm", "TailRoot"]
 ATT_LIMB = ["Start", "End"]
 
-C2_a = C3_a = PartID("Head", c3 = PartInfo("a", ATT_C3HEAD, gen_c3_frames([
+C2_a = C3_a = CV_a = PartID("Head",
+c3 = PartInfo("a", ATT_C2EHEAD, gen_c3_frames([
 	{"expr": "normal", "eyes": 1, "normal": 1}, {"expr": "normal", "eyes": 0, "normal": 1},
 	{"expr": "happy",  "eyes": 1, "happy": 1},  {"expr": "happy",  "eyes": 0, "happy": 1},
 	{"expr": "sad",    "eyes": 1, "sad": 1},    {"expr": "sad",    "eyes": 0, "sad": 1},
@@ -90,79 +97,84 @@ C2_a = C3_a = PartID("Head", c3 = PartInfo("a", ATT_C3HEAD, gen_c3_frames([
 	{"expr": "scared", "eyes": 1, "scared": 1}, {"expr": "scared", "eyes": 0, "scared": 1},
 	{"expr": "sleepy", "eyes": 1, "sleepy": 1}, {"expr": "sleepy", "eyes": 0, "sleepy": 1}
 ], {"normal": 0, "happy": 0, "sad": 0, "angry": 0, "scared": 0, "sleepy": 0})),
-c2 = PartInfo("a", [], gen_c2_frames(12)))
+c2 = PartInfo("a", [], gen_c2_frames(12))
+)
 
-C2_b = C3_b = PartID("Body", c3 = PartInfo("b", ATT_C3BODY, gen_c3_frames([
+C2_b = C3_b = CV_b = PartID("Body",
+c3 = PartInfo("b", ATT_C2EBODY, gen_c3_frames([
 	{"egg": 0}, {"egg": 1}, {"egg": 2}, {"egg": 3}
 ])),
-c2 = PartInfo("b", [], gen_c2_frames(1)))
+c2 = PartInfo("b", [], gen_c2_frames(1))
+)
 
-C2_c = C3_c = PartID("LeftThigh",
+C2_c = C3_c = CV_c = PartID("LeftThigh",
 c3 = PartInfo("c", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("c", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("c", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_d = C3_d = PartID("LeftShin",
+C2_d = C3_d = CV_d = PartID("LeftShin",
 c3 = PartInfo("d", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("d", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("d", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_e = C3_e = PartID("LeftFoot",
+C2_e = C3_e = CV_e = PartID("LeftFoot",
 c3 = PartInfo("e", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("e", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("e", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_f = C3_f = PartID("RightThigh",
+C2_f = C3_f = CV_f = PartID("RightThigh",
 c3 = PartInfo("f", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("f", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("f", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_g = C3_g = PartID("RightShin",
+C2_g = C3_g = CV_g = PartID("RightShin",
 c3 = PartInfo("g", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("g", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("g", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_h = C3_h = PartID("RightFoot",
+C2_h = C3_h = CV_h = PartID("RightFoot",
 c3 = PartInfo("h", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("h", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("h", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_i = C3_i = PartID("LeftUpperArm",
+C2_i = C3_i = CV_i = PartID("LeftUpperArm",
 c3 = PartInfo("i", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("i", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("i", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_j = C3_j = PartID("LeftLowerArm",
+C2_j = C3_j = CV_j = PartID("LeftLowerArm",
 c3 = PartInfo("j", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("j", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("j", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_k = C3_k = PartID("RightUpperArm",
+C2_k = C3_k = CV_k = PartID("RightUpperArm",
 c3 = PartInfo("k", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("k", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("k", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_l = C3_l = PartID("RightLowerArm",
+C2_l = C3_l = CV_l = PartID("RightLowerArm",
 c3 = PartInfo("l", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("l", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("l", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_m = C3_m = PartID("TailRoot",
+C2_m = C3_m = CV_m = PartID("TailRoot",
 c3 = PartInfo("m", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("m", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("m", ATT_LIMB, gen_c2_frames(1))
+)
 
-C2_n = C3_n = PartID("TailTip",
+C2_n = C3_n = CV_n = PartID("TailTip",
 c3 = PartInfo("n", ATT_LIMB, gen_c3_frames([{}])),
-c2 = PartInfo("n", ATT_LIMB, gen_c2_frames(1)))
+c2 = PartInfo("n", ATT_LIMB, gen_c2_frames(1))
+)
 
-# A WARNING TO THOSE WHO MAY COME AFTER:
-# The Mouth part may not be real. Move the sprite files for it (don't forget C3 too).
-# No change. Compare to O/P/Q which are real and moving those sprites = crash.
-# It seems the "Mouth myth" comes from QuickNorn, or maybe some other game
-# O/P/Q though are definitely real, because remove them and game goes X.X
-# You didn't hear this from me, but the file lookup function couldn't even
-#  lookup a part with ID '0' anyway
+# Ok, so.
+# Because this addon is focused on QuickNorn compatibility, it's not possible to handle CA stuff in the "C3 game entry".
+# And this part ID needs to exist so it can have part IDs allocated to it.
 
-
-C3_0 = PartID("Mouth",
-c3 = PartInfo("0", gen_c3_frames([
-	{"expr": "normal", "normal": 1},
-	{"expr": "happy",  "happy": 1},
-	{"expr": "sad",    "sad": 1},
-	{"expr": "angry",  "angry": 1},
-	{"expr": "scared", "scared": 1},
-	{"expr": "sleepy", "sleepy": 1}
-], {"normal": 0, "happy": 0, "sad": 0, "angry": 0, "scared": 0, "sleepy": 0}), blank = True))
+C3_0 = PartID("C3Unused",
+c3 = PartInfo("0", [], gen_pad_frames(96), blank = True),
+unused = True
+)
 
 # ---- Setups ----
 
@@ -193,9 +205,11 @@ class Setup():
 			self.frames += pif.frames
 		SETUP[name] = self
 
-C3 = Setup("c3", [C3_a, C3_c, C3_d, C3_e, C3_f, C3_g, C3_h, C3_i, C3_j, C3_k, C3_l, C3_b, C3_m, C3_n, C3_o, C3_p, C3_q])
-# this frame ordering is just made up
+# Changing this will break QuickNorn frame ranges.
+C3 = Setup("c3", [C3_a, C3_0, C3_c, C3_d, C3_e, C3_f, C3_g, C3_h, C3_i, C3_j, C3_k, C3_l, C3_b, C3_m, C3_n])
+# These frame orderings are just made up, which means you can do whatever you like
 C2 = Setup("c2", [C2_a, C2_c, C2_d, C2_e, C2_f, C2_g, C2_h, C2_i, C2_j, C2_k, C2_l, C2_b, C2_m, C2_n])
+CV = Setup("cv", [])
 
 # ---- OTHER ----
 

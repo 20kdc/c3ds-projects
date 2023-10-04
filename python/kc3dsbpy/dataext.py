@@ -29,6 +29,15 @@ CSETS_ITEM_LIST = []
 for cset in libkc3ds.aging.CSETS_ALL:
 	CSETS_ITEM_LIST.append((cset.name, cset.desc, "Template: " + cset.desc))
 
+# Part IDs
+PARTIDS_ITEM_LIST = []
+PARTIDS_ITEM_LIST.append(("0", "(None)", "Disabled"))
+for name in libkc3ds.parts.ALL:
+	# Skip unused parts. Please.
+	if libkc3ds.parts.ALL[name].unused:
+		continue
+	PARTIDS_ITEM_LIST.append((name, name, name))
+
 # Data UI
 
 class ObjectHelpKC3DSBPY(Operator):
@@ -293,13 +302,8 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 # Registration and stuff
 
 def register():
-	# Part IDs
-	all_part_ids = []
-	all_part_ids.append(("0", "(None)", "Disabled"))
-	for name in libkc3ds.parts.ALL:
-		all_part_ids.append((name, name, name))
 	# Kind of shared with Gizmo but will just have to live with it due to the items
-	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = all_part_ids, name = "Part", default = "0")
+	bpy.types.Object.kc3dsbpy_part_marker = EnumProperty(items = PARTIDS_ITEM_LIST, name = "Part", default = "0")
 	bpy.types.Object.kc3dsbpy_part_role = EnumProperty(items = [
 		("MARKER", "Marker", "The camera uses this object as the reference point for rendering images of the given part. In addition, this object will be rotated for pitch/yaw, and this object acts as the per-part settings. There can only be one of these for each part in the scene."),
 		("ATT0", "ATT[0]", "Attachment point 0"),
