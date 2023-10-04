@@ -290,14 +290,13 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 					part_info = cset.setup.part_names_to_infos[part_name]
 					if att_role_idx < len(part_info.att_point_names):
 						point_name = part_info.att_point_names[att_role_idx]
-				self.layout.label(text = "Point Name: " + point_name)
 				location = ""
 				try:
 					location = gizmo.get_att_outside_of_gizmo(context, context.scene, context.scene.camera, context.object)
 					location = str(location)
 				except:
 					pass
-				self.layout.label(text = "Location: " + location)
+				self.layout.label(text = point_name + " " + location)
 		self.layout.prop(context.object, "kc3dsbpy_visscript")
 		self.layout.operator(ObjectHelpKC3DSBPY.bl_idname)
 
