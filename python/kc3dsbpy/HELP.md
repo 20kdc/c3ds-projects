@@ -17,7 +17,7 @@ kc3dsbpy has two places where UI is added, both in Properties:
 
 ## Basic Principle Of Operation
 
-The addon has six functions:
+The addon has seven core functions:
 
 * Change the visibility of objects.
 * Rotate Markers.
@@ -25,6 +25,7 @@ The addon has six functions:
 * Dump a lot of data to custom properties for rigging.
 * Convert images to C16.
 * Do the above to render multiple skeletons from a single button press.
+* Do most of the above and record ATT positions into ATT files.
 
 The addon has something of a "simple to get working, hard to master" attitude in design.
 
@@ -46,7 +47,7 @@ These are ordered from 0 to 15, and make up a single "variant" of a part. The he
 
 It's pretty much impossible to mess up the yaws, but the pitches can be weird, especially if trying to match an existing model. See "How To Align A Part" about this.
 
-The total amount of frames for a Norn is 544. 192 for the head, 96 of these are dummies as part of the "Mouth" part, and then 16 for other parts except that the body has 64.
+The total amount of frames for a Norn is 544. 192 for the head, 96 of these are dummies as part of part '0', and then 16 for other parts except that the body has 64.
 
 The exact details of which frames are which matter to QuickNorn and SpriteBuilder. This addon will calculate it all for you and send everything worth mentioning to custom properties, and you don't interact with frames via animation keyframes or anything, so it's really not a problem you need to worry about.
 
@@ -54,9 +55,17 @@ The main things you need to take away from this are:
 
 1. That this all exists in the first place, particularly the custom properties.
 2. If you query properties from parts that don't have them, you'll get whatever the last value that went through was.
-3. Mouth part makes up 96 dummy frames. Don't bother adding it, use Head instead.
+3. Part '0' makes up 96 dummy frames. These frames will never be rendered by the game, so it will not show up for selection, but should exist for QuickNorn.
 
-## Markers
+## Object Roles
+
+Any Blender Object may be annotated with a kc3dsbpy part name and role in the corresponding section.
+
+That is, each part has a number of "roles" that you can fill by setting up objects.
+
+Roles are split into the "Marker" role and the various "ATT" roles.
+
+### Markers
 
 Markers can be any Blender Object, but in practice they will either be:
 
@@ -69,10 +78,18 @@ When these two abilities conflict, the usual solution is Copy Rotation/Location 
 
 *Something to be aware of: The addon sets the camera's local position directly to the marker's global position. Parent the camera to something to shift it away from your model.*
 
+### ATT
+
+ATT roles are used for Body Data generation. They specify the location in Blender-space of a point, which will be translated into image-space and written to the ATT file.
+
+The addon doesn't manipulate them in any way, just reads them. These should be parented to markers or to meshes or to something that will carry over the part rotation.
+
 ## VisScript
 
 The VisScript controls when an object is rendered.
 If empty, the object is always rendered.
+
+VisScript applies irrespective of the object is or isn't a Marker or some other object.
 
 VisScript breaks down the input in a specific order:
 
@@ -81,7 +98,7 @@ VisScript breaks down the input in a specific order:
 * `A&B`: A and B
 * `!A`: not A
 * `A=B`: A is equal to literal "B". The value of B is not case-sensitive.
-* `()`
+* `(A)`: Wraps A such that it has an independent precedence order.
 * `A`: A is present and not empty, "0", or "0.0".
 
 Instances of the above operators within `()` are ignored until as late as possible.
