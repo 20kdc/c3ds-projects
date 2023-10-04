@@ -44,18 +44,24 @@ def visscript_compile_and_bind(scene, obj):
 		obj.hide_viewport = obj.hide_render
 	return bound
 
-def get_att_outside_of_context(scene, camera, obj):
+def get_att_outside_of_gizmo(context, scene, camera, obj):
 	"""
-	Returns the ATT string for a given scene/camera/point as objects.
+	Returns the ATT (X, Y) tuple for a given scene/camera/point as objects.
 	"""
-	vec = world_to_camera_view(scene, camera, obj.matrix_world.translation)
-	# flip & scale
+	# firstly, map these to evaluated objects
+	graph = context.evaluated_depsgraph_get()
+	scene_ev = scene.evaluated_get(graph)
+	camera_ev = camera.evaluated_get(graph)
+	obj_ev = obj.evaluated_get(graph)
+	# now then, where were we
+	vec = world_to_camera_view(scene_ev, camera_ev, obj_ev.matrix_world.translation)
+	# flip & scale (this uses the resolution "as Gizmo sees it" for now)
 	x = (vec[0]) * scene.render.resolution_x
 	y = (1 - vec[1]) * scene.render.resolution_y
 	# fit
 	x = round(x)
 	y = round(y)
-	return str(x) + " " + str(y)
+	return (x, y)
 
 class GizmoContext():
 	"""
@@ -141,19 +147,19 @@ class GizmoContext():
 			obj.kc3dsbpy_gizmo_ez_old = obj.rotation_euler.z
 			obj.kc3dsbpy_gizmo_et_old = obj.rotation_euler.order
 
-	def get_att(self, marker, point_idx):
+	def get_att(self, context, marker, point_idx):
 		"""
-		Returns the ATT string for a given marker/point, or "0 0"
+		Returns the ATT X,Y tuple for a given marker/point, or (0, 0)
 		Only do this while activated (or at least try to).
 		Like context creation, read-only so it's safe to use anytime.
 		"""
 		if not (marker in self.att_points):
-			return "0 0"
+			return (0, 0)
 		outer = self.att_points[marker]
 		if not (point_idx in outer):
-			return "0 0"
+			return (0, 0)
 		obj = outer[point_idx]
-		return get_att_outside_of_context(self.scene, self.camera, obj)
+		return get_att_outside_of_gizmo(context, self.scene, self.camera, obj)
 
 	def deactivate(self):
 		"""

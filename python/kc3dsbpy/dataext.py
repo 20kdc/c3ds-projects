@@ -230,7 +230,7 @@ class SCENE_PT_ScenePanelBodyDataCopyKC3DSBPY(Panel):
 	bl_region_type = "WINDOW"
 	bl_context = "scene"
 	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
-	bl_label = "Body Data Copier"
+	bl_label = "Body Data"
 	bl_options = {"DEFAULT_CLOSED"}
 	def draw(self, context):
 		self.layout.prop(context.scene, "kc3dsbpy_att_inpath", text = "Src.")
@@ -239,6 +239,7 @@ class SCENE_PT_ScenePanelBodyDataCopyKC3DSBPY(Panel):
 		row.prop(context.scene, "kc3dsbpy_bdc_breed", text = "Slot")
 		self.layout.prop(context.scene, "kc3dsbpy_att_outpath", text = "Dest.")
 		self.layout.operator(CopyBodyDataKC3DSBPY.bl_idname)
+		self.layout.operator("kc3dsbpy.compile_body_data")
 
 class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 	bl_space_type = "PROPERTIES"
@@ -292,7 +293,8 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 				self.layout.label(text = "Point Name: " + point_name)
 				location = ""
 				try:
-					location = gizmo.get_att_outside_of_context(context.scene, context.scene.camera, context.object)
+					location = gizmo.get_att_outside_of_gizmo(context, context.scene, context.scene.camera, context.object)
+					location = str(location)
 				except:
 					pass
 				self.layout.label(text = "Location: " + location)

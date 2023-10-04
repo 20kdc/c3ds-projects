@@ -14,6 +14,7 @@ from bpy.types import Operator
 import libkc3ds.parts
 import libkc3ds.aging
 import libkc3ds.s16
+from libkc3ds.att import ATTFile
 
 from . import gizmo
 from . import imaging
@@ -65,7 +66,7 @@ def calc_pitch(marker, pid, yid):
 
 class SkeletonReqContext():
 	"""
-	Contains information collated for a part.
+	Contains information collated for a skeleton.
 	"""
 	def __init__(self, gizmo_context, cset, sex, age_char):
 		scene = gizmo_context.scene
@@ -99,16 +100,17 @@ class SkeletonReqContext():
 			new_props[k] = frame_props[k]
 		# get this
 		part_name = new_props["part"]
+		part_info = self.setup.part_names_to_infos[part_name]
 		# calculate file paths
 		cv = os.path.join(self.path_gb, "CA%04d" % new_props["frame"])
 		path_png = cv + ".png"
 		path_bmp = cv + ".bmp"
 		part_char = self.setup.part_names_to_infos[part_name].char
-		path_c16 = part_char + self.xyz + ".c16"
-		paths = ReqPaths(path_png, path_bmp, path_c16, new_props["frame_rel"])
+		fsb = part_char + self.xyz
+		paths = ReqPaths(path_png, path_bmp, fsb, new_props["frame_rel"])
 		# check part name exists as a marker, if not, we'll have to skip
 		if not (part_name in self.gizmo_context.markers):
-			return BlankReq(part_name, paths)
+			return BlankReq(part_info, paths)
 		# determine inheritance
 		marker = self.gizmo_context.markers[part_name]
 		marker_o = marker
@@ -128,27 +130,29 @@ class SkeletonReqContext():
 		new_props["pitch"] = calc_pitch(marker, new_props["pitch_id"], new_props["yaw_id"])
 		new_props["yaw"] = new_props["yaw_id"] * 90
 		new_props["roll"] = 0
-		return FrameReq(self.gizmo_context, new_props, part_name, paths)
+		return FrameReq(self.gizmo_context, new_props, part_info, paths)
 
 class ReqPaths():
 	"""
 	Describes file paths.
 	"""
-	def __init__(self, path_png, path_bmp, path_c16, frame_c16):
+	def __init__(self, path_png, path_bmp, fsb, frame_c16):
 		self.png = path_png
 		self.bmp = path_bmp
-		self.c16 = path_c16
+		# i.e. "a00a"
+		self.fsb = fsb
 		self.c16_frame = frame_c16
 
 	def __str__(self):
-		return self.png + " (" + self.c16 + "/" + str(self.c16_frame) + ")"
+		return self.png + " (" + self.fsb + "/" + str(self.c16_frame) + ")"
 
 class BlankReq():
 	"""
 	Describes a blank frame request.
 	"""
-	def __init__(self, part_name, paths):
-		self.part_name = part_name
+	def __init__(self, part_info, paths):
+		self.part_name = part_info.part_id.name
+		self.part_info = part_info
 		self.paths = paths
 
 class FrameReq(BlankReq):
@@ -156,8 +160,8 @@ class FrameReq(BlankReq):
 	Describes a single frame request.
 	Frame requests must be in C16 order so they collate properly.
 	"""
-	def __init__(self, gizmo_context, gizmo_props, part_name, paths):
-		super().__init__(part_name, paths)
+	def __init__(self, gizmo_context, gizmo_props, part_info, paths):
+		super().__init__(part_info, paths)
 		self.gizmo_context = gizmo_context
 		self.gizmo_props = gizmo_props
 		self.gizmo_context.verify(gizmo_props)
@@ -255,19 +259,65 @@ class RenderKC3DSBPY(Operator):
 		self.report({"INFO"}, "Completed render, " + str(gizmo_idx) + " frames handled")
 		return {"FINISHED"}
 
+class CompileATTsKC3DSBPY(Operator):
+	# indirectly bound
+	bl_idname = "kc3dsbpy.compile_body_data"
+	bl_label = "Compile Body Data From Rig"
+	bl_description = "Compiles breed body data from Empties (Requires that you have these setup)"
+
+	def invoke(self, context, event):
+		scene = context.scene
+		# actually prepare
+		path_base = bpy.path.abspath(scene.kc3dsbpy_att_outpath)
+		framereqs = calc_req_group(scene)
+		gizmo_idx = 0
+		# Main phase
+		# indexed by FSB
+		att_collated = {}
+		for frame in framereqs:
+			part_info = frame.part_info
+			if type(frame) == FrameReq:
+				frame.activate()
+				# prep ATT table...
+				if not frame.paths.fsb in att_collated:
+					att_collated[frame.paths.fsb] = ATTFile(part_info.setup.att_frames, len(part_info.att_point_names))
+				att = att_collated[frame.paths.fsb]
+				# get ATT data...
+				for i in range(att.frames):
+					# attention! this is what binds C16 frames to ATT frames!
+					if frame.paths.c16_frame == i:
+						for j in range(att.points):
+							ptt = frame.gizmo_context.get_att(context, frame.part_name, j)
+							att.set(i, j, ptt[0], ptt[1])
+				# done!
+				frame.deactivate()
+			gizmo_idx += 1
+		# Saving phase
+		try:
+			os.makedirs(path_base)
+		except:
+			pass
+		for fsb in att_collated:
+			f = open(os.path.join(path_base, fsb + ".att"), "wb")
+			f.write(att_collated[fsb].encode())
+			f.close()
+		# Done!
+		self.report({"INFO"}, "Completed ATT build")
+		return {"FINISHED"}
+
 def _iterate_framelists(scene, cb):
 	# actually prepare
 	path_ib = bpy.path.abspath(scene.render.filepath)
 	framereqs = calc_req_group(scene)
 	# actually do the thing
-	c16_names = {}
+	fsb_names = {}
 	for frame in framereqs:
-		c16_names[frame.paths.c16] = True
-	for c16 in c16_names:
-		print(c16)
+		fsb_names[frame.paths.fsb] = True
+	for fsb in fsb_names:
+		print(fsb)
 		relevant_frames = []
 		for frame in framereqs:
-			if frame.paths.c16 == c16:
+			if frame.paths.fsb == fsb:
 				relevant_frames.append(frame)
 		def inner(cb):
 			# load and dither
@@ -276,7 +326,7 @@ def _iterate_framelists(scene, cb):
 				tmp_img = bpy.data.images.load(path_png)
 				cb(tmp_img)
 				bpy.data.images.remove(tmp_img)
-		cb(c16, inner, relevant_frames)
+		cb(fsb + ".c16", inner, relevant_frames)
 
 def _iterate_framelists_c16ify(scene, inner):
 	# dithering modes
@@ -356,12 +406,14 @@ class ActivateFKC3DSBPY(Operator):
 
 def register():
 	bpy.utils.register_class(RenderKC3DSBPY)
+	bpy.utils.register_class(CompileATTsKC3DSBPY)
 	bpy.utils.register_class(PNG2C16KC3DSBPY)
 	bpy.utils.register_class(MakeSheetsKC3DSBPY)
 	bpy.utils.register_class(ActivateFKC3DSBPY)
 
 def unregister():
 	bpy.utils.unregister_class(RenderKC3DSBPY)
+	bpy.utils.unregister_class(CompileATTsKC3DSBPY)
 	bpy.utils.unregister_class(PNG2C16KC3DSBPY)
 	bpy.utils.unregister_class(MakeSheetsKC3DSBPY)
 	bpy.utils.unregister_class(ActivateFKC3DSBPY)

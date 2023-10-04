@@ -12,7 +12,7 @@ class PartInfo():
 	"""
 	Information for how a part is identified in a game.
 	Each frame is a string -> arbitrary dictionary containing details.
-	Further details (self.part_id and self.frame_base) are filled out when the PartInfo is added to the Setup.
+	Further details (self.setup, self.part_id, self.frame_base) are filled out when the PartInfo is added to the Setup.
 	Frames gain "frame", "part" and "blank" keys during this point as well.
 	"""
 	def __init__(self, char, att_point_names, frames, blank = False):
@@ -22,10 +22,11 @@ class PartInfo():
 		self.blank = blank
 		self.part_id = None
 		self.frame_base = None
-	def setup_registers(self, part_id, base):
+	def setup_registers(self, setup, part_id, base):
 		"""
 		Called during Setup constructor to attach this PartInfo
 		"""
+		self.setup = setup
 		self.part_id = part_id
 		frame_idx = 0
 		for f in self.frames:
@@ -184,13 +185,16 @@ class Setup():
 	"""
 	Game skeleton setup.
 	self.name is unique and doesn't contain spaces etc.
+	self.att_frames is the amount of frames in an ATT file.
+	These are taken from the first frames of each part.
 	self.part_ids is a list of PartIDs.
 	self.part_infos is a list of PartInfos.
 	self.part_names_to_infos is a dictionary mapping PartID.name to PartInfos.
 	The constructor sets the frame bases up.
 	"""
-	def __init__(self, name, part_ids):
+	def __init__(self, name, att_frames, part_ids):
 		self.name = name
+		self.att_frames = att_frames
 		self.part_ids = part_ids
 		self.part_infos = []
 		self.part_names_to_infos = {}
@@ -198,7 +202,7 @@ class Setup():
 		frame = 0
 		for pi in part_ids:
 			pif = pi.games[name]
-			pif.setup_registers(pi, frame)
+			pif.setup_registers(self, pi, frame)
 			frame += len(pif.frames)
 			self.part_infos.append(pif)
 			self.part_names_to_infos[pi.name] = pif
@@ -206,10 +210,10 @@ class Setup():
 		SETUP[name] = self
 
 # Changing this will break QuickNorn frame ranges.
-C3 = Setup("c3", [C3_a, C3_0, C3_c, C3_d, C3_e, C3_f, C3_g, C3_h, C3_i, C3_j, C3_k, C3_l, C3_b, C3_m, C3_n])
+C3 = Setup("c3", 16, [C3_a, C3_0, C3_c, C3_d, C3_e, C3_f, C3_g, C3_h, C3_i, C3_j, C3_k, C3_l, C3_b, C3_m, C3_n])
 # These frame orderings are just made up, which means you can do whatever you like
-C2 = Setup("c2", [C2_a, C2_c, C2_d, C2_e, C2_f, C2_g, C2_h, C2_i, C2_j, C2_k, C2_l, C2_b, C2_m, C2_n])
-CV = Setup("cv", [])
+C2 = Setup("c2", 10, [C2_a, C2_c, C2_d, C2_e, C2_f, C2_g, C2_h, C2_i, C2_j, C2_k, C2_l, C2_b, C2_m, C2_n])
+CV = Setup("cv", 16, [])
 
 # ---- OTHER ----
 
