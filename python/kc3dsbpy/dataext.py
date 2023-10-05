@@ -127,6 +127,11 @@ class CopyBodyDataKC3DSBPY(Operator):
 						pass
 		return {"FINISHED"}
 
+class FrameStatus():
+	def __init__(self, scene_panel, pitch_panel):
+		self.scene_panel = scene_panel
+		self.pitch_panel = pitch_panel
+
 def calc_frame_status(scene):
 	try:
 		frame_idx = scene.kc3dsbpy_render_frame
@@ -140,9 +145,9 @@ def calc_frame_status(scene):
 			part_name = frame_props["part"]
 			part_char = cset.setup.part_names_to_infos[part_name].char
 			frame_status += "=" + part_name + "(" + part_char + ")." + str(frame_props["frame_rel"])
-		return frame_status
+		return FrameStatus(frame_status, "Current Pitch: " + framereq.id_pitch(frame_props["pitch_id"], frame_props["yaw_id"]))
 	except:
-		return "(unknown)"
+		return FrameStatus("(unknown)", "(unknown)")
 
 class SCENE_PT_ScenePanelKC3DSBPY(Panel):
 	bl_space_type = "PROPERTIES"
@@ -191,7 +196,7 @@ class SCENE_PT_ScenePanelAlignmentKC3DSBPY(Panel):
 		row.prop(context.scene, "kc3dsbpy_render_age")
 		row = self.layout.row()
 		row.prop(context.scene, "kc3dsbpy_render_frame")
-		row.label(text = calc_frame_status(context.scene))
+		row.label(text = calc_frame_status(context.scene).scene_panel)
 		row = self.layout.row()
 		opp = row.operator(FrameRelativeSeekKC3DSBPY.bl_idname, text="-16")
 		opp["adjustment"] = -16
@@ -262,17 +267,17 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 						row.prop(context.object, "kc3dsbpy_pitch_manual")
 						row.operator(PitchManualToAutomaticKC3DSBPY.bl_idname)
 						row = self.layout.row()
-						row.prop(context.object, "kc3dsbpy_pitch_fm1")
 						row.prop(context.object, "kc3dsbpy_pitch_sm1")
+						row.prop(context.object, "kc3dsbpy_pitch_fm1")
 						row = self.layout.row()
-						row.prop(context.object, "kc3dsbpy_pitch_f0")
 						row.prop(context.object, "kc3dsbpy_pitch_s0")
+						row.prop(context.object, "kc3dsbpy_pitch_f0")
 						row = self.layout.row()
-						row.prop(context.object, "kc3dsbpy_pitch_f1")
 						row.prop(context.object, "kc3dsbpy_pitch_s1")
+						row.prop(context.object, "kc3dsbpy_pitch_f1")
 						row = self.layout.row()
-						row.prop(context.object, "kc3dsbpy_pitch_f2")
 						row.prop(context.object, "kc3dsbpy_pitch_s2")
+						row.prop(context.object, "kc3dsbpy_pitch_f2")
 					else:
 						row = self.layout.row()
 						row.prop(context.object, "kc3dsbpy_pitch_manual")
@@ -280,6 +285,7 @@ class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 						row = self.layout.row()
 						row.prop(context.object, "kc3dsbpy_pitch_mul")
 						row.prop(context.object, "kc3dsbpy_pitch_trim")
+					self.layout.label(text = calc_frame_status(context.scene).pitch_panel)
 					self.layout.prop(context.object, "kc3dsbpy_ppu_factor")
 			elif role in gizmo.ATT_ROLES:
 				att_role_idx = gizmo.ATT_ROLES[role]

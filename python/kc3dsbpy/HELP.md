@@ -97,7 +97,7 @@ VisScript breaks down the input in a specific order:
 * `A|B`: A or B
 * `A&B`: A and B
 * `!A`: not A
-* `A=B`: A is equal to literal "B". The value of B is not case-sensitive.
+* `A=B`: A is equal to literal "B". A is the property name, which is forcibly lowercased. The value of B is not case-sensitive.
 * `(A)`: Wraps A such that it has an independent precedence order.
 * `A`: A is present and not empty, "0", or "0.0".
 

@@ -62,6 +62,27 @@ def calc_pitch(marker, pid, yid):
 		return marker.kc3dsbpy_pitch_s2
 	return marker.kc3dsbpy_pitch_f2
 
+def id_pitch(pid, yid):
+	"""
+	Identifies pitch.
+	"""
+	sides = yid == -1 or yid == 1
+	if pid == -1:
+		if sides:
+			return "S-1"
+		return "F-1"
+	if pid == 0:
+		if sides:
+			return "S0"
+		return "F0"
+	if pid == 1:
+		if sides:
+			return "S1"
+		return "F1"
+	if sides:
+		return "S2"
+	return "F2"
+
 # Skeleton Request Calculator
 
 class SkeletonReqContext():

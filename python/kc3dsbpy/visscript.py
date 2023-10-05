@@ -37,7 +37,7 @@ def visscript_compile_op(l, op, r):
 		rs = visscript_compile(r)
 		return lambda ctx: ls(ctx) and rs(ctx)
 	elif op == "=":
-		prop = visscript_assert_oztkn(l)
+		prop = visscript_assert_oztkn(l).lower()
 		val = visscript_assert_oztkn(r).lower()
 		return lambda ctx: ctx.exists(prop) and (ctx.get(prop).lower() == val)
 	elif op == "!":
@@ -82,7 +82,7 @@ def visscript_compile(tkns):
 		return lambda ctx: True
 	# flag: prop is present and non-zero
 	if len(tkns) == 1:
-		prop = tkns[0]
+		prop = tkns[0].lower()
 		return lambda ctx: ctx.exists(prop) and visscript_truthy(ctx.get(prop))
 	# otherwise, try to find op
 	op_idx = None
