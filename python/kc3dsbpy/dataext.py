@@ -145,7 +145,10 @@ def calc_frame_status(scene):
 			part_name = frame_props["part"]
 			part_char = cset.setup.part_names_to_infos[part_name].char
 			frame_status += "=" + part_name + "(" + part_char + ")." + str(frame_props["frame_rel"])
-		return FrameStatus(frame_status, "Current Pitch: " + framereq.id_pitch(frame_props["pitch_id"], frame_props["yaw_id"]))
+			pitch_panel = "(Current frame does not have pitch)"
+			if "pitch_id" in frame_props and "yaw_id" in frame_props:
+				pitch_panel = "Current Pitch: " + framereq.id_pitch(frame_props["pitch_id"], frame_props["yaw_id"])
+		return FrameStatus(frame_status, pitch_panel)
 	except:
 		return FrameStatus("(unknown)", "(unknown)")
 

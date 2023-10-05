@@ -63,6 +63,8 @@ def get_att_outside_of_gizmo(context, scene, camera, obj):
 	y = round(y)
 	return (x, y)
 
+GIZMO_CONSTRAINT_PREFIX = "AUTO_DELETE:KC3DSBPY:"
+
 class GizmoContext():
 	"""
 	A scan of the scene, etc.
@@ -123,10 +125,21 @@ class GizmoContext():
 		self.scene.render.resolution_x = props["width"]
 		self.scene.render.resolution_y = props["height"]
 		self.camera.data.ortho_scale = props["ortho_scale"]
-		# Camera is kept away from model using parenting
-		# So Gizmo is deliberately kept not aware of it
-		# Meanwhile Marker DOES use world matrix
-		self.camera.location = marker.matrix_world.translation
+		# Camera teleport was previously handled by literally editing location
+		# However this made alignment awkward and non-responsive
+		# Only way to keep rigging compatibility while cleaning this up is to:
+		# * Use a copy location constraint with offset
+		#    BUT that also applies camera.location!!!
+		# * So: Reset cam location to zero
+		#    Previous versions will have left non-zero cam locations in file
+		#    Offset would affect these and the Space options don't let us fix it
+		#    (applies rotation = very bad no-good)
+		#    So essentially this patches the rig for the new addon version
+		self.camera.location = mathutils.Vector((0, 0, 0))
+		camera_location_constraint = self.camera.constraints.new("COPY_LOCATION")
+		camera_location_constraint.name = GIZMO_CONSTRAINT_PREFIX + "CAMERA_RIG"
+		camera_location_constraint.target = marker
+		camera_location_constraint.use_offset = True
 		# Setup visibility.
 		for vis in self.vis:
 			vis()
@@ -171,10 +184,19 @@ class GizmoContext():
 			self.scene.kc3dsbpy_gizmo_activated = False
 		for obj in self.scene.objects:
 			if obj.kc3dsbpy_gizmo_activated:
+				# remove any constraints created by Gizmo, and ONLY those constraints,
+				# and ONLY on Gizmo-activated objects
+				remove_these_constraints = []
+				for constraint in obj.constraints:
+					if constraint.name.startswith(GIZMO_CONSTRAINT_PREFIX):
+						remove_these_constraints.append(constraint)
+				for constraint in remove_these_constraints:
+					obj.constraints.remove(constraint)
+				# continue!
 				obj.hide_render = obj.kc3dsbpy_gizmo_hide_render_old
 				obj.hide_viewport = obj.kc3dsbpy_gizmo_hide_viewport_old
-				obj.kc3dsbpy_gizmo_activated = False
 				obj.rotation_euler = mathutils.Euler((obj.kc3dsbpy_gizmo_ex_old, obj.kc3dsbpy_gizmo_ey_old, obj.kc3dsbpy_gizmo_ez_old), obj.kc3dsbpy_gizmo_et_old)
+				obj.kc3dsbpy_gizmo_activated = False
 
 class DeactivateFKC3DSBPY(bpy.types.Operator):
 	# indirectly bound
