@@ -95,7 +95,14 @@ class FrameRelativeSeekKC3DSBPY(Operator):
 
 	def invoke(self, context, event):
 		context.scene.kc3dsbpy_render_frame += self.adjustment
-		framereq.activate_frame_op(self, context.scene)
+		# so I'm not sure what the "NO SERIOUSLY UPDATE THIS PROPERTY" function is
+		# what's certain is that for some reason, the camera's background image offset field won't be properly updated
+		#  unless Gizmo reactivation happens r/n
+		# something to take up with devtalk I guess, but always something else to do
+		context.scene.driver_add("kc3dsbpy_render_frame")
+		context.scene.driver_remove("kc3dsbpy_render_frame")
+		# and actually (try to) activate the frame
+		framereq.activate_frame_op(self, context)
 		return {"FINISHED"}
 
 class CopyBodyDataKC3DSBPY(Operator):

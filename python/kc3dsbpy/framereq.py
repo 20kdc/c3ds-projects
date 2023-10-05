@@ -405,7 +405,8 @@ class MakeSheetsKC3DSBPY(Operator):
 		self.report({"INFO"}, "Completed sheets")
 		return {"FINISHED"}
 
-def activate_frame_op(operator, scene):
+def activate_frame_op(operator, context):
+	scene = context.scene
 	frame = calc_req_frame(scene)
 	if type(frame) == FrameReq:
 		frame.activate()
@@ -420,7 +421,7 @@ class ActivateFKC3DSBPY(Operator):
 	bl_description = "Sets up a specific frame of breed rendering. Useful for troubleshooting"
 
 	def invoke(self, context, event):
-		activate_frame_op(self, context.scene)
+		activate_frame_op(self, context)
 		return {"FINISHED"}
 
 # Registration

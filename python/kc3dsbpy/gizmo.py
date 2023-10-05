@@ -186,12 +186,13 @@ class GizmoContext():
 			if obj.kc3dsbpy_gizmo_activated:
 				# remove any constraints created by Gizmo, and ONLY those constraints,
 				# and ONLY on Gizmo-activated objects
+				# store these as strings JUST IN CASE (see blender Gotchas doc)
 				remove_these_constraints = []
 				for constraint in obj.constraints:
 					if constraint.name.startswith(GIZMO_CONSTRAINT_PREFIX):
-						remove_these_constraints.append(constraint)
-				for constraint in remove_these_constraints:
-					obj.constraints.remove(constraint)
+						remove_these_constraints.append(constraint.name)
+				for cname in remove_these_constraints:
+					obj.constraints.remove(obj.constraints[cname])
 				# continue!
 				obj.hide_render = obj.kc3dsbpy_gizmo_hide_render_old
 				obj.hide_viewport = obj.kc3dsbpy_gizmo_hide_viewport_old
