@@ -120,6 +120,7 @@ class GizmoContext():
 			self.scene["kc3dsbpy." + k] = props[k]
 		# Setup target.
 		marker = self.markers[props["part"]]
+		# Beware: The pitch gets overridden by the live pitch editing workflow stuff
 		marker.rotation_euler = mathutils.Euler((math.radians(props["pitch"]), math.radians(props["roll"]), math.radians(props["yaw"])), "YXZ")
 		# Setup camera/resolution.
 		self.scene.render.resolution_x = props["width"]

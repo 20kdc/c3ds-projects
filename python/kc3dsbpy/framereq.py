@@ -7,6 +7,7 @@
 # You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 import os
+import math
 
 import bpy
 from bpy.types import Operator
@@ -61,6 +62,47 @@ def calc_pitch(marker, pid, yid):
 	if sides:
 		return marker.kc3dsbpy_pitch_s2
 	return marker.kc3dsbpy_pitch_f2
+
+def get_manual_pitch_data_path(pid, yid):
+	sides = yid == -1 or yid == 1
+	if pid == -1:
+		if sides:
+			return "kc3dsbpy_pitch_sm1"
+		return "kc3dsbpy_pitch_fm1"
+	if pid == 0:
+		if sides:
+			return "kc3dsbpy_pitch_s0"
+		return "kc3dsbpy_pitch_f0"
+	if pid == 1:
+		if sides:
+			return "kc3dsbpy_pitch_s1"
+		return "kc3dsbpy_pitch_f1"
+	if sides:
+		return "kc3dsbpy_pitch_s2"
+	return "kc3dsbpy_pitch_f2"
+
+def _drv_add_variable(driver, name, marker, data_path):
+	dv = driver.variables.new()
+	dv.name = name
+	dt = dv.targets[0]
+	dt.id = marker
+	dt.data_path = data_path
+
+def drv_pitch(marker, pid, yid):
+	"""
+	Sets up a driver to return pitch.
+	"""
+	marker.driver_remove("rotation_euler", 0)
+	fcurve = marker.driver_add("rotation_euler", 0)
+	driver = fcurve.driver
+	src_variable = get_manual_pitch_data_path(pid, yid)
+	_drv_add_variable(driver, "mul", marker, "kc3dsbpy_pitch_mul")
+	_drv_add_variable(driver, "trim", marker, "kc3dsbpy_pitch_trim")
+	_drv_add_variable(driver, "val", marker, src_variable)
+	_drv_add_variable(driver, "manual", marker, "kc3dsbpy_pitch_manual")
+	auto_expr = "(" + str(pid * -22.5) + " * mul) + trim"
+	interior_expr = "((val * manual) + ((" + auto_expr + ") * (1 - manual)))"
+	driver.expression = "(" + interior_expr + ") * " + str(math.radians(1))
 
 def id_pitch(pid, yid):
 	"""
@@ -189,8 +231,10 @@ class FrameReq(BlankReq):
 
 	def activate(self):
 		self.gizmo_context.activate(self.gizmo_props)
+		drv_pitch(self.gizmo_context.markers[self.part_name], self.gizmo_props["pitch_id"], self.gizmo_props["yaw_id"])
 
 	def deactivate(self):
+		self.gizmo_context.markers[self.part_name].driver_remove("rotation_euler", 0)
 		self.gizmo_context.deactivate()
 
 def sexes_str_to_array(sexes):
