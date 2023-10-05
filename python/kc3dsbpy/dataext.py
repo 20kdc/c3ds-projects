@@ -218,6 +218,7 @@ class SCENE_PT_ScenePanelAlignmentKC3DSBPY(Panel):
 		opp = row.operator(FrameRelativeSeekKC3DSBPY.bl_idname, text="+16")
 		opp["adjustment"] = 16
 		row.operator("kc3dsbpy.deactivate_frame", text="Revert")
+		self.layout.prop(context.scene, "kc3dsbpy_render_disable_visscript")
 
 class SCENE_PT_ScenePanelRenderConvertKC3DSBPY(Panel):
 	bl_space_type = "PROPERTIES"
@@ -375,6 +376,8 @@ def register():
 	description = "Selects the sexes to render")
 	bpy.types.Scene.kc3dsbpy_render_ppu = FloatProperty(name = "Pixels Per Unit", default = 100,
 	description = "The Pixels Per Unit describes the scale of the scene (for adult creatures). The real value is affected by per-part PPU multipliers, so be aware of that")
+	bpy.types.Scene.kc3dsbpy_render_disable_visscript = BoolProperty(name = "Disable VisScript", default = False,
+	description = "Disables VisScript. You probably do not want to just leave this enabled, especially unless making a Geat")
 	breed_slot_items = []
 	for i in range(26):
 		char = chr(65 + i)

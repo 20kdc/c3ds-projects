@@ -230,12 +230,18 @@ class FrameReq(BlankReq):
 		self.gizmo_context.verify(gizmo_props)
 
 	def activate(self):
+		self._clear_drivers()
 		self.gizmo_context.activate(self.gizmo_props)
 		drv_pitch(self.gizmo_context.markers[self.part_name], self.gizmo_props["pitch_id"], self.gizmo_props["yaw_id"])
 
 	def deactivate(self):
-		self.gizmo_context.markers[self.part_name].driver_remove("rotation_euler", 0)
+		self._clear_drivers()
 		self.gizmo_context.deactivate()
+
+	def _clear_drivers(self):
+		# It would be nice if this were part of Gizmo like it SHOULD BE
+		for v in self.gizmo_context.markers:
+			self.gizmo_context.markers[v].driver_remove("rotation_euler", 0)
 
 def sexes_str_to_array(sexes):
 	if sexes == "both":

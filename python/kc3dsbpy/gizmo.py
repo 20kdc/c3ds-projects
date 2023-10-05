@@ -40,7 +40,10 @@ def visscript_compile_and_bind(scene, obj):
 	compiled = visscript.visscript_compile(tkns)
 	scene_vsc = VisScriptBPYCtx(scene)
 	def bound():
-		obj.hide_render = not compiled(scene_vsc)
+		if scene.kc3dsbpy_render_disable_visscript:
+			obj.hide_render = False
+		else:
+			obj.hide_render = not compiled(scene_vsc)
 		obj.hide_viewport = obj.hide_render
 	return bound
 
