@@ -88,7 +88,7 @@ def _drv_add_variable(driver, name, marker, data_path):
 	dt.id = marker
 	dt.data_path = data_path
 
-def drv_pitch(marker, pid, yid):
+def _drv_pitch(marker, src_marker, pid, yid):
 	"""
 	Sets up a driver to return pitch.
 	"""
@@ -96,10 +96,10 @@ def drv_pitch(marker, pid, yid):
 	fcurve = marker.driver_add("rotation_euler", 0)
 	driver = fcurve.driver
 	src_variable = get_manual_pitch_data_path(pid, yid)
-	_drv_add_variable(driver, "mul", marker, "kc3dsbpy_pitch_mul")
-	_drv_add_variable(driver, "trim", marker, "kc3dsbpy_pitch_trim")
-	_drv_add_variable(driver, "val", marker, src_variable)
-	_drv_add_variable(driver, "manual", marker, "kc3dsbpy_pitch_manual")
+	_drv_add_variable(driver, "mul", src_marker, "kc3dsbpy_pitch_mul")
+	_drv_add_variable(driver, "trim", src_marker, "kc3dsbpy_pitch_trim")
+	_drv_add_variable(driver, "val", src_marker, src_variable)
+	_drv_add_variable(driver, "manual", src_marker, "kc3dsbpy_pitch_manual")
 	auto_expr = "(" + str(pid * -22.5) + " * mul) + trim"
 	interior_expr = "((val * manual) + ((" + auto_expr + ") * (1 - manual)))"
 	driver.expression = "(" + interior_expr + ") * " + str(math.radians(1))
@@ -193,6 +193,9 @@ class SkeletonReqContext():
 		new_props["pitch"] = calc_pitch(marker, new_props["pitch_id"], new_props["yaw_id"])
 		new_props["yaw"] = new_props["yaw_id"] * 90
 		new_props["roll"] = 0
+		def rotation_drivers(nt_marker):
+			_drv_pitch(nt_marker, marker, new_props["pitch_id"], new_props["yaw_id"])
+		new_props["gizmo:rotation_drivers"] = rotation_drivers
 		return FrameReq(self.gizmo_context, new_props, part_info, paths)
 
 class ReqPaths():
@@ -230,18 +233,10 @@ class FrameReq(BlankReq):
 		self.gizmo_context.verify(gizmo_props)
 
 	def activate(self):
-		self._clear_drivers()
 		self.gizmo_context.activate(self.gizmo_props)
-		drv_pitch(self.gizmo_context.markers[self.part_name], self.gizmo_props["pitch_id"], self.gizmo_props["yaw_id"])
 
 	def deactivate(self):
-		self._clear_drivers()
 		self.gizmo_context.deactivate()
-
-	def _clear_drivers(self):
-		# It would be nice if this were part of Gizmo like it SHOULD BE
-		for v in self.gizmo_context.markers:
-			self.gizmo_context.markers[v].driver_remove("rotation_euler", 0)
 
 def sexes_str_to_array(sexes):
 	if sexes == "both":

@@ -120,11 +120,25 @@ class GizmoContext():
 		# Mirror all Gizmo properties to scene custom properties.
 		# This can be used to run Drivers for instance.
 		for k in props:
+			if k.startswith("gizmo:"):
+				continue
 			self.scene["kc3dsbpy." + k] = props[k]
 		# Setup target.
 		marker = self.markers[props["part"]]
+		# Backup marker rotation
+		marker.kc3dsbpy_gizmo_rotated = True
+		marker.kc3dsbpy_gizmo_ex_old = marker.rotation_euler.x
+		marker.kc3dsbpy_gizmo_ey_old = marker.rotation_euler.y
+		marker.kc3dsbpy_gizmo_ez_old = marker.rotation_euler.z
+		marker.kc3dsbpy_gizmo_et_old = marker.rotation_euler.order
+		# Remove existing marker rotation drivers
+		marker.driver_remove("rotation_euler", 0)
+		marker.driver_remove("rotation_euler", 1)
+		marker.driver_remove("rotation_euler", 2)
 		# Beware: The pitch gets overridden by the live pitch editing workflow stuff
 		marker.rotation_euler = mathutils.Euler((math.radians(props["pitch"]), math.radians(props["roll"]), math.radians(props["yaw"])), "YXZ")
+		if "gizmo:rotation_drivers" in props:
+			props["gizmo:rotation_drivers"](marker)
 		# Setup camera/resolution.
 		self.scene.render.resolution_x = props["width"]
 		self.scene.render.resolution_y = props["height"]
@@ -159,10 +173,6 @@ class GizmoContext():
 			obj.kc3dsbpy_gizmo_activated = True
 			obj.kc3dsbpy_gizmo_hide_render_old = obj.hide_render
 			obj.kc3dsbpy_gizmo_hide_viewport_old = obj.hide_viewport
-			obj.kc3dsbpy_gizmo_ex_old = obj.rotation_euler.x
-			obj.kc3dsbpy_gizmo_ey_old = obj.rotation_euler.y
-			obj.kc3dsbpy_gizmo_ez_old = obj.rotation_euler.z
-			obj.kc3dsbpy_gizmo_et_old = obj.rotation_euler.order
 
 	def get_att(self, context, marker, point_idx):
 		"""
@@ -200,8 +210,12 @@ class GizmoContext():
 				# continue!
 				obj.hide_render = obj.kc3dsbpy_gizmo_hide_render_old
 				obj.hide_viewport = obj.kc3dsbpy_gizmo_hide_viewport_old
+			if obj.kc3dsbpy_gizmo_rotated:
+				obj.driver_remove("rotation_euler", 0)
+				obj.driver_remove("rotation_euler", 1)
+				obj.driver_remove("rotation_euler", 2)
 				obj.rotation_euler = mathutils.Euler((obj.kc3dsbpy_gizmo_ex_old, obj.kc3dsbpy_gizmo_ey_old, obj.kc3dsbpy_gizmo_ez_old), obj.kc3dsbpy_gizmo_et_old)
-				obj.kc3dsbpy_gizmo_activated = False
+				obj.kc3dsbpy_gizmo_rotated = False
 
 class DeactivateFKC3DSBPY(bpy.types.Operator):
 	# indirectly bound
@@ -219,6 +233,7 @@ def register():
 	bpy.types.Object.kc3dsbpy_gizmo_activated = bpy.props.BoolProperty(name = "Gizmo Activated", default = False)
 	bpy.types.Object.kc3dsbpy_gizmo_hide_render_old = bpy.props.BoolProperty(name = "Gizmo Hide Render Backup", default = False)
 	bpy.types.Object.kc3dsbpy_gizmo_hide_viewport_old = bpy.props.BoolProperty(name = "Gizmo Hide Viewport Backup", default = False)
+	bpy.types.Object.kc3dsbpy_gizmo_rotated = bpy.props.BoolProperty(name = "Gizmo Rotated", default = False)
 	bpy.types.Object.kc3dsbpy_gizmo_ex_old = bpy.props.FloatProperty(name = "Gizmo EX Backup", default = 0)
 	bpy.types.Object.kc3dsbpy_gizmo_ey_old = bpy.props.FloatProperty(name = "Gizmo EY Backup", default = 0)
 	bpy.types.Object.kc3dsbpy_gizmo_ez_old = bpy.props.FloatProperty(name = "Gizmo EZ Backup", default = 0)
