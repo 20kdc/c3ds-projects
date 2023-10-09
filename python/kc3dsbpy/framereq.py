@@ -445,7 +445,7 @@ class MakeSheetsKC3DSBPY(Operator):
 		def x(c16, inner, relevant_frames):
 			c16_frames = _iterate_framelists_c16ify(scene, inner)
 			# finish
-			imaging.save_png_with_makedirs(imaging.make_sheet(c16_frames, columns), os.path.join(path_cb, c16 + ".png"))
+			imaging.s16image_save_png_with_makedirs(imaging.make_sheet(c16_frames, columns), os.path.join(path_cb, c16 + ".png"))
 		_iterate_framelists(scene, x)
 		self.report({"INFO"}, "Completed sheets")
 		return {"FINISHED"}

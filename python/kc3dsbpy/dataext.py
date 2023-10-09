@@ -16,9 +16,11 @@ from bpy.types import Operator, Panel
 
 import libkc3ds.parts
 import libkc3ds.aging
+import libkc3ds.s16
 
 from . import gizmo
 from . import framereq
+from . import imaging
 
 # need to import this here, bleh
 # still better than polluting the mess that is __init__
@@ -132,6 +134,36 @@ class CopyBodyDataKC3DSBPY(Operator):
 					except:
 						# there tends to be missing files (for say part '0')
 						pass
+		return {"FINISHED"}
+
+class RefGenKC3DSBPY(Operator):
+	bl_idname = "kc3dsbpy.generate_references"
+	bl_label = "C16s -> Reference PNG sequence"
+	bl_description = "Writes a single skeleton's worth of reference images"
+
+	def invoke(self, context, event):
+		inpath = bpy.path.abspath(context.scene.kc3dsbpy_ref_inpath)
+		outpath = bpy.path.abspath(context.scene.kc3dsbpy_ref_outpath)
+		cset = framereq.scene_to_cset(context.scene)
+		frame_idx = 0
+		for part_info in cset.setup.part_infos:
+			c16 = []
+			try:
+				f = open(os.path.join(inpath, part_info.char + context.scene.kc3dsbpy_ref_xyz + ".c16"), "rb")
+				data = f.read()
+				f.close()
+				c16 = libkc3ds.s16.decode_cs16(data)
+			except:
+				# oh well
+				pass
+			for rel_frame in range(len(part_info.frames)):
+				frame_abs = rel_frame + part_info.frame_base
+				res = "CA%04d.png" % frame_abs
+				if rel_frame < len(c16):
+					c16_frame = c16[rel_frame]
+				else:
+					c16_frame = libkc3ds.s16.S16Frame(1, 1)
+				imaging.s16image_save_png_with_makedirs(c16_frame, os.path.join(outpath, res), alpha_aware = False)
 		return {"FINISHED"}
 
 class FrameStatus():
@@ -256,6 +288,19 @@ class SCENE_PT_ScenePanelBodyDataCopyKC3DSBPY(Panel):
 		self.layout.prop(context.scene, "kc3dsbpy_att_outpath", text = "Dest.")
 		self.layout.operator(CopyBodyDataKC3DSBPY.bl_idname)
 		self.layout.operator("kc3dsbpy.compile_body_data")
+
+class SCENE_PT_ScenePanelRefGenKC3DSBPY(Panel):
+	bl_space_type = "PROPERTIES"
+	bl_region_type = "WINDOW"
+	bl_context = "scene"
+	bl_parent_id = "SCENE_PT_ScenePanelKC3DSBPY"
+	bl_label = "Reference Image Generator"
+	bl_options = {"DEFAULT_CLOSED"}
+	def draw(self, context):
+		self.layout.prop(context.scene, "kc3dsbpy_ref_inpath", text = "C16s In")
+		self.layout.prop(context.scene, "kc3dsbpy_ref_outpath", text = "PNGs Out")
+		self.layout.prop(context.scene, "kc3dsbpy_ref_xyz")
+		self.layout.operator(RefGenKC3DSBPY.bl_idname)
 
 class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
 	bl_space_type = "PROPERTIES"
@@ -403,10 +448,16 @@ def register():
 	description = "Selects the genus to copy body data from")
 	bpy.types.Scene.kc3dsbpy_bdc_breed = EnumProperty(items = breed_slot_items, name = "Source Breed Slot", default = "d",
 	description = "Selects the breed slot to copy body data from")
-	bpy.types.Scene.kc3dsbpy_att_inpath = StringProperty(name = "Body Data Input Directory", default = "//Body Data", subtype = "DIR_PATH",
+	bpy.types.Scene.kc3dsbpy_att_inpath = StringProperty(name = "Body Data Input Dir.", default = "//Body Data", subtype = "DIR_PATH",
 	description = "ATT files are read from here")
-	bpy.types.Scene.kc3dsbpy_att_outpath = StringProperty(name = "Body Data Output Directory", default = "//Body Data", subtype = "DIR_PATH",
+	bpy.types.Scene.kc3dsbpy_att_outpath = StringProperty(name = "Body Data Output Dir.", default = "//Body Data", subtype = "DIR_PATH",
 	description = "ATT files are written here")
+	bpy.types.Scene.kc3dsbpy_ref_inpath = StringProperty(name = "Ref. Input Dir.", default = "//Images", subtype = "DIR_PATH",
+	description = "Reference C16 files are read from here")
+	bpy.types.Scene.kc3dsbpy_ref_outpath = StringProperty(name = "Ref. Output Dir.", default = "//ref", subtype = "DIR_PATH",
+	description = "Reference PNGs are written here")
+	bpy.types.Scene.kc3dsbpy_ref_xyz = StringProperty(name = "'XYZ' Suffix", default = "04d",
+	description = "i.e. '04d' for Norn Male D")
 	# Data UI
 	bpy.utils.register_class(PitchAutomaticToManualKC3DSBPY)
 	bpy.utils.register_class(PitchManualToAutomaticKC3DSBPY)
@@ -414,6 +465,7 @@ def register():
 	bpy.utils.register_class(ObjectHelpKC3DSBPY)
 	bpy.utils.register_class(FrameRelativeSeekKC3DSBPY)
 	bpy.utils.register_class(CopyBodyDataKC3DSBPY)
+	bpy.utils.register_class(RefGenKC3DSBPY)
 	# -
 	bpy.utils.register_class(OBJECT_PT_ObjectPanelKC3DSBPY)
 	bpy.utils.register_class(SCENE_PT_ScenePanelKC3DSBPY)
@@ -423,6 +475,7 @@ def register():
 	bpy.utils.register_class(SCENE_PT_ScenePanelAlignmentKC3DSBPY)
 	bpy.utils.register_class(SCENE_PT_ScenePanelRenderConvertKC3DSBPY)
 	bpy.utils.register_class(SCENE_PT_ScenePanelBodyDataCopyKC3DSBPY)
+	bpy.utils.register_class(SCENE_PT_ScenePanelRefGenKC3DSBPY)
 	# }
 
 def unregister():
@@ -433,6 +486,7 @@ def unregister():
 	bpy.utils.unregister_class(ObjectHelpKC3DSBPY)
 	bpy.utils.unregister_class(FrameRelativeSeekKC3DSBPY)
 	bpy.utils.unregister_class(CopyBodyDataKC3DSBPY)
+	bpy.utils.unregister_class(RefGenKC3DSBPY)
 	# -
 	bpy.utils.unregister_class(OBJECT_PT_ObjectPanelKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelKC3DSBPY)
@@ -441,4 +495,5 @@ def unregister():
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelAlignmentKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelRenderConvertKC3DSBPY)
 	bpy.utils.unregister_class(SCENE_PT_ScenePanelBodyDataCopyKC3DSBPY)
+	bpy.utils.unregister_class(SCENE_PT_ScenePanelRefGenKC3DSBPY)
 

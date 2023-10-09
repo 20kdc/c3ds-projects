@@ -26,13 +26,16 @@ def save_c16_with_makedirs(frames, filepath):
 	of.write(s16.encode_c16(frames))
 	of.close()
 
-def save_png_with_makedirs(frame, filepath):
+def s16image_save_png_with_makedirs(frame, filepath, alpha_aware = True):
 	try:
 		os.makedirs(os.path.dirname(filepath))
 	except:
 		pass
 	of = open(filepath, "wb")
-	of.write(piw.rgba_to_png(frame.width, frame.height, frame.to_rgba()))
+	if alpha_aware:
+		of.write(piw.rgba_to_png(frame.width, frame.height, frame.to_rgba()))
+	else:
+		of.write(piw.rgb_to_png(frame.width, frame.height, frame.to_rgb()))
 	of.close()
 
 def bpy_to_s16image(image, cdmode: str = s16.CDMODE_DEFAULT, admode: str = s16.ADMODE_DEFAULT) -> s16.S16Image:

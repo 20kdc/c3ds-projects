@@ -9,6 +9,8 @@
 import struct
 import zlib
 
+PNG_MAGIC = b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"
+
 def _png_block(name, content):
 	ctcd = name + content
 	first3 = struct.pack(">I", len(content)) + ctcd
@@ -31,5 +33,24 @@ def rgba_to_png(w: int, h: int, rgba) -> bytes:
 		idat_content += bytes(rgba_flat[idx:idx2])
 	idat_content = zlib.compress(idat_content)
 	ihdr_content = struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0)
-	return b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A" + _png_block(b"IHDR", ihdr_content) + _png_block(b"IDAT", idat_content) + _png_block(b"IEND", b"")
+	return PNG_MAGIC + _png_block(b"IHDR", ihdr_content) + _png_block(b"IDAT", idat_content) + _png_block(b"IEND", b"")
+
+def rgb_to_png(w: int, h: int, rgb) -> bytes:
+	"""
+	Creates a PNG file directly and badly from a list of RGB tuples.
+	"""
+	# print("flattening list")
+	rgb_flat = []
+	for item in rgb:
+		rgb_flat += item
+	# print("producing content")
+	idat_content = b""
+	for row in range(h):
+		idx = w * row * 3
+		idx2 = idx + (w * 3)
+		idat_content += b"\x00"
+		idat_content += bytes(rgb_flat[idx:idx2])
+	idat_content = zlib.compress(idat_content)
+	ihdr_content = struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0)
+	return PNG_MAGIC + _png_block(b"IHDR", ihdr_content) + _png_block(b"IDAT", idat_content) + _png_block(b"IEND", b"")
 
