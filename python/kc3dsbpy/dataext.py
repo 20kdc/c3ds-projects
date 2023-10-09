@@ -300,6 +300,8 @@ class SCENE_PT_ScenePanelRefGenKC3DSBPY(Panel):
 		self.layout.prop(context.scene, "kc3dsbpy_ref_inpath", text = "C16s In")
 		self.layout.prop(context.scene, "kc3dsbpy_ref_outpath", text = "PNGs Out")
 		self.layout.prop(context.scene, "kc3dsbpy_ref_xyz")
+		self.layout.label(text = "Suffixes don't include part ID: 'a04d.c16' has XYZ '04d'")
+		self.layout.label(text = "For more information see 'Breed' on Creatures Wiki")
 		self.layout.operator(RefGenKC3DSBPY.bl_idname)
 
 class OBJECT_PT_ObjectPanelKC3DSBPY(Panel):
