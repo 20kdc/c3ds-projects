@@ -8,4 +8,5 @@ release-id.txt
 *.log
 COPYING-godot.txt
 /target/
+/tob-book/
 
