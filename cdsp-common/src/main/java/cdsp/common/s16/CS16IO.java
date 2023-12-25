@@ -17,11 +17,26 @@ import java.nio.file.Files;
  * IO
  */
 public class CS16IO {
-    public static S16Image[] decodeCS16(File file) throws IOException {
-        return decodeCS16(Files.readAllBytes(file.toPath()));
+    /**
+     * Autodetect CS16 format, then get frame info.
+     */
+    public static CS16FrameInfo[] readCS16FrameInfo(File file) throws IOException {
+        return readCS16FrameInfo(Files.readAllBytes(file.toPath()));
     }
 
-    public static S16Image[] decodeCS16(byte[] buffer) {
+    /**
+     * Autodetect CS16 format, then get frame info.
+     */
+    public static CS16FrameInfo[] readCS16FrameInfo(byte[] buffer) {
+        return readCS16FrameInfo(buffer, 0xFFFF);
+    }
+
+    /**
+     * Autodetect CS16 format, then get frame info.
+     * This variant allows a maximum frame count, rather than the usual implicit 65535-frame bound.
+     * This helps keep allocation under control.
+     */
+    public static CS16FrameInfo[] readCS16FrameInfo(byte[] buffer, int maxFrames) {
         ByteBuffer bb = ByteBuffer.wrap(buffer);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         int magic = bb.getInt(0);
@@ -30,7 +45,9 @@ public class CS16IO {
                 continue;
             bb.order(fmt.endian);
             int count = bb.getShort(4) & 0xFFFF;
-            S16Image[] result = new S16Image[count];
+            if (count > maxFrames)
+                throw new RuntimeException("Too many frames");
+            CS16FrameInfo[] result = new CS16FrameInfo[count];
             int pos = 6;
             for (int i = 0; i < count; i++) {
                 int dptr = bb.getInt(pos);
@@ -38,46 +55,37 @@ public class CS16IO {
                 int ih = bb.getShort(pos + 6) & 0xFFFF;
                 if (fmt.compressed) {
                     pos += 4 * (ih + 1);
-                    result[i] = readC16Frame(bb, iw, ih, dptr, fmt.colourFormat);
                 } else {
                     pos += 8;
-                    result[i] = readS16Frame(bb, iw, ih, dptr, fmt.colourFormat);
                 }
+                result[i] = new CS16FrameInfo(bb, fmt, iw, ih, dptr);
             }
             return result;
         }
         throw new RuntimeException("Unknown image type");
     }
 
-    private static S16Image readC16Frame(ByteBuffer bb, int iw, int ih, int pos, CS16ColourFormat colourFormat) {
-        S16Image s16 = new S16Image(iw, ih);
-        int pixIdx = 0;
-        for (int row = 0; row < ih; row++) {
-            while (true) {
-                short elm = bb.getShort(pos);
-                pos += 2;
-                if (elm == 0)
-                    break;
-                int runLen = (elm >> 1) & 0x7FFF;
-                if ((elm & 1) != 0) {
-                    for (int idx = 0; idx < runLen; idx++) {
-                        s16.pixels[pixIdx++] = colourFormat.to565(bb.getShort(pos));
-                        pos += 2;
-                    }
-                } else {
-                    pixIdx += runLen;
-                }
-            }
-        }
-        return s16;
+    /**
+     * Autodetect CS16 format, then get frame info and decode.
+     */
+    public static S16Image[] decodeCS16(File file) throws IOException {
+        return decodeAll(readCS16FrameInfo(file));
     }
 
-    private static S16Image readS16Frame(ByteBuffer bb, int iw, int ih, int pos, CS16ColourFormat colourFormat) {
-        S16Image s16 = new S16Image(iw, ih);
-        for (int i = 0; i < s16.pixels.length; i++) {
-            s16.pixels[i] = colourFormat.to565(bb.getShort(pos));
-            pos += 2;
-        }
-        return s16;
+    /**
+     * Autodetect CS16 format, then get frame info and decode.
+     */
+    public static S16Image[] decodeCS16(byte[] buffer) {
+        return decodeAll(readCS16FrameInfo(buffer));
+    }
+
+    /**
+     * Decode all CS16FrameInfos into S16Images.
+     */
+    public static S16Image[] decodeAll(CS16FrameInfo[] frames) {
+        S16Image[] res = new S16Image[frames.length];
+        for (int i = 0; i < frames.length; i++)
+            res[i] = frames[i].decode();
+        return res;
     }
 }
