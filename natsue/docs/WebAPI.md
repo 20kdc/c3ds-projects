@@ -2,6 +2,12 @@
 
 ***The Natsue Web API is intended for anonymous access requirements, such as online creature geneology tracking. If your use-case requires anything that would require an API key or token or account login, it should go via the NetBabel protocol. See `tob` at the root of this repository for details. And if you're not going to write an auto-rejector, please kindly `denyrandom` your bot account.***
 
+*In addition, the API may not be enabled for public access, except for the photo PNG route which is shared with the web interface. If the web interface is also disabled, then nothing is usable.*
+
+All endpoints have an optional `apiKey` query-string parameter. 
+
+This allows specifying an API key that can optionally be written into the Natsue configuration file. Doing this, should such a key be configured, bypasses the API block.
+
 ## Routes
 
 ### GET /api/index
@@ -57,6 +63,18 @@ Given a UIN and an offset into the list, returns an array of up to `pageSizeAPIU
 Note that the list can change (most likely expand) as you're paging it in. You will have to deal with this.
 
 *Big scary caveat:* UINs are written `uid+hid`, but `+` has a different meaning. URL-encode this field! Or if you must fudge it, `%2B`.
+
+### GET /api/creaturePhotoMetadata?moniker=...&eventIndex=...
+
+Returns a creature life event photo's metadata (CreaturePhotoMetadata).
+
+### GET /creaturePhoto.png?moniker=...&eventIndex=...
+
+Not a typo; `/api` is not given here.
+
+Returns a creature life event photo's content.
+
+*This route can be public even if the API is not. However, this route can also be individually made non-public even if other API routes are public.*
 
 ## Object Definitions
 
@@ -135,6 +153,18 @@ The folllowing fields are not guaranteed to exist (specifically if `exists` is f
 `name`: World name.
 
 `user`: User relevant to this world object. Note that this isn't necessarily the world's owner, and due to worlds not being explicitly registered (yes, even though the login dialog claims that's what you're doing), there is no *guarantee* of which owner is true even for the world route.
+
+### CreaturePhotoMetadata
+
+`moniker`: Moniker.
+
+`eventIndex`: Creature life event index.
+
+`senderUIN`: UIN string. _A User object is not used here as the metadata object is written out to disk, so it wouldn't be up to date._
+
+`saveTime`: Unix time in seconds _when the photo was saved to disk._ To get the time the photo was taken, use the creature event endpoints.
+
+`width`, `height`: Image size in pixels.
 
 ## User Flags
 

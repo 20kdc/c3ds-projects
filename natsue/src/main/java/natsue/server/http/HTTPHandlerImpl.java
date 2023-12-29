@@ -23,6 +23,7 @@ import natsue.server.database.NatsueDBCreatureEvent;
 import natsue.server.database.NatsueDBCreatureInfo;
 import natsue.server.database.NatsueDBWorldInfo;
 import natsue.server.hubapi.IHubPrivilegedAPI;
+import natsue.server.photo.IPhotoStorage;
 import natsue.server.system.SystemCommands;
 import natsue.server.userdata.INatsueUserData;
 
@@ -37,14 +38,21 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 
 	public final IHubPrivilegedAPI hub;
 	public final INatsueDatabase database;
+	public final IPhotoStorage photoStorage;
 	public final Pages pages;
 	public final boolean apiPublic;
+	public final boolean photosPublic;
+	// This is converted from "" to null elsewhere.
+	public final String apiKey;
 
-	public HTTPHandlerImpl(IHubPrivilegedAPI sh, boolean ap, INatsueDatabase actualDB) {
+	public HTTPHandlerImpl(IHubPrivilegedAPI sh, boolean ap, String apiKey, INatsueDatabase actualDB, IPhotoStorage photoStorage, boolean photosPublic) {
 		hub = sh;
 		database = actualDB;
 		pages = new Pages(sh, actualDB);
 		apiPublic = ap;
+		this.apiKey = apiKey;
+		this.photoStorage = photoStorage;
+		this.photosPublic = photosPublic;
 	}
 
 	@Override
@@ -55,9 +63,18 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			HTMLEncoder.qsToVars(qv, url.substring(qsIndex + 1));
 			url = url.substring(0, qsIndex);
 		}
-		boolean apiAllowed = apiPublic || r.isLocal();
+		boolean administrative = false;
+		// Is an API key provided?
+		if (apiKey != null) {
+			String otherKey = qv.get("apiKey");
+			if (otherKey != null)
+				if (apiKey.equals(otherKey))
+					administrative = true;
+		}
+		boolean apiAllowed = administrative || apiPublic || r.isLocal();
 		if (pageSubhandler(url, qv, head, r)) {
 			// handled
+		} else if (phoSubhandler(url, qv, head, r, administrative)) {
 		} else if (apiAllowed && apiSubhandler(url, qv, head, r)) {
 			// handled
 		} else {
@@ -301,6 +318,32 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 		}
 		return true;
 	}
+
+	private boolean phoSubhandler(String url, HashMap<String, String> qv, boolean head, Client r, boolean administrative) throws IOException {
+		if (url.equals("/creaturePhoto.png")) {
+			if (!(photosPublic || administrative))
+				return false;
+			String moniker = qv.get("moniker");
+			if (moniker == null) {
+				r.httpResponse("404 Not Found", head, "requires moniker=...");
+				return true;
+			}
+			String eventIndex = qv.get("eventIndex");
+			if (eventIndex == null) {
+				r.httpResponse("404 Not Found", head, "requires eventIndex=...");
+				return true;
+			}
+			byte[] data = photoStorage.getPhotoPNG(moniker, Integer.parseInt(eventIndex));
+			if (data == null) {
+				r.httpResponse("404 Not Found", head, "no such photo");
+				return true;
+			}
+			r.httpResponse("200 OK", head, "image/png", data);
+			return true;
+		}
+		return false;
+	}
+
 	private boolean apiSubhandler(String url, HashMap<String, String> qv, boolean head, Client r) throws IOException {
 		if (url.equals("/api/index")) {
 			JSONEncoder je = new JSONEncoder();
@@ -428,6 +471,24 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			}
 			je.arrayEnd();
 			r.httpOk(head, "application/json", je.out.toString());
+		} else if (url.equals("/api/creaturePhotoMetadata")) {
+			String moniker = qv.get("moniker");
+			if (moniker == null) {
+				r.httpResponse("404 Not Found", head, "requires moniker=...");
+				return true;
+			}
+			String eventIndex = qv.get("eventIndex");
+			if (eventIndex == null) {
+				r.httpResponse("404 Not Found", head, "requires eventIndex=...");
+				return true;
+			}
+			byte[] data = photoStorage.getPhotoMeta(moniker, Integer.parseInt(eventIndex));
+			if (data == null) {
+				r.httpResponse("404 Not Found", head, "no such photo");
+				return true;
+			}
+			r.httpResponse("200 OK", head, "application/json", data);
+			return true;
 		} else {
 			return false;
 		}

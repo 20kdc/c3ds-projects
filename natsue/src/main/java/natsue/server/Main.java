@@ -20,6 +20,7 @@ import natsue.server.firewall.*;
 import natsue.server.http.HTTPHandlerImpl;
 import natsue.server.hub.ServerHub;
 import natsue.server.packet.*;
+import natsue.server.photo.FilePhotoStorage;
 import natsue.server.photo.IPhotoStorage;
 import natsue.server.photo.PhotoFunctions;
 import natsue.server.session.LoginSessionState;
@@ -60,16 +61,7 @@ public class Main {
 
 		mySource.log("Cryogenics initialized.");
 
-		IPhotoStorage photo = new IPhotoStorage() {
-			@Override
-			public void setPhotoPNG(String moniker, int senderUID, byte[] png) {
-			}
-			
-			@Override
-			public byte[] getPhotoPNG(String moniker) {
-				return null;
-			}
-		};
+		IPhotoStorage photo = new FilePhotoStorage(new File(config.photos.photosDir.getValue()), ilp);
 
 		mySource.log("Photo storage initialized.");
 
@@ -117,7 +109,10 @@ public class Main {
 		// login the system user
 		serverHub.clientLogin(new SystemUserHubClient(config, ilp, serverHub), () -> {});
 
-		HTTPHandlerImpl hhi = new HTTPHandlerImpl(serverHub, config.httpAPIPublic.getValue(), actualDB);
+		String apiKey = config.httpAPIKey.getValue();
+		if (apiKey.equals(""))
+			apiKey = null;
+		HTTPHandlerImpl hhi = new HTTPHandlerImpl(serverHub, config.httpAPIPublic.getValue(), apiKey, actualDB, photo, config.photos.photosDownloadEnabled.getValue());
 
 		mySource.log("ServerHub initialized.");
 

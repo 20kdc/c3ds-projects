@@ -8,15 +8,31 @@ package natsue.server.photo;
 
 /**
  * Storage of photos.
+ * There's no PhotoFrontend right now, so the verification/sync layer is in here.
+ * This is probably not a good thing long-term.
  */
 public interface IPhotoStorage {
 	/**
 	 * Gets a photo PNG, or null if not found.
+	 * Verifies moniker and eventIndex.
 	 */
-	byte[] getPhotoPNG(String moniker);
+	byte[] getPhotoPNG(String moniker, int eventIndex);
 
 	/**
-	 * Sets a photo PNG, or null if not found.
+	 * Gets photo metadata, or null if not found.
+	 * Verifies moniker and eventIndex.
 	 */
-	void setPhotoPNG(String moniker, int senderUID, byte[] png);
+	byte[] getPhotoMeta(String moniker, int eventIndex);
+
+	/**
+	 * Checks if the given photo "should exist" (and should NOT be written!!!)
+	 * Verifies moniker and eventIndex.
+	 */
+	boolean shouldPhotoExist(String moniker, int eventIndex);
+
+	/**
+	 * Sets a photo.
+	 * Verifies moniker and eventIndex.
+	 */
+	void setPhoto(String moniker, int eventIndex, long senderUIN, byte[] png, int width, int height);
 }

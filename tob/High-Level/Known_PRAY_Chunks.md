@@ -26,7 +26,11 @@ Uses the parent chunk's name followed by `.genetics` (i.e. `002-hill-(...)-6zzex
 
 Photo of a warped creature.
 
-Uses the parent chunk's name followed by `.photo` (i.e. `002-hill-(...)-6zzex.warp.photo`).
+Naming is based on the photo filename followed by a general suffix. Such a suffix is usually, say, `.warp.photo`.
+
+The photo filename style is consistent and is laid out in `DS creature history.cos` and `DS life event factory - PHOTOGRAPHS THE DEAD.cos`: `MONIKER-EVENTINDEX`.
+
+So, a real instance in full is: `001-dawn-6wa4r-az8x7-cnv4v-ulggk-3.DSEX.photo`.
 
 ## "warp"
 

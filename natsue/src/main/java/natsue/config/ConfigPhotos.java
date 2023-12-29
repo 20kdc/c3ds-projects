@@ -15,11 +15,23 @@ public class ConfigPhotos extends BaseConfig.Group {
 	 * Photo on/off
 	 */
 	public final Bool photosEnabled = new Bool("photosEnabled", true)
-			.describe("Enables/disables photo storage.");
+			.describe("Enables/disables photo storage. (For now, the directory will still be created even when disabled.)");
+
+	/**
+	 * Photo DL on/off
+	 */
+	public final Bool photosDownloadEnabled = new Bool("photosDownloadEnabled", true)
+			.describe("Enables/disables photo download via web.");
 
 	/**
 	 * Log photo errors
 	 */
 	public final Bool logPhotoErrors = new Bool("logPhotoErrors", true)
+			.describe("Log photo errors.");
+
+	/**
+	 * Log photo errors
+	 */
+	public final Str photosDir = new Str("photosDir", "photos")
 			.describe("Log photo errors.");
 }

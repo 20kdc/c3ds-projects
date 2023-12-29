@@ -93,18 +93,21 @@ public class CryoFunctions {
 			String name = pb.getName();
 			String type = pb.getType();
 			if (type.equals("GLST")) {
+				// 001-dawn-6wa4r-az8x7-cnv4v-ulggk.DSEX.glist.creature
 				if (name.equals(glistName)) {
 					hasGLST = true;
 				} else {
 					return "secondary GLST";
 				}
 			} else if (type.equals("CREA")) {
+				// 001-dawn-6wa4r-az8x7-cnv4v-ulggk.DSEX.creature
 				if (name.equals(creaName)) {
 					hasCREA = true;
 				} else {
 					return "secondary CREA";
 				}
 			} else if (type.equals("GENE")) {
+				// 001-dawn-6wa4r-az8x7-cnv4v-ulggk.DSEX.genetics
 				// pregnancies can cause additional GENE chunks
 				// therefore we give leniency to added GENE chunks
 				if (name.endsWith(geneticSuffix)) {
@@ -114,15 +117,8 @@ public class CryoFunctions {
 					return "GENE chunk that isn't in the right namespace";
 				}
 			} else if (type.equals("PHOT")) {
-				// right, so, this bit is a bit stupid
-				// basically, the receiver won't take it well if we strip these, ever.
-				// what we can do is verify the name is what it should be
-				if (name.endsWith("." + cType + ".photo")) {
-					if (!CreatureDataVerifier.verifyMonikerBase(name.substring(0, name.indexOf('.')), CreatureDataVerifier.MONIKER_CREATURE_COMPONENTS + 1))
-						return "PHOT chunk with dodgy name";
-				} else {
-					return "PHOT chunk that isn't in the right namespace";
-				}
+				if (getPHOTEventIndex(name, moniker, cType) == -1)
+					return "Bad PHOT name: " + name;
 				// further photo examinations are done by PhotoInspector
 			} else if (pb != creatureRoot) {
 				return "there's a chunk that isn't supposed to be here: " + type;
@@ -136,6 +132,33 @@ public class CryoFunctions {
 			return "no GENE0";
 		return null;
 	}
+
+	/**
+	 * Gets the event index of a PHOT chunk. Also verifies it.
+	 * Returns -1 on error.
+	 */
+	public static int getPHOTEventIndex(String name, String moniker, String cType) {
+		// Photos are generated in "DS creature history.cos" and "".
+		// 001-dawn-6wa4r-az8x7-cnv4v-ulggk-3.DSEX.photo
+		if (!name.startsWith(moniker))
+			return -1; // wrong moniker
+		String expectedSuffix = "." + cType + ".photo";
+		if (!name.endsWith(expectedSuffix))
+			return -1; // wrong namespace
+		// "-3"
+		String nameSubComponent = name.substring(moniker.length(), name.length() - expectedSuffix.length());
+		if (!nameSubComponent.startsWith("-"))
+			return -1;
+		nameSubComponent = nameSubComponent.substring(1);
+		try {
+			if (nameSubComponent.contains("+"))
+				return -1;
+			return Integer.parseUnsignedInt(nameSubComponent);
+		} catch (Exception ex) {
+			return -1;
+		}
+	}
+
 	/**
 	 * Conversion of a creature to the given format.
 	 * Make sure isWellFormedCreature was used at some point.

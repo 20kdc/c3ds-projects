@@ -93,6 +93,12 @@ public class Config extends BaseConfig.Group {
 			.describe("If false, the HTTP API effectively doesn't exist for anyone except localhost.");
 
 	/**
+	 * Remote HTTP API password.
+	 */
+	public final Str httpAPIKey = new Str("httpAPIKey", "")
+			.describe("If empty (as it is by default), then this does nothing.\nOtherwise, allows an \"apiKey\" parameter to enable access to APIs that are otherwise disabled because of the setting of \"httpAPIPublic\".");
+
+	/**
 	 * Request abuse prevention
 	 */
 	public final Bool httpRequestsEnabled = new Bool("httpRequestsEnabled", true)

@@ -14,7 +14,6 @@ import javax.imageio.ImageIO;
 
 import cdsp.common.data.pray.PRAYBlock;
 import cdsp.common.s16.S16Image;
-import natsue.data.babel.UINUtils;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.log.ILogProvider;
@@ -57,26 +56,27 @@ public class PhotoInspectorFWModule implements IFWModule, ILogSource {
 			PRAYBlock rootBlock = CryoFunctions.findCreatureRootBlock(pray.messageBlocks);
 			if (rootBlock == null)
 				return false;
-			boolean hasFirstAssociatedPhoto = false;
 			for (PRAYBlock block : pray.messageBlocks) {
 				if (block.getType().equals("PHOT")) {
 					S16Image decoded = PhotoFunctions.ensureValidPhoto(block.data, serverHub.config.photos, this);
+					String moniker = CryoFunctions.monikerFromRootBlock(rootBlock);
+					int eventIndex = CryoFunctions.getPHOTEventIndex(block.getName(), moniker, rootBlock.getType());
 					// The strict flag controls overwriting.
 					// In either case, the photo won't be attempted to be saved if "weird"...
 					if (strict && decoded == null)
 						block.data = PhotoFunctions.invalidPhoto.clone();
 					// Prepare saving...
-					if (decoded != null && !hasFirstAssociatedPhoto) {
-						try {
-							hasFirstAssociatedPhoto = true;
-							BufferedImage bi = decoded.toBI(false);
-							int uid = UINUtils.uid(sourceUser.getUIN());
-							ByteArrayOutputStream baos = new ByteArrayOutputStream();
-							ImageIO.write(bi, "PNG", baos);
-							String moniker = CryoFunctions.monikerFromRootBlock(rootBlock);
-							photos.setPhotoPNG(moniker, uid, baos.toByteArray());
-						} catch (Exception ex) {
-							log(ex);
+					if (decoded != null && eventIndex != -1 && serverHub.config.photos.photosEnabled.getValue()) {
+						// prevent duplication
+						if (!photos.shouldPhotoExist(moniker, eventIndex)) {
+							try {
+								BufferedImage bi = decoded.toBI(false);
+								ByteArrayOutputStream baos = new ByteArrayOutputStream();
+								ImageIO.write(bi, "PNG", baos);
+								photos.setPhoto(moniker, eventIndex, sourceUser.getUIN(), baos.toByteArray(), decoded.width, decoded.height);
+							} catch (Exception ex) {
+								log(ex);
+							}
 						}
 					}
 				}

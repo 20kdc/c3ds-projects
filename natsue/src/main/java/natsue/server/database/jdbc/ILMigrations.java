@@ -54,10 +54,6 @@ public class ILMigrations {
 					"ALTER TABLE natsue_history_creatures ADD COLUMN updater_name_uid INT",
 					"ALTER TABLE natsue_history_creatures ADD COLUMN updater_text_uid INT"
 			),
-			// 10: Add images
-			new Migration(9, 10,
-					"CREATE TABLE natsue_creature_images(moniker VARCHAR(64) NOT NULL UNIQUE, sender_uid INT NOT NULL, data_png LONGBLOB NOT NULL, PRIMARY KEY(moniker))"
-			),
 	};
 
 	public static void migrate(Connection conn, ILDBVariant variant, ILogProvider ils) throws SQLException {
