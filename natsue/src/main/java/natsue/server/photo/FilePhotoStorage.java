@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.LinkedList;
 
 import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
@@ -40,12 +41,46 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 		return eventIndex >= 0;
 	}
 
-	private File indexToImageFile(String moniker, int eventIndex) {
-		return new File(baseDir, moniker + "-" + eventIndex + ".png");
+	private synchronized File monikerToDir(String moniker, boolean create) {
+		File f = new File(baseDir, moniker);
+		if (create)
+			f.mkdirs();
+		return f;
 	}
 
-	private File indexToMetaFile(String moniker, int eventIndex) {
-		return new File(baseDir, moniker + "-" + eventIndex + ".json");
+	@Override
+	public LinkedList<Integer> getEventIndices(String moniker) {
+		LinkedList<Integer> list = new LinkedList<>();
+		try {
+			for (File f : monikerToDir(moniker, false).listFiles()) {
+				int idx = verifyEventIndexFile(f);
+				if (idx != -1)
+					list.add(idx);
+			}
+		} catch (Exception ex) {
+		}
+		return list;
+	}
+
+	private int verifyEventIndexFile(File f) {
+		try {
+			if (!f.isFile())
+				return -1;
+			String name = f.getName();
+			if (!name.endsWith(".png"))
+				return -1;
+			return Integer.parseInt(name.substring(0, name.length() - 4));
+		} catch (Exception ex) {
+		}
+		return -1;
+	}
+
+	private File indexToImageFile(File base, int eventIndex) {
+		return new File(base, eventIndex + ".png");
+	}
+
+	private File indexToMetaFile(File base, int eventIndex) {
+		return new File(base, eventIndex + ".json");
 	}
 
 	@Override
@@ -53,7 +88,8 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 		if (!verifyID(moniker, eventIndex))
 			return null;
 		try {
-			return Files.readAllBytes(indexToImageFile(moniker, eventIndex).toPath());
+			File monikerDir = monikerToDir(moniker, false);
+			return Files.readAllBytes(indexToImageFile(monikerDir, eventIndex).toPath());
 		} catch (Exception e) {
 			// let it fail, this is normal
 			return null;
@@ -65,7 +101,8 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 		if (!verifyID(moniker, eventIndex))
 			return null;
 		try {
-			return Files.readAllBytes(indexToMetaFile(moniker, eventIndex).toPath());
+			File monikerDir = monikerToDir(moniker, false);
+			return Files.readAllBytes(indexToMetaFile(monikerDir, eventIndex).toPath());
 		} catch (Exception e) {
 			// let it fail, this is normal
 			return null;
@@ -76,7 +113,10 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 	public synchronized boolean shouldPhotoExist(String moniker, int eventIndex) {
 		if (!verifyID(moniker, eventIndex))
 			return false;
-		return indexToImageFile(moniker, eventIndex).exists();
+		File monikerDir = monikerToDir(moniker, false);
+		if (!monikerDir.isDirectory())
+			return false;
+		return indexToImageFile(monikerDir, eventIndex).exists();
 	}
 
 	@Override
@@ -95,8 +135,9 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 		meta.objectEnd();
 		// do the thing
 		try {
-			File imgFile = indexToImageFile(moniker, eventIndex);
-			File metaFile = indexToMetaFile(moniker, eventIndex);
+			File monikerDir = monikerToDir(moniker, true);
+			File imgFile = indexToImageFile(monikerDir, eventIndex);
+			File metaFile = indexToMetaFile(monikerDir, eventIndex);
 			try (FileOutputStream fos = new FileOutputStream(tempImageFile)) {
 				fos.write(png);
 			}

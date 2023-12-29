@@ -6,6 +6,8 @@
  */
 package natsue.server.photo;
 
+import java.util.LinkedList;
+
 /**
  * Storage of photos.
  * There's no PhotoFrontend right now, so the verification/sync layer is in here.
@@ -23,6 +25,12 @@ public interface IPhotoStorage {
 	 * Verifies moniker and eventIndex.
 	 */
 	byte[] getPhotoMeta(String moniker, int eventIndex);
+
+	/**
+	 * Gets event indices for the given moniker.
+	 * Will return an empty list on any kind of failure whatsoever.
+	 */
+	LinkedList<Integer> getEventIndices(String moniker);
 
 	/**
 	 * Checks if the given photo "should exist" (and should NOT be written!!!)
