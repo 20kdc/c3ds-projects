@@ -46,6 +46,11 @@ public class Config extends BaseConfig.Group {
 	public final ConfigConnectionQuotas connectionQuotas = new ConfigConnectionQuotas();
 
 	/**
+	 * Quota details
+	 */
+	public final ConfigPhotos photos = new ConfigPhotos();
+
+	/**
 	 * Maximum amount of spooled messages to send back to a connecting client.
 	 */
 	public final Int maxSpoolToReadOnConnect = new Int("maxSpoolToReadOnConnect", 0x1000)

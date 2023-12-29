@@ -20,6 +20,8 @@ import natsue.server.firewall.*;
 import natsue.server.http.HTTPHandlerImpl;
 import natsue.server.hub.ServerHub;
 import natsue.server.packet.*;
+import natsue.server.photo.IPhotoStorage;
+import natsue.server.photo.PhotoFunctions;
 import natsue.server.session.LoginSessionState;
 import natsue.server.system.SystemUserHubClient;
 
@@ -28,6 +30,9 @@ import natsue.server.system.SystemUserHubClient;
  */
 public class Main {
 	public static void main(String[] args) throws Exception {
+		// really early static init stuff, i.e. resources
+		PhotoFunctions.ensureResourceInit();
+
 		if (args.length != 0)
 			throw new RuntimeException("Natsue Server expects no parameters.");
 
@@ -55,6 +60,19 @@ public class Main {
 
 		mySource.log("Cryogenics initialized.");
 
+		IPhotoStorage photo = new IPhotoStorage() {
+			@Override
+			public void setPhotoPNG(String moniker, int senderUID, byte[] png) {
+			}
+			
+			@Override
+			public byte[] getPhotoPNG(String moniker) {
+				return null;
+			}
+		};
+
+		mySource.log("Photo storage initialized.");
+
 		final ServerHub serverHub = new ServerHub(config, qm, ilp, actualDB, cryo);
 		// determine the firewall
 		IFWModule[] firewall = null;
@@ -62,6 +80,7 @@ public class Main {
 		case minimal:
 			mySource.log("Firewall level: minimal: MINIMAL, HAZARDOUS TO VANILLA CLIENTS");
 			firewall = new IFWModule[] {
+				new PhotoInspectorFWModule(serverHub, false, photo),
 				new SpoolListFWModule(serverHub)
 			};
 			break;
@@ -71,6 +90,7 @@ public class Main {
 				new PRAYBlockListsFWModule(serverHub, false),
 				new CreatureCheckingFWModule(serverHub),
 				new ComplexFWModule(serverHub),
+				new PhotoInspectorFWModule(serverHub, true, photo),
 				new SpoolListFWModule(serverHub)
 			};
 			break;
@@ -81,12 +101,14 @@ public class Main {
 				new PRAYBlockListsFWModule(serverHub, true),
 				new CreatureCheckingFWModule(serverHub),
 				new ComplexFWModule(serverHub),
+				new PhotoInspectorFWModule(serverHub, true, photo),
 				new SpoolListFWModule(serverHub)
 			};
 			break;
 		case rejectAll:
 			mySource.log("Firewall level: rejectAll: FOR TESTING ONLY");
 			firewall = new IFWModule[] {
+				new PhotoInspectorFWModule(serverHub, false, photo),
 				new RejectAllFWModule(serverHub)
 			};
 			break;

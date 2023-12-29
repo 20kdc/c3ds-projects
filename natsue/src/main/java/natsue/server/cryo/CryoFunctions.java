@@ -123,6 +123,7 @@ public class CryoFunctions {
 				} else {
 					return "PHOT chunk that isn't in the right namespace";
 				}
+				// further photo examinations are done by PhotoInspector
 			} else if (pb != creatureRoot) {
 				return "there's a chunk that isn't supposed to be here: " + type;
 			}
@@ -160,6 +161,7 @@ public class CryoFunctions {
 		pt.read(inp.data);
 		pt.strMap.put("Pray Extra natsueCryoSubmitter", UINUtils.toString(fromUIN));
 		pt.intMap.put("Pray Extra natsueCryoSubmitTime", (int) UnixTime.get());
+		pt.intMap.put("Pray Extra natsueCryoSubmitTimeH", (int) (UnixTime.get() >> 32));
 		inp.data = pt.toByteArray();
 	}
 	/**
@@ -170,6 +172,7 @@ public class CryoFunctions {
 		pt.read(inp.data);
 		pt.strMap.remove("Pray Extra natsueCryoSubmitter");
 		pt.intMap.remove("Pray Extra natsueCryoSubmitTime");
+		pt.intMap.remove("Pray Extra natsueCryoSubmitTimeH");
 		inp.data = pt.toByteArray();
 	}
 	/**
