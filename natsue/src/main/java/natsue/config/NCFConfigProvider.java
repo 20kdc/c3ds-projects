@@ -153,12 +153,14 @@ public class NCFConfigProvider implements IConfigProvider {
 	private void writeVal(Writer w, String s) throws IOException {
 		// determine if this is sufficiently ID-like
 		char[] ch = s.toCharArray();
-		boolean idLike = true;
-		for (int i = 0; i < ch.length; i++) {
-			char chr = ch[i];
-			idLike = ((chr > 32) && (chr != '"') && (chr != '#') && (chr != '\\'));
-			if (!idLike)
-				break;
+		boolean idLike = ch.length > 0;
+		if (idLike) {
+			for (int i = 0; i < ch.length; i++) {
+				char chr = ch[i];
+				idLike = ((chr > 32) && (chr != '"') && (chr != '#') && (chr != '\\'));
+				if (!idLike)
+					break;
+			}
 		}
 		if (idLike) {
 			w.write(s);
