@@ -16,6 +16,7 @@ Format Structure
   * int crossoverPoints
 * int eventCount
 * Event[eventCount] events
+  * It is important to note that these are only "solid" events (engine-defined events that the creature was definitely around to see). This is apparently to help prevent desyncs from, i.e. "child was born" events on other computers during warping.
 * string name
   * Client enforces a limit on names by the amount of pixels in them - in practice this means a soft limit of about 32 characters should do.
   * The client likes to send this as empty while sending a user text update. If this is an either-or condition or not is unknown, so right now Natsue will assume blank names indicate this condition.
@@ -51,6 +52,7 @@ Events
   * As in HIST NETU.
 * int index
   * Appears to uniquely identify an event within a creature's history (i.e. as deduplication).
+  * This index is a "solid index". **Solid indexes are distinct from the GLST index / CAOS index.**
 
 Strings/Monikers/User IDs
 -------------------------

@@ -96,7 +96,7 @@ public class Config extends BaseConfig.Group {
 	 * Remote HTTP API password.
 	 */
 	public final Str httpAPIKey = new Str("httpAPIKey", "")
-			.describe("If empty (as it is by default), then this does nothing.\nOtherwise, allows an \"apiKey\" parameter to enable access to APIs that are otherwise disabled because of the setting of \"httpAPIPublic\".");
+			.describe("If empty (as it is by default), then this does nothing.\nOtherwise, allows an \"apiKey\" parameter to enable access to APIs that are otherwise disabled because of the setting of \"httpAPIPublic\" or \"photosDownloadEnabled\".");
 
 	/**
 	 * Request abuse prevention

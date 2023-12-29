@@ -112,7 +112,7 @@ Returns a creature life event photo's content.
 
 `moniker`: Moniker of the creature whose event this is.
 
-`eventIndex`: Index of the event. Note that this is not necessarily equivalent to the array index, particularly if events go missing.
+`eventIndex`: Solid Index of the event. Note that this is not necessarily equivalent to the array index, particularly if events go missing.
 
 `eventType`: Type of the event (integer). See CAOS documentation for information on this.
 
@@ -158,7 +158,7 @@ The folllowing fields are not guaranteed to exist (specifically if `exists` is f
 
 `moniker`: Moniker.
 
-`eventIndex`: Creature life event index.
+`eventIndex`: Creature life event index. _**This is according to the GLST/CAOS index, not the 'Solid'/Warp index.**_
 
 `senderUIN`: UIN string. _A User object is not used here as the metadata object is written out to disk, so it wouldn't be up to date._
 
