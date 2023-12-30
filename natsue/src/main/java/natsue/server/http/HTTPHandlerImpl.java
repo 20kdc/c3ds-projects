@@ -213,6 +213,21 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 					rsp.append("</tr>\n");
 				}
 				rsp.append("</table>\n");
+				if (photosPublic) {
+					rsp.append("Photos:<br/><br/>\n");
+					rsp.append("<table border=1>\n");
+					for (Integer i : photoStorage.getIndices(fragment)) {
+						rsp.append("<tr><td>\n");
+						rsp.append("<img src=\"");
+						rsp.append("creaturePhoto.png?moniker=");
+						rsp.append(HTMLEncoder.hrefEncode(fragment));
+						rsp.append("&index=");
+						rsp.append(i);
+						rsp.append("\"/>");
+						rsp.append("</td></tr>\n");
+					}
+					rsp.append("</table>\n");
+				}
 			}
 			pages.kisspopUI(r, head, ttl.toString(), rsp.toString());
 		} else if (url.equals("/world")) {
@@ -328,12 +343,12 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				r.httpResponse("404 Not Found", head, "requires moniker=...");
 				return true;
 			}
-			String eventIndex = qv.get("eventIndex");
-			if (eventIndex == null) {
-				r.httpResponse("404 Not Found", head, "requires eventIndex=...");
+			String index = qv.get("index");
+			if (index == null) {
+				r.httpResponse("404 Not Found", head, "requires index=...");
 				return true;
 			}
-			byte[] data = photoStorage.getPhotoPNG(moniker, Integer.parseInt(eventIndex));
+			byte[] data = photoStorage.getPhotoPNG(moniker, Integer.parseInt(index));
 			if (data == null) {
 				r.httpResponse("404 Not Found", head, "no such photo");
 				return true;
@@ -471,18 +486,31 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 			}
 			je.arrayEnd();
 			r.httpOk(head, "application/json", je.out.toString());
+		} else if (url.equals("/api/creaturePhotoIndices")) {
+			String moniker = qv.get("moniker");
+			if (moniker == null) {
+				r.httpResponse("404 Not Found", head, "requires moniker=...");
+				return true;
+			}
+			JSONEncoder je = new JSONEncoder();
+			je.arrayStart();
+			for (Integer i : photoStorage.getIndices(moniker))
+				je.write(i);
+			je.arrayEnd();
+			r.httpOk(head, "application/json", je.out.toString());
+			return true;
 		} else if (url.equals("/api/creaturePhotoMetadata")) {
 			String moniker = qv.get("moniker");
 			if (moniker == null) {
 				r.httpResponse("404 Not Found", head, "requires moniker=...");
 				return true;
 			}
-			String eventIndex = qv.get("eventIndex");
-			if (eventIndex == null) {
-				r.httpResponse("404 Not Found", head, "requires eventIndex=...");
+			String index = qv.get("index");
+			if (index == null) {
+				r.httpResponse("404 Not Found", head, "requires index=...");
 				return true;
 			}
-			byte[] data = photoStorage.getPhotoMeta(moniker, Integer.parseInt(eventIndex));
+			byte[] data = photoStorage.getPhotoMeta(moniker, Integer.parseInt(index));
 			if (data == null) {
 				r.httpResponse("404 Not Found", head, "no such photo");
 				return true;

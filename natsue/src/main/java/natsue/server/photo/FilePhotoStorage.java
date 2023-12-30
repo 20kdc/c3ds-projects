@@ -35,10 +35,10 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 		this.tempImageFile = new File(baseDir, ".natsue-temp-image-file");
 	}
 
-	private boolean verifyID(String moniker, int eventIndex) {
+	private boolean verifyID(String moniker, int index) {
 		if (!CreatureDataVerifier.verifyMoniker(moniker))
 			return false;
-		return eventIndex >= 0;
+		return index >= 0;
 	}
 
 	private synchronized File monikerToDir(String moniker, boolean create) {
@@ -49,8 +49,10 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 	}
 
 	@Override
-	public LinkedList<Integer> getEventIndices(String moniker) {
+	public LinkedList<Integer> getIndices(String moniker) {
 		LinkedList<Integer> list = new LinkedList<>();
+		if (!CreatureDataVerifier.verifyMoniker(moniker))
+			return list;
 		try {
 			for (File f : monikerToDir(moniker, false).listFiles()) {
 				int idx = verifyEventIndexFile(f);
@@ -75,21 +77,21 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 		return -1;
 	}
 
-	private File indexToImageFile(File base, int eventIndex) {
-		return new File(base, eventIndex + ".png");
+	private File indexToImageFile(File base, int index) {
+		return new File(base, index + ".png");
 	}
 
-	private File indexToMetaFile(File base, int eventIndex) {
-		return new File(base, eventIndex + ".json");
+	private File indexToMetaFile(File base, int index) {
+		return new File(base, index + ".json");
 	}
 
 	@Override
-	public synchronized byte[] getPhotoPNG(String moniker, int eventIndex) {
-		if (!verifyID(moniker, eventIndex))
+	public synchronized byte[] getPhotoPNG(String moniker, int index) {
+		if (!verifyID(moniker, index))
 			return null;
 		try {
 			File monikerDir = monikerToDir(moniker, false);
-			return Files.readAllBytes(indexToImageFile(monikerDir, eventIndex).toPath());
+			return Files.readAllBytes(indexToImageFile(monikerDir, index).toPath());
 		} catch (Exception e) {
 			// let it fail, this is normal
 			return null;
@@ -97,12 +99,12 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 	}
 
 	@Override
-	public synchronized byte[] getPhotoMeta(String moniker, int eventIndex) {
-		if (!verifyID(moniker, eventIndex))
+	public synchronized byte[] getPhotoMeta(String moniker, int index) {
+		if (!verifyID(moniker, index))
 			return null;
 		try {
 			File monikerDir = monikerToDir(moniker, false);
-			return Files.readAllBytes(indexToMetaFile(monikerDir, eventIndex).toPath());
+			return Files.readAllBytes(indexToMetaFile(monikerDir, index).toPath());
 		} catch (Exception e) {
 			// let it fail, this is normal
 			return null;
@@ -110,24 +112,24 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 	}
 
 	@Override
-	public synchronized boolean shouldPhotoExist(String moniker, int eventIndex) {
-		if (!verifyID(moniker, eventIndex))
+	public synchronized boolean shouldPhotoExist(String moniker, int index) {
+		if (!verifyID(moniker, index))
 			return false;
 		File monikerDir = monikerToDir(moniker, false);
 		if (!monikerDir.isDirectory())
 			return false;
-		return indexToImageFile(monikerDir, eventIndex).exists();
+		return indexToImageFile(monikerDir, index).exists();
 	}
 
 	@Override
-	public synchronized void setPhoto(String moniker, int eventIndex, long senderUIN, byte[] png, int width, int height) {
-		if (!verifyID(moniker, eventIndex))
+	public synchronized void setPhoto(String moniker, int index, long senderUIN, byte[] png, int width, int height) {
+		if (!verifyID(moniker, index))
 			return;
 		// figure out metadata
 		JSONEncoder meta = new JSONEncoder();
 		meta.objectStart();
 		meta.writeKV("moniker", moniker);
-		meta.writeKV("eventIndex", eventIndex);
+		meta.writeKV("index", index);
 		meta.writeKV("senderUIN", UINUtils.toString(senderUIN));
 		meta.writeKV("saveTime", UnixTime.get());
 		meta.writeKV("width", width);
@@ -136,8 +138,8 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 		// do the thing
 		try {
 			File monikerDir = monikerToDir(moniker, true);
-			File imgFile = indexToImageFile(monikerDir, eventIndex);
-			File metaFile = indexToMetaFile(monikerDir, eventIndex);
+			File imgFile = indexToImageFile(monikerDir, index);
+			File metaFile = indexToMetaFile(monikerDir, index);
 			try (FileOutputStream fos = new FileOutputStream(tempImageFile)) {
 				fos.write(png);
 			}

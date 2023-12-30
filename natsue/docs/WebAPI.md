@@ -64,11 +64,15 @@ Note that the list can change (most likely expand) as you're paging it in. You w
 
 *Big scary caveat:* UINs are written `uid+hid`, but `+` has a different meaning. URL-encode this field! Or if you must fudge it, `%2B`.
 
-### GET /api/creaturePhotoMetadata?moniker=...&eventIndex=...
+### GET /api/creaturePhotoIndices?moniker=...
+
+Returns an array of integers, representing the photo indices for the given moniker.
+
+### GET /api/creaturePhotoMetadata?moniker=...&index=...
 
 Returns a creature life event photo's metadata (CreaturePhotoMetadata).
 
-### GET /creaturePhoto.png?moniker=...&eventIndex=...
+### GET /creaturePhoto.png?moniker=...&index=...
 
 Not a typo; `/api` is not given here.
 
@@ -158,7 +162,7 @@ The folllowing fields are not guaranteed to exist (specifically if `exists` is f
 
 `moniker`: Moniker.
 
-`eventIndex`: Creature life event index. _**This is according to the GLST/CAOS index, not the 'Solid'/Warp index.**_
+`index`: Photo index.
 
 `senderUIN`: UIN string. _A User object is not used here as the metadata object is written out to disk, so it wouldn't be up to date._
 

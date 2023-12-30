@@ -16,31 +16,31 @@ import java.util.LinkedList;
 public interface IPhotoStorage {
 	/**
 	 * Gets a photo PNG, or null if not found.
-	 * Verifies moniker and eventIndex.
+	 * Verifies moniker and index.
 	 */
-	byte[] getPhotoPNG(String moniker, int eventIndex);
+	byte[] getPhotoPNG(String moniker, int index);
 
 	/**
 	 * Gets photo metadata, or null if not found.
-	 * Verifies moniker and eventIndex.
+	 * Verifies moniker and index.
 	 */
-	byte[] getPhotoMeta(String moniker, int eventIndex);
+	byte[] getPhotoMeta(String moniker, int index);
 
 	/**
 	 * Gets event indices for the given moniker.
 	 * Will return an empty list on any kind of failure whatsoever.
 	 */
-	LinkedList<Integer> getEventIndices(String moniker);
+	LinkedList<Integer> getIndices(String moniker);
 
 	/**
 	 * Checks if the given photo "should exist" (and should NOT be written!!!)
-	 * Verifies moniker and eventIndex.
+	 * Verifies moniker and index.
 	 */
-	boolean shouldPhotoExist(String moniker, int eventIndex);
+	boolean shouldPhotoExist(String moniker, int index);
 
 	/**
 	 * Sets a photo.
-	 * Verifies moniker and eventIndex.
+	 * Verifies moniker and index.
 	 */
 	void setPhoto(String moniker, int eventIndex, long senderUIN, byte[] png, int width, int height);
 }
