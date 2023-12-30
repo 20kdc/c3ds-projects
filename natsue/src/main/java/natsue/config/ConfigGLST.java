@@ -16,8 +16,8 @@ public class ConfigGLST extends BaseConfig.Group {
 	/**
 	 * GLST mode
 	 */
-	public final Emu<GLSTStoreMode> glstMode = new Emu<>("glstMode", GLSTStoreMode.Decompressed)
-			.describe("Controls GLST (detailed history) storage.");
+	public final Emu<GLSTStoreMode> glstMode = new Emu<>("glstMode", GLSTStoreMode.none)
+			.describe("Controls GLST (detailed history) storage. Options are: none (do not save), decompressed ('.bin', CreaturesArchive header removed, zlib decompressed), compressed ('.cra', with CreaturesArchive header)");
 
 	/**
 	 * GLST directory

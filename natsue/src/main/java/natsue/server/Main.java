@@ -75,9 +75,9 @@ public class Main {
 		default:
 			glst = new NullGLSTStorage();
 			break;
-		case Decompressed:
-		case Compressed:
-			glst = new FileGLSTStorage(new File(config.glst.glstDir.getValue()), glstMode == GLSTStoreMode.Compressed);
+		case decompressed:
+		case compressed:
+			glst = new FileGLSTStorage(new File(config.glst.glstDir.getValue()), glstMode == GLSTStoreMode.compressed);
 			break;
 		}
 

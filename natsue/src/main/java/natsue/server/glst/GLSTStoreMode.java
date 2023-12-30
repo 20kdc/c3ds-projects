@@ -10,7 +10,7 @@ package natsue.server.glst;
  * GLST storage mode for config
  */
 public enum GLSTStoreMode {
-	None,
-	Decompressed,
-	Compressed
+	none,
+	decompressed,
+	compressed
 }
