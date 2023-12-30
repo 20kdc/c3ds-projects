@@ -19,6 +19,7 @@ import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.cryo.CryoFunctions;
+import natsue.server.glst.IGLSTStorage;
 import natsue.server.hub.ServerHub;
 import natsue.server.photo.IPhotoStorage;
 import natsue.server.photo.PhotoFunctions;
@@ -28,15 +29,17 @@ import natsue.server.userdata.INatsueUserData;
  * Inspects photos. If a problem is detected, the photo may be substituted.
  * Will otherwise upload them.
  */
-public class PhotoInspectorFWModule implements IFWModule, ILogSource {
+public class DataExtractorFWModule implements IFWModule, ILogSource {
 	private final ServerHub serverHub;
 	private final boolean strict;
 	private final IPhotoStorage photos;
+	private final IGLSTStorage glst;
 
-	public PhotoInspectorFWModule(ServerHub serverHub, boolean strict, IPhotoStorage photos) {
+	public DataExtractorFWModule(ServerHub serverHub, boolean strict, IPhotoStorage photos, IGLSTStorage glst) {
 		this.serverHub = serverHub;
 		this.strict = strict;
 		this.photos = photos;
+		this.glst = glst;
 	}
 
 	@Override
@@ -56,10 +59,12 @@ public class PhotoInspectorFWModule implements IFWModule, ILogSource {
 			PRAYBlock rootBlock = CryoFunctions.findCreatureRootBlock(pray.messageBlocks);
 			if (rootBlock == null)
 				return false;
+			String moniker = CryoFunctions.monikerFromRootBlock(rootBlock);
 			for (PRAYBlock block : pray.messageBlocks) {
-				if (block.getType().equals("PHOT")) {
+				if (block.getType().equals("GLST")) {
+					glst.storeGLST(moniker, block.data);
+				} else if (block.getType().equals("PHOT")) {
 					S16Image decoded = PhotoFunctions.ensureValidPhoto(block.data, serverHub.config.photos, this);
-					String moniker = CryoFunctions.monikerFromRootBlock(rootBlock);
 					int eventIndex = CryoFunctions.getPHOTEventIndex(block.getName(), moniker, rootBlock.getType());
 					// The strict flag controls overwriting.
 					// In either case, the photo won't be attempted to be saved if "weird"...

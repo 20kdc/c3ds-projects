@@ -8,7 +8,7 @@
 package natsue.config;
 
 /**
- * Cryogenics
+ * Photos
  */
 public class ConfigPhotos extends BaseConfig.Group {
 	/**
@@ -33,5 +33,5 @@ public class ConfigPhotos extends BaseConfig.Group {
 	 * Log photo errors
 	 */
 	public final Str photosDir = new Str("photosDir", "photos")
-			.describe("Log photo errors.");
+			.describe("Photos directory.");
 }

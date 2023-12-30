@@ -36,6 +36,16 @@ public class Config extends BaseConfig.Group {
 	public final ConfigCryo cryo = new ConfigCryo();
 
 	/**
+	 * Photo storage details
+	 */
+	public final ConfigPhotos photos = new ConfigPhotos();
+
+	/**
+	 * GLST storage details
+	 */
+	public final ConfigGLST glst = new ConfigGLST();
+
+	/**
 	 * Nickname details
 	 */
 	public final ConfigAccounts accounts = new ConfigAccounts();
@@ -44,11 +54,6 @@ public class Config extends BaseConfig.Group {
 	 * Quota details
 	 */
 	public final ConfigConnectionQuotas connectionQuotas = new ConfigConnectionQuotas();
-
-	/**
-	 * Quota details
-	 */
-	public final ConfigPhotos photos = new ConfigPhotos();
 
 	/**
 	 * Maximum amount of spooled messages to send back to a connecting client.

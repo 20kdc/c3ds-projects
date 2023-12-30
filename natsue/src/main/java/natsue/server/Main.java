@@ -17,6 +17,10 @@ import natsue.server.cryo.CryoFrontend;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.jdbc.JDBCNatsueDatabase;
 import natsue.server.firewall.*;
+import natsue.server.glst.FileGLSTStorage;
+import natsue.server.glst.GLSTStoreMode;
+import natsue.server.glst.IGLSTStorage;
+import natsue.server.glst.NullGLSTStorage;
 import natsue.server.http.HTTPHandlerImpl;
 import natsue.server.hub.ServerHub;
 import natsue.server.packet.*;
@@ -65,6 +69,20 @@ public class Main {
 
 		mySource.log("Photo storage initialized.");
 
+		IGLSTStorage glst;
+		GLSTStoreMode glstMode = config.glst.glstMode.getValue();
+		switch (glstMode) {
+		default:
+			glst = new NullGLSTStorage();
+			break;
+		case Decompressed:
+		case Compressed:
+			glst = new FileGLSTStorage(new File(config.glst.glstDir.getValue()), glstMode == GLSTStoreMode.Compressed);
+			break;
+		}
+
+		mySource.log("GLST storage initialized.");
+
 		final ServerHub serverHub = new ServerHub(config, qm, ilp, actualDB, cryo);
 		// determine the firewall
 		IFWModule[] firewall = null;
@@ -72,7 +90,7 @@ public class Main {
 		case minimal:
 			mySource.log("Firewall level: minimal: MINIMAL, HAZARDOUS TO VANILLA CLIENTS");
 			firewall = new IFWModule[] {
-				new PhotoInspectorFWModule(serverHub, false, photo),
+				new DataExtractorFWModule(serverHub, false, photo, glst),
 				new SpoolListFWModule(serverHub)
 			};
 			break;
@@ -82,7 +100,7 @@ public class Main {
 				new PRAYBlockListsFWModule(serverHub, false),
 				new CreatureCheckingFWModule(serverHub),
 				new ComplexFWModule(serverHub),
-				new PhotoInspectorFWModule(serverHub, true, photo),
+				new DataExtractorFWModule(serverHub, true, photo, glst),
 				new SpoolListFWModule(serverHub)
 			};
 			break;
@@ -93,14 +111,14 @@ public class Main {
 				new PRAYBlockListsFWModule(serverHub, true),
 				new CreatureCheckingFWModule(serverHub),
 				new ComplexFWModule(serverHub),
-				new PhotoInspectorFWModule(serverHub, true, photo),
+				new DataExtractorFWModule(serverHub, true, photo, glst),
 				new SpoolListFWModule(serverHub)
 			};
 			break;
 		case rejectAll:
 			mySource.log("Firewall level: rejectAll: FOR TESTING ONLY");
 			firewall = new IFWModule[] {
-				new PhotoInspectorFWModule(serverHub, false, photo),
+				new DataExtractorFWModule(serverHub, false, photo, glst),
 				new RejectAllFWModule(serverHub)
 			};
 			break;
