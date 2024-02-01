@@ -42,6 +42,7 @@ public class CTOSUnknown extends BaseCTOS {
 			int wantedFurtherData = initial.getInt(BASE_FIELD_FDLEN);
 			if (wantedFurtherData < 0 || wantedFurtherData > pcfg.maxUnknownCTOSFurtherDataSize.getValue())
 				throw new IOException("Invalid further data!");
+			IOUtils.getBytes(inputStream, wantedFurtherData);
 		}
 	}
 

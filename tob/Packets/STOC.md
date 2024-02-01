@@ -21,6 +21,7 @@ Note that this acts as a "base" for other packets.
 		* 0x0F: GetClientInfo transaction response, see CTOS
 		* 0x13: GetConnectionDetail transaction response, see CTOS
 		* 0x14: ClientCommand - C_TID_CLIENT_COMMAND
+		* 0x18: GetStatus transaction response, see CTOS
 		* 0x1D: OnlineChange - C_TID_ONLINE_CHANGE
 			* *likely deprecated or internal, see packet details for more information*
 		* 0x1E: VirtualCircuitConnect - C_TID_VIRTUAL_CONNECT
@@ -227,7 +228,7 @@ C_TID_MIGRATE
 * Name is a guess
 
 
-Client dials ctlcpc180.cyberlife.co.uk - fat chance of getting *that *back up.
+Client dials ctlcpc180.cyberlife.co.uk -- fat chance of getting *that* back up.
 This entry is only here for completeness's sake.
 It looks like there's a secondary login mechanism in the servers for migrating clients using 0x2B (CTOS) and 0x2C (STOC).
 Relevant code is in CBabelMigrateConnection::AttemptMigrate.

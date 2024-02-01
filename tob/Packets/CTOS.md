@@ -27,9 +27,8 @@ Note that this acts as a "base" for other packets.
 * +8: Field B (usually server HID)
 * +12: Field C (usually a UID, target's or user's)
 * +16: Field D (usually a HID, target's or user's)
-* +20: Ticket number (if non-zero, the packet expects a response) - see [STOC](./STOC.md) logic of this field for how this works.
+* +20: Ticket number (if non-zero, the packet expects a response) - see [STOC](./STOC.md) logic of this field for how this works. **This includes how transaction response sizes work.**
 	* int ticketDispatch
-	* If non-zero, a response from the server is expected.
 	* The code is very certain to never allocate ticket ID 0, as that would not appear as a response to STOC logic.
 * +24: Usually indicates the length of further data (but only in packets with variable-length further data).
 	* int furtherData
