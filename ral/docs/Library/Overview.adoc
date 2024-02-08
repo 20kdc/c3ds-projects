@@ -10,6 +10,8 @@ The general structure of the library is laid out as so:
 *** `include/std/c3ds.ral` - Common definitions between Creatures 3 and Docking Station
 *** `include/std/c3.ral` - Creatures 3 definitions
 *** `include/std/ds.ral` - Docking Station definitions
+*** `include/std/c3ds_switcher.ral` - Common definitions for Creature 3 and Docking Station's World Switchers
+*** `include/std/ds_switcher.ral` - Docking Station's World Switcher
 *** `include/std/engine` - _Internals_ of `include/std/engine.ral`.
 *** `include/std/c3ds` - _Internals_ of `include/std/c3ds.ral`.
 *** `include/std/c3` - _Internals_ of `include/std/c3.ral`.

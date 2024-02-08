@@ -1,5 +1,6 @@
 #!/bin/sh
 # RAL build script
+(cd .. ; mvn install) || exit
 mvn package || exit
 # FOR LATER
 #cd .. || exit

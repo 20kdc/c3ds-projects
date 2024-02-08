@@ -6,4 +6,18 @@ include::Overview.adoc[]
 
 <<<
 
-include::gen.adoc[]
+### Engine & Core
+
+include::gen_engine.adoc[]
+
+<<<
+
+### C3/DS (Main)
+
+include::gen_c3ds.adoc[]
+
+<<<
+
+### C3/DS (World Switcher)
+
+include::gen_ws.adoc[]

@@ -1,0 +1,49 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+// C3/DS Switcher common
+
+// The Pointer. (Note that the Pointer has a different Scriptorium and is thus separately documented here.)
+class Pointer 2 1 1;
+
+// Include engine
+include "std/engine.ral";
+
+// The World Switcher.
+class WorldSwitcher 1 2 1000;
+
+// Current mode of WorldSwitcher. See `WS_MODE_*` constants.
+field int WorldSwitcher.screenMode 0;
+
+// Future mode of WorldSwitcher.
+// `screenMode` is set to `screenModeIncoming` in `resetParts`.
+field int WorldSwitcher.screenModeIncoming 1;
+
+// Last known value of `nwld`.
+field int WorldSwitcher.worldCount 2;
+
+// In the world pager, this is the index of the first world shown.
+field int WorldSwitcher.pageFirstWorldIndex 3;
+
+// Selected world index.
+field int WorldSwitcher.worldIndex 4;
+
+// Screen mode after a password has been entered.
+field int WorldSwitcher.screenModeAfterPassword 5;
+
+WS_MODE_NONE = 0;
+WS_MODE_NEW_WORLD = 1;
+WS_MODE_FIRST_WORLD = 2;
+WS_MODE_SWITCHER = 3;
+WS_MODE_PASSWORD = 4;
+WS_MODE_DELETE = 5;
+// This mode actually loads the current world on switch.
+WS_MODE_LOADING = 6;
+
+// This is called to reset parts for the given screenMode.
+// This consists of deleting all part IDs up to 100, then adding new ones for the given screen.
+script WorldSwitcher:resetParts 2000;

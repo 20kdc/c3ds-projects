@@ -116,18 +116,19 @@ public class Main {
 		} else if (args[0].equals("lspLoud")) {
 			new LSPBaseProtocolLoop(new LanguageServer(ralStandardLibrary, true), true).run();
 		} else if (args[0].equals("docGen")) {
-			IncludeParseContext ic = Parser.run(stdLibDP, new File(args[1]));
+			String baseIndent = args[1];
+			IncludeParseContext ic = Parser.run(stdLibDP, new File(args[2]));
 			// We have to run the resolve here so that macros pre-compile (so we can mine out their types).
 			// But we don't actually care for the contents of the resolved output.
 			ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
 			StringBuilder sb = new StringBuilder();
-			DocGen.Rule[] rules = new DocGen.Rule[args.length - 2];
+			DocGen.Rule[] rules = new DocGen.Rule[args.length - 3];
 			// insert a rule by default NOT including stdlib
 			rules[0] = new DocGen.Rule("-std/");
-			for (int i = 3; i < args.length; i++)
-				rules[i - 2] = new DocGen.Rule(args[i]);
-			DocGen.build(sb, ic, rules);
-			FileOutputStream fos = new FileOutputStream(args[2]);
+			for (int i = 4; i < args.length; i++)
+				rules[i - 3] = new DocGen.Rule(args[i]);
+			DocGen.build(baseIndent, sb, ic, rules);
+			FileOutputStream fos = new FileOutputStream(args[3]);
 			fos.write(sb.toString().getBytes(StandardCharsets.UTF_8));
 			fos.close();
 		} else if (args[0].equals("raljector")) {
@@ -221,7 +222,7 @@ public class Main {
 		System.out.println("lsp: Language server over standard input/output");
 		System.out.println("lspLog: Like lsp, but writes out lsp.log and shows additional LSP debug information");
 		System.out.println("lspLoud: Like lsp, but sends debug information to standard error and shows additional LSP debug information");
-		System.out.println("docGen INPUT OUTPUT (+/-PREFIX)...: Generates AsciiDoc documentation.");
+		System.out.println("docGen BASEINDENT INPUT OUTPUT (+/-PREFIX)...: Generates AsciiDoc documentation.");
 		System.out.println("cpxConnectionTest: Test CPX connection");
 		System.out.println("raljector: RALjector GUI");
 	}

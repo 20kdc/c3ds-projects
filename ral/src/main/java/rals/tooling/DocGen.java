@@ -27,16 +27,16 @@ import rals.types.RALType;
  * Documentation generator!
  */
 public class DocGen {
-	public static void build(StringBuilder sb, IncludeParseContext ic, Rule[] r) {
-		sb.append("### Macros\n");
+	public static void build(String baseIndent, StringBuilder sb, IncludeParseContext ic, Rule[] r) {
+		sb.append(baseIndent + " Macros\n");
 		sb.append("\n");
 		LinkedList<String> keys = new LinkedList<>(ic.module.callable.keySet());
 		Collections.sort(keys);
 		for (String s : keys) {
 			RALCallable rc = ic.module.callable.get(s);
-			buildCallable(sb, rc, r);
+			buildCallable(baseIndent, sb, rc, r);
 		}
-		sb.append("### Constants\n");
+		sb.append(baseIndent + " Constants\n");
 		sb.append("\n");
 		keys = new LinkedList<>(ic.typeSystem.namedConstants.keySet());
 		Collections.sort(keys);
@@ -45,7 +45,7 @@ public class DocGen {
 			DefInfo di = ic.typeSystem.namedConstantsDefPoints.get(s);
 			if (di != null) {
 				if (matchesRules(di, r)) {
-					sb.append("#### `");
+					sb.append(baseIndent + "# `");
 					sb.append(rc.slot(0).type);
 					sb.append(" ");
 					sb.append(s);
@@ -56,7 +56,7 @@ public class DocGen {
 				}
 			}
 		}
-		sb.append("### Types\n");
+		sb.append(baseIndent + " Types\n");
 		sb.append("\n");
 		keys.clear();
 		for (Map.Entry<String, RALType> rt : ic.typeSystem.getAllNamedTypes())
@@ -66,7 +66,7 @@ public class DocGen {
 			RALType rt = ic.typeSystem.byName(s);
 			DefInfo di = ic.typeSystem.getNamedTypeDefInfo(s);
 			if (matchesRules(di, r)) {
-				sb.append("#### `");
+				sb.append(baseIndent + "# `");
 				sb.append(s);
 				sb.append(": ");
 				sb.append(rt.getFullDescription());
@@ -87,32 +87,32 @@ public class DocGen {
 				}
 				Collections.sort(fields);
 				for (Attachment a : fields)
-					doAttachment(sb, a, r);
+					doAttachment(baseIndent, sb, a, r);
 				Collections.sort(sm);
 				for (Attachment a : sm)
-					doAttachment(sb, a, r);
+					doAttachment(baseIndent, sb, a, r);
 			}
 		}
 	}
-	private static void doAttachment(StringBuilder sb, Attachment a, Rule[] r) {
+	private static void doAttachment(String baseIndent, StringBuilder sb, Attachment a, Rule[] r) {
 		if (matchesRules(a.defInfo, r)) {
-			sb.append("##### `");
+			sb.append(baseIndent + "## `");
 			sb.append(a.toString());
 			sb.append("`\n\n");
 			showDocBody(sb, (DefInfo.At) a.defInfo);
 		}
 	}
-	private static void buildCallable(StringBuilder sb, RALCallable rc, Rule[] r) {
+	private static void buildCallable(String baseIndent, StringBuilder sb, RALCallable rc, Rule[] r) {
 		if (rc instanceof MacroDefSet) {
 			HashMap<Integer, RALCallable> rcx = ((MacroDefSet) rc).map;
 			LinkedList<Integer> l = new LinkedList<>(rcx.keySet());
 			Collections.sort(l);
 			for (Integer i : l)
-				buildCallable(sb, rcx.get(i), r);
+				buildCallable(baseIndent, sb, rcx.get(i), r);
 		} else if (rc instanceof Macro) {
 			Macro mac = (Macro) rc;
 			if (matchesRules(mac.defInfo, r)) {
-				sb.append("#### `");
+				sb.append(baseIndent + "# `");
 				sb.append(mac.name);
 				HCMHoverDataGenerators.showMacroArgs(sb, mac.args);
 				if (mac.precompiledCode != null) {

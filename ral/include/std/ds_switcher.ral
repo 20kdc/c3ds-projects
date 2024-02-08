@@ -1,0 +1,36 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+// C3/DS Switcher
+// Not counting the Pointer, this is the only object on the map.
+
+include "std/c3ds_switcher.ral";
+
+// In DS and only DS, the WorldSwitcher has logic to fade in on first resetParts.
+field bool WorldSwitcher.hasFadedIn 74;
+
+// 'Message box' agent.
+class DSWorldSwitcherInfo 1 2 1001;
+
+// Mode. See `WSINFO_MODE_*` constants.
+field int DSWorldSwitcherInfo.mode 0;
+
+// Mirror of the WorldSwitcher world index.
+field int DSWorldSwitcherInfo.worldIndex 4;
+
+// Regular accept button.
+script DSWorldSwitcherInfo:btnAccept 1000;
+
+// For the old build warning specifically, a `name "waiting"` variable is setup on the world switcher. Either the user hits the button to accept the dialog (i.e. cancel load -- reinjects WS), or hits this button, which sets that variable to false.
+script DSWorldSwitcherInfo:btnWarningContinue 1001;
+
+// Some error has occurred, this dialog reinjects world switcher.
+WSINFO_MODE_ERROR = 1;
+// If you continue the world gets docked.
+WSINFO_MODE_DOCK = 2;
+// Warning. This dialog can either continue (set waiting to false) or abort (reinject).
+WSINFO_MODE_WARNING = 3;

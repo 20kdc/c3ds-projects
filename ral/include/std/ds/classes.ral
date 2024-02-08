@@ -8,6 +8,18 @@
 // Definitions of Justanut-related business
 include "std/c3ds.ral";
 
+// babel_connection_information: Shift-Control-B Babel status tool
+class DSBabelConnectionInformation 1 1 201;
+// 0: None
+// 1: 'fast info'
+// 2: full+fast
+// 3: full only
+field int DSBabelConnectionInformation.mode 0;
+
+// babel_fast_info: Sub-tool of babel_connection_information
+// Shows output of "net: what"
+class DSBabelFastInfo 1 1 58;
+
 // The Justanut is a kind of seed.
 class DSJustanut 2 3 17;
 

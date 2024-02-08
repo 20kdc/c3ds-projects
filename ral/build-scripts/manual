@@ -1,7 +1,9 @@
 #!/bin/sh
 # Another RAL build script
 java -jar ral.jar compile samples/vending-machine-root-final.ral samples/vending-machine-root-final.cos || exit
-java -jar ral.jar docGen docs/all.ral docs/Library/gen.adoc +std/ -std/compiler_helpers.ral +BUILTIN || exit
+java -jar ral.jar docGen "####" docs/all.ral docs/Library/gen_engine.adoc +std/compiler_prelude.ral +BUILTIN +std/engine || exit
+java -jar ral.jar docGen "####" docs/all.ral docs/Library/gen_c3ds.adoc +std/ -std/compiler -BUILTIN -std/engine || exit
+java -jar ral.jar docGen "####" docs/all_ws.ral docs/Library/gen_ws.adoc +std/ -std/compiler -BUILTIN -std/engine || exit
 cd docs
 echo Manual: Compiling PDF
 asciidoctor-pdf full.adoc -o ../manual.pdf || exit

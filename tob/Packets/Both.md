@@ -39,6 +39,10 @@ Opens a virtual socket between two clients.
 For further information, see [Virtual Circuits And Direct Links](../Concepts/Virtual_Circuits_And_Direct_Links.md).
 *Worth noting: in the one situation in which the client will send this packet, a response must be given or the game freezes.*
 
+**While it would seem pointless to implement ever receiving this packet, Natsue uses it as a ping mechanism, starting a virtual circuit from the server's UIN. Once the acknowledgement ClientCommand is received, Natsue sends back a C\_TID\_VIRTUAL\_CIRCUIT\_CLOSE packet to clean things up on the client's end.**
+
+**Just to be clear: There is no reason to, as a client developer, implement virtual circuits in a fashion any deeper than acknowledging incoming circuits with client command responses. These responses must use the correct initiator VSN, but you don't have to manage your own VSNs.**
+
 44 bytes
 
 
@@ -50,7 +54,7 @@ For further information, see [Virtual Circuits And Direct Links](../Concepts/Vir
 	* Receiving client (STOC-wise) uses this as expected.
 * Ticket number: 0/Ignored
 * Further data: 0/Ignored
-* E: Newly allocated Virtual Socket Number on CTOS side
+* E: Initiator's Virtual Socket Number
 * +32/+36: Target UID/HID (STOC ignores)
 * +40: 2 (STOC ignores)
 
