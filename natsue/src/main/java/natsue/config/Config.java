@@ -8,6 +8,7 @@
 package natsue.config;
 
 import natsue.server.firewall.FirewallLevel;
+import natsue.server.firewall.NetWritLevel;
 import natsue.server.system.ContactAddStrategy;
 
 /**
@@ -143,6 +144,16 @@ public class Config extends BaseConfig.Group {
 					"vanillaSafe (blocks known dangerous PRAY blocks, + NB norn check),\n" +
 					"full (block any blocks vanilla wouldn't send, + NB norn check),\n" +
 					"rejectAll (TESTING ONLY, REJECTS EVERYTHING)");
+
+	/**
+	 * NET: WRIT allowed (as per docs)?
+	 */
+	public final Emu<NetWritLevel> allowNetWrit = new Emu<>("allowNetWrit", NetWritLevel.restrictive)
+			.describe("Assuming a vanillaSafe or more restrictive firewall, determines if the restricted NET: WRIT subset is allowed.\n" +
+					"Options are:\n" +
+					"blocked: Simply drop NET: WRIT.\n" +
+					"restrictive: This is the policy described in docs/NetWrit.md : block access to vanilla channels + require ID 2468\n" +
+					"vanillaSafe: Block access to vanilla channels + require ID >= 1000");
 
 	/**
 	 * Contact add strategy

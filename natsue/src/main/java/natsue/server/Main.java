@@ -97,6 +97,7 @@ public class Main {
 		case vanillaSafe:
 			mySource.log("Firewall level: vanillaSafe: Should be safe enough.");
 			firewall = new IFWModule[] {
+				new NetWritFWModule(serverHub, config.allowNetWrit.getValue()),
 				new PRAYBlockListsFWModule(serverHub, false),
 				new CreatureCheckingFWModule(serverHub),
 				new ComplexFWModule(serverHub),
@@ -108,6 +109,7 @@ public class Main {
 		default:
 			mySource.log("Firewall level: full: No fun allowed.");
 			firewall = new IFWModule[] {
+				new NetWritFWModule(serverHub, config.allowNetWrit.getValue()),
 				new PRAYBlockListsFWModule(serverHub, true),
 				new CreatureCheckingFWModule(serverHub),
 				new ComplexFWModule(serverHub),
