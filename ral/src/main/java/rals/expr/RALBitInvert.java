@@ -41,6 +41,7 @@ public class RALBitInvert implements RALExprUR {
 		final RALType numT = exprR.assert1ReadType();
 		numT.assertImpCast(negate ? scope.world.types.gNumber : scope.world.types.gInteger);
 		final RALSlot rs = new RALSlot(numT, RALSlot.Perm.R);
+		// [CAOS]
 		final String actualCmd = negate ? "negv" : "notv";
 		return new RALExprSlice(1) {
 			@Override

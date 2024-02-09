@@ -46,7 +46,9 @@ public class RALFieldAccess implements RALExprUR {
 					RALSpecialInline si = baseExpr.getSpecialInline(0, context);
 					if (si == RALSpecialInline.Ownr) {
 						// Don't do this with TARG because we could in theory be victim to a switcheroo.
-						out.writeCompile(0, CAOSUtils.vaToString("mv", slot.slot), slot.type.majorType, context);
+						// [CAOS]
+						String vaInline = context.typeSystem.codeGenFeatureLevel.hasMVXX ? CAOSUtils.vaToString("mv", slot.slot) : ("avar ownr " + slot.slot);
+						out.writeCompile(0, vaInline, slot.type.majorType, context);
 					} else {
 						// use fallbackIO - this stores the agent reference in a temporary before we do the writeCompile
 						// as such, it's immune to targ switcheroo
@@ -85,6 +87,7 @@ public class RALFieldAccess implements RALExprUR {
 				try (CompileContext cc = context.forkVAEH()) {
 					RALVarVA va = cc.allocVA(baseType, "RALFieldAccess computed agent");
 					baseExpr.readInplaceCompile(new RALVarVA[] {va}, cc);
+					// [CAOS]
 					doTheThing.accept("avar " + va.getCode(cc) + " " + slot.slot);
 				}
 			}
@@ -92,15 +95,22 @@ public class RALFieldAccess implements RALExprUR {
 			@Override
 			public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
 				RALSpecialInline si = baseExpr.getSpecialInline(0, context);
-				if ((si == RALSpecialInline.Ownr) || (si == RALSpecialInline.Targ)) {
-					// obvious fast-path for ownr/targ variables
-					String pfx = "ov";
-					if (si == RALSpecialInline.Ownr)
-						pfx = "mv";
-					return CAOSUtils.vaToString(pfx, slot.slot);
+				// [CAOS]
+				if (si == RALSpecialInline.Ownr) {
+					if (context.typeSystem.codeGenFeatureLevel.hasMVXX) {
+						// obvious fast-path for ownr variables on DS
+						return CAOSUtils.vaToString("mv", slot.slot);
+					} else {
+						// fall back to avar for CA/C3
+						return "avar ownr " + slot.slot;
+					}
+				} else if (si == RALSpecialInline.Targ) {
+					// obvious fast-path for targ variables
+					return CAOSUtils.vaToString("ov", slot.slot);
 				} else {
 					// if we can inline the agent reference, we're fine
 					String agentRefInline = baseExpr.getInlineCAOS(0, false, context);
+					// [CAOS]
 					if (agentRefInline != null)
 						return "avar " + agentRefInline + " " + slot.slot;
 				}

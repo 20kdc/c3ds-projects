@@ -177,6 +177,8 @@ public class RALModAssignStatement extends RALStatementUR {
 		abstract int stepConstI(int a, int b);
 	}
 
+	// [CAOS]
+
 	public static final Op OR = new BitNumberOp("orrv") {
 		@Override
 		int stepConst(int a, int b) {

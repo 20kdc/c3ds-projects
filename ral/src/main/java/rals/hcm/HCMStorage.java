@@ -23,7 +23,7 @@ public class HCMStorage {
 	public SrcPosMap<Token> lastTokenMap;
 	public HashMap<Token, HoverData> hoverTokenOverrides;
 	public HashMap<Token, Token> backwardsTokenLink;
-	public HashMap<Token.ID, HCMIntent> hoverIntents;
+	public HashMap<Token.IDish, HCMIntent> hoverIntents;
 	public HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken;
 	public HashMap<String, HoverData> allNamedTypes;
 	public HashMap<String, HoverData> allConstants;
@@ -44,8 +44,8 @@ public class HCMStorage {
 			return null;
 		} else if (override != null) {
 			return override;
-		} else if (tkn instanceof Token.ID) {
-			Token.ID id = (Token.ID) tkn;
+		} else if (tkn instanceof Token.IDish) {
+			Token.IDish id = (Token.IDish) tkn;
 			HCMIntent hi = hoverIntents.get(id);
 			if (hi != null) {
 				Token former = backwardsTokenLink.get(tkn);
@@ -83,9 +83,8 @@ public class HCMStorage {
 			// attr(SOMEID<HERE>);
 			// In this case, we go back to SOMEID, then we need to go back a token again for our intent ref.
 			refToken = backwardsTokenLink.get(refToken);
-		}
-		if ((refToken instanceof Token.ID) && (spu.lcLong <= refToken.extent.end.lcLong)) {
-			// We're inside or at the end of refToken, which is an ID.
+		} else if ((refToken instanceof Token.IDish) && (spu.lcLong <= refToken.extent.end.lcLong)) {
+			// We're inside or at the end of refToken, which is an ID or keyword.
 			// Therefore, we're writing it!
 			// Go back a token for our intent reference.
 			// writingToken = refToken;

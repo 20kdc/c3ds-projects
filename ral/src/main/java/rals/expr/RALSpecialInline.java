@@ -12,6 +12,7 @@ package rals.expr;
  */
 public enum RALSpecialInline {
 	None(null, false, true),
+	// [CAOS]
 	Ownr("ownr", true, false),
 	Targ("targ", false, false),
 	VA(null, true, false),

@@ -36,6 +36,7 @@ public class RALEnumLoop extends RALStatementUR {
 		ScopeContext scope = new ScopeContext(outerScope);
 		RALExprSlice paramsR = params.resolve(scope);
 		final RALStatement loopStarter;
+		// [CAOS]
 		if (enumToken.equals("econ")) {
 			paramsR.assert1ReadType().assertImpCast(scope.world.types.gAgent);
 			loopStarter = new RALInlineStatement.Resolved(extent, new Object[] {
@@ -76,13 +77,15 @@ public class RALEnumLoop extends RALStatementUR {
 		return new RALStatement(extent) {
 			@Override
 			protected void compileInner(CodeWriter writer, CompileContext context) {
+				// [CAOS]
 				// We need two break contexts in a sandwich because of the whole "global break/continue label handles" thing
 				// We don't want to overwrite the outer break label handle
 				// But we need to ensure the escape occurs
 				try (CompileContext ccOuter = context.forkVAEHBreak(IBreakHandler.NOP)) {
 					// just don't allow it
 					String endJumpLabel = ccOuter.allocLabel(ILabelHandle.BREAK);
-					try (CompileContext cc = ccOuter.forkBreak(EnumBreaker.INSTANCE)) {
+					IBreakHandler trueHandler = context.typeSystem.codeGenFeatureLevel.requiresEnumBreakout ? EnumBreaker.INSTANCE : IBreakHandler.NOP;
+					try (CompileContext cc = ccOuter.forkBreak(trueHandler)) {
 						String continueLabel = cc.allocLabel(ILabelHandle.CONTINUE);
 						loopStarter.compileInner(writer, cc);
 						// loopStarter is weird, do indent manually
@@ -117,6 +120,7 @@ public class RALEnumLoop extends RALStatementUR {
 			// allocate our labels
 			String untlPop = context.allocLabel();
 			String flyingNext = context.allocLabel();
+			// [CAOS]
 			// this actually enters the break code
 			// control flow here is a bit... complex
 			sb.append("goto " + untlPop);

@@ -10,6 +10,8 @@
 
 include "std/compiler_prelude.ral";
 
+// [CAOS]
+
 /*
  * Emit
  * So how this works is that the emit syntax generates a call statement.

@@ -64,6 +64,7 @@ public class RALIfStatement extends RALStatementUR {
 				protected void compileInner(CodeWriter writer, CompileContext context) {
 					try (CompileContext outerCtx = context.forkVAEH()) {
 						String inl = conditionR.compileCond(writer, outerCtx, invert);
+						// [CAOS]
 						writer.writeCode("doif " + inl, 1);
 						try (CompileContext bsr = outerCtx.forkVAEH()) {
 							mainBranchR.compile(writer, bsr);

@@ -26,6 +26,7 @@ Decl ::=
 
 IncludeDecl ::= "include" ConstStringExpr ";"
 AddSearchPathDecl ::= "addSearchPath" ConstStringExpr ";"
+CodeGenFeatureLevelDecl ::= "codeGenFeatureLevel" ("c3" | "ds" | "customEngine") ";"
 
 TypedefDecl ::= "typedef" ID Type ";"
 ClassDecl ::= "class" ID (ConstIntExpr ConstIntExpr ConstIntExpr)? ("extends" ID)* ";"

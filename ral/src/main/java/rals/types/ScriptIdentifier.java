@@ -36,6 +36,7 @@ public final class ScriptIdentifier implements Comparable<ScriptIdentifier> {
 	}
 
 	public String toScrpLine() {
+		// [CAOS]
 		return "scrp " + classifier.family + " " + classifier.genus + " " + classifier.species + " " + script;
 	}
 

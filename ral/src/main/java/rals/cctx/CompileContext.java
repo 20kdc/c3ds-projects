@@ -69,6 +69,9 @@ public class CompileContext extends CompileContextNW implements AutoCloseable, C
 		return new CompileContext(this, false, false, null, null, escape);
 	}
 
+	/**
+	 * forkBreak with new VA and EH scopes.
+	 */
 	public CompileContext forkVAEHBreak(IBreakHandler escape) {
 		assert escape != null;
 		return new CompileContext(this, true, true, null, null, escape);

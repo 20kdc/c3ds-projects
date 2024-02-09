@@ -34,6 +34,14 @@ include "eccl/elo.ral";
 
 image::images/diagram/AddSearchPathDecl.png[]
 
+##### codeGenFeatureLevel
+
+Adjusts how RAL will generate code.
+
+The default is `c3`, but including `std/ds.ral` changes it to `ds`.
+
+image::images/diagram/CodeGenFeatureLevelDecl.png[]
+
 #### Type System
 
 ##### typedef

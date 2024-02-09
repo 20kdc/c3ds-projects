@@ -4,14 +4,22 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
+package rals.code;
 
-// Include common
-include "std/c3ds.ral";
+/**
+ * Controls engine features used by output code.
+ */
+public enum CodeGenFeatureLevel {
+	c3(false, true, "Creatures 3"),
+	ds(true, true, "Docking Station"),
+	customEngine(true, false, "Custom Engine");
 
-// Set DS codegen if including the DS header.
-codeGenFeatureLevel ds;
+	public final boolean hasMVXX, requiresEnumBreakout;
+	public final String defInfo;
 
-// Include DS headers
-include "std/ds/agent.ral";
-include "std/ds/classes.ral";
-include "std/ds/macros.ral";
+	CodeGenFeatureLevel(boolean mv, boolean breakout, String details) {
+		hasMVXX = mv;
+		requiresEnumBreakout = breakout;
+		defInfo = details;
+	}
+}

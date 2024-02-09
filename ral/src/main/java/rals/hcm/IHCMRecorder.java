@@ -38,7 +38,7 @@ public interface IHCMRecorder {
 	void addCompletionRelIntentToNextToken(HCMIntent intent, boolean autoHover, RALExprUR... params);
 
 	/**
-	 * Adds a completion intent to the next requested token, with possible 
+	 * Adds a completion intent to the next requested token.
 	 * If autoHover is true, will also set a hover intent automatically.
 	 */
 	default void addCompletionIntentToNextToken(HCMIntent intent, boolean autoHover) {
@@ -48,12 +48,12 @@ public interface IHCMRecorder {
 	/**
 	 * Sets a token's hover intent.
 	 */
-	void setTokenHoverRelIntent(Token.ID tkn, HCMIntent intent, RALExprUR... params);
+	void setTokenHoverRelIntent(Token.IDish tkn, HCMIntent intent, RALExprUR... params);
 
 	/**
 	 * Sets a token's hover intent.
 	 */
-	default void setTokenHoverIntent(Token.ID tkn, HCMIntent intent) {
+	default void setTokenHoverIntent(Token.IDish tkn, HCMIntent intent) {
 		setTokenHoverRelIntent(tkn, intent, (RALExprUR[]) null);
 	}
 

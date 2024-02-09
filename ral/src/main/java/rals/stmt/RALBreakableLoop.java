@@ -29,6 +29,7 @@ public class RALBreakableLoop extends RALStatementUR {
 				try (CompileContext ccs = context.forkVAEHBreak(IBreakHandler.NOP)) {
 					String labelTop = ccs.allocLabel(ILabelHandle.CONTINUE);
 					String labelEnd = ccs.allocLabel(ILabelHandle.BREAK);
+					// [CAOS]
 					writer.writeCode("goto " + labelTop);
 					writer.writeCode("subr " + labelTop, 1);
 					rs.compile(writer, ccs);

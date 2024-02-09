@@ -62,6 +62,7 @@ public abstract class RALCondition extends RALExprSlice {
 
 	@Override
 	protected final void readCompileInner(RALExprSlice out, CompileContext context) {
+		// [CAOS]
 		String cc = compileCond(context.writer, context, false);
 		context.writer.writeCode("doif " + cc, 1);
 		out.writeCompile(0, "1", RALType.Major.Value, context);

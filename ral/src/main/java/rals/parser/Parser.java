@@ -109,6 +109,7 @@ public class Parser {
 			Lexer lx = new Lexer(spf, r, ctx.diags, ctx.hcm);
 			InsideFileContext ifc = new InsideFileContext(ctx, lx);
 			while (true) {
+				ifc.hcm.addCompletionIntentToNextToken(HCMIntents.DECLARATIONS, true);
 				Token tkn = lx.next();
 				if (tkn == null)
 					break;
@@ -284,6 +285,12 @@ public class Parser {
 			RALConstant rc1 = ParserExpr.parseConst(ifc);
 			if (!RALCondition.constToBool(rc1))
 				throw new RuntimeException("failed constant assert at " + tkn.lineNumber);
+		} else if (tkn.isKeyword("codeGenFeatureLevel")) {
+			ifc.hcm.addCompletionIntentToNextToken(HCMIntents.CODEGEN_LEVEL, true);
+			String level = lx.requireNextID();
+			CodeGenFeatureLevel lvl = CodeGenFeatureLevel.valueOf(level);
+			ts.codeGenFeatureLevel = lvl;
+			lx.requireNextKw(";");
 		} else if (tkn.isKeyword(";")) {
 			// :D
 		} else if (tkn instanceof Token.ID) {

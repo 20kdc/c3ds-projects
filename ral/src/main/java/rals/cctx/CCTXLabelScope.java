@@ -68,6 +68,7 @@ public class CCTXLabelScope {
 			} else {
 				for (IBreakHandler ibh : handlers)
 					ibh.compile(context);
+				// [CAOS]
 				context.writer.writeCode("goto " + hitHere);
 				// Note that we add the used label at the point of definition.
 				// This is because of handle reuse.

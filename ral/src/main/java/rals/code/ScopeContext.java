@@ -33,6 +33,7 @@ public class ScopeContext {
 	public ScopeContext(ScriptContext parent) {
 		script = parent;
 		world = script.world;
+		// [CAOS]
 		DefInfo dOwn = new DefInfo.Builtin("ownr is the agent in which this script runs.");
 		setLoc("ownr", dOwn, new RALVarSI(RALSpecialInline.Ownr, parent.ownrType, false));
 		// Dynamic VMVars would be nice, but we need hard logic anyway for, say, ownrType

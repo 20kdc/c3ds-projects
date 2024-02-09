@@ -59,6 +59,26 @@ public class HCMIntents {
 	};
 
 	/**
+	 * Codegen level.
+	 */
+	public static final HCMIntent CODEGEN_LEVEL = new HCMIntent("CODEGEN_LEVEL") {
+		@Override
+		public Map<String, HoverData> retrieve(Token sp, SrcPosUntranslated spu, HCMStorage storage) {
+			return HCMFixedMaps.CODEGEN_LEVELS;
+		}
+	};
+
+	/**
+	 * Codegen level.
+	 */
+	public static final HCMIntent DECLARATIONS = new HCMIntent("DECLARATIONS") {
+		@Override
+		public Map<String, HoverData> retrieve(Token sp, SrcPosUntranslated spu, HCMStorage storage) {
+			return HCMFixedMaps.DECLARATIONS;
+		}
+	};
+
+	/**
 	 * Macro call, relative to arguments
 	 */
 	public static final HCMRelativeIntent CALLABLE_ARGS = new HCMRelativeIntent("CALLABLE_ARGS", 1, CALLABLE) {

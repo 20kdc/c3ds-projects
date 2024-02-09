@@ -5,6 +5,7 @@
 			<!-- meta -->
 			<item>include</item>
 			<item>addSearchPath</item>
+			<item>codeGenFeatureLevel</item>
 			<!-- type system decls -->
 			<item>class</item>
 			<item>interface</item>

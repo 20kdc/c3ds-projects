@@ -26,6 +26,7 @@ public class Token {
 		// meta
 		keywords.add("include");
 		keywords.add("addSearchPath");
+		keywords.add("codeGenFeatureLevel");
 		// type system declarations
 		keywords.add("class");
 		keywords.add("interface");
@@ -85,11 +86,20 @@ public class Token {
 		return false;
 	}
 
-	public static class ID extends Token {
+	/**
+	 * Includes both tokens and keywords, so HCM works
+	 */
+	public abstract static class IDish extends Token {
 		public String text;
+		public IDish(SrcRange ex, String doc, String text) {
+			super(ex, doc);
+			this.text = text;
+		}
+	}
+
+	public static class ID extends IDish {
 		public ID(SrcRange ln, String dc, String tx) {
-			super(ln, dc);
-			text = tx;
+			super(ln, dc, tx);
 		}
 
 		@Override
@@ -97,11 +107,9 @@ public class Token {
 			return "ID:" + text;
 		}
 	}
-	public static class Kw extends Token {
-		public String text;
+	public static class Kw extends IDish {
 		public Kw(SrcRange ln, String dc, String tx) {
-			super(ln, dc);
-			text = tx;
+			super(ln, dc, tx);
 		}
 
 		@Override

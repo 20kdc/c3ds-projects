@@ -40,6 +40,7 @@ public class RALVarString extends RALVarBase {
 	 */
 	public static void writeSet(CodeWriter writer, String code, String input, RALType.Major inputExactType) {
 		String set;
+		// [CAOS]
 		switch (inputExactType) {
 		case Agent:
 			set = "seta ";

@@ -78,3 +78,44 @@ However, in practice, there are only 5:
 * RAL makes heavy use of `goto` and `subr` for loops so that `break;` is as simple as a `goto`.
 * The ability to `break` from an `enum` is essentially magic code, relying on some aspects of how the CAOS VM handles the stack.
 * RAL switches between the `ovXX`, `mvXX` and `avar` variables when doing field accesses, to avoid having to alter `targ` ever.
+
+#### RAL's Minimum Requirements For Non-Standard CAOS Runtimes
+
+The following are the minimum requirements when compiling RAL to a non-standard CAOS runtime. _These are CAOS features that will be used by RAL._
+
+First and foremost, keep in mind `codeGenFeatureLevel customEngine;`.
+
+This causes the codegen to assume the DS engine, but without the truly bad code:
+
+- The "magic cleanup code" for enum breakout is not present.
+
+The following CAOS features are required to be supported for RAL itself:
+
+- `vaXX` is required for variables, including implicit temporaries RAL makes in the course of operation, and as debugger storage.
+
+- `avar` and `ovXX` are required for field access.
+
+  - If `codeGenFeatureLevel ds;` or better is used, `mvXX` is required (otherwise, it is emulated using `avar`).
+
+- `seta`, `sets`, and `setv` are required for setting variables.
+
+- `ownr`, `targ`, `from`, `_it_`, `_p1_`, `_p2_` and `null` are assumed to exist.
+
+- `fmly`, `gnus` and `spcs` are used for the `instanceof` feature.
+
+- `mesg wrt+` and `mesg writ` are used for emits.
+
+- `call` is used for calls.
+
+- The structure of the install script (without `iscr` marker), `scrp 1 2 3 4` ... `endm` blocks, and remove script (with `rscr` marker) is assumed to be supported.
+
+- `doif`, `else` and `endi` are used for conditionals. All conditional syntax here is made use of. The `eq`-style syntax is used, not `=`/etc.
+
+- `negv` / `notv` are used as appropriate.
+
+- `goto` and `subr` are used for loops.
+
+- `econ`, `enum`, `epas`, `esee`, `etch` have hard-coded stuff going on.
+
+- `orrv`, `andv`, `subv`, `divv`, `mulv`, `adds`, and `vtos` are used in the "modify/assign statement" logic.
+

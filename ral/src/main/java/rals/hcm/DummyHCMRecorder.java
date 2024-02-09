@@ -12,7 +12,7 @@ import rals.diag.SrcRange;
 import rals.expr.RALExprSlice;
 import rals.expr.RALExprUR;
 import rals.lex.Token;
-import rals.lex.Token.ID;
+import rals.lex.Token.IDish;
 import rals.types.RALType;
 
 /**
@@ -32,7 +32,7 @@ public class DummyHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
-	public void setTokenHoverRelIntent(ID tkn, HCMIntent intent, RALExprUR... rel) {
+	public void setTokenHoverRelIntent(IDish tkn, HCMIntent intent, RALExprUR... rel) {
 	}
 
 	@Override

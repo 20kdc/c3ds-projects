@@ -24,7 +24,7 @@ import rals.expr.RALExprUR;
 import rals.hcm.HCMRelativeIntent.Anchor;
 import rals.hcm.HCMStorage.HoverData;
 import rals.lex.Token;
-import rals.lex.Token.ID;
+import rals.lex.Token.IDish;
 import rals.parser.IDocPath;
 import rals.parser.IncludeParseContext;
 import rals.types.RALType;
@@ -40,7 +40,7 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	public final SrcPosMap<Token> lastTokenMap = new SrcPosMap<>();
 	public final HashMap<Token, HoverData> hoverTokenOverrides = new HashMap<>();
 	public final HashMap<Token, Token> backwardsTokenLink = new HashMap<>();
-	public final HashMap<Token.ID, HCMIntent> hoverIntents = new HashMap<>();
+	public final HashMap<Token.IDish, HCMIntent> hoverIntents = new HashMap<>();
 	public final HashMap<Token, HashSet<HCMIntent>> intentsOnNextToken = new HashMap<>();
 	public final HashMap<HCMRelativeIntent.Anchor, HCMRelativeIntent.Tracking> relativeIntentExprs = new HashMap<>();
 	public final HashMap<RALExprUR, LinkedList<HCMRelativeIntent.Tracking>> relativeIntentRoutingTable = new HashMap<>();
@@ -77,8 +77,8 @@ public class ActualHCMRecorder implements IHCMRecorder {
 			if (!tkn.isInDP(targetDocPath))
 				return;
 			if (heldAH != null)
-				if (tkn instanceof ID)
-					setTokenHoverRelIntent((ID) tkn, heldAH, heldAP);
+				if (tkn instanceof IDish)
+					setTokenHoverRelIntent((IDish) tkn, heldAH, heldAP);
 		}
 	}
 
@@ -107,7 +107,7 @@ public class ActualHCMRecorder implements IHCMRecorder {
 	}
 
 	@Override
-	public void setTokenHoverRelIntent(ID tkn, HCMIntent intent, RALExprUR... params) {
+	public void setTokenHoverRelIntent(IDish tkn, HCMIntent intent, RALExprUR... params) {
 		if (!tkn.isInDP(targetDocPath))
 			return;
 		if (intent == null) {

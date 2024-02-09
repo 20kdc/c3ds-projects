@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
+import rals.code.CodeGenFeatureLevel;
 import rals.expr.*;
 import rals.lex.DefInfo;
 import rals.types.RALType.AgentClassifier;
@@ -81,6 +82,11 @@ public class TypeSystem {
 	 * These script numbers are called on the wrong OWNR.
 	 */
 	public final HashMap<Integer, RALType> overrideOwnr = new HashMap<Integer, RALType>();
+
+	/**
+	 * Code generator feature level.
+	 */
+	public CodeGenFeatureLevel codeGenFeatureLevel = CodeGenFeatureLevel.c3;
 
 	private int randomVariableNameNumber = 0;
 
