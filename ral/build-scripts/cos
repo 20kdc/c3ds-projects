@@ -1,0 +1,20 @@
+#!/bin/sh
+
+genSample() {
+./ral compile samples/$1.ral samples/$1.cos || exit
+}
+
+genSample genlangconversion || exit
+
+genSample talking-lemon-finished || exit
+genSample talking-lemon-finished-interface || exit
+genSample talking-lemon-naive || exit
+genSample talking-lemon-naive-vars || exit
+genSample talking-lemon-stdlib || exit
+
+genSample vending-machine-root-dummy || exit
+genSample vending-machine-root-final || exit
+genSample vending-machine-root-products || exit
+genSample vending-machine-root-spawn || exit
+
+genSample fun-with-statement-expressions || exit

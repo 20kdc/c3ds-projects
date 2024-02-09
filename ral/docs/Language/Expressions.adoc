@@ -193,7 +193,7 @@ Statement expressions are expressions of statements.
 
 Like blocks, their syntax is to surround the statements with `{}`.
 
-However, unlike blocks, at their very end a `return ...;` statement may be provided containing the expressions to return to the caller.
+However, unlike blocks, at their very end a `return ...;` statement may be provided containing the expressions to return to the caller. (If no `return ...;` statement is provided, then the expression returns nothing.)
 
 Macros typically use these and don't show it.
 
