@@ -7,6 +7,7 @@ Type ::= ID "?"? ("|" ID "?"?)*
 Decl ::=
 	IncludeDecl |
 	AddSearchPathDecl |
+	CodeGenFeatureLevelDecl |
 
 	TypedefDecl |
 	ClassDecl |
