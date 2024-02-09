@@ -5,6 +5,9 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Global messages, events, etc.
+include "std/c3ds/agent.ral";
+
 // Define classes, including Pointer (engine needs this).
 include "std/c3ds/classes.ral";
 

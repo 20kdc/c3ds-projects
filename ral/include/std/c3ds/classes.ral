@@ -10,42 +10,142 @@
  * This is specifically a listing of classes, messages and fields common between Creatures 3 and Docking Station.
  */
 
-// Agent fields
+// -- Classes with no specific file go here --
 
-// In theory, this is C3-only, but in practice if you're writing a C3/DS agent you should know this is a Thing.
-field int Agent.wetnessCounter 60;
+// The Hand.
+class Pointer 2 1 1;
+// Creature base class.
+class Creature 4 0 0;
 
-// In theory, this is C3-only, but in practice if you're writing a C3/DS agent you should know this is a Thing.
-field int Agent.recyclerEnergy 61;
+// "C3/agent help.cos" "DS/DS agent help.cos"
 
-// Family 1
+// Manager for agent help.
+class UIAgentHelp 1 2 4;
 
-// Shows the room ID of the top-left of `pntr`. Managed by `PointerToolMultiplexer`.
-class UIRoomTool 1 1 18;
+// Agent help dialog.
+class UIAgentHelpDialog 1 2 5;
 
-// Shows the top-left world position of `pntr`. Managed by `PointerToolMultiplexer`.
-class UIXYTool 1 1 59;
+// Active agent help dialog.
+field UIAgentHelpDialog? UIAgentHelp.activeHelpDialog 0;
+
+// The agent for which help is being requested.
+field Agent UIAgentHelpDialog.inspectedAgent 2;
+
+// "C3/autosave.cos" "DS/DS autosave.cos"
+// Auto-saves when the timer goes off, implements Control-R manual save
+class AutoSaveTimer 1 2 7;
+
+// "C3/bacteria.cos" "DS/DS bacteria.cos"
+// Bacteria. Infectious bad no-good stuff.
+class Bacteria 2 32 23;
+
+// "C3/blueprint agent scripts.cos" "DS/DS blueprint agent scripts.cos"
+
+class BlueprintPickup 1 1 100;
+
+class UIBlueprintDialog 1 2 33;
+
+// "C3/CAOS command line.cos" "DS/DS CAOS command line.cos"
+
+class UICAOSCommandLine 1 2 203;
+
+// "C3/creature history.cos" "DS/DS creature history.cos"
+
+class UICreatureHistory 1 2 23;
+
+// "C3/creatureBreeding.cos" "DS/DS creatureBreeding.cos"
+
+class Egg 3 4 0;
+
+// "C3/creatureDecisions.cos" "DS/DS creatureDecisions.cos"
+
+class FXSleeping 1 2 28;
+
+// "C3/creatureInvoluntary.cos" "DS/DS creatureInvoluntary.cos"
+
+class FXBubbles 1 2 41;
+
+// "C3/death.cos" "DS/DS death.cos"
+
+class FXDeathCloud 1 1 56;
+
+// While C3 favplaces and DS favplaces are "linked", they share no classes.
+
+// "C3/Frame rater.cos" "DS/DS Frame rater.cos"
 
 /*
-This agent is responsible for managing which of the "pointer tools" is active.
+Control-Shift-P debug tool. Shows `pace()` and `totl(Agent)` information.
 
-The "pointer tools" are the tools that float relative to the Hand and show text under it:
-
-* `UIRoomTool`
-* `UIXYTool`
-* `UITaxonomyTool`
-
-While the tools can't overlap, they have separate variables for... some reason.
-
-This agent is also responsible for Control-Shift-E (effectively unrelated).
+When not in use, hides off-screen.
 */
-class PointerToolMultiplexer 1 1 121;
-field bool PointerToolMultiplexer.toolXYActive 0;
-field bool PointerToolMultiplexer.toolRoomActive 1;
-field bool PointerToolMultiplexer.toolTaxonomyActive 2;
+class UIFrameRate 1 2 201;
+field bool UIFrameRate.toolActive 0;
 
-// Shows the classifier of `hots()` (if any). Managed by `PointerToolMultiplexer`.
-class UITaxonomyTool 1 1 143;
+// "C3/GUI1.cos" "DS/ds gui - creaturemenu.cos"
+class UICreatureMenu 1 2 13;
+class UICreatureMenuCurrentCreature 1 2 35;
+
+// "C3/GUI1.cos" "DS/ds gui - inventory.cos"
+class UIInventory 1 2 11;
+
+// "C3/GUI1.cos" "DS/ds gui - options.cos"
+class UIOptions 1 2 12;
+class UIAboutBox 1 2 34;
+
+// "C3/GUI1.cos" "DS/ds gui - topleft.cos"
+class UITopleft 1 2 14;
+
+// "C3/Home smell emitters.cos" "DS/DS Home smell emitters.cos"
+class NornHomeEmitterA 3 5 1;
+class NornHomeEmitterB 3 5 2;
+class GrendelHomeEmitterA 3 6 1;
+class EttinHomeEmitterA 3 7 1;
+
+// "C3/keyboard handler.cos" "DS/DS keyboard handler.cos"
+class KeyboardHandler 1 2 6;
+class UIKeyboardHandlerHelpDialog 1 2 8;
+
+// "C3/life event factory.cos" "DS/DS life event factory - PHOTOGRAPHS THE DEAD.cos"
+class LifeEventFactory 1 2 24;
+
+/*
+Takes a photo on its next timer tick, and then removes itself.
+
+Initialize this by setting the two fields, `photoSubject` and `photoMoniker`, and then using `tick` to schedule the next timer update.
+
+If the subject is null, silently disappears -- if the moniker is invalid, expect not-silent failures.
+*/
+class LifeEventDelayedPhoto 1 2 37;
+// Subject, intended to be a creature but is not necessarily one
+field Agent? LifeEventDelayedPhoto.photoSubject 0;
+// Moniker, must be valid (not necessarily alive, but the history must exist)
+field str LifeEventDelayedPhoto.photoMoniker 1;
+
+// "C3/norn indicator.cos" "DS/DS norn indicator.cos"
+class FXNornIndicator 1 2 1;
+field bool FXNornIndicator.showing 0;
+
+// "C3/object of attention indicator.cos" "DS/DS object of attention indicator.cos"
+class FXItIndicator 1 2 2;
+field bool FXItIndicator.showing 0;
+
+// "C3/pointer activate stimming norns.cos" "DS/DS pointer activate stimming norns.cos"
+class PointerActivateStimmingNorns 1 1 123;
+
+// "C3/Pointer scripts.cos" "DS/DS Pointer scripts.cos"
+class FXPointerActionIcon 1 1 95;
+
+// "C3/speech bubble factory.cos" "DS/DS speech bubble factory.cos"
+
+/*
+Creates speech bubbles based on the speechBubble message.
+You can also send that message directly to cause speech bubbles yourself.
+*/
+class SpeechBubbleFactory 1 2 10;
+
+class FXSpeechBubble 1 2 9;
+
+// "C3/textentry.cos" "DS/DS textentry.cos"
 
 /*
 This is the agent on which keyboard focus sits most of the time.
@@ -62,46 +162,34 @@ field int UIHandSpeechBox.historyWriteIdx 1;
 // Last OV slot from which a line was read.
 field int UIHandSpeechBox.historyReadIdx 2;
 
-// Auto-saves when the timer goes off, implements Control-R manual save
-class AutoSaveTimer 1 2 7;
+// "C3/welcome screen.cos" "DS/DS welcome screen.cos"
+class UIWelcomeScreen 1 2 26;
+
+// "C3/wolf control.cos" "DS/DS wolf control.cos"
+class UIWolfControl 1 2 202;
+
+// "C3/XY tool.cos" "DS/dev tool.cos"
+
+// Shows the room ID of the top-left of `pntr`. Managed by `PointerToolMultiplexer`.
+class UIRoomTool 1 1 18;
+
+// Shows the top-left world position of `pntr`. Managed by `PointerToolMultiplexer`.
+class UIXYTool 1 1 59;
 
 /*
-Creates speech bubbles based on the speechBubble message.
-You can also send that message directly to cause speech bubbles yourself.
+This agent is responsible for managing which of the "pointer tools" is active.
+
+The "pointer tools" are the tools that float relative to the Hand and show text under it:
+
+* `UIRoomTool`
+* `UIXYTool`
+* `UITaxonomyTool` (DS ONLY)
+
+While the tools can't overlap, they have separate variables for... some reason.
+
+This agent is also responsible for Control-Shift-E (effectively unrelated).
 */
-class SpeechBubbleFactory 1 2 10;
-
-/*
-Takes a photo on its next timer tick, and then removes itself.
-
-Initialize this by setting the two fields, `photoSubject` and `photoMoniker`, and then using `tick` to schedule the next timer update.
-
-If the subject is null, silently disappears -- if the moniker is invalid, expect not-silent failures.
-*/
-class LifeEventDelayedPhoto 1 2 37;
-// Subject, intended to be a creature but is not necessarily one
-field Agent? LifeEventDelayedPhoto.photoSubject 0;
-// Moniker, must be valid (not necessarily alive, but the history must exist)
-field str LifeEventDelayedPhoto.photoMoniker 1;
-
-/*
-Control-Shift-P debug tool. Shows `pace()` and `totl(Agent)` information.
-
-When not in use, hides off-screen.
-*/
-class UIFrameRate 1 2 201;
-field bool UIFrameRate.toolActive 0;
-
-// Family 2
-class Pointer 2 1 1;
-
-/*
-The category-based genuses aren't given here because there's sort of an implication there that things need to be of those genuses.
-They do not.
-*/
-
-// Family 3
-
-// Family 4
-class Creature 4 0 0;
+class PointerToolMultiplexer 1 1 121;
+field bool PointerToolMultiplexer.toolXYActive 0;
+field bool PointerToolMultiplexer.toolRoomActive 1;
 

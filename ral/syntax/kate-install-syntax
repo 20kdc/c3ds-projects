@@ -1,3 +1,4 @@
 #!/bin/sh
 mkdir -p ~/.local/share/org.kde.syntax-highlighting/syntax
 cp kate/ral.xml ~/.local/share/org.kde.syntax-highlighting/syntax/
+cp kate/caos.xml ~/.local/share/org.kde.syntax-highlighting/syntax/

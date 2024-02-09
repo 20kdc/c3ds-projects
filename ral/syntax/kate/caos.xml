@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="CAOS" version="1" kateversion="5.0" section="Sources" extensions="*.cos">
+	<highlighting>
+		<list name="lKeywordsCF">
+			<item>enum</item>
+			<item>esee</item>
+			<item>etch</item>
+		</list>
+		<list name="lLiterals">
+			<!-- can be variable name or type -->
+			<item>null</item>
+			<!-- compiler helpers -->
+			<item>true</item>
+			<item>false</item>
+		</list>
+		<contexts>
+			<context name="cStart" attribute="aStart" lineEndContext="#stay">
+				<RegExpr String="\*[^\n]*" attribute="aComment" context="#stay" />
+				<RegExpr String="\s" attribute="aStart" context="#stay" />
+				<!-- Strings -->
+				<DetectChar char='"' attribute="aString" context="cString" />
+				<!-- IDs -->
+				<Int attribute="aInt" context="#stay" />
+				<Float attribute="aFloat" context="#stay" />
+				<keyword String="lKeywordsCF" attribute="aKeywordCF" context="#stay" />
+				<keyword String="lLiterals" attribute="aBuiltInLiteral" context="#stay" />
+				<RegExpr String="[om]v[0-9][0-9]" attribute="aID" context="#stay" />
+				<RegExpr String="va[0-9][0-9]" attribute="aID" context="#stay" />
+				<RegExpr String="." attribute="aKeyword" context="cID" />
+			</context>
+			<!-- these three have the same contents but different attributes! -->
+			<context name="cID" attribute="aKeyword" lineEndContext="#pop">
+				<!-- Whitespace -->
+				<RegExpr String="\s" lookAhead="true" context="#pop" />
+				<!-- Loners/Operators -->
+				<RegExpr String="[\;\[\]\{\}\(\)\,\.]" lookAhead="true" context="#pop" />
+				<RegExpr String="[\&lt;\&gt;\=\?\!\/\*\-\+\:\&amp;\|\^\%\~\@]" lookAhead="true" context="#pop" />
+			</context>
+			<context name="cString" attribute="aString" lineEndContext="#stay">
+				<DetectChar char='"' attribute="aString" context="#pop" />
+				<RegExpr String="\\" attribute="aString" context="cStringEscape" />
+			</context>
+			<context name="cStringEscape" attribute="aString" lineEndContext="#pop">
+				<RegExpr String="." attribute="aString" context="#pop" />
+			</context>
+		</contexts>
+		<itemDatas>
+			<itemData name="aStart" defStyleNum="dsNormal" spellChecking="false"/>
+			<itemData name="aKeyword" defStyleNum="dsKeyword" spellChecking="false"/>
+			<itemData name="aKeywordCF" defStyleNum="dsControlFlow" spellChecking="false"/>
+			<itemData name="aString" defStyleNum="dsString" spellChecking="false"/>
+			<itemData name="aBuiltInType" defStyleNum="dsDataType" spellChecking="false"/>
+			<itemData name="aBuiltInLiteral" defStyleNum="dsBuiltIn" spellChecking="false"/>
+			<itemData name="aInt" defStyleNum="dsDecVal" spellChecking="false"/>
+			<itemData name="aFloat" defStyleNum="dsFloat" spellChecking="false"/>
+			<itemData name="aComment" defStyleNum="dsComment" spellChecking="false"/>
+			<itemData name="aID" defStyleNum="dsVariable" spellChecking="false"/>
+			<itemData name="aConstType" defStyleNum="dsConstant" spellChecking="false"/>
+			<itemData name="aOperator" defStyleNum="dsOperator" spellChecking="false"/>
+		</itemDatas>
+	</highlighting>
+	<general>
+		<comments>
+			<comment name="singleLine" start="//" />
+			<comment name="multiLine" start="/*" end="*/" />
+		</comments>
+	</general>
+</language>
+

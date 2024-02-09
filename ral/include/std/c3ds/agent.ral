@@ -5,10 +5,8 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-// Include common
-include "std/c3ds.ral";
+// In theory, this is C3-only, but in practice if you're writing a C3/DS agent you should know this is a Thing.
+field int Agent.wetnessCounter 60;
 
-// Include DS headers
-include "std/ds/agent.ral";
-include "std/ds/classes.ral";
-include "std/ds/macros.ral";
+// In theory, this is C3-only, but in practice if you're writing a C3/DS agent you should know this is a Thing.
+field int Agent.recyclerEnergy 61;

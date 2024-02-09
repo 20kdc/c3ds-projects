@@ -1,0 +1,70 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "std/ds/classes.ral";
+
+// "DS/justanut pod.cos"
+
+/*
+Creates a Justanut, including initializing physics.
+Be sure to run this in INST and run dsJustanutFinish.
+*/
+macro () dsJustanutNew() {
+	newSimp(DSJustanut, "justanut pod", 9, 18, 51);
+	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_PNTR_PICKUP);
+	perm(64);
+	bhvr(BHVR_PICKUP | BHVR_EAT);
+	pose(1);
+	accg(3);
+	aero(5);
+	fric(99);
+	elas(20);
+}
+
+/*
+Finishes creation of a Justanut (after placement on the map).
+*/
+macro () dsJustanutFinish() {
+	emit(7, 0.5);
+	tick(200);
+}
+
+// "DS/lemon pod.cos"
+
+/*
+Creates a Lemon, including initializing physics.
+Be sure to run this in INST and run dsLemonFinish.
+*/
+macro () dsLemonNew() {
+	newSimp(DSLemon, "ds lemon pod", 2, 30, 355);
+	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_PNTR_PICKUP);
+	perm(64);
+	bhvr(BHVR_PICKUP | BHVR_EAT);
+	accg(2);
+	aero(2);
+	fric(100);
+	elas(30);
+	name("eaten") = "no";
+}
+
+/*
+Finishes creation of a Lemon (after placement on the map).
+*/
+macro () dsLemonFinish() {
+	emit(6, 0.5);
+	tick(200);
+}
+
+// "DS/new_ds_fav_places.cos"
+
+/*
+Allocates a favorite place ID.
+*/
+macro (int res) dsFavPlacesNewIndex() {
+	res = gameInt("ds_favourites");
+	gameInt("ds_favourites") += 1;
+}
