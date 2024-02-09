@@ -27,6 +27,8 @@ import natsue.server.firewall.IRejector;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
 import natsue.server.packet.QuotaManager;
+import natsue.server.session.ISessionClient;
+import natsue.server.session.MainSessionState;
 import natsue.server.system.SystemCommands;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
 import natsue.server.userdata.IHubUserDataCachePrivileged;
@@ -109,7 +111,10 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	@Override
 	public boolean isUINOnline(long uin) {
 		synchronized (this) {
-			return users.connectedClients.containsKey(uin);
+			IHubClient ihc = users.connectedClients.get(uin);
+			if (ihc != null)
+				return !ihc.isNotReallyOnline();
+			return false;
 		}
 	}
 
@@ -368,6 +373,8 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		LinkedList<IWWRListener> wwrNotify;
 		synchronized (this) {
 			wwrNotify = new LinkedList<IWWRListener>(users.wwrListeners);
+			// Online flag must go false early to stop even more race conditions.
+			cc.markNotReallyOnline();
 		}
 		// It's very important that this happens BEFORE we officially logout.
 		// Otherwise, race condition, See the wwrNotify function's definition.
@@ -509,5 +516,13 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (detailed)
 			cryo.runSystemCheck(sb);
 		return sb.toString();
+	}
+
+	@Override
+	public synchronized ISessionClient acquireSessionClientForResearchCommands(long senderUIN) {
+		// This is bad.
+		IHubClient ihc = users.connectedClients.get(senderUIN);
+		MainSessionState mss = (MainSessionState) ihc;
+		return mss.client;
 	}
 }

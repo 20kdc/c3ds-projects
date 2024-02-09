@@ -64,6 +64,31 @@ public class PacketWriter {
 		return packet.array();
 	}
 
+	public static byte[] writeVirtualConnectResponse(short clientVSN, short serverVSN) {
+		ByteBuffer packet = IOUtils.newBuffer(36);
+		packet.putInt(BaseCTOS.BASE_FIELD_TYPE, 0x14);
+		int vsns = ((clientVSN & 0xFFFF) << 16) | (serverVSN & 0xFFFF);
+		packet.putInt(BaseCTOS.BASE_FIELD_E, vsns);
+		packet.putInt(32, 0xE);
+		return packet.array();
+	}
+
+	public static byte[] writeVirtualCircuitData(long senderUIN, short senderVSN, long receiverUIN, short receiverVSN, byte[] data) {
+		ByteBuffer packet = IOUtils.newBuffer(44 + data.length);
+		packet.putInt(BaseCTOS.BASE_FIELD_TYPE, 0x1F);
+		packet.putInt(BaseCTOS.BASE_FIELD_C, UINUtils.uid(senderUIN));
+		packet.putInt(BaseCTOS.BASE_FIELD_D, UINUtils.hid(senderUIN));
+		packet.putInt(BaseCTOS.BASE_FIELD_FDLEN, data.length);
+		int vsns = ((receiverVSN & 0xFFFF) << 16) | (senderVSN & 0xFFFF);
+		packet.putInt(BaseCTOS.BASE_FIELD_E, vsns);
+		packet.putInt(32, UINUtils.uid(receiverUIN));
+		packet.putInt(36, UINUtils.hid(receiverUIN));
+		packet.putInt(40, 2);
+		byte[] res = packet.array();
+		System.arraycopy(data, 0, res, 44, data.length);
+		return res;
+	}
+
 	public static byte[] writeVirtualCircuitClose(long targetUIN) {
 		ByteBuffer packet = IOUtils.newBuffer(32);
 		packet.putInt(BaseCTOS.BASE_FIELD_TYPE, 0x20);

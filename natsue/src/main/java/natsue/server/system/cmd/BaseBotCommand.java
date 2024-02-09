@@ -33,9 +33,16 @@ public abstract class BaseBotCommand {
 	public abstract void run(Context args);
 
 	public static enum Cat {
-		Public,
-		Secret,
-		Admin
+		Public(false),
+		Secret(false),
+		Admin(true),
+		Research(true);
+
+		public final boolean requiresAdmin;
+
+		Cat(boolean ra) {
+			requiresAdmin = ra;
+		}
 	}
 
 	public static class Context {

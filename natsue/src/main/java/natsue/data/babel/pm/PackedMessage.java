@@ -53,6 +53,8 @@ public abstract class PackedMessage {
 		if (messageType == TYPE_PRAY) {
 			return new PackedMessagePRAY(senderUIN, PRAYBlock.read(messageDataSlice, cfg.maxDecompressedPRAYSize.getValue(), PacketReader.CHARSET));
 		} else if (messageType == TYPE_WRIT) {
+			if (messageDataLen > cfg.maxNetWritSize.getValue())
+				throw new RuntimeException("Too much data for a NET: WRIT!");
 			String channel = PacketReader.getString(messageDataSlice);
 			int messageId = messageDataSlice.getInt();
 			Object p1 = WritVal.readFrom(messageDataSlice);

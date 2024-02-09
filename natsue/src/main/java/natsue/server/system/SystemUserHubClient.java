@@ -55,6 +55,8 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	public final HashMap<Long, Long> userContactMap = new HashMap<>();
 	public final Object userContactMapLock = new Object();
 
+	public boolean notReallyOnline;
+
 	public SystemUserHubClient(Config config, ILogProvider log, IHubPrivilegedClientAPI h) {
 		hub = h;
 		logParent = log;
@@ -355,7 +357,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			BaseBotCommand cmdI = botCommands.get(cmd);
 			if (cmdI == null) {
 				ctx.response.append("Unknown command. Try 'help'\n");
-			} else if ((cmdI.category == Cat.Admin) && !hub.isUINAdmin(ctx.senderUIN)) {
+			} else if (cmdI.category.requiresAdmin && !hub.isUINAdmin(ctx.senderUIN)) {
 				ctx.response.append("You're not allowed to do that!\n");
 			} else {
 				cmdI.run(ctx);
@@ -365,5 +367,15 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 
 	private void sendChatMessage(long targetUIN, String chatID, String text) {
 		hub.sendMessage(targetUIN, StandardMessages.chatMessage(UIN, getNickname(), chatID, text), MsgSendType.Temp, targetUIN);
+	}
+
+	@Override
+	public boolean isNotReallyOnline() {
+		return notReallyOnline;
+	}
+
+	@Override
+	public void markNotReallyOnline() {
+		notReallyOnline = true;
 	}
 }

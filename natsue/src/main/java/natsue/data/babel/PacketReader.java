@@ -25,6 +25,8 @@ import natsue.data.babel.ctos.CTOSGetConnectionDetail;
 import natsue.data.babel.ctos.CTOSHandshake;
 import natsue.data.babel.ctos.CTOSMessage;
 import natsue.data.babel.ctos.CTOSUnknown;
+import natsue.data.babel.ctos.CTOSVirtualCircuit;
+import natsue.data.babel.ctos.CTOSVirtualConnect;
 import natsue.data.babel.ctos.CTOSWWRModify;
 
 /**
@@ -108,20 +110,20 @@ public class PacketReader {
 			return new CTOSWWRModify(false);
 		case 0x12:
 			// C_TID_NOTIFY_LISTENING_PORT
-			return new CTOSUnknown(0, 0, false);
+			return new CTOSUnknown(0, 0);
 		case 0x13:
 			return new CTOSGetConnectionDetail();
 		case 0x14:
 			return new CTOSClientCommand();
 		case 0x18:
 			// C_TID_GET_STATUS
-			return new CTOSUnknown(0, 48, false);
+			return new CTOSUnknown(0, 48);
 		case 0x1E:
 			// C_TID_VIRTUAL_CONNECT
-			return new CTOSUnknown(12, 0, false);
+			return new CTOSVirtualConnect();
 		case 0x1F:
 			// C_TID_VIRTUAL_CIRCUIT
-			return new CTOSUnknown(12, 0, true);
+			return new CTOSVirtualCircuit();
 		case 0x0221:
 			return new CTOSFetchRandomUser();
 		case 0x0321:
@@ -129,7 +131,7 @@ public class PacketReader {
 		case 0x25:
 			return new CTOSHandshake();
 		}
-		return new CTOSUnknown(0, 0, false);
+		return new CTOSUnknown(0, 0);
 	}
 
 	/**

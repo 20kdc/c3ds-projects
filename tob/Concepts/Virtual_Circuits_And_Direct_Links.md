@@ -16,8 +16,7 @@ There are other components to this but none of them matter.
 ***With this in mind, a server reimplementation should pretend to accept the virtual circuit connection on the receiver's behalf, using the initiator's VSN as the recipient's VSN.***
 ***It is up to the server reimplementation to decide how it wants to handle the contents - discarding them entirely or attempting to parse them are perfectly valid choices.***
 
-Virtual Circuits
-----------------
+## Virtual Circuits
 
 The clients will be referred to as *Initiator*  and *Recipient* as they do not follow a strict client/server relationship, and this gets confusing anyway.
 
@@ -35,22 +34,27 @@ The clients will be referred to as *Initiator*  and *Recipient* as they do not f
 * Server transports to other side
 * The connection is officially created and both clients know both VSNs.
 
+It's worth noting that, from experimentation, 0 is not a valid response VSN, and treating it as one in response to a connection will result in stupidity.
 
 ### Data Transfer
-
 
 * One of the clients send a C_TID_VIRTUAL_CIRCUIT packet with the data, see packet description for details
 * Server transports to other side
 * Packet's receiver accepts the data and all is well
-
 
 ### Closing
 
 *About that...*
 The server seems to be able to terminate a connection, but the client doesn't seem to. Very odd.
 
-NetDirectLink
--------------
+## NetDirectLink
+
+* Connecting client sends a 12-byte header, as so:
+	* 0: Unknown (=1)
+	* 4: Connecting UID
+	* 8: Unknown (possibly HID)
+
+Further connection flow not known.
 
 *TODO: Something about the NetDirectLink header here. Need to work out CBabelConnection VTBL before continuing that though.*
 *This may not even matter, as the server doesn't really have cause to be snooping around anyway.*

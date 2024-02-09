@@ -45,11 +45,11 @@ public class ConfigMessages extends BaseConfig.Group {
 			.describe("Maximum Babel binary message size. Be careful: This is also a maximum size for creatures!");
 
 	/**
-	 * Maximum size for the further data of "unknown-ish" packets.
-	 * Practically, used when discarding Virtual Circuit packets.
+	 * Maximum size for NET: WRIT packets.
+	 * The maximum size of virtual circuit data packets is derived from this.
 	 */
-	public final Int maxUnknownCTOSFurtherDataSize = new Int("maxUnknownCTOSFurtherDataSize", 0x10000)
-			.describe("Maximum unknown CTOS further data size. Practically, used when discarding Virtual Circuit packets.");
+	public final Int maxNetWritSize = new Int("maxNetWritSize", 0x10000)
+			.describe("Maximum NET: WRIT size. Also used to limit virtual circuit data packets (with overhead accounted for).");
 
 	/**
 	 * Maximum size for creature history packets.

@@ -36,4 +36,16 @@ public interface IHubClient extends IWWRListener, INatsueUserData.Proxy {
 	 * Otherwise, we would join on ourselves - this case is detected but you shouldn't do it.
 	 */
 	boolean forceDisconnect(boolean sync);
+
+	/**
+	 * Marks the client as "not really online". This makes isUINOnline return false.
+	 * Called by hub with the hub's lock.
+	 */
+	void markNotReallyOnline();
+
+	/**
+	 * See markNotReallyOnline.
+	 * Called by hub with the hub's lock.
+	 */
+	boolean isNotReallyOnline();
 }

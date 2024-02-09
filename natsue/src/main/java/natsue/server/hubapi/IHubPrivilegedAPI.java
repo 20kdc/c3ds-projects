@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.cryo.CryoFrontend;
 import natsue.server.firewall.IRejector;
+import natsue.server.session.ISessionClient;
 import natsue.server.userdata.IHubUserDataCachePrivilegedProxy;
 import natsue.server.userdata.INatsueUserData;
 
@@ -71,6 +72,12 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	 * Cryo frontend (used by System for cryo-related tasks)
 	 */
 	CryoFrontend getCryoFE();
+
+	/**
+	 * For VERY SPECIFIC shenanigans.
+	 * Research commands ONLY, please.
+	 */
+	ISessionClient acquireSessionClientForResearchCommands(long senderUIN);
 
 	/**
 	 * Controls message behaviour.

@@ -16,6 +16,10 @@ public interface IHubCommonAPI extends IHubUserDataCache {
 
 	/**
 	 * Returns true if the given UIN is online.
+	 * This always changes before WWR notifications.
+	 * (This is to prevent race conditions when a direct query is less up-to-date than a WWR notification that precedes it.
+	 *  The underlying state puts WWR notifications 'inside' the online time.
+	 *  This is because the moment the connection is properly removed, a new connection can replace it.)
 	 */
 	boolean isUINOnline(long uin);
 

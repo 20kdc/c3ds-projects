@@ -63,9 +63,7 @@ public class SocketThread extends Thread implements ILogSource, ISessionClient, 
 		sessionState = session;
 	}
 
-	/**
-	 * Sends a packet, holding a lock to make sure nothing gets in anything else's way.
-	 */
+	@Override
 	public void sendPacket(byte[] packet) throws IOException {
 		synchronized (sendPacketLock) {
 			socketOutput.write(packet);

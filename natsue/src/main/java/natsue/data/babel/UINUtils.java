@@ -23,6 +23,8 @@ public class UINUtils {
 	public static final int HID_SYSTEM = 2;
 	// For the server, but also for the system user
 	public static final long SERVER_UIN = UINUtils.make(1, UINUtils.HID_SYSTEM);
+	// For Virtual Circuit research
+	public static final long VC_RESEARCH_UIN = UINUtils.make(2, UINUtils.HID_SYSTEM);
 
 	public static int uid(long uin) {
 		return (int) ((uin >> 32) & 0xFFFFFFFFL);

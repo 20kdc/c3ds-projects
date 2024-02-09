@@ -19,7 +19,7 @@ It does moonlight as a "connection accepted" mechanism for the Virtual Circuits 
 	* STOC-wise, for "normal" subCommand values, this information is put into a newly made struct which is promptly memory-leaked on the [NetManager](../Structs/NetManager.md) side.
 * Ticket number: 0/Ignored
 * Further data: 0/Ignored
-* E: Only matters for virtual circuit accept packets. Upper half is the original VSN from the C_TID_VIRTUAL_CONNECT packet, lower half is the local VSN. See [Virtual Circuits And Direct Links](../Concepts/Virtual_Circuits_And_Direct_Links.md).
+* E: Only matters for virtual circuit accept packets. Upper half is the original VSN from the C_TID_VIRTUAL_CONNECT packet, lower half is the local VSN. See [Virtual Circuits And Direct Links](../Concepts/Virtual_Circuits_And_Direct_Links.md). **It is worth noting that 0 is not considered a valid response VSN and will cause NET: WRIT to freeze as usual.**
 * +32: 0xE is a special value here.
 	* int subCommand
 	* If this is 0xE, a client receiving this passes it into the virtual circuit system - see [Virtual Circuits And Direct Links](../Concepts/Virtual_Circuits_And_Direct_Links.md).

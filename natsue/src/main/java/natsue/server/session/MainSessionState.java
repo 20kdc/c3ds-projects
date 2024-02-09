@@ -21,6 +21,8 @@ import natsue.data.babel.ctos.CTOSFetchRandomUser;
 import natsue.data.babel.ctos.CTOSGetClientInfo;
 import natsue.data.babel.ctos.CTOSGetConnectionDetail;
 import natsue.data.babel.ctos.CTOSMessage;
+import natsue.data.babel.ctos.CTOSVirtualCircuit;
+import natsue.data.babel.ctos.CTOSVirtualConnect;
 import natsue.data.babel.ctos.CTOSWWRModify;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.log.ILogProvider;
@@ -37,6 +39,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	public final IHubClientAPI hub;
 	public final PingManager pingManager;
 	public final Config config;
+	public boolean notReallyOnline;
 
 	public MainSessionState(Config cfg, ISessionClient c, IHubClientAPI h, INatsueUserData.Root uin) {
 		super(c);
@@ -87,8 +90,19 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			// But we should also give proper WWR indications when asked.
 			if (pkt.add) {
 				INatsueUserData bsud = hub.getUserDataByUIN(pkt.targetUIN);
-				if (bsud != null)
-					wwrNotify(hub.isUINOnline(pkt.targetUIN), bsud);
+				if (bsud != null) {
+					try {
+						// isUINOnline now updates before WWR handlers run.
+						// Any upcoming WWR handlers are delayed by the lock.
+						// So the state gotten either is accurate or will be updated once that lock is released.
+						synchronized (this) {
+							boolean online = hub.isUINOnline(pkt.targetUIN);
+							client.sendPacket(PacketWriter.writeUserLine(online, bsud.getBabelUserData().packed));
+						}
+					} catch (IOException e) {
+						log(e);
+					}
+				}
 			}
 		} else if (packet instanceof CTOSFetchRandomUser) {
 			CTOSFetchRandomUser pkt = (CTOSFetchRandomUser) packet;
@@ -110,6 +124,20 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 				log(ex);
 			}
 			dummyResponse(packet);
+		} else if (packet instanceof CTOSVirtualConnect) {
+			// Crash 'prevention'.
+			// ...you all get to share this one VSN
+			client.sendPacket(PacketWriter.writeVirtualConnectResponse(((CTOSVirtualConnect) packet).sourceVSN, (short) 1));
+		} else if (packet instanceof CTOSVirtualCircuit) {
+			// Do nothing.
+			//CTOSVirtualCircuit vc = (CTOSVirtualCircuit) packet;
+			/*
+			System.out.println("VIRTUAL CIRCUIT DATA");
+			for (byte b : vc.messageData) {
+				System.out.println("\t" + b);
+			}
+			*/
+			//client.sendPacket(PacketWriter.writeVirtualCircuitData(vc.targetUIN, vc.targetVSN, getUIN(), vc.sourceVSN, vc.messageData));
 		} else {
 			dummyResponse(packet);
 		}
@@ -133,7 +161,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	}
 
 	@Override
-	public void wwrNotify(boolean online, INatsueUserData userData) {
+	public synchronized void wwrNotify(boolean online, INatsueUserData userData) {
 		// no actual WWR but do give notifications
 		try {
 			client.sendPacket(PacketWriter.writeUserLine(online, userData.getBabelUserData().packed));
@@ -175,5 +203,15 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			if (!hasRejected.getAndSet(true))
 				reject.run();
 		}
+	}
+
+	@Override
+	public boolean isNotReallyOnline() {
+		return notReallyOnline;
+	}
+
+	@Override
+	public void markNotReallyOnline() {
+		notReallyOnline = true;
 	}
 }

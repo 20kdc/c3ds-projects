@@ -13,33 +13,32 @@ import java.nio.ByteBuffer;
 
 import cdsp.common.data.IOUtils;
 import natsue.config.ConfigMessages;
+import natsue.data.babel.PacketReader;
+import natsue.data.babel.UINUtils;
 
 /**
- * This is used for any packet we don't particularly care about (or don't care about *yet*).
+ * Emulated Virtual Circuits
  */
-public class CTOSUnknown extends BaseCTOS {
-	public int type;
-	public final int additionalLength, fixedTransactionDummyLength;
+public class CTOSVirtualConnect extends BaseCTOS {
+	public short sourceVSN;
+	public long targetUIN;
 
-	public CTOSUnknown(int addLen, int tdl) {
-		additionalLength = addLen;
-		fixedTransactionDummyLength = tdl;
+	@Override
+	public void initializeAndReadRemainder(ConfigMessages pcfg, InputStream inputStream, ByteBuffer initial)
+			throws IOException {
+		super.initializeAndReadRemainder(pcfg, inputStream, initial);
+		ByteBuffer extra = IOUtils.getWrappedBytes(inputStream, 12);
+		sourceVSN = (short) initial.getInt(BASE_FIELD_E);
+		targetUIN = PacketReader.getUIN(extra, 0);
 	}
 
 	@Override
 	public String toString() {
-		return "Unknown, type 0x" + Integer.toHexString(type);
-	}
-
-	@Override
-	public void initializeAndReadRemainder(ConfigMessages pcfg, InputStream inputStream, ByteBuffer initial) throws IOException {
-		super.initializeAndReadRemainder(pcfg, inputStream, initial);
-		type = initial.getInt(BASE_FIELD_TYPE);
-		IOUtils.getBytes(inputStream, additionalLength);
+		return "CTOSVirtualConnect{to: " + UINUtils.toString(targetUIN) + ", sourceVSN: " + sourceVSN + "}";
 	}
 
 	@Override
 	public int transactionDummyLength() {
-		return fixedTransactionDummyLength;
+		return 0;
 	}
 }
