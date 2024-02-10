@@ -45,7 +45,7 @@ Creatures 3:
 
 #### Modern CAOS, and why you need to know about CAOS anyway
 
-Creatures 3's CAOS, inside, resembles modern game scripting languages such as Lua, though it has it's differences (for those interested: the "coroutines" are tied directly into agents, no garbage collection).
+Creatures 3's CAOS, inside, resembles modern game scripting languages such as Lua, though it has its differences (for those interested: the "coroutines" are tied directly into agents, no garbage collection).
 
 The main thing one can say about Creatures 3 CAOS is that a good language was within their grasp, but they either did not understand what they had or had a lack of context.
 

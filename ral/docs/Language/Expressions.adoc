@@ -167,7 +167,7 @@ Notably, macros are considered to be constants of the hidden "any lambda" type.
 
 While that type cannot be passed as arguments (to allow tooling to exist and work properly, and to prevent caller-dependent compile errors, the compiler requires all expression return types are known independent of the macro), regular lambda types can be passed as inline arguments, and can then be called.
 
-This can also be used to define "local functions" (similar to `subr`'s use in CAOS).
+This can also be used to define "local functions" (similar to the use of `subr` in CAOS).
 
 See the notes on lambdas for details.
 
@@ -216,17 +216,7 @@ Lambda expressions are expressions which define macros as compile-time values.
 These compile-time values can be passed inline into other macros, which can then call them.
 
 ```
-macro () a(lambda(str name)(str @last) @b, str @last) {
- outs("hi ");
- outs(b(last));
- outs("\n");
-}
-
-install {
- a(lambda (str @last) {
-  return "jeremy " + last;
- }, "woof");
-}
+include::../../samples/manual-lambda-example.ral[]
 ```
 
 Note that the data that makes up a lambda is deliberately removed from the value if it is passed around in any way that might allow it to escape a scope (which would allow access to out-of-scope variables, which could overlap with newer variables).
