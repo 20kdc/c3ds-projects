@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import rals.code.CodeGenFeatureLevel;
+import rals.code.MacroArgNameless;
 import rals.expr.*;
 import rals.lex.DefInfo;
 import rals.types.RALType.AgentClassifier;
@@ -65,9 +66,9 @@ public class TypeSystem {
 	public final HashMap<HashSet<RALType>, RALType.Union> unions = new HashMap<>();
 
 	/**
-	 * All lambdas by their ret-args.
+	 * All lambdas by their signatures.
 	 */
-	public final HashMap<LinkedList<RALType>, RALType.Lambda> lambdas = new HashMap<>();
+	public final HashMap<RALLambdaSignature, RALType.Lambda> lambdas = new HashMap<>();
 
 	/**
 	 * Named constants!
@@ -204,14 +205,18 @@ public class TypeSystem {
 		return res;
 	}
 
-	public RALType byLambda(Iterable<RALType> in) {
-		LinkedList<RALType> types = new LinkedList<>();
-		for (RALType rt : in)
-			types.add(rt);
-		RALType.Lambda lambda = lambdas.get(types);
+	public RALType byLambda(Iterable<RALType> in, Iterable<MacroArgNameless> in2) {
+		RALLambdaSignature rls = new RALLambdaSignature(in, in2);
+		RALType.Lambda lambda = lambdas.get(rls);
 		if (lambda == null) {
-			lambda = new RALType.Lambda(gLambdaAny, types.toArray(new RALType[0]));
-			lambdas.put(types, lambda);
+			LinkedList<RALType> lRets = new LinkedList<>();
+			for (RALType rt : in)
+				lRets.add(rt);
+			LinkedList<MacroArgNameless> lArgs = new LinkedList<>();
+			for (MacroArgNameless ma : in2)
+				lArgs.add(ma);
+			lambda = new RALType.Lambda(gLambdaAny, lRets.toArray(new RALType[0]), lArgs.toArray(new MacroArgNameless[0]));
+			lambdas.put(rls, lambda);
 		}
 		return lambda;
 	}

@@ -48,6 +48,7 @@ public class Macro implements RALCallable.Global {
 		TypeSystem ts = world.types;
 		ScriptContext msContext = new ScriptContext(world, ts.gAgentNullable, ts.gAny, ts.gAny, ts.gAny);
 		ScopeContext scContext = new ScopeContext(msContext);
+		// lambdas have their own version of this
 		for (MacroArg arg : args)
 			scContext.setLoc(arg.name, defInfo, new RALVarEH(arg, arg.type));
 
@@ -63,27 +64,46 @@ public class Macro implements RALCallable.Global {
 		world.diags.popFrame(defInfo.srcRange);
 	}
 
-	@Override
-	public RALExprSlice instance(final RALExprSlice a, ScopeContext sc) {
+	/**
+	 * Typechecks macro args.
+	 */
+	public static void typeCheckMacroArgs(Object chk, RALExprSlice a, MacroArgNameless[] args) {
 		if (a.length != args.length)
-			throw new RuntimeException("Macro " + name + " called with " + a.length + " args, not " + args.length);
+			throw new RuntimeException(chk + ": Amount of args passed (" + a.length + ") does not match callable expectations (" + args.length + ")");
+		for (int i = 0; i < args.length; i++) {
+			// Typecheck
+			RALSlot argSlot = a.slot(i);
+			RALSlot.Perm wantedPerms = args[i].computeRequiredPerms();
+			argSlot.perms.require(chk, wantedPerms);
+			if (wantedPerms.read)
+				argSlot.type.assertImpCast(args[i].type);
+			if (wantedPerms.write)
+				args[i].type.assertImpCast(argSlot.type);
+		}
+	}
+
+	/**
+	 * Creates a VarCacher and typechecks for the given args.
+	 */
+	public static VarCacher varCacherFromMacroArgs(Object chk, RALExprSlice a, MacroArg[] args) {
+		typeCheckMacroArgs(chk, a, args);
 
 		boolean[] inline = new boolean[args.length];
 		String[] names = new String[args.length];
 		for (int i = 0; i < args.length; i++) {
 			inline[i] = args[i].isInline != null;
 			names[i] = args[i].name;
-			// Typecheck
-			RALSlot argSlot = a.slot(i);
-			RALSlot.Perm wantedPerms = args[i].computeRequiredPerms();
-			argSlot.perms.require(this, wantedPerms);
-			if (wantedPerms.read)
-				argSlot.type.assertImpCast(args[i].type);
-			if (wantedPerms.write)
-				args[i].type.assertImpCast(argSlot.type);
 		}
 
-		VarCacher vc = new VarCacher(a, inline, names);
+		return new VarCacher(a, inline, names);
+	}
+
+	@Override
+	public RALExprSlice instance(final RALExprSlice a, ScopeContext sc) {
+		if (a.length != args.length)
+			throw new RuntimeException("Macro " + name + " called with " + a.length + " args, not " + args.length);
+
+		VarCacher vc = varCacherFromMacroArgs(this, a, args);
 
 		// ensure compiled, then resolve with that code
 		precompile(sc.world);

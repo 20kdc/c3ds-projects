@@ -14,11 +14,32 @@ macro () silly(lambda()() @test) {
 	test();
 }
 
+macro () supplierTest(lambda(int)() @test) {
+	outs("outv supplier");
+	outv(test());
+	outs("outv supplier 2");
+	outv(test());
+}
+
+macro () consumerTest(lambda()(int @) @test) {
+	outs("outv consumer");
+	test(1);
+	outs("outv consumer 2");
+	test(2);
+}
+
 install {
 	let amount = 0;
 	silly(lambda () {
 		outs("hi again!");
 		outv(amount);
 		amount++;
+	});
+	supplierTest(lambda () {
+		amount++;
+		return amount;
+	});
+	consumerTest(lambda (int @arg) {
+		outv(arg);
 	});
 }

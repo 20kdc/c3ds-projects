@@ -216,14 +216,16 @@ Lambda expressions are expressions which define macros as compile-time values.
 These compile-time values can be passed inline into other macros, which can then call them.
 
 ```
-macro () a(lambda()() @b) {
- b();
+macro () a(lambda(str name)(str @last) @b, str @last) {
+ outs("hi ");
+ outs(b());
+ outs("\n");
 }
 
 install {
- a(lambda () {
-  outs("hi!");
- });
+ a(lambda (str @last) {
+  return "jeremy " + last;
+ }, "woof");
 }
 ```
 

@@ -58,4 +58,11 @@ public class SrcRange {
 	public SrcRange expand(SrcRange other) {
 		return new SrcRange(start.min(other.start), end.max(other.end));
 	}
+
+	/**
+	 * Expands this range to cover a point.
+	 */
+	public SrcRange expand(SrcPos other) {
+		return new SrcRange(start.min(other), end.max(other));
+	}
 }

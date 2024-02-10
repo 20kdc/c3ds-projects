@@ -6,9 +6,10 @@
  */
 package rals.parser;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
-import rals.code.MacroArg;
+import rals.code.MacroArgNameless;
 import rals.hcm.HCMIntents;
 import rals.lex.Lexer;
 import rals.lex.Token;
@@ -40,14 +41,12 @@ public class ParserType {
 		typeCompletionIntents(ifc);
 		RALType rt;
 		if (ifc.lexer.optNextKw("lambda")) {
-			MacroArg[] rets = Parser.parseArgList(ifc, false);
-			MacroArg[] args = Parser.parseArgList(ifc, true);
-			if (args.length > 0)
-				throw new RuntimeException("Lambdas with args are not possible right now");
+			MacroArgNameless[] rets = Parser.parseArgListNameless(ifc, false);
+			MacroArgNameless[] args = Parser.parseArgListNameless(ifc, true);
 			LinkedList<RALType> rets2 = new LinkedList<>();
-			for (MacroArg ma : rets)
+			for (MacroArgNameless ma : rets)
 				rets2.add(ma.type);
-			return ts.byLambda(rets2);
+			return ts.byLambda(rets2, Arrays.asList(args));
 		} else {
 			Token.ID id = ifc.lexer.requireNextIDTkn();
 			String name = id.text;

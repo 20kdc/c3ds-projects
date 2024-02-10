@@ -351,12 +351,10 @@ public abstract class RALExprSlice {
 	 * Deferred. The actual resolved instance doesn't exist yet (but the types do).
 	 */
 	public static abstract class Deferred extends RALExprSlice {
-		public final int base;
 		public final RALSlot[] slots;
 
-		public Deferred(int b, RALSlot[] p) {
+		public Deferred(RALSlot[] p) {
 			super(p.length);
-			base = b;
 			slots = p;
 		}
 

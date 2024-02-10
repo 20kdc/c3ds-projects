@@ -7,7 +7,9 @@
 package rals.expr;
 
 import rals.cctx.*;
+import rals.code.Macro;
 import rals.code.ScopeContext;
+import rals.expr.RALSlot.Perm;
 import rals.types.*;
 
 /**
@@ -18,7 +20,7 @@ public class RALVarEH extends RALExprSlice.Deferred {
 	public final RALType type;
 
 	public RALVarEH(IEHHandle h, RALType ot) {
-		super(0, new RALSlot[] {new RALSlot(ot, RALSlot.Perm.RW)});
+		super(new RALSlot[] {new RALSlot(ot, RALSlot.Perm.RW)});
 		handle = h;
 		type = ot;
 	}
@@ -38,10 +40,17 @@ public class RALVarEH extends RALExprSlice.Deferred {
 
 	@Override
 	protected RALCallable getCallableInner(int index) {
+		if (!(type instanceof RALType.Lambda))
+			return null;
+		RALType.Lambda lambdaSignature = (RALType.Lambda) type;
+		RALSlot[] slots = new RALSlot[lambdaSignature.rets.length];
+		for (int i = 0; i < slots.length; i++)
+			slots[i] = new RALSlot(lambdaSignature.rets[i], Perm.R);
 		return new RALCallable() {
 			@Override
 			public RALExprSlice instance(RALExprSlice args, ScopeContext sc) {
-				return new Deferred(0, new RALSlot[] {}) {
+				Macro.typeCheckMacroArgs(slots, args, lambdaSignature.args);
+				return new Deferred(slots) {
 					private RALExprSlice theInstance;
 					@Override
 					protected RALExprSlice getUnderlyingInner(CompileContextNW context) {
@@ -50,8 +59,8 @@ public class RALVarEH extends RALExprSlice.Deferred {
 							RALCallable callable = base.getCallable(index);
 							theInstance = callable.instance(args, sc);
 						}
-						if (theInstance.length != 0)
-							throw new RuntimeException("Cannot pass non-() callables over arg/EH boundary " + RALVarEH.this);
+						if (theInstance.length != slots.length)
+							throw new RuntimeException("Sanity check reports wrong lambda retarg slot count for " + RALVarEH.this);
 						return theInstance;
 					}
 				};

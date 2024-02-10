@@ -336,6 +336,34 @@ public class Parser {
 		}
 	}
 
+	public static MacroArgNameless[] parseArgListNameless(InsideFileContext ifc, boolean allowInline) {
+		Lexer lx = ifc.lexer;
+		lx.requireNextKw("(");
+		if (lx.optNextKw(")"))
+			return new MacroArgNameless[0];
+		LinkedList<MacroArgNameless> args = new LinkedList<>();
+		while (true) {
+			RALType typ = ParserType.parseType(ifc);
+			RALSlot.Perm isInline = null;
+			if (allowInline) {
+				if (lx.optNextKw("@")) {
+					isInline = RALSlot.Perm.R;
+				} else if (lx.optNextKw("@=")) {
+					isInline = RALSlot.Perm.RW;
+				}
+			}
+			args.add(new MacroArgNameless(typ, isInline));
+			Token first = lx.requireNext();
+			if (first.isKeyword(")")) {
+				return args.toArray(new MacroArgNameless[0]);
+			} else if (first.isKeyword(",")) {
+				// okie-dokie
+			} else {
+				throw new RuntimeException("Unusual termination of argument list " + first);
+			}
+		}
+	}
+
 	public static void parseExtendsClauses(InsideFileContext ifc, RALType.Agent ag) {
 		TypeSystem ts = ifc.typeSystem;
 		Lexer lx = ifc.lexer;

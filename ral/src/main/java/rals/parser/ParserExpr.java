@@ -257,7 +257,9 @@ public class ParserExpr {
 			return new RALStmtExpr(stmt, ret);
 		} else if (tkn.isKeyword("lambda")) {
 			MacroArg[] args = Parser.parseArgList(ifc, false);
-			return new RALLambda(args, parseExpr(ifc, true));
+			RALExprUR expr = parseExpr(ifc, true);
+			SrcRange range = tkn.extent.expand(lx.genLN());
+			return new RALLambda(range, args, expr);
 		} else if (tkn.isKeyword("(")) {
 			RALExprUR interior = parseExpr(ifc, false);
 			lx.requireNextKw(")");

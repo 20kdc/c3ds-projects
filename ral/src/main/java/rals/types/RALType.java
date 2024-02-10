@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import rals.code.MacroArgNameless;
 import rals.lex.DefInfo;
 import rals.types.AgentInterface.OVar;
 
@@ -84,6 +85,9 @@ public abstract class RALType {
 					return false;
 				for (int i = 0; i < tl.rets.length; i++)
 					if (!tl.rets[i].canImplicitlyCast(ol.rets[i]))
+						return false;
+				for (int i = 0; i < tl.args.length; i++)
+					if (!tl.args[i].canBeCastTo(ol.args[i]))
 						return false;
 				return true;
 			} else {
@@ -318,12 +322,14 @@ public abstract class RALType {
 
 	public static class Lambda extends RALType {
 		public final RALType parentType;
-		private final RALType[] rets;
+		public final RALType[] rets;
+		public final MacroArgNameless[] args;
 
-		public Lambda(RALType parent, RALType[] r) {
+		public Lambda(RALType parent, RALType[] r, MacroArgNameless[] a) {
 			super(Major.Lambda);
 			parentType = parent;
 			rets = r;
+			args = a;
 		}
 
 		@Override
@@ -343,6 +349,16 @@ public abstract class RALType {
 					sb.append(", ");
 				}
 				sb.append(rt.getFullDescription());
+			}
+			sb.append(")(");
+			start = true;
+			for (MacroArgNameless rt : args) {
+				if (start) {
+					start = false;
+				} else {
+					sb.append(", ");
+				}
+				sb.append(rt.toString());
 			}
 			sb.append(")");
 			return sb.toString();

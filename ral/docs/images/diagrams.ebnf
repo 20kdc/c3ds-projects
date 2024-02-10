@@ -1,7 +1,9 @@
 // ovrv
 
 Type ::= TypeBranch ("|" TypeBranch)*
-TypeBranch ::= (ID | "lambda" MacroArgList MacroArgList) "?"?
+TypeBranch ::= (ID | TypeLambda) "?"?
+TypeLambda ::= "lambda" "(" (Type ("," Type)*)? ")" "(" (Type InlineSpec ("," Type InlineSpec)*)? ")"
+InlineSpec ::= ("@" | "@=")?
 
 // decl
 
@@ -46,7 +48,7 @@ InstallDecl ::= "install" Stmt
 RemoveDecl ::= "remove" Stmt
 MacroDecl ::= "macro" (ArgList ID ArgList Stmt | ID ArgList Expr)
 MacroArgList ::= "(" MacroArg ("," MacroArg)* ")"
-MacroArg ::= Type ("@" | "@=")? ID
+MacroArg ::= Type InlineSpec ID
 
 // stmt
 
