@@ -11,8 +11,6 @@ include "std/engine.ral";
 
 // Performs a Natsue hypercall.
 // The lambda given fills the details of the call using the outPray* function series.
-// The first string is P1.
-// The second string is P2.
 macro () natsueHypercall(str @type, str @uin, lambda () () @fillDetails) {
 	inst();
 	fileOope(FILE_DIR_MAIN, "natsueHypercall.txt", false);
