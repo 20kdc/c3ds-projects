@@ -61,3 +61,32 @@ macro gameAgent(str @key) game(key)!Agent;
 // `EAME` variable as `Agent`. Can be assigned to as so: `eameAgent("test") = ownr;`
 macro eameAgent(str @key) eame(key)!Agent;
 
+// PRAY writing aid
+
+macro () outPrayFirstGroup(str @type, str @name) {
+	outs("\"en-GB\"\ngroup ");
+	outs(type);
+	// this must be here, sadly
+	outs(" ");
+	outx(name);
+}
+
+macro () outPrayGroup(str @type, str @name) {
+	outs("\ngroup ");
+	outs(type);
+	// this must be here, sadly
+	outs(" ");
+	outx(name);
+}
+
+macro () outPrayKeyS(str @key, str @val) {
+	outs("\n");
+	outx(key);
+	outx(val);
+}
+
+macro () outPrayKeyI(str @key, int @val) {
+	outs("\n");
+	outx(key);
+	outv(val);
+}

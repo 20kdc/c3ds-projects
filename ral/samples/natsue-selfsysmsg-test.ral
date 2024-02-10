@@ -1,0 +1,10 @@
+include "std/ds.ral";
+include "std/natsue.ral";
+
+install {
+	natsueHypercall("writ", netUser(), lambda () {
+		outPrayKeyS("Channel", "system_message");
+		outPrayKeyI("Message", 2469);
+		outPrayKeyS("Param1 String", "Hello! This is a test message.");
+	});
+}
