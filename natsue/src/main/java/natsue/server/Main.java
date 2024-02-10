@@ -90,7 +90,7 @@ public class Main {
 		case minimal:
 			mySource.log("Firewall level: minimal: MINIMAL, HAZARDOUS TO VANILLA CLIENTS");
 			firewall = new IFWModule[] {
-				new HypercallFWModule(ilp, serverHub),
+				new HypercallFWModule(ilp, serverHub, config),
 				new DataExtractorFWModule(serverHub, false, photo, glst),
 				new SpoolListFWModule(serverHub)
 			};
@@ -98,7 +98,7 @@ public class Main {
 		case vanillaSafe:
 			mySource.log("Firewall level: vanillaSafe: Should be safe enough.");
 			firewall = new IFWModule[] {
-				new HypercallFWModule(ilp, serverHub),
+				new HypercallFWModule(ilp, serverHub, config),
 				new NetWritFWModule(serverHub, config.allowNetWrit.getValue()),
 				new PRAYBlockListsFWModule(serverHub, false),
 				new CreatureCheckingFWModule(serverHub),
@@ -111,7 +111,7 @@ public class Main {
 		default:
 			mySource.log("Firewall level: full: No fun allowed.");
 			firewall = new IFWModule[] {
-				new HypercallFWModule(ilp, serverHub),
+				new HypercallFWModule(ilp, serverHub, config),
 				new NetWritFWModule(serverHub, config.allowNetWrit.getValue()),
 				new PRAYBlockListsFWModule(serverHub, true),
 				new CreatureCheckingFWModule(serverHub),
@@ -123,7 +123,7 @@ public class Main {
 		case rejectAll:
 			mySource.log("Firewall level: rejectAll: FOR TESTING ONLY");
 			firewall = new IFWModule[] {
-				new HypercallFWModule(ilp, serverHub),
+				new HypercallFWModule(ilp, serverHub, config),
 				new DataExtractorFWModule(serverHub, false, photo, glst),
 				new RejectAllFWModule(serverHub)
 			};

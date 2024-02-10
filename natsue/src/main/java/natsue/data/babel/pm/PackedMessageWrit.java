@@ -39,4 +39,8 @@ public class PackedMessageWrit extends PackedMessage {
 	public byte[] getOrPackContents(ConfigMessages msg) {
 		return WritVal.encodeWrit(channel, messageId, param1, param2);
 	}
+
+	public int determineSize() {
+		return WritVal.determineWritSize(channel, messageId, param1, param2);
+	}
 }

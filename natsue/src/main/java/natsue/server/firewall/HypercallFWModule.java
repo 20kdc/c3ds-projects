@@ -9,6 +9,7 @@ package natsue.server.firewall;
 
 import cdsp.common.data.pray.PRAYBlock;
 import cdsp.common.data.pray.PRAYTags;
+import natsue.config.Config;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
@@ -28,10 +29,12 @@ public class HypercallFWModule implements IFWModule, ILogSource {
 
 	public final IHubPrivilegedAPI hub;
 	private final ILogProvider logParent;
+	public final Config config;
 
-	public HypercallFWModule(ILogProvider lp, IHubPrivilegedAPI h) {
+	public HypercallFWModule(ILogProvider lp, IHubPrivilegedAPI h, Config config) {
 		hub = h;
 		logParent = lp;
+		this.config = config;
 	}
 
 	@Override
@@ -67,7 +70,13 @@ public class HypercallFWModule implements IFWModule, ILogSource {
 							int writMsg = pt.intMap.getOrDefault("Message", 2468);
 							Object writParam1 = getWritParam(pt, "Param1 ");
 							Object writParam2 = getWritParam(pt, "Param2 ");
-							hub.impGiveMessage(sourceUser, destUser.getUIN(), new PackedMessageWrit(sourceUser.getUIN(), channel, writMsg, writParam1, writParam2));
+							PackedMessageWrit pmw = new PackedMessageWrit(sourceUser.getUIN(), channel, writMsg, writParam1, writParam2);
+							// don't allow hypercall writs to bypass the writ size
+							if (pmw.determineSize() > config.messages.maxNetWritSize.getValue()) {
+								hypercallError(sourceUser.getUIN(), "WRIT too large");
+								return true;
+							}
+							hub.impGiveMessage(sourceUser, destUser.getUIN(), pmw);
 						} else {
 							// Unknown
 							hypercallError(sourceUser.getUIN(), "Unknown hypercall '" + type + "'. Outdated server?");

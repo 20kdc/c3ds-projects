@@ -28,6 +28,13 @@ public class WritVal {
 		return bb.array();
 	}
 
+	public static int determineWritSize(String channel, int messageId, Object param1, Object param2) {
+		int len = 4 + channel.getBytes(PacketReader.CHARSET).length + 4;
+		len += determineSize(param1);
+		len += determineSize(param2);
+		return len;
+	}
+
 	public static Object readFrom(ByteBuffer bb) {
 		int i = bb.getInt();
 		if (i == 0) {
@@ -61,6 +68,20 @@ public class WritVal {
 			bb.putInt(strDat.length);
 			bb.put(strDat);
 			return bb.array();
+		} else {
+			throw new RuntimeException("WritVal can't encode " + val + "!");
+		}
+	}
+
+	public static int determineSize(Object val) {
+		if (val == null) {
+			return 4;
+		} else if (val instanceof Integer) {
+			return 8;
+		} else if (val instanceof Float) {
+			return 8;
+		} else if (val instanceof String) {
+			return ((String) val).getBytes(PacketReader.CHARSET).length + 8;
 		} else {
 			throw new RuntimeException("WritVal can't encode " + val + "!");
 		}

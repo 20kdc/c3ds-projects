@@ -33,11 +33,11 @@ public class NetWritFWModule implements IFWModule {
 		if (sourceUser.getUIN() == destUser.getUIN())
 			return false;
 		if (message instanceof PackedMessageWrit) {
+			PackedMessageWrit w = (PackedMessageWrit) message;
 			if (level == NetWritLevel.blocked) {
 				hub.rejectMessage(destUser, message, "NET: WRIT not allowed period");
 				return true;
 			}
-			PackedMessageWrit w = (PackedMessageWrit) message;
 			if (w.channel.equals("system_message") || w.channel.equals("add_to_contact_book")) {
 				hub.rejectMessage(destUser, message, "NET: WRIT on restricted channel");
 				return true;
