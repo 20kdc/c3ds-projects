@@ -81,11 +81,14 @@ public abstract class RALType {
 				Lambda ol = (Lambda) other;
 				// this can be cast to other if:
 				//  all of our rets can be cast to others's rets
+				//  all of our args can be cast to others's args
 				if (tl.rets.length != ol.rets.length)
 					return false;
 				for (int i = 0; i < tl.rets.length; i++)
 					if (!tl.rets[i].canImplicitlyCast(ol.rets[i]))
 						return false;
+				if (tl.args.length != ol.args.length)
+					return false;
 				for (int i = 0; i < tl.args.length; i++)
 					if (!tl.args[i].canBeCastTo(ol.args[i]))
 						return false;
