@@ -6,6 +6,7 @@
  */
 package rals.parser;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -41,7 +42,7 @@ public class ParserExpr {
 
 	public static RALConstant parseConst(InsideFileContext ifc) {
 		RALExprUR ex = parseExpr(ifc, true);
-		RALConstant ex2 = ex.resolveConst(ifc.typeSystem);
+		RALConstant ex2 = ex.resolveConst(ifc.typeSystem, Collections.emptySet());
 		if (ex2 == null)
 			throw new RuntimeException("Unable to resolve " + ex + " to constant expression.");
 		return ex2;

@@ -6,6 +6,8 @@
  */
 package rals.expr;
 
+import java.util.Set;
+
 import rals.code.*;
 import rals.diag.SrcRange;
 import rals.lex.Token;
@@ -38,23 +40,21 @@ public class RALAmbiguousID implements RALExprUR {
 	}
 
 	@Override
-	public RALConstant resolveConst(TypeSystem ts) {
-		RALConstant rc = ts.namedConstants.get(text);
-		if (rc != null)
-			return rc;
-		return null;
+	public RALConstant resolveConst(TypeSystem ts, Set<String> scopedVariables) {
+		if (scopedVariables.contains(text))
+			return null;
+		return ts.namedConstants.get(text);
 	}
 
 	@Override
 	public RALExprSlice resolveInner(ScopeContext context) {
 		TypeSystem typeSystem = context.world.types;
-		// Constants go first for consistency with the const resolver.
-		RALConstant rc = typeSystem.namedConstants.get(text);
-		if (rc != null)
-			return rc;
 		ScopeContext.LVar re = context.scopedVariables.get(text);
 		if (re != null)
 			return re.content;
+		RALConstant rc = typeSystem.namedConstants.get(text);
+		if (rc != null)
+			return rc;
 		RALType.AgentClassifier maybeClassifier = typeSystem.tryGetAsClassifier(text);
 		if (maybeClassifier != null) {
 			Classifier cl = maybeClassifier.classifier;

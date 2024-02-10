@@ -7,6 +7,7 @@
 package rals.expr;
 
 import java.util.LinkedList;
+import java.util.Set;
 
 import rals.cctx.*;
 import rals.code.*;
@@ -48,10 +49,10 @@ public class RALChainOp implements RALExprUR {
 	}
 
 	@Override
-	public RALConstant resolveConst(TypeSystem ts) {
+	public RALConstant resolveConst(TypeSystem ts, Set<String> scopedVariables) {
 		RALConstant res = null;
 		for (int i = 0; i < elements.length; i++) {
-			RALConstant c = elements[i].resolveConst(ts);
+			RALConstant c = elements[i].resolveConst(ts, scopedVariables);
 			if (c == null)
 				return null;
 			if (i == 0) {

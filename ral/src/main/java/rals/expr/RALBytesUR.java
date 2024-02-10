@@ -6,6 +6,8 @@
  */
 package rals.expr;
 
+import java.util.Set;
+
 import rals.code.ScopeContext;
 import rals.types.TypeSystem;
 
@@ -25,11 +27,11 @@ public class RALBytesUR implements RALExprUR {
 	 * Why? Because this expression is only valid as a constant.
 	 */
 	@Override
-	public RALConstant resolveConst(TypeSystem ts) {
+	public RALConstant resolveConst(TypeSystem ts, Set<String> scopedVariables) {
 		RALExprUR[] details = content.decomposite();
 		byte[] target = new byte[details.length];
 		for (int i = 0; i < details.length; i++) {
-			RALConstant rc = details[i].resolveConst(ts);
+			RALConstant rc = details[i].resolveConst(ts, scopedVariables);
 			if (!(rc instanceof RALConstant.Int))
 				throw new RuntimeException("Byte " + i + " of byte string not a constant integer");
 			RALConstant.Int rci = (RALConstant.Int) rc;
@@ -43,7 +45,7 @@ public class RALBytesUR implements RALExprUR {
 
 	@Override
 	public RALExprSlice resolveInner(ScopeContext scope) {
-		RALConstant res = resolveConst(scope.world.types);
+		RALConstant res = resolveConst(scope.world.types, scope.scopedVariables.keySet());
 		// we don't need to support non-constant byte strings, because they can't exist
 		if (res == null)
 			throw new RuntimeException("Byte strings must eventually resolve to constants");

@@ -33,7 +33,7 @@ public class RALIfStatement extends RALStatementUR {
 	public RALStatement resolveInner(ScopeContext scope) {
 		scope = new ScopeContext(scope);
 		// scope juggling
-		final RALConstant conditionConstant = condition.resolveConst(scope.world.types);
+		final RALConstant conditionConstant = condition.resolveConst(scope.world.types, scope.scopedVariables.keySet());
 		ScopeContext subScope = new ScopeContext(scope);
 		if (conditionConstant != null) {
 			boolean answer = RALCondition.constToBool(conditionConstant);

@@ -6,6 +6,8 @@
  */
 package rals.expr;
 
+import java.util.Set;
+
 import rals.code.ScopeContext;
 import rals.types.TypeSystem;
 
@@ -16,7 +18,7 @@ public interface RALExprUR {
 	/**
 	 * Attempts to resolve as a const, or returns null otherwise.
 	 */
-	default RALConstant resolveConst(TypeSystem ts) {
+	default RALConstant resolveConst(TypeSystem ts, Set<String> scopedVariables) {
 		return null;
 	}
 
@@ -26,7 +28,7 @@ public interface RALExprUR {
 	 * Note that this doesn't generate code - it just gets all the variables into place.
 	 */
 	default RALExprSlice resolve(ScopeContext scope) {
-		RALConstant rc = resolveConst(scope.world.types);
+		RALConstant rc = resolveConst(scope.world.types, scope.scopedVariables.keySet());
 		if (rc != null) {
 			scope.world.hcm.onResolveExpression(this, rc);
 			return rc;

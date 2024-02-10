@@ -6,6 +6,8 @@
  */
 package rals.cond;
 
+import java.util.Set;
+
 import rals.cctx.*;
 import rals.code.*;
 import rals.expr.*;
@@ -21,8 +23,8 @@ public class RALCondInvert implements RALExprUR {
 	}
 
 	@Override
-	public RALConstant resolveConst(TypeSystem ts) {
-		RALConstant rc = inside.resolveConst(ts);
+	public RALConstant resolveConst(TypeSystem ts, Set<String> scopedVariables) {
+		RALConstant rc = inside.resolveConst(ts, scopedVariables);
 		if (rc == null)
 			return null;
 		return RALCondition.boolToConst(ts, !RALCondition.constToBool(rc));

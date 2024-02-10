@@ -6,6 +6,8 @@
  */
 package rals.expr;
 
+import java.util.Set;
+
 import rals.cctx.*;
 import rals.code.*;
 import rals.types.*;
@@ -31,8 +33,8 @@ public final class RALCast implements RALExprUR {
 	}
 
 	@Override
-	public RALConstant resolveConst(TypeSystem ts) {
-		RALConstant rc = base.resolveConst(ts);
+	public RALConstant resolveConst(TypeSystem ts, Set<String> scopedVariables) {
+		RALConstant rc = base.resolveConst(ts, scopedVariables);
 		if (rc instanceof RALConstant.Single) {
 			if (doImplicitCheck)
 				((RALConstant.Single) rc).type.assertImpCast(target);

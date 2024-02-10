@@ -6,6 +6,8 @@
  */
 package rals.expr;
 
+import java.util.Set;
+
 import rals.cctx.*;
 import rals.code.*;
 import rals.types.*;
@@ -20,7 +22,7 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 	}
 
 	@Override
-	public RALConstant resolveConst(TypeSystem ts) {
+	public RALConstant resolveConst(TypeSystem ts, Set<String> scopedVariables) {
 		return this;
 	}
 

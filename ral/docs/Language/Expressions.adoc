@@ -30,7 +30,7 @@ You might be tempted to count `null`, but that's internally an alias.
 
 Variable IDs represent variables or expressions declared or aliased by `let` and `alias`, alongside declared constants.
 
-If a conflict occurs between a declared constant and a local variable, the declared constant wins.
+If a conflict occurs between a declared constant and a local variable, the local variable wins. (This behaviour used to be different, but it became a problem when lambda support stuff folded the callable namespace into the constant namespace and `anim` suddenly became a constant.)
 
 ```
 let meh = 12;
