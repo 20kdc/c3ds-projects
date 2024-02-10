@@ -386,9 +386,14 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 
 	@Override
 	public void clientGiveMessage(IHubClient cc, long destinationUIN, PackedMessage message) {
-		INatsueUserData.Root userData = cc.getUserData();
+		impGiveMessage(cc.getUserData(), destinationUIN, message);
+	}
+
+	@Override
+	public void impGiveMessage(INatsueUserData userData, long destinationUIN, PackedMessage message) {
 		// Just make sure of these here and now.
-		message.senderUIN = userData.getUIN();
+		long trueCauseUIN = userData.getUIN();
+		message.senderUIN = trueCauseUIN;
 		INatsueUserData destUserInfo = getUserDataByUIN(destinationUIN);
 		if (destUserInfo == null) {
 			rejectMessage(destinationUIN, message, "Non-existent user " + UINUtils.toString(destinationUIN));
@@ -412,7 +417,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 			return;
 		}
 		// Send.
-		sendMessage(destinationUIN, message, MsgSendType.Temp, cc.getUIN());
+		sendMessage(destinationUIN, message, MsgSendType.Temp, trueCauseUIN);
 	}
 
 	@Override

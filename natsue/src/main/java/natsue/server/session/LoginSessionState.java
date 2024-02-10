@@ -13,13 +13,16 @@ import natsue.config.Config;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSHandshake;
+import natsue.data.babel.pm.PackedMessageWrit;
 import natsue.data.hli.StandardMessages;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
+import natsue.server.firewall.HypercallFWModule;
 import natsue.server.hubapi.IHubClientAPI;
 import natsue.server.hubapi.IHubLoginAPI;
 import natsue.server.hubapi.IHubLoginAPI.ILoginReceiver;
 import natsue.server.hubapi.IHubLoginAPI.LoginResult.AccountFrozen;
+import natsue.server.system.SystemCommands;
 import natsue.server.userdata.INatsueUserData;
 
 /**
@@ -62,7 +65,10 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 			public void confirm(MainSessionState result) {
 				client.setSessionState(result);
 				try {
-					client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, result.hub.getServerUIN(), result.userData.getUIN()));
+					long uin = result.userData.getUIN();
+					client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, result.hub.getServerUIN(), uin));
+					// send API version
+					client.sendPacket(PacketWriter.writeMessage(new PackedMessageWrit(uin, "natsue_version", 2468, HypercallFWModule.HVAPI_VERSION, SystemCommands.VERSION).toByteArray(config.messages)));
 				} catch (Exception ex) {
 					if (client.logFailedAuth())
 						log(ex);

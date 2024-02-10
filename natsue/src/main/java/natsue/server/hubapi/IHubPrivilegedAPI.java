@@ -35,6 +35,14 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	boolean clientLogin(IHubClient client, Runnable confirmOk);
 
 	/**
+	 * This is the "impersonation-friendly" give-message endpoint.
+	 * CLIENTS SHOULD USE clientGiveMessage instead.
+	 * This is for hypercalls, which need to do things on behalf of a client.
+	 * Hypercalls shouldn't be allowed to skip the firewall, though, so they must use this.
+	 */
+	void impGiveMessage(INatsueUserData userData, long destinationUIN, PackedMessage message);
+
+	/**
 	 * Route a message that is expected to *eventually* get to the target.
 	 * The message is assumed to be authenticated - this is considered to be past the firewall.
 	 * If temp is true, the message won't be archived on failure.

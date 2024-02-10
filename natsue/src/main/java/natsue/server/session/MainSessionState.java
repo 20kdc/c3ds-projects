@@ -25,6 +25,7 @@ import natsue.data.babel.ctos.CTOSVirtualCircuit;
 import natsue.data.babel.ctos.CTOSVirtualConnect;
 import natsue.data.babel.ctos.CTOSWWRModify;
 import natsue.data.babel.pm.PackedMessage;
+import natsue.data.hli.StandardMessages;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubClient;
@@ -128,6 +129,22 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			// Crash 'prevention'.
 			// ...you all get to share this one VSN
 			client.sendPacket(PacketWriter.writeVirtualConnectResponse(((CTOSVirtualConnect) packet).sourceVSN, (short) 1));
+			// Let's not silently fail
+			PackedMessage pm = StandardMessages.systemMessage(getUIN(),
+					"Natsue Automated Message\n" +
+					"~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+					"You have attempted to open a 'virtual circuit connection'.\n" +
+					"This probably means you ran NET: WRIT on the original engine.\n" +
+					"\n" +
+					"Simply put: This feature is broken.\n" +
+					"Signs so far indicate it likely did not work even on original server software.\n" +
+					"It has no negative effect on Natsue, but is very bad for your client.\n" +
+					"\n" +
+					"TLDR:\n" +
+					"YOU'VE BEEN SAVED FROM CRASHING, BUT CLOSE THE GAME SAFELY AS SOON AS POSSIBLE.\n" +
+					"\n" +
+					"Do ask me about this! - 20kdc");
+			client.sendPacket(PacketWriter.writeMessage(pm.toByteArray(config.messages)));
 		} else if (packet instanceof CTOSVirtualCircuit) {
 			// Do nothing.
 			//CTOSVirtualCircuit vc = (CTOSVirtualCircuit) packet;

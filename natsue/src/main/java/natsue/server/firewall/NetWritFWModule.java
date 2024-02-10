@@ -30,6 +30,8 @@ public class NetWritFWModule implements IFWModule {
 
 	@Override
 	public boolean handleMessage(INatsueUserData sourceUser, INatsueUserData destUser, PackedMessage message) {
+		if (sourceUser.getUIN() == destUser.getUIN())
+			return false;
 		if (message instanceof PackedMessageWrit) {
 			if (level == NetWritLevel.blocked) {
 				hub.rejectMessage(destUser, message, "NET: WRIT not allowed period");
