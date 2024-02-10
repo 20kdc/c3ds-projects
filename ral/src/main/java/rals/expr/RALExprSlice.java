@@ -128,6 +128,15 @@ public abstract class RALExprSlice {
 	}
 
 	/**
+	 * Gets the RALCallable attached to the given slot.
+	 * Basically, when making a lambda call, it uses this to get the RALCallable.
+	 */
+	public final RALCallable getCallable(int index) {
+		checkSlot(index);
+		return getCallableInner(index);
+	}
+
+	/**
 	 * Recursively finds the underlying slice.
 	 * See getUnderlyingInner for details.
 	 */
@@ -314,6 +323,15 @@ public abstract class RALExprSlice {
 	}
 
 	/**
+	 * Gets the RALCallable attached to the given slot.
+	 * Basically, when making a lambda call, it uses this to get the RALCallable.
+	 * Care should be taken to avoid letting these values escape their lifetimes.
+	 */
+	protected RALCallable getCallableInner(int index) {
+		return null;
+	}
+
+	/**
 	 * The empty slice.
 	 * Private as you shouldn't instanceof this.
 	 */
@@ -336,8 +354,8 @@ public abstract class RALExprSlice {
 		public final int base;
 		public final RALSlot[] slots;
 
-		public Deferred(int b, int l, RALSlot[] p) {
-			super(l);
+		public Deferred(int b, RALSlot[] p) {
+			super(p.length);
 			base = b;
 			slots = p;
 		}
@@ -374,6 +392,9 @@ public abstract class RALExprSlice {
 
 		@Override
 		protected abstract RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context);
+
+		@Override
+		protected abstract RALCallable getCallableInner(int index);
 	}
 
 	/**
@@ -459,6 +480,15 @@ public abstract class RALExprSlice {
 				return a.getSpecialInlineInner(index, context);
 			} else {
 				return b.getSpecialInlineInner(index - a.length, context);
+			}
+		}
+
+		@Override
+		protected RALCallable getCallableInner(int index) {
+			if (index < a.length) {
+				return a.getCallableInner(index);
+			} else {
+				return b.getCallableInner(index - a.length);
 			}
 		}
 

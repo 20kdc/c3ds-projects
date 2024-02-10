@@ -119,7 +119,7 @@ public class RALjector extends JFrame {
 					try {
 						IncludeParseContext ipc = Parser.run(std, currentFile);
 						debugState.debugTaxonomy = new DebugTaxonomyData(ipc.typeSystem);
-						Scripts scr = ipc.module.resolve(ipc.typeSystem, ipc.diags, ipc.hcm);
+						Scripts scr = ipc.module.resolve(ipc.diags, ipc.hcm);
 						StringBuilder finishedCode = new StringBuilder();
 						scr.compile(new OuterCompileContext(finishedCode, getDebugRecorder()));
 						String errors = scr.diags.unwrapToString();

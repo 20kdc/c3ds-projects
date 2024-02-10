@@ -11,6 +11,7 @@ import java.util.Map;
 
 import rals.diag.DiagRecorder;
 import rals.expr.RALCallable;
+import rals.expr.RALConstant;
 import rals.hcm.IHCMRecorder;
 import rals.stmt.*;
 import rals.types.*;
@@ -21,49 +22,50 @@ import rals.types.*;
  * If you took away the TypeSystem, nothing would make sense (and things like constants would be missing).
  */
 public class ScriptsUR {
+	public final TypeSystem typeSystem;
+
 	public RALBlock installScript;
 	public HashMap<ScriptIdentifier, RALStatementUR> eventScripts = new HashMap<>();
 	public RALBlock removeScript;
 
 	public HashMap<String, MacroDefSet> macroDefs = new HashMap<>();
-	public HashMap<String, RALCallable> callable = new HashMap<>();
 
-	public ScriptsUR() {
-		
+	public ScriptsUR(TypeSystem typeSystem) {
+		this.typeSystem = typeSystem;
 	}
 
-	public void addMacro(String name, int count, RALCallable c) {
-		if (!callable.containsKey(name)) {
+	public void addMacro(String name, int count, RALCallable.Global c) {
+		if (!typeSystem.namedConstants.containsKey(name)) {
 			MacroDefSet mds = macroDefs.computeIfAbsent(name, (n) -> new MacroDefSet(name));
-			callable.put(name, mds);
+			typeSystem.declareConst(name, c.getDefInfo(), new RALConstant.Callable(typeSystem.gLambdaAny, mds));
 		}
 		MacroDefSet res = macroDefs.get(name);
 		if (res == null)
-			throw new RuntimeException(name + " can't have a macro declared as a different type of callable is already present.");
+			throw new RuntimeException(name + " can't have a macro declared as a different type of value is already present.");
 		res.addMacro(count, c);
 	}
 
-	public Scripts resolve(TypeSystem ts, DiagRecorder diags, IHCMRecorder hcm) {
-		UnresolvedWorld world = new UnresolvedWorld(ts, this, diags, hcm);
-		Scripts scripts = new Scripts(ts, diags);
+	public Scripts resolve(DiagRecorder diags, IHCMRecorder hcm) {
+		UnresolvedWorld world = new UnresolvedWorld(typeSystem, this, diags, hcm);
+		Scripts scripts = new Scripts(typeSystem, diags);
 
 		// This ensures macros are ready
-		for (RALCallable rc : callable.values())
+		for (RALCallable.Global rc : macroDefs.values())
 			rc.precompile(world);
 
 		if (installScript != null) {
-			ScriptContext installScriptCtx = new ScriptContext(world, ts.gAgentNullable, ts.gAny, ts.gAny, ts.gAny);
+			ScriptContext installScriptCtx = new ScriptContext(world, typeSystem.gAgentNullable, typeSystem.gAny, typeSystem.gAny, typeSystem.gAny);
 			scripts.installScript = installScriptCtx.resolveStmt(installScript);
 		}
 
 		for (Map.Entry<ScriptIdentifier, RALStatementUR> eventScript : eventScripts.entrySet()) {
 			ScriptIdentifier k = eventScript.getKey();
 			RALStatementUR v = eventScript.getValue();
-			RALType oOwnr = ts.byClassifier(k.classifier);
-			RALType oFrom = ts.gAny;
-			RALType oP1 = ts.gAny;
-			RALType oP2 = ts.gAny;
-			RALType override = ts.overrideOwnr.get(k.script);
+			RALType oOwnr = typeSystem.byClassifier(k.classifier);
+			RALType oFrom = typeSystem.gAny;
+			RALType oP1 = typeSystem.gAny;
+			RALType oP2 = typeSystem.gAny;
+			RALType override = typeSystem.overrideOwnr.get(k.script);
 			if (override != null) {
 				oOwnr = override;
 				oFrom = oOwnr;
@@ -73,7 +75,7 @@ public class ScriptsUR {
 		}
 
 		if (removeScript != null) {
-			ScriptContext removeScriptCtx = new ScriptContext(world, ts.gNull, ts.gAny, ts.gAny, ts.gAny);
+			ScriptContext removeScriptCtx = new ScriptContext(world, typeSystem.gNull, typeSystem.gAny, typeSystem.gAny, typeSystem.gAny);
 			scripts.removeScript = removeScriptCtx.resolveStmt(removeScript);
 		}
 

@@ -150,11 +150,11 @@ field bool Kitten.meowing 1; // meowing is mv01 of Kitten
 kitten.meowing = true;
 ```
 
-#### Macro Calls
+#### Macro/Lambda Calls
 
-Macro calls act as static function calls might in another language.
+Calls act as function calls might in another language.
 
-Macro calls may return multiple values, or may return a single value, or may return no values at all.
+They may return multiple values, or may return a single value, or may return no values at all.
 
 They may also be passed a varying amount of values, but this is dependent on the specific macro's requirements. See details on macro declarations for more information.
 
@@ -162,6 +162,14 @@ They may also be passed a varying amount of values, but this is dependent on the
 myMacro();
 let a, b = myOtherMacro(c, d);
 ```
+
+Notably, macros are considered to be constants of the hidden "any lambda" type.
+
+While that type cannot be passed as arguments (to allow tooling to exist and work properly, and to prevent caller-dependent compile errors, the compiler requires all expression return types are known independent of the macro), regular lambda types can be passed as inline arguments, and can then be called.
+
+This can also be used to define "local functions" (similar to `subr`'s use in CAOS).
+
+See the notes on lambdas for details.
 
 #### Inline Expressions
 
@@ -199,6 +207,24 @@ Macros typically use these and don't show it.
 
 ```
 let result = {let a = 1; let b = 2; return a + b;};
+```
+
+#### Lambda Expressions
+
+Lambda expressions are expressions which define macros as compile-time values.
+
+These compile-time values can be passed inline into other macros, which can then call them.
+
+```
+macro () a(lambda()() @b) {
+ b();
+}
+
+install {
+ a(lambda () {
+  outs("hi!");
+ });
+}
 ```
 
 #### Explicit Casts

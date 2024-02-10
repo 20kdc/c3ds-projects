@@ -23,9 +23,19 @@ public abstract class DefInfo {
 		docComment = d;
 	}
 
+	public String describePosition() {
+		if (srcRange == null)
+			return "(unknown)";
+		return srcRange.start.toString();
+	}
+
 	public static class Builtin extends DefInfo {
 		public Builtin(String d) {
 			super(null, d);
+		}
+
+		public String describePosition() {
+			return "BUILTIN";
 		}
 	}
 

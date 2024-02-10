@@ -95,5 +95,10 @@ public class RALStmtExpr implements RALExprUR {
 		protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 			return RALSpecialInline.None;
 		}
+
+		@Override
+		protected RALCallable getCallableInner(int index) {
+			return null;
+		}
 	}
 }

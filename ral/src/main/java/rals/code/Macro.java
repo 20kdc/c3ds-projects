@@ -16,7 +16,7 @@ import rals.types.*;
 /**
  * Macros are used to replicate functions because CAOS doesn't have a proper version of those.
  */
-public class Macro implements RALCallable {
+public class Macro implements RALCallable.Global {
 	public final DefInfo.At defInfo;
 	public final String name;
 	public final MacroArg[] args;
@@ -185,6 +185,12 @@ public class Macro implements RALCallable {
 				installMacroArgs(c2);
 				return innards.getSpecialInline(index, c2);
 			}
+		}
+
+		@Override
+		protected RALCallable getCallableInner(int index) {
+			// This could leak scope, so don't do it.
+			return null;
 		}
 
 		@Override

@@ -8,6 +8,7 @@ package rals.parser;
 
 import java.util.LinkedList;
 
+import rals.code.MacroArg;
 import rals.hcm.HCMIntents;
 import rals.lex.Lexer;
 import rals.lex.Token;
@@ -36,10 +37,24 @@ public class ParserType {
 	public static RALType parseTypeBranch(InsideFileContext ifc) {
 		TypeSystem ts = ifc.typeSystem;
 		Lexer lx = ifc.lexer;
-		String name = parseTypeName(ifc);
-		RALType rt = ts.byName(name);
-		if (rt == null)
-			throw new RuntimeException("No such type " + name);
+		typeCompletionIntents(ifc);
+		RALType rt;
+		if (ifc.lexer.optNextKw("lambda")) {
+			MacroArg[] rets = Parser.parseArgList(ifc, false);
+			MacroArg[] args = Parser.parseArgList(ifc, true);
+			if (args.length > 0)
+				throw new RuntimeException("Lambdas with args are not possible right now");
+			LinkedList<RALType> rets2 = new LinkedList<>();
+			for (MacroArg ma : rets)
+				rets2.add(ma.type);
+			return ts.byLambda(rets2);
+		} else {
+			Token.ID id = ifc.lexer.requireNextIDTkn();
+			String name = id.text;
+			rt = ts.byName(name);
+			if (rt == null)
+				throw new RuntimeException("No such type " + name);
+		}
 		if (lx.optNextKw("?"))
 			return ts.byNullable(rt);
 		return rt;

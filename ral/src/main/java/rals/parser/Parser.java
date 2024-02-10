@@ -41,7 +41,7 @@ public class Parser {
 		IncludeParseContext ic = newContext(stdlib);
 		findParseFile(ic, null, "std/cpx_connection_test.ral");
 		StringBuilder sb = new StringBuilder();
-		Scripts scr = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
+		Scripts scr = ic.module.resolve(ic.diags, ic.hcm);
 		scr.compileInstall(new OuterCompileContext(sb, new DummyDebugRecorder()));
 		ic.diags.unwrap();
 		return sb.toString();
@@ -309,7 +309,7 @@ public class Parser {
 		}
 	}
 
-	private static MacroArg[] parseArgList(InsideFileContext ifc, boolean allowInline) {
+	public static MacroArg[] parseArgList(InsideFileContext ifc, boolean allowInline) {
 		Lexer lx = ifc.lexer;
 		lx.requireNextKw("(");
 		if (lx.optNextKw(")"))

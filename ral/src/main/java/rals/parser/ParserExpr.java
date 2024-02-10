@@ -9,6 +9,7 @@ package rals.parser;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import rals.code.MacroArg;
 import rals.cond.*;
 import rals.diag.SrcRange;
 import rals.expr.*;
@@ -203,7 +204,7 @@ public class ParserExpr {
 			return new RALConstant.Flo(ts, ((Token.Flo) tkn).value);
 		} else if (tkn instanceof Token.ID) {
 			ifc.hcm.setTokenHoverIntent((Token.ID) tkn, HCMIntents.ID);
-			return new RALAmbiguousID(tkn.extent, ts, (Token.ID) tkn);
+			return new RALAmbiguousID(tkn.extent, (Token.ID) tkn);
 		} else if (tkn instanceof Token.StrEmb) {
 			// So before we accept this, this could actually be a termination.
 			Token.StrEmb se = (Token.StrEmb) tkn;
@@ -253,6 +254,9 @@ public class ParserExpr {
 				stmt.content.add(ParserCode.parseStatement(ifc));
 			}
 			return new RALStmtExpr(stmt, ret);
+		} else if (tkn.isKeyword("lambda")) {
+			MacroArg[] args = Parser.parseArgList(ifc, false);
+			return new RALLambda(args, parseExpr(ifc, true));
 		} else if (tkn.isKeyword("(")) {
 			RALExprUR interior = parseExpr(ifc, false);
 			lx.requireNextKw(")");
@@ -335,10 +339,8 @@ public class ParserExpr {
 					// Note the override of intent here - the intent retroactively becomes CALLABLE_ARGS.
 					if (rai.textToken != null)
 						ifc.hcm.setTokenHoverRelIntent(rai.textToken, HCMIntents.CALLABLE_ARGS, group);
-					base = new RALCall(rai.text, group);
-				} else {
-					throw new RuntimeException("You can't put a call on anything but an ambiguous ID, and certainly not " + base);
 				}
+				base = new RALCall(base, group);
 			} else if (tkn.isKeyword(":") || tkn.isKeyword("->")) {
 				// Message ID/Script ID.
 				// Looks like this:

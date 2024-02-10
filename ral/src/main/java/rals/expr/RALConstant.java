@@ -284,4 +284,37 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 			return sb.toString();
 		}
 	}
+
+	public static class Callable extends Single {
+		public final RALCallable value;
+		public Callable(RALType rt, RALCallable d) {
+			super(rt);
+			value = d;
+		}
+
+		@Override
+		public String getInlineCAOSInner(int index, boolean write, CompileContextNW context) {
+			return null;
+		}
+
+		@Override
+		protected void readCompileInner(RALExprSlice out, CompileContext context) {
+			throw new RuntimeException("Lambdas and macros are not real values");
+		}
+
+		@Override
+		protected RALCallable getCallableInner(int index) {
+			return value;
+		}
+
+		@Override
+		public Callable cast(RALType rt) {
+			return new Callable(rt, value);
+		}
+
+		@Override
+		public String toString() {
+			return "(lambda)";
+		}
+	}
 }

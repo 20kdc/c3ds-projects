@@ -170,5 +170,10 @@ public final class RALCast implements RALExprUR {
 		public RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 			return expr.getSpecialInline(index, context);
 		}
+
+		@Override
+		protected RALCallable getCallableInner(int index) {
+			return expr.getCallableInner(index);
+		}
 	}
 }

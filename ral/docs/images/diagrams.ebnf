@@ -1,6 +1,7 @@
 // ovrv
 
-Type ::= ID "?"? ("|" ID "?"?)*
+Type ::= TypeBranch ("|" TypeBranch)*
+TypeBranch ::= (ID | "lambda" MacroArgList MacroArgList) "?"?
 
 // decl
 
@@ -110,6 +111,7 @@ ExprAtom ::=
 		"@" StringEmbed |
 		"@=" StringEmbed |
 		("{" Stmt* ("}" | ("return" Expr? ";" "}"))) |
+		"lambda" MacroArgList Expr |
 		"(" Expr? ")" |
 		("++" | "--" | "!" | "~" | "-") ExprAtom |
 		"[" ConstByteListExpr "]"

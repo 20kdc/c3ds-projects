@@ -250,6 +250,8 @@ The syntax of a statement macro is `macro (RET...) NAME(PARAM...) STATEMENT`, wh
 
 It is allowed to declare multiple macros with the same name if and only if they have a different number of parameters.
 
+Finally, it is worth noting that macros are considered constants. This implies that they can be shadowed by variables.
+
 ```
 macro textWithSideEffects() {
 @'outs {"Side effect!\n"}';

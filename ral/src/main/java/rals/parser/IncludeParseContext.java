@@ -24,7 +24,7 @@ public class IncludeParseContext {
 	public final LinkedList<IDocPath> searchPaths = new LinkedList<>();
 	public final HashSet<IDocPath> included = new HashSet<>();
 	public final TypeSystem typeSystem = new TypeSystem();
-	public final ScriptsUR module = new ScriptsUR();
+	public final ScriptsUR module = new ScriptsUR(typeSystem);
 
 	public IncludeParseContext(IHCMRecorder h, boolean err) {
 		outputIncludesToErr = err;

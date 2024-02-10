@@ -42,6 +42,7 @@
 			<item>foreach</item>
 			<item>in</item>
 			<item>call</item>
+			<item>lambda</item>
 		</list>
 		<list name="lCompilerTypes">
 			<item>str</item>

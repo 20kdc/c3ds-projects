@@ -30,18 +30,19 @@ public class DocGen {
 	public static void build(String baseIndent, StringBuilder sb, IncludeParseContext ic, Rule[] r) {
 		sb.append(baseIndent + " Macros\n");
 		sb.append("\n");
-		LinkedList<String> keys = new LinkedList<>(ic.module.callable.keySet());
-		Collections.sort(keys);
-		for (String s : keys) {
-			RALCallable rc = ic.module.callable.get(s);
-			buildCallable(baseIndent, sb, rc, r);
-		}
-		sb.append(baseIndent + " Constants\n");
-		sb.append("\n");
-		keys = new LinkedList<>(ic.typeSystem.namedConstants.keySet());
+		LinkedList<String> keys = new LinkedList<>(ic.typeSystem.namedConstants.keySet());
 		Collections.sort(keys);
 		for (String s : keys) {
 			RALConstant rc = ic.typeSystem.namedConstants.get(s);
+			if (rc instanceof RALConstant.Callable)
+				buildCallable(baseIndent, sb, ((RALConstant.Callable) rc).value, r);
+		}
+		sb.append(baseIndent + " Constants\n");
+		sb.append("\n");
+		for (String s : keys) {
+			RALConstant rc = ic.typeSystem.namedConstants.get(s);
+			if (rc instanceof RALConstant.Callable)
+				continue;
 			DefInfo di = ic.typeSystem.namedConstantsDefPoints.get(s);
 			if (di != null) {
 				if (matchesRules(di, r)) {
@@ -104,7 +105,7 @@ public class DocGen {
 	}
 	private static void buildCallable(String baseIndent, StringBuilder sb, RALCallable rc, Rule[] r) {
 		if (rc instanceof MacroDefSet) {
-			HashMap<Integer, RALCallable> rcx = ((MacroDefSet) rc).map;
+			HashMap<Integer, RALCallable.Global> rcx = ((MacroDefSet) rc).map;
 			LinkedList<Integer> l = new LinkedList<>(rcx.keySet());
 			Collections.sort(l);
 			for (Integer i : l)

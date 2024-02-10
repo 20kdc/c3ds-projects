@@ -197,18 +197,24 @@ public class ActualHCMRecorder implements IHCMRecorder {
 			allNamedTypes.put(nt.getKey(), HCMHoverDataGenerators.typeHoverData(nt.getKey(), nt.getValue(), info.typeSystem.getNamedTypeDefInfo(nt.getKey())));
 
 		HashMap<String, HoverData> allConstants = new HashMap<>();
-		for (Map.Entry<String, RALConstant> nt : info.typeSystem.namedConstants.entrySet()) {
-			allConstants.put(nt.getKey(), HCMHoverDataGenerators.constHoverData(nt.getKey(), nt.getValue(), info.typeSystem.namedConstantsDefPoints.get(nt.getKey())));
-		}
-
 		HashMap<String, HoverData> allCallables = new HashMap<>();
-		for (Map.Entry<String, RALCallable> nt : info.module.callable.entrySet()) {
-			allCallables.put(nt.getKey(), HCMHoverDataGenerators.callableHoverData(nt.getKey(), nt.getValue()));
+		for (Map.Entry<String, RALConstant> nt : info.typeSystem.namedConstants.entrySet()) {
+			RALConstant rv = nt.getValue();
+			if (rv instanceof RALConstant.Callable) {
+				RALConstant.Callable rc = (RALConstant.Callable) rv;
+				if (rc.value instanceof RALCallable.Global) {
+					HoverData hv = HCMHoverDataGenerators.callableHoverData(nt.getKey(), (RALCallable.Global) rc.value);
+					allConstants.put(nt.getKey(), hv);
+					allCallables.put(nt.getKey(), hv);
+					continue;
+				}
+			}
+			allConstants.put(nt.getKey(), HCMHoverDataGenerators.constHoverData(nt.getKey(), rv, info.typeSystem.namedConstantsDefPoints.get(nt.getKey())));
 		}
 
 		HashMap<Integer, HashMap<String, HoverData>> allCallablesAV = new HashMap<>();
 		for (Map.Entry<String, MacroDefSet> nt : info.module.macroDefs.entrySet()) {
-			for (Map.Entry<Integer, RALCallable> nt2 : nt.getValue().map.entrySet()) {
+			for (Map.Entry<Integer, RALCallable.Global> nt2 : nt.getValue().map.entrySet()) {
 				HashMap<String, HoverData> tgt = allCallablesAV.computeIfAbsent(nt2.getKey(), (k) -> new HashMap<String, HoverData>());
 				tgt.put(nt.getKey(), HCMHoverDataGenerators.callableHoverData(nt.getKey(), nt2.getValue()));
 			}

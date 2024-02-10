@@ -7,17 +7,18 @@
 
 include "std/c3ds.ral";
 
-macro () silly(int @test) {
+macro () silly(lambda()() @test) {
 	outs("hi");
-	_ = test;
+	test();
 	outs("hi 2");
-	_ = test;
+	test();
 }
 
 install {
-	// TODO: Can the UX of this be improved?
-	silly({
+	let amount = 0;
+	silly(lambda () {
 		outs("hi again!");
-		return 0;
+		outv(amount);
+		amount++;
 	});
 }

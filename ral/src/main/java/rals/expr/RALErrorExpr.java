@@ -54,4 +54,9 @@ public final class RALErrorExpr extends RALExprSlice.ThickProxy {
 	protected RALSpecialInline getSpecialInlineInner(int index, CompileContextNW context) {
 		return RALSpecialInline.None;
 	}
+
+	@Override
+	protected RALCallable getCallableInner(int index) {
+		return null;
+	}
 }

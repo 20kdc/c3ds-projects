@@ -41,7 +41,6 @@ public class ParserCode {
 		return res;
 	}
 	private static RALStatementUR parseStatementInnards(InsideFileContext ifc, Token tkn) {
-		TypeSystem ts = ifc.typeSystem;
 		Lexer lx = ifc.lexer;
 		if (tkn.isKeyword(";")) {
 			// Return an empty block as a null statement
@@ -75,7 +74,7 @@ public class ParserCode {
 				// alias x!Y;
 				RALType rt = ParserType.parseType(ifc);
 				lx.requireNextKw(";");
-				return new RALAliasStatement(lx.genDefInfo(tkn), id.text, RALCast.of(new RALAmbiguousID(id.extent, ts, id.text), rt));
+				return new RALAliasStatement(lx.genDefInfo(tkn), id.text, RALCast.of(new RALAmbiguousID(id.extent, id.text), rt));
 			} else {
 				throw new RuntimeException("Did not understand alias form at: " + tkn);
 			}
@@ -141,7 +140,7 @@ public class ParserCode {
 				throw new RuntimeException("Can only 'with' on classes");
 			Classifier cl = ((RALType.AgentClassifier) type).classifier;
 			Token.ID varName = lx.requireNextIDTkn();
-			RALExprUR var = new RALAmbiguousID(varName.extent, ts, varName.text);
+			RALExprUR var = new RALAmbiguousID(varName.extent, varName.text);
 			if (paren)
 				lx.requireNextKw(")");
 			// Make this here so that the alias DefInfo doesn't cover the universe
@@ -160,7 +159,7 @@ public class ParserCode {
 			return new RALIfStatement(tkn.lineNumber, new RALInstanceof(cl, var), bodyOuter, elseBranch, false);
 		} else if (tkn.isKeyword("call")) {
 			// CALL
-			RALExprUR getMsgType = parseRelativeMessageID(new RALAmbiguousID(tkn.lineNumber.toRange(), ts, "ownr"), ifc);
+			RALExprUR getMsgType = parseRelativeMessageID(new RALAmbiguousID(tkn.lineNumber.toRange(), "ownr"), ifc);
 			lx.requireNextKw("(");
 			RALExprUR params = ParserExpr.parseExpr(ifc, false);
 			lx.requireNextKw(")");

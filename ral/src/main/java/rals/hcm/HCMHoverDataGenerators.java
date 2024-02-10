@@ -110,7 +110,7 @@ public class HCMHoverDataGenerators {
 			sb.append("\n");
 		}
 	}
-	public static HoverData callableHoverData(String k, RALCallable rc) {
+	public static HoverData callableHoverData(String k, RALCallable.Global rc) {
 		StringBuilder sb = new StringBuilder();
 		showCallable(sb, k, rc);
 		return new HCMStorage.HoverData(sb.toString(), rc.getDefInfo());

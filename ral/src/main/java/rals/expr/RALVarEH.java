@@ -7,6 +7,7 @@
 package rals.expr;
 
 import rals.cctx.*;
+import rals.code.ScopeContext;
 import rals.types.*;
 
 /**
@@ -17,7 +18,7 @@ public class RALVarEH extends RALExprSlice.Deferred {
 	public final RALType type;
 
 	public RALVarEH(IEHHandle h, RALType ot) {
-		super(0, 1, new RALSlot[] {new RALSlot(ot, RALSlot.Perm.RW)});
+		super(0, new RALSlot[] {new RALSlot(ot, RALSlot.Perm.RW)});
 		handle = h;
 		type = ot;
 	}
@@ -33,5 +34,28 @@ public class RALVarEH extends RALExprSlice.Deferred {
 		if (ex == null)
 			throw new RuntimeException("Missing: " + this);
 		return ex;
+	}
+
+	@Override
+	protected RALCallable getCallableInner(int index) {
+		return new RALCallable() {
+			@Override
+			public RALExprSlice instance(RALExprSlice args, ScopeContext sc) {
+				return new Deferred(0, new RALSlot[] {}) {
+					private RALExprSlice theInstance;
+					@Override
+					protected RALExprSlice getUnderlyingInner(CompileContextNW context) {
+						if (theInstance == null) {
+							RALExprSlice base = RALVarEH.this.getUnderlyingInner(context);
+							RALCallable callable = base.getCallable(index);
+							theInstance = callable.instance(args, sc);
+						}
+						if (theInstance.length != 0)
+							throw new RuntimeException("Cannot pass non-() callables over arg/EH boundary " + RALVarEH.this);
+						return theInstance;
+					}
+				};
+			}
+		};
 	}
 }

@@ -14,8 +14,8 @@ import rals.lex.DefInfo;
 /**
  * A set of macro definitions.
  */
-public class MacroDefSet implements RALCallable {
-	public HashMap<Integer, RALCallable> map = new HashMap<>();
+public class MacroDefSet implements RALCallable.Global {
+	public HashMap<Integer, RALCallable.Global> map = new HashMap<>();
 	public int lowestCount = -1;
 	public final String name;
 
@@ -26,7 +26,7 @@ public class MacroDefSet implements RALCallable {
 	@Override
 	public DefInfo getDefInfo() {
 		// return the lowest-arged one we find
-		RALCallable check = map.get(lowestCount);
+		RALCallable.Global check = map.get(lowestCount);
 		if (check != null)
 			return check.getDefInfo();
 		return null;
@@ -34,7 +34,7 @@ public class MacroDefSet implements RALCallable {
 
 	@Override
 	public void precompile(UnresolvedWorld world) {
-		for (RALCallable rc : map.values())
+		for (RALCallable.Global rc : map.values())
 			rc.precompile(world);
 	}
 
@@ -46,7 +46,7 @@ public class MacroDefSet implements RALCallable {
 		return res.instance(args, sc);
 	}
 
-	public void addMacro(int count, RALCallable c) {
+	public void addMacro(int count, RALCallable.Global c) {
 		if (map.containsKey(count))
 			throw new RuntimeException(name + " already has " + count + "-arg variant");
 		if ((lowestCount == -1) || (lowestCount > count))

@@ -60,6 +60,7 @@ public class Token {
 		keywords.add("foreach");
 		keywords.add("in");
 		keywords.add("call");
+		keywords.add("lambda");
 		// debug
 		keywords.add(DEBUG_TRACE_ON);
 		keywords.add(DEBUG_TRACE_OFF);

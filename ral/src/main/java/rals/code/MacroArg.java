@@ -13,7 +13,7 @@ import rals.types.RALType;
 /**
  * Argument/parameter to a macro.
  */
-public class MacroArg implements IEHHandle {
+public final class MacroArg implements IEHHandle {
 	public final RALType type;
 	public final RALSlot.Perm isInline;
 	public final String name;
@@ -21,6 +21,15 @@ public class MacroArg implements IEHHandle {
 		type = rt;
 		name = n;
 		isInline = in;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof MacroArg) {
+			MacroArg other = (MacroArg) obj;
+			return type.equals(other.type) && isInline.equals(other.isInline) && name.equals(other.name);
+		}
+		return false;
 	}
 
 	@Override

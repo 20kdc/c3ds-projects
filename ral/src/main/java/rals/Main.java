@@ -63,7 +63,7 @@ public class Main {
 			StringBuilder outText = new StringBuilder();
 			OuterCompileContext cctx = new OuterCompileContext(outText, new DummyDebugRecorder());
 			OuterCompileContext cctxDbg = new OuterCompileContext(outText, new FullDebugRecorder());
-			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
+			Scripts resolvedCode = ic.module.resolve(ic.diags, ic.hcm);
 			if (args[0].equals("compile")) {
 				resolvedCode.compile(cctx);
 			} else if (args[0].equals("compileDebug")) {
@@ -120,7 +120,7 @@ public class Main {
 			IncludeParseContext ic = Parser.run(stdLibDP, new File(args[2]));
 			// We have to run the resolve here so that macros pre-compile (so we can mine out their types).
 			// But we don't actually care for the contents of the resolved output.
-			ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
+			ic.module.resolve(ic.diags, ic.hcm);
 			StringBuilder sb = new StringBuilder();
 			DocGen.Rule[] rules = new DocGen.Rule[args.length - 3];
 			// insert a rule by default NOT including stdlib
@@ -172,7 +172,7 @@ public class Main {
 			LinkedList<String> queuedRequests = new LinkedList<>();
 			if (exportTaxonomy != null)
 				exportTaxonomy.accept(ic.typeSystem);
-			Scripts resolvedCode = ic.module.resolve(ic.typeSystem, ic.diags, ic.hcm);
+			Scripts resolvedCode = ic.module.resolve(ic.diags, ic.hcm);
 			for (ScriptSection s : sections)
 				resolvedCode.compileSectionForInject(queuedRequests, di, s);
 			String res = ic.diags.unwrapToString();

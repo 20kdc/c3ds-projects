@@ -29,7 +29,8 @@ public class TypeSystem {
 	public final Opaque gBoolean = new Opaque(RALType.Major.Value, "bool", gInteger);
 	public final Opaque gFloat = new Opaque(RALType.Major.Value, "float");
 	public final Opaque gNull = new Opaque(RALType.Major.Agent, "null");
-	public final Opaque gVoid = new Opaque(RALType.Major.Unknown, "void");
+	public final Opaque gLambdaAny = new Opaque(RALType.Major.Lambda, "lambda");
+	public final Opaque gImpossible = new Opaque(RALType.Major.Unknown, "impossible");
 	public final Opaque gBytes = new Opaque(RALType.Major.ByteString, "bytes");
 	public final RALType.AgentClassifier gAgent;
 	public final RALType gAgentNullable;
@@ -64,6 +65,11 @@ public class TypeSystem {
 	public final HashMap<HashSet<RALType>, RALType.Union> unions = new HashMap<>();
 
 	/**
+	 * All lambdas by their ret-args.
+	 */
+	public final HashMap<LinkedList<RALType>, RALType.Lambda> lambdas = new HashMap<>();
+
+	/**
 	 * Named constants!
 	 */
 	public final HashMap<String, RALConstant> namedConstants = new HashMap<>();
@@ -71,7 +77,7 @@ public class TypeSystem {
 	/**
 	 * Named constants definition points
 	 */
-	public final HashMap<String, DefInfo.At> namedConstantsDefPoints = new HashMap<>();
+	public final HashMap<String, DefInfo> namedConstantsDefPoints = new HashMap<>();
 
 	/**
 	 * If these message numbers have special behaviour, add here.
@@ -185,7 +191,7 @@ public class TypeSystem {
 			return types.iterator().next();
 		} else if (ts == 0) {
 			// impossible
-			return gVoid;
+			return gImpossible;
 		}
 		// -- 'types' value finalized past here --
 		// check for existing union
@@ -196,6 +202,18 @@ public class TypeSystem {
 		res = new RALType.Union(types);
 		unions.put(types, res);
 		return res;
+	}
+
+	public RALType byLambda(Iterable<RALType> in) {
+		LinkedList<RALType> types = new LinkedList<>();
+		for (RALType rt : in)
+			types.add(rt);
+		RALType.Lambda lambda = lambdas.get(types);
+		if (lambda == null) {
+			lambda = new RALType.Lambda(gLambdaAny, types.toArray(new RALType[0]));
+			lambdas.put(types, lambda);
+		}
+		return lambda;
 	}
 
 	public RALType byNullable(RALType t) {
@@ -262,12 +280,12 @@ public class TypeSystem {
 			throw new RuntimeException("Interface conflict: " + name);
 	}
 
-	public void declareConst(String name, DefInfo.At di, RALConstant cst) {
+	public void declareConst(String name, DefInfo di, RALConstant cst) {
 		if (namedConstants.containsKey(name)) {
-			DefInfo.At sp2 = namedConstantsDefPoints.get(name);
+			DefInfo sp2 = namedConstantsDefPoints.get(name);
 			if (sp2 != null)
-				throw new RuntimeException("Constant conflict: " + name + " @ " + di.srcRange.start + ", last definition " + sp2.srcRange.start);
-			throw new RuntimeException("Constant conflict: " + name + " @ " + di.srcRange.start);
+				throw new RuntimeException("Constant conflict: " + name + " @ " + di.describePosition() + ", last definition " + sp2.describePosition());
+			throw new RuntimeException("Constant conflict: " + name + " @ " + di.describePosition());
 		}
 		namedConstants.put(name, cst);
 		namedConstantsDefPoints.put(name, di);

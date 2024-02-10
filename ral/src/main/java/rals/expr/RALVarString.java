@@ -52,7 +52,8 @@ public class RALVarString extends RALVarBase {
 			set = "setv ";
 			break;
 		case ByteString:
-			throw new RuntimeException("Major type of " + input + " (" + inputExactType + ") is ByteString, which can't be stored.");
+		case Lambda:
+			throw new RuntimeException("Major type of " + input + " (" + inputExactType + ") can't be stored by definition.");
 		default:
 			throw new RuntimeException("Unknown major type of " + input + " (" + inputExactType + ") - you will need to cast this value");
 		}

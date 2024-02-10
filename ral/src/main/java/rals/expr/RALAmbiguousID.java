@@ -15,22 +15,19 @@ import rals.types.*;
  * This appears in the expression tree when an ID hasn't been resolved to a specific meaning yet.
  */
 public class RALAmbiguousID implements RALExprUR {
-	public final TypeSystem typeSystem;
 	public final String text;
 	// OPTIONAL, as these can be synthesized.
 	public final Token.ID textToken;
 	public final SrcRange extent;
 
-	public RALAmbiguousID(SrcRange ex, TypeSystem ts, String txt) {
+	public RALAmbiguousID(SrcRange ex, String txt) {
 		extent = ex;
-		typeSystem = ts;
 		text = txt;
 		textToken = null;
 	}
 
-	public RALAmbiguousID(SrcRange ex, TypeSystem ts, Token.ID txt) {
+	public RALAmbiguousID(SrcRange ex, Token.ID txt) {
 		extent = ex;
-		typeSystem = ts;
 		text = txt.text;
 		textToken = txt;
 	}
@@ -42,7 +39,7 @@ public class RALAmbiguousID implements RALExprUR {
 
 	@Override
 	public RALConstant resolveConst(TypeSystem ts) {
-		RALConstant rc = typeSystem.namedConstants.get(text);
+		RALConstant rc = ts.namedConstants.get(text);
 		if (rc != null)
 			return rc;
 		return null;
@@ -50,6 +47,7 @@ public class RALAmbiguousID implements RALExprUR {
 
 	@Override
 	public RALExprSlice resolveInner(ScopeContext context) {
+		TypeSystem typeSystem = context.world.types;
 		// Constants go first for consistency with the const resolver.
 		RALConstant rc = typeSystem.namedConstants.get(text);
 		if (rc != null)
@@ -66,9 +64,11 @@ public class RALAmbiguousID implements RALExprUR {
 				new RALConstant.Int(typeSystem, cl.species)
 			).resolve(context);
 		}
-		context.world.diags.pushFrame(extent);
+		if (extent != null)
+			context.world.diags.pushFrame(extent);
 		context.world.diags.error("Unknown ID " + text);
-		context.world.diags.popFrame(extent);
+		if (extent != null)
+			context.world.diags.popFrame(extent);
 		return RALExprSlice.EMPTY;
 	}
 }

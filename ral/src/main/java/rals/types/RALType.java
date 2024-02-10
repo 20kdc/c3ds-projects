@@ -71,6 +71,25 @@ public abstract class RALType {
 				if (a.canImplicitlyCast(other))
 					return true;
 		}
+		// Lambda stuff
+		if (this instanceof Lambda) {
+			Lambda tl = (Lambda) this;
+			if (other == tl.parentType) {
+				return true;
+			} else if (other instanceof Lambda) {
+				Lambda ol = (Lambda) other;
+				// this can be cast to other if:
+				//  all of our rets can be cast to others's rets
+				if (tl.rets.length != ol.rets.length)
+					return false;
+				for (int i = 0; i < tl.rets.length; i++)
+					if (!tl.rets[i].canImplicitlyCast(ol.rets[i]))
+						return false;
+				return true;
+			} else {
+				return false;
+			}
+		}
 		return false;
 	}
 
@@ -151,7 +170,8 @@ public abstract class RALType {
 		Agent,
 		String,
 		Value,
-		ByteString;
+		ByteString,
+		Lambda;
 
 		public Major autoPromote(Major other) {
 			if (this == Unknown)
@@ -293,6 +313,44 @@ public abstract class RALType {
 					filtered.add(ai);
 			}
 			return filtered.toArray(new AgentInterface[0]);
+		}
+	}
+
+	public static class Lambda extends RALType {
+		public final RALType parentType;
+		private final RALType[] rets;
+
+		public Lambda(RALType parent, RALType[] r) {
+			super(Major.Lambda);
+			parentType = parent;
+			rets = r;
+		}
+
+		@Override
+		public String toString() {
+			return getFullDescription();
+		}
+
+		@Override
+		public String getFullDescription() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("lambda(");
+			boolean start = true;
+			for (RALType rt : rets) {
+				if (start) {
+					start = false;
+				} else {
+					sb.append(", ");
+				}
+				sb.append(rt.getFullDescription());
+			}
+			sb.append(")");
+			return sb.toString();
+		}
+
+		@Override
+		protected AgentInterface[] genInterfaces() {
+			return new AgentInterface[0];
 		}
 	}
 

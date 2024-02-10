@@ -14,18 +14,20 @@ import rals.lex.DefInfo;
  */
 public interface RALCallable {
 	/**
-	 * Runs any pre-compilation required. 
-	 */
-	void precompile(UnresolvedWorld world);
-
-	/**
 	 * Given some arguments, converts to an expression.
 	 * See RALExpr.resolve for details on how this all works. 
 	 */
 	RALExprSlice instance(RALExprSlice args, ScopeContext sc);
 
-	/**
-	 * Gets definition info, or at least one instance of such.
-	 */
-	DefInfo getDefInfo();
+	interface Global extends RALCallable {
+		/**
+		 * Runs any pre-compilation required.
+		 */
+		void precompile(UnresolvedWorld world);
+
+		/**
+		 * Gets definition info, or at least one instance of such.
+		 */
+		DefInfo getDefInfo();
+	}
 }
