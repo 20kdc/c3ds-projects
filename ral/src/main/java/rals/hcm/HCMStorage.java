@@ -49,7 +49,10 @@ public class HCMStorage {
 			HCMIntent hi = hoverIntents.get(id);
 			if (hi != null) {
 				Token former = backwardsTokenLink.get(tkn);
-				return hi.retrieve(former, tp, this).get(id.text);
+				Map<String, HoverData> map = hi.retrieve(former, tp, this);
+				if (map == null)
+					return null;
+				return map.get(id.text);
 			}
 			return null;
 		} else {
@@ -141,8 +144,11 @@ public class HCMStorage {
 			return intentSet.iterator().next().retrieve(refToken, spu, this);
 		// alright, accumulate
 		HashMap<String, HoverData> accumulated = new HashMap<>();
-		for (HCMIntent hi : intentSet)
-			accumulated.putAll(hi.retrieve(refToken, spu, this));
+		for (HCMIntent hi : intentSet) {
+			Map<String, HoverData> possible = hi.retrieve(refToken, spu, this);
+			if (possible != null)
+				accumulated.putAll(possible);
+		}
 		return accumulated;
 	}
 

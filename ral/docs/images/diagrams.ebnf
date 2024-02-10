@@ -113,7 +113,7 @@ ExprAtom ::=
 		"@" StringEmbed |
 		"@=" StringEmbed |
 		("{" Stmt* ("}" | ("return" Expr? ";" "}"))) |
-		"lambda" MacroArgList Expr |
+		"lambda" MacroArgList ExprAtom |
 		"(" Expr? ")" |
 		("++" | "--" | "!" | "~" | "-") ExprAtom |
 		"[" ConstByteListExpr "]"

@@ -236,7 +236,7 @@ public class Macro implements RALCallable.Global {
 
 		@Override
 		public String toString() {
-			return "macro arg copier of " + macroName;
+			return "macro wrapper of " + macroName;
 		}
 	}
 }

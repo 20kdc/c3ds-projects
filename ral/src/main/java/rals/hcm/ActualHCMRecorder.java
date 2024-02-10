@@ -84,6 +84,9 @@ public class ActualHCMRecorder implements IHCMRecorder {
 
 	@Override
 	public void addCompletionRelIntentToNextToken(HCMIntent intent, boolean autoHover, RALExprUR... params) {
+		// This causes weird issues elsewhere, disallow it
+		if (intent == null)
+			throw new NullPointerException("Completion intent should never be null");
 		// always do this, just in case.
 		if (autoHover) {
 			autoHoverHolding = intent;

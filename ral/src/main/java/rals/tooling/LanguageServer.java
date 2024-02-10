@@ -8,6 +8,8 @@ package rals.tooling;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -198,7 +200,9 @@ public class LanguageServer implements ILSPCore {
 							hoverText = hd.text;
 					}
 				} catch (Exception ex) {
-					hoverText = ex.toString();
+					StringWriter sw = new StringWriter();
+					ex.printStackTrace(new PrintWriter(sw));
+					hoverText = sw.toString();
 				}
 				// Rest can be done here
 				if (hoverText != null) {

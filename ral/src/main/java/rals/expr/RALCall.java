@@ -43,7 +43,7 @@ public class RALCall implements RALExprUR {
 	public static RALExprSlice makeResolved(RALExprSlice base, RALExprSlice paramR, ScopeContext context) {
 		RALCallable rc = base.getCallable(0);
 		if (rc == null)
-			throw new RuntimeException("Unable to actually get RALCallable! Could be out of scope: " + base);
+			throw new RuntimeException("Unable to actually get RALCallable from " + base + ". You are probably trying to use a lambda in an unsupported manner (i.e. returning it from a macro, casting it via 'any').");
 		return rc.instance(paramR, context);
 	}
 }

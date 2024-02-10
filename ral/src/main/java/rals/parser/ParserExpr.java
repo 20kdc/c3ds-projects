@@ -257,7 +257,10 @@ public class ParserExpr {
 			return new RALStmtExpr(stmt, ret);
 		} else if (tkn.isKeyword("lambda")) {
 			MacroArg[] args = Parser.parseArgList(ifc, false);
-			RALExprUR expr = parseExpr(ifc, true);
+			// only parse a full atom, otherwise args after the lambda get eaten
+			RALExprUR expr = parseExprFullAtomOrNull(ifc);
+			if (expr == null)
+				throw new RuntimeException("lambda at " + tkn.lineNumber + " has no expression");
 			SrcRange range = tkn.extent.expand(lx.genLN());
 			return new RALLambda(range, args, expr);
 		} else if (tkn.isKeyword("(")) {

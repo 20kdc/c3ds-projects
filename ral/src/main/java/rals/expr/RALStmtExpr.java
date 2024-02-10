@@ -98,6 +98,7 @@ public class RALStmtExpr implements RALExprUR {
 
 		@Override
 		protected RALCallable getCallableInner(int index) {
+			// Denied so that lambdas don't escape scope.
 			return null;
 		}
 	}

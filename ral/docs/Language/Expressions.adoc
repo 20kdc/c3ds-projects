@@ -218,7 +218,7 @@ These compile-time values can be passed inline into other macros, which can then
 ```
 macro () a(lambda(str name)(str @last) @b, str @last) {
  outs("hi ");
- outs(b());
+ outs(b(last));
  outs("\n");
 }
 
@@ -228,6 +228,8 @@ install {
  }, "woof");
 }
 ```
+
+Note that the data that makes up a lambda is deliberately removed from the value if it is passed around in any way that might allow it to escape a scope (which would allow access to out-of-scope variables, which could overlap with newer variables).
 
 #### Explicit Casts
 

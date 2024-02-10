@@ -27,7 +27,7 @@ public abstract class HCMIntent {
 	}
 
 	/**
-	 * Retrieves a map.
+	 * Retrieves a map, or null if some kind of error occurs.
 	 * DO NOT WRITE TO THIS MAP.
 	 * The token given is the key in intentsOnNextToken, AND MAY BE NULL.
 	 * The position given is the actual position of the cursor.

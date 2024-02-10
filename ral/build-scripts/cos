@@ -18,3 +18,4 @@ genSample vending-machine-root-products || exit
 genSample vending-machine-root-spawn || exit
 
 genSample fun-with-statement-expressions || exit
+genSample manual-lambda-example || exit

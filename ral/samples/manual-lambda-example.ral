@@ -1,0 +1,9 @@
+macro () sayHello(lambda(str)(str @) @b, str @last) {
+	@'outs {"hi " + b(last) + "\n"}';
+}
+
+install {
+	sayHello(lambda (str @last) {
+		return "jeremy " + last;
+	}, "woof");
+}
