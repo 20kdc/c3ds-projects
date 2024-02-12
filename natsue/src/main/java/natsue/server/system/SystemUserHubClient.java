@@ -170,8 +170,11 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			PackedMessage pm = StandardMessages.addToContactList(theirData.getUIN(), whoAreWeAdding);
 			hub.sendMessage(theirData.getUIN(), pm, MsgSendType.Temp, theirData.getUIN());
 		} else {
-			removeFromGlobalChat(theirData.getUIN(), "disconnected");
+			// silent because we announce all connects/disconnects anyway now
+			removeFromGlobalChat(theirData.getUIN(), null);
 		}
+		String status = online ? "is online." : "is offline.";
+		sendToGlobalChatExcept(0, "!System", ChatColours.NICKNAME + theirData.getNickname() + ChatColours.CHAT + " " + status + "\n");
 	}
 
 	@Override
@@ -315,7 +318,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		synchronized (peopleInGroupChatLock) {
 			hadToRemove = peopleInGroupChat.remove(targetUIN);
 		}
-		if (hadToRemove) {
+		if (hadToRemove && cause != null) {
 			sendGlobalChatStatusUpdate(targetUIN, cause);
 		}
 	}
