@@ -9,7 +9,7 @@ package natsue.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * Standard output.
@@ -27,7 +27,7 @@ public final class StdoutLogProvider implements ILogProvider {
 			}
 		}
 		synchronized (this) {
-			System.out.println(new Date() + ": " + text);
+			System.out.println(Instant.now().toString() + ": " + text);
 		}
 	}
 

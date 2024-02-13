@@ -168,7 +168,7 @@ public class HubUserDataCache implements IHubUserDataCacheBetweenCacheAndHub, IL
 			// so make sure to open a new one if we succeed
 			String pwHash = ui.getPasswordHash();
 			if (UINUtils.isRegularUser(ui.getUIN()) && pwHash != null)
-				if (PWHash.verify(UINUtils.uid(ui.getUIN()), pwHash, password))
+				if (PWHash.verify(UINUtils.uid(ui.getUIN()), pwHash, password, config.allowDevPasswords.getValue()))
 					return ui.open("usernameAndPasswordLookup");
 		}
 		return null;

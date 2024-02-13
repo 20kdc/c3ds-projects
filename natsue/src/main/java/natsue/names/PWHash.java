@@ -17,10 +17,10 @@ import natsue.data.babel.PacketReader;
  * Password hasher.
  */
 public class PWHash {
-	public static boolean verify(int uid, String hash, String password) {
+	public static boolean verify(int uid, String hash, String password, boolean allowDevPasswords) {
 		if (hash.startsWith("G1:")) {
 			return hash.equals(hashG1(uid, password));
-		} else if (hash.startsWith("DEV:")) {
+		} else if (hash.startsWith("DEV:") && allowDevPasswords) {
 			// For the dev instance ONLY. No part of Natsue should ever automatically write this.
 			// Basically, this allows a developer to use sqlitebrowser to initialize the passwords of their accounts.
 			return hash.equals("DEV:" + password);

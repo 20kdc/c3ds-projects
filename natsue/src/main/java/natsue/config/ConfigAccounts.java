@@ -46,4 +46,10 @@ public class ConfigAccounts extends BaseConfig.Group {
 	 */
 	public final Bool logUserCacheManagement = new Bool("logUserDataCacheManagement", false)
 			.describe("Logs internal userdata cache management operations.");
+
+	/**
+	 * Bad!
+	 */
+	public final Bool allowDevPasswords = new Bool("allowDevPasswords", false)
+			.describe("Allows unhashed 'DEV:' passwords to be used. Do NOT enable in production.");
 }
