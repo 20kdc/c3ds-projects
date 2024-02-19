@@ -1,6 +1,6 @@
 # Requirements For `NET: WRIT` Usage In Natsue
 
-To allow for interesting CAOS-based multiplayer usecases, and with an improved engine appearing to be on the horizon, `NET: WRIT` support is being tentatively added, with the caveat that the original engine's `NET: WRIT` command still doesn't work (the engine will at least crash less now, instead silently failing).
+To allow for interesting CAOS-based multiplayer usecases, and with an improved engine shipping, `NET: WRIT` support has been added, with the caveat that the original engine's `NET: WRIT` command still doesn't work (the engine will at least crash less now, instead silently failing).
 
 Natsue will at least _try_ to accept `NET: WRIT` messages now, however. See `Hypercalls.md` for information about this.
 
@@ -18,7 +18,7 @@ With this in mind, there are a number of key requirements Natsue enforces on top
 * Attempts to write with the channel types `"system_message"` and `"add_to_contact_book"` will be blocked.
 * The message ID must be 2468.
 
-_For testing reasons, these restrictions don't apply to self-messages. This allows testing, i.e. the writ hypercall on yourself using a system message._
+_For testing reasons, these restrictions don't apply to self-messages. This allows testing, i.e. the writ hypercall on yourself using a system message. Example: `net: writ net: user "system_message" 2469 "My message" ""`_
 
 As an agent developer using `NET: WRIT`, you have _responsibilities_ to avoid creating risks for your users and to ensure your usage is reliable.
 

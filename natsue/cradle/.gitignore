@@ -1,0 +1,11 @@
+.classpath
+.project
+.settings
+/target/
+*.db
+ntsuconf.txt
+kisspopui.html
+/cryo
+/photos
+/glst
+
