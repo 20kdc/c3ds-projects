@@ -17,10 +17,18 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define HOOKFLAG_LITERAL_TARGET 1
+
 typedef struct {
+	uint32_t len;
+	char data[];
+} zone_t;
+
+typedef struct {
+	uint32_t flags;
 	uint32_t address;
 	const void * target;
-	const char * expected;
+	const zone_t * expected;
 } hook_t;
 
 typedef struct {
@@ -35,22 +43,29 @@ extern const char enforce_window_xy;
 extern const char april_fools_24[];
 
 static int hookValid(const hook_t * hook) {
-	const char * expectedChr = hook->expected;
+	const zone_t * expectedChr = hook->expected;
 	char * adr = (char *) hook->address;
-	for (int i = 0; i < 5; i++)
-		if (expectedChr[i] != adr[i])
+	for (int i = 0; i < expectedChr->len; i++)
+		if (expectedChr->data[i] != adr[i])
 			return 0;
 	return 1;
 }
 
 static void hookPatch(const hook_t * hook) {
-	const char * expectedChr = (char *) hook->expected;
+	const char * expectedChr = (const char *) hook->expected;
 	char * adr = (char *) hook->address;
 	DWORD ignoreMe = 0;
-	VirtualProtect((void *) adr, 5, 0x80, &ignoreMe);
-	adr[0] = 0xE8;
-	*((uint32_t*) (adr + 1)) = ((uint32_t) hook->target) - (hook->address + 5);
-	FlushInstructionCache(0, (void *) adr, 5);
+	if (hook->flags & HOOKFLAG_LITERAL_TARGET) {
+		const zone_t * resultChr = (const zone_t *) hook->target;
+		VirtualProtect((void *) adr, resultChr->len, 0x80, &ignoreMe);
+		memcpy(adr, resultChr->data, resultChr->len);
+		FlushInstructionCache(0, (void *) adr, resultChr->len);
+	} else {
+		VirtualProtect((void *) adr, 5, 0x80, &ignoreMe);
+		adr[0] = 0xE8;
+		*((uint32_t*) (adr + 1)) = ((uint32_t) hook->target) - (hook->address + 5);
+		FlushInstructionCache(0, (void *) adr, 5);
+	}
 }
 
 static HMODULE ddrawModule;
@@ -144,6 +159,19 @@ BOOL WINAPI DllMain(HINSTANCE x, DWORD y, void * z) {
 	return TRUE;
 }
 
+HRESULT WINAPI specialWrappedCreateSurface(IDirectDraw * ddraw, DDSURFACEDESC2 * surfaceDesc, void * p2, void * p3) {
+	surfaceDesc->dwFlags |= DDSD_PIXELFORMAT;
+	surfaceDesc->ddpfPixelFormat.dwSize = sizeof(surfaceDesc->ddpfPixelFormat);
+	surfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
+	surfaceDesc->ddpfPixelFormat.dwFourCC = 0x0000;
+	surfaceDesc->ddpfPixelFormat.dwRGBBitCount = 0x0010;
+	surfaceDesc->ddpfPixelFormat.dwRBitMask = 0xF800;
+	surfaceDesc->ddpfPixelFormat.dwGBitMask = 0x07E0;
+	surfaceDesc->ddpfPixelFormat.dwBBitMask = 0x001F;
+	surfaceDesc->ddpfPixelFormat.dwRGBAlphaBitMask = 0x0000;
+	return IDirectDraw_CreateSurface(ddraw, (LPDDSURFACEDESC) surfaceDesc, p2, p3);
+}
+
 void WINAPI specialFixWindowRect(RECT * rect) {
 	// convert to a sensible system
 	int x = rect->left;
@@ -184,4 +212,3 @@ void WINAPI specialFixWindowRect(RECT * rect) {
 	rect->right = x + w;
 	rect->bottom = y + h;
 }
-
