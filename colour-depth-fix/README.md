@@ -4,8 +4,9 @@ This is designed to avert the 16-bit colour problem without using Xephyr (slow a
 
 This version should work with:
 
+* Docking Station engine "2.296 (CE 1 beta 1)"
 * Docking Station engine "2.286"
-* Creatures 3 engine "1.162"
+* Creatures Playground Demo engine "2.106"* Creatures 3 engine "1.162"
 * Creatures 3 engine "1.158"
 * Creatures 3 engine "1.147"
 

@@ -21,6 +21,7 @@ dd suite_1p158cd, suite_1p158cd_name           ; C3u1 (with check)
 dd suite_1p158, suite_1p158_name               ; C3u1 (no check)
 dd suite_1p147cd, suite_1p147cd_name           ; C3   (with check)
 dd suite_1p147, suite_1p147_name               ; C3   (no check)
+dd suite_cpd, suite_cpd_name                   ; CPD
 dd 0, 0
 
 suite_2p296_ceb1c_name:
@@ -49,6 +50,9 @@ db "Engine 1.147 - Creatures 3 (with check)", 0
 
 suite_1p147_name:
 db "Engine 1.147 - Creatures 3 (no check)", 0
+
+suite_cpd_name:
+db "Engine 2.106 - Creatures Playground Demo", 0
 
 ; These tables contain sets of 4: flags, the absolute address, a pointer to the call target, and a pointer to the expected 5 bytes.
 
@@ -144,6 +148,21 @@ dd 0x00000000, 0x0047FBD2, cs_hook_code, cs_hook_edx_test
 dd 0x00000000, 0x0047FBF3, cs_hook_code, cs_hook_edx_test
 dd 0, 0, 0, 0
 
+suite_cpd:
+; map file didn't load properly, so guess
+dd 0x00000000, 0x0048135B, cs_hook_code, cs_hook_ecx_test
+dd 0x00000000, 0x004813CC, cs_hook_code, cs_hook_edx_test
+dd 0x00000000, 0x004813EC, cs_hook_code, cs_hook_edx_test
+dd 0x00000000, 0x004815FD, cs_hook_code, cs_hook_ecx_test
+dd 0x00000000, 0x00481641, cs_hook_code, cs_hook_edx_test
+dd 0x00000000, 0x004821D3, cs_hook_code, cs_hook_edx_test
+dd 0x00000000, 0x004821EF, cs_hook_code, cs_hook_edx_test
+dd 0x00000000, 0x00485912, cs_hook_code, cs_hook_edx_test
+dd 0x00000000, 0x00485933, cs_hook_code, cs_hook_edx_test
+; fix crash bug
+dd 0x00000001, 0x005615C0, ret_code, cpd_nop_code_test
+dd 0, 0, 0, 0
+
 ; sanity check strings
 cs_hook_eax_test:
 dd 5
@@ -165,8 +184,15 @@ cfcd_hook_test_ds:
 dd 5
 db 0x55, 0x8B, 0xEC, 0x64, 0xA1
 ; PRESS S, THEN PASTE: 55 8B EC 64 A1
+cpd_nop_code_test:
+dd 5
+db 0x6A, 0xFF, 0x68, 0xE0, 0x85
 
 ; actual code
+
+ret_code:
+dd 1
+ret
 
 cs_hook_code:
 
