@@ -1,0 +1,21 @@
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+ * Dump CAOS reference of any C2E engine to journal
+ * Just drop in switcher/initial bootstrap, run, grab files from journal
+
+sets va01 vtos vmjr
+adds va01 "."
+adds va01 vtos vmnr
+sets va00 va01
+adds va00 "a.html"
+file oope 1 va00 0
+dbg: html 0
+file oclo
+sets va00 va01
+adds va00 "c.html"
+file oope 1 va00 0
+dbg: html 1
+file oclo
