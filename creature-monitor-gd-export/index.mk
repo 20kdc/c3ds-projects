@@ -8,6 +8,8 @@
 
 rel: creature-monitor-gd-export/creamoni.pck creature-monitor-gd-export/creamoni.x86_64 creature-monitor-gd-export/creamoni.exe COPYING-godot.txt
 
+INTERMEDIATES += creature-monitor-gd-export/creamoni.pck creature-monitor-gd-export/creamoni.x86_64 creature-monitor-gd-export/creamoni.exe
+
 .PHONY: creature-monitor-gd-export/creamoni.pck
 creature-monitor-gd-export/creamoni.pck creature-monitor-gd-export/creamoni.x86_64 creature-monitor-gd-export/creamoni.exe COPYING-godot.txt:
 	godot --no-window --path creature-monitor-gd --export "Linux/X11" ../creature-monitor-gd-export/creamoni.x86_64

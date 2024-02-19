@@ -5,12 +5,14 @@ ifeq ($(shell uname),Linux)
 HOST_LINUX ?= 1
 HOST_GODOT ?= 1
 HOST_JAVA ?= 1
+HOST_MDBOOK ?= 1
 endif
 
 # Assume we don't have Godot but leave it open for an override
 HOST_LINUX ?= 0
 HOST_GODOT ?= 0
 HOST_JAVA ?= 0
+HOST_MDBOOK ?= 0
 
 # Windows
 W32_CC ?= i686-w64-mingw32-gcc

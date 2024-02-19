@@ -20,10 +20,9 @@ Format Structure
 * string name
   * Client enforces a limit on names by the amount of pixels in them - in practice this means a soft limit of about 32 characters should do.
   * The client likes to send this as empty while sending a user text update. If this is an either-or condition or not is unknown, so right now Natsue will assume blank names indicate this condition.
-* int hasUserText
-* if hasUserText != 0:
-  * string userText
-    * 7 lines, each up to about ~124 characters, so 896 is a good limit.
+* int userTextCount
+* UserTextUpdate[userTextCount] userTextUpdates
+  * Currently Natsue interprets the first user text update and doesn't attempt to read the index. This was originally a bug caused by a lack of understanding of this section, but ultimately it's probably for the best anyway.
 
 It's worth noting that the game will resend only ranges of events at times.
 
@@ -59,3 +58,10 @@ Strings/Monikers/User IDs
 
 Strings are encoded here with an int-length-prefix followed by that many bytes, without null terminators.
 Monikers, user IDs, world IDs (...) are strings.
+
+## User Text Updates
+
+* string userText
+    * 7 lines, each up to about ~124 characters, so 896 is a good limit.
+* int index
+    * The "solid index" of the event to which this update is associated.

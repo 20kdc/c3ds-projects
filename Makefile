@@ -8,6 +8,9 @@ INTERMEDIATES := release-id.txt
 
 all:
 
+# Release All
+rel-all: rel rel-sdk
+
 # Release (Full)
 rel: COPYING.txt README.md CREDITS.txt
 	echo "r`date +%s` (Full)" > release-id.txt
@@ -41,6 +44,10 @@ include python/index.mk
 
 ifeq ($(HOST_GODOT),1)
 include creature-monitor-gd-export/index.mk
+endif
+
+ifeq ($(HOST_MDBOOK),1)
+include tob/index.mk
 endif
 
 ifeq ($(HOST_JAVA),1)
