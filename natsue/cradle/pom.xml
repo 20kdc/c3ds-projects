@@ -26,6 +26,11 @@
 			<artifactId>cdsp-common</artifactId>
 			<version>0.666-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>kdc-c3ds-projects</groupId>
+			<artifactId>natsue-server</artifactId>
+			<version>0.666-SNAPSHOT</version>
+		</dependency>
 		<!--
 			JDBC drivers. These are included in binaries to ease personal setup.
 			And that's why you won't be seeing any official JARs of Natsue...
@@ -34,13 +39,11 @@
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
 			<version>3.39.3.0</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.30</version>
-			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 

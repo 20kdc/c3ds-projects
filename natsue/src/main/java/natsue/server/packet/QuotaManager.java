@@ -53,7 +53,10 @@ public class QuotaManager {
 	}
 
 	public synchronized boolean socketStart(Socket skt) {
-		IPDetail ipd = informationAbout.get(skt.getInetAddress());
+		InetAddress inetAddress = skt.getInetAddress();
+		if (config.quotaIgnoresLoopback.getValue() && inetAddress.isLoopbackAddress())
+			return true;
+		IPDetail ipd = informationAbout.get(inetAddress);
 		if (ipd == null)
 			informationAbout.put(skt.getInetAddress(), ipd = new IPDetail());
 		if (ipd.connectionsThisMinute + ipd.connectionsLastMinute >= config.maxConnectionsInTwoMinutes.getValue())

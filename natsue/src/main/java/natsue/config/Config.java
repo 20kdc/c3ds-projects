@@ -21,10 +21,9 @@ public class Config extends BaseConfig.Group {
 	public final ConfigDB db = new ConfigDB();
 
 	/**
-	 * Used to store the DB and config separately.
+	 * Ports and such
 	 */
-	public final Int port = new Int("port", 49152)
-			.describe("TCP port on which the server should listen.");
+	public final ConfigConnection conn = new ConfigConnection();
 
 	/**
 	 * Message sizes and such

@@ -8,8 +8,16 @@
 package natsue.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 
 import natsue.config.*;
 import natsue.log.*;
@@ -22,6 +30,7 @@ import natsue.server.glst.GLSTStoreMode;
 import natsue.server.glst.IGLSTStorage;
 import natsue.server.glst.NullGLSTStorage;
 import natsue.server.http.HTTPHandlerImpl;
+import natsue.server.http.IHTTPHandler;
 import natsue.server.hub.ServerHub;
 import natsue.server.packet.*;
 import natsue.server.photo.FilePhotoStorage;
@@ -140,31 +149,78 @@ public class Main {
 
 		mySource.log("ServerHub initialized.");
 
-		int port = config.port.getValue();
+		int portSSL = config.conn.portSSL.getValue();
+		if (portSSL != -1) {
+			try {
+				SSLContext ctx = SSLContext.getInstance("TLS");
+				KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+				KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+				// this object will not be stored
+				char[] veryPointlessPassword = new char[0];
+				Certificate[] theCertChain = PEM.loadCertChain(new File(config.conn.sslFullChainPEM.getValue()));
+				ILogSource certChainLogSource = new ILogSource() {
+					public ILogProvider getLogParent() {
+						return mySource;
+					}
+					@Override
+					public String toString() {
+						return "SSL certificate chain";
+					}
+				};
+				for (Certificate c : theCertChain)
+					if (c instanceof X509Certificate)
+						certChainLogSource.log(((X509Certificate) c).getSubjectDN().toString());
+				Key thePrivKey = PEM.loadPrivKey(new File(config.conn.sslPrivKeyPEM.getValue()), config.conn.sslPrivKeyAlgorithm.getValue());
+				keyStore.load(null, null);
+				keyStore.setKeyEntry("engine", thePrivKey, veryPointlessPassword, theCertChain);
+				kmf.init(keyStore, veryPointlessPassword);
+				ctx.init(kmf.getKeyManagers(), null, null);
+				ServerSocket sv = ctx.getServerSocketFactory().createServerSocket(portSSL);
+				mySource.log("Bound SSLServerSocket to port " + portSSL);
+				new Thread() {
+					public void run() {
+						doSocketAcceptLoop(sv, qm, serverHub, hhi, ilp, config);
+					}
+				}.start();
+			} catch (Exception ex) {
+				mySource.log(ex);
+			}
+		}
+
+		int port = config.conn.port.getValue();
 		try (ServerSocket sv = new ServerSocket(port)) {
 			mySource.log("Bound ServerSocket to port " + port + " - ready to accept connections.");
-
-			while (true) {
-				Socket skt = sv.accept();
-				if (!qm.socketStart(skt)) {
-					try {
-						try {
-							// Abort the connection as hard as possible.
-							// We don't want to make another thread for this.
-							skt.setSoLinger(true, 0);
-						} catch (Exception ex) {
-							// nuh-uh
-						}
-						skt.close();
-					} catch (Exception ex) {
-						// bye!
-					}
-					continue;
-				}
-				new SocketThread(skt, qm, (st) -> {
-					return new LoginSessionState(config, st, serverHub);
-				}, hhi, ilp, config).start();
+			doSocketAcceptLoop(sv, qm, serverHub, hhi, ilp, config);
+		}
+	}
+	public static void doSocketAcceptLoop(ServerSocket sv, QuotaManager qm, ServerHub hub, IHTTPHandler hhi, ILogProvider ilp, Config config) {
+		while (true) {
+			Socket skt;
+			try {
+				skt = sv.accept();
+			} catch (IOException e) {
+				// !??!?!!?
+				e.printStackTrace();
+				continue;
 			}
+			if (!qm.socketStart(skt)) {
+				try {
+					try {
+						// Abort the connection as hard as possible.
+						// We don't want to make another thread for this.
+						skt.setSoLinger(true, 0);
+					} catch (Exception ex) {
+						// nuh-uh
+					}
+					skt.close();
+				} catch (Exception ex) {
+					// bye!
+				}
+				continue;
+			}
+			new SocketThread(skt, qm, (st) -> {
+				return new LoginSessionState(config, st, hub);
+			}, hhi, ilp, config).start();
 		}
 	}
 }

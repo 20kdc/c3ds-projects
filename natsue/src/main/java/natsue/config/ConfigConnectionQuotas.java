@@ -16,8 +16,14 @@ public class ConfigConnectionQuotas extends BaseConfig.Group {
 	public final Int maxConnectionsInTwoMinutes = new Int("quotaMaxConnectionsInTwoMinutes", 60)
 			.describe("Maximum amount of new connections in two minutes per IP address.");
 	/**
-	 * Max. connections in two minutes.
+	 * Max. connections concurrent.
 	 */
 	public final Int maxConnectionsConcurrent = new Int("quotaMaxConnectionsConcurrent", 16)
 			.describe("Maximum amount of concurrent connections per IP address.");
+
+	/**
+	 * Ignore loopback connections quota-wise
+	 */
+	public final Bool quotaIgnoresLoopback = new Bool("quotaIgnoresLoopback", true)
+			.describe("If true, quota ignores connections from the loopback address, such as webapps or proxies.");
 }
