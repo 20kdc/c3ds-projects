@@ -9,11 +9,14 @@ package natsue.server.system.cmd;
 
 import java.util.List;
 
+import natsue.data.TOTP;
 import natsue.data.babel.UINUtils;
 import natsue.data.hli.ChatColours;
 import natsue.log.ILogSource;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
+import natsue.server.hubapi.IHubClientAsSeenByOtherClientsPrivileged;
 import natsue.server.userdata.INatsueUserData;
+import natsue.server.userdata.INatsueUserData.LongTermPrivileged;
 
 /**
  * The base for all System commands.
@@ -33,15 +36,18 @@ public abstract class BaseBotCommand {
 	public abstract void run(Context args);
 
 	public static enum Cat {
-		Public(false),
-		Secret(false),
-		Admin(true),
-		Research(true);
+		Public(false, false),
+		Public2FA(false, true),
+		Secret(false, false),
+		Admin(true, false),
+		Admin2FA(true, true),
+		Research(true, false);
 
-		public final boolean requiresAdmin;
+		public final boolean requiresAdmin, requires2FA;
 
-		Cat(boolean ra) {
+		Cat(boolean ra, boolean ra2) {
 			requiresAdmin = ra;
+			requires2FA = ra2;
 		}
 	}
 
@@ -52,7 +58,12 @@ public abstract class BaseBotCommand {
 		public final IHubPrivilegedClientAPI hub;
 
 		/**
-		 * Command sender UIN.
+		 * Command sender (as IUserConnectionInfo).
+		 */
+		public final IHubClientAsSeenByOtherClientsPrivileged sender;
+
+		/**
+		 * Command sender.
 		 */
 		public final long senderUIN;
 
@@ -86,11 +97,12 @@ public abstract class BaseBotCommand {
 		 */
 		public final List<BaseBotCommand> helpInfo;
 
-		public Context(IHubPrivilegedClientAPI hub, long s, String tex, ILogSource lSrc, List<BaseBotCommand> hi) {
+		public Context(IHubPrivilegedClientAPI hub, IHubClientAsSeenByOtherClientsPrivileged s, String tex, ILogSource lSrc, List<BaseBotCommand> hi) {
 			log = lSrc;
 			response.append(ChatColours.CHAT);
 			this.hub = hub;
-			senderUIN = s;
+			sender = s;
+			senderUIN = s.getUIN();
 			helpInfo = hi;
 			// strip initial tint
 			if (tex.contains(">"))
@@ -175,6 +187,19 @@ public abstract class BaseBotCommand {
 			if (asUIN != -1)
 				return hub.getUserDataByUIN(asUIN);
 			return hub.getUserDataByNickname(ref);
+		}
+
+		public void appendNewPassword(String newPW, LongTermPrivileged userData) {
+			response.append("Reset password to: " + newPW + "\n");
+			byte[] newSecret = userData.calculate2FASecret(newPW);
+			if (newSecret != null) {
+				try {
+					response.append("2FA secret: " + new String(TOTP.encodeBase32(newSecret)) + "\n");
+				} catch (TOTP.InvalidTOTPKeyException ex) {
+					// shouldn't be possible
+					throw new RuntimeException(ex);
+				}
+			}
 		}
 	}
 }

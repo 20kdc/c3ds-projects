@@ -86,7 +86,9 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 		if (url.equals("/")) {
 			StringBuilder rsp = new StringBuilder();
 			rsp.append("<ul>\n");
-			for (INatsueUserData nud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
+			for (INatsueUserData nud : hub.listAllUsersOnlineYesIMeanAllOfThem()) {
+				if (nud.isUnlisted())
+					continue;
 				rsp.append("<li>");
 				pages.userReference(rsp, nud);
 				rsp.append("</li>\n");
@@ -303,7 +305,7 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 				HTMLEncoder.htmlEncode(ttl, data.getUINString());
 				ttl.append(")");
 				title = ttl.toString();
-				if (hub.isUINOnline(data.getUIN())) {
+				if (hub.getConnectionByUIN(data.getUIN()) != null) {
 					rsp.append("Online<br/>");
 				} else {
 					rsp.append("Offline<br/>");
@@ -372,8 +374,9 @@ public class HTTPHandlerImpl implements IHTTPHandler {
 		} else if (url.equals("/api/usersOnline")) {
 			JSONEncoder je = new JSONEncoder();
 			je.arrayStart();
-			for (INatsueUserData nud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem())
-				Resources.encodeUser(je, nud, hub);
+			for (INatsueUserData nud : hub.listAllUsersOnlineYesIMeanAllOfThem())
+				if (!nud.isUnlisted())
+					Resources.encodeUser(je, nud, hub);
 			je.arrayEnd();
 			r.httpOk(head, "application/json", je.out.toString());
 		} else if (url.equals("/api/creatureInfo")) {

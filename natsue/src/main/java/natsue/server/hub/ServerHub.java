@@ -26,6 +26,8 @@ import natsue.server.firewall.IFWModule;
 import natsue.server.firewall.IRejector;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
+import natsue.server.hubapi.IHubClientAsSeenByOtherClients;
+import natsue.server.hubapi.IHubClientAsSeenByOtherClientsPrivileged;
 import natsue.server.packet.QuotaManager;
 import natsue.server.session.ISessionClient;
 import natsue.server.session.MainSessionState;
@@ -98,37 +100,31 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public LinkedList<INatsueUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem() {
-		LinkedList<INatsueUserData> ll = new LinkedList<>();
+	public LinkedList<IHubClientAsSeenByOtherClients> listAllUsersOnlineYesIMeanAllOfThem() {
+		LinkedList<IHubClientAsSeenByOtherClients> ll = new LinkedList<>();
 		synchronized (this) {
 			for (IHubClient client : users.connectedClients.values())
-				if (!client.isSystem())
-					ll.add(client.getUserData());
+				ll.add(client);
 		}
 		return ll;
 	}
 
 	@Override
-	public boolean isUINOnline(long uin) {
+	public IHubClientAsSeenByOtherClientsPrivileged getConnectionByUIN(long uin) {
 		synchronized (this) {
 			IHubClient ihc = users.connectedClients.get(uin);
-			if (ihc != null)
-				return !ihc.isNotReallyOnline();
-			return false;
+			if (ihc != null) {
+				if (ihc.isNotReallyOnline())
+					return null;
+				return ihc;
+			}
+			return null;
 		}
 	}
 
 	@Override
 	public long getServerUIN() {
 		return UINUtils.SERVER_UIN;
-	}
-
-	@Override
-	public boolean isUINAdmin(long targetUIN) {
-		INatsueUserData userData = getUserDataByUIN(targetUIN);
-		if (userData != null)
-			return userData.isAdmin();
-		return false;
 	}
 
 	@Override

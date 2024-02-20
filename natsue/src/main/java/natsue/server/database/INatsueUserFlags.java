@@ -42,6 +42,11 @@ public interface INatsueUserFlags {
 	public static final int FLAG_MUTED_GLOBAL_CHAT = 32;
 
 	/**
+	 * Account is unlisted, does not appear in "who".
+	 */
+	public static final int FLAG_UNLISTED = 64;
+
+	/**
 	 * Gets the flags of this user.
 	 * These can be mutated by modUserFlags on regular users.
 	 * See INatsueUserFlags for flag values.
@@ -93,6 +98,22 @@ public interface INatsueUserFlags {
 	}
 
 	/**
+	 * Is this user invisible in listings?
+	 *
+	 * This makes the user invisible to:
+	 * 1. The JSON API
+	 * 2. The website
+	 * 3. The "who" command
+	 *
+	 * The user is NOT invisible to:
+	 * 1. WWR notifications
+	 * 2. Direct polling
+	 */
+	default boolean isUnlisted() {
+		return (getFlags() & FLAG_UNLISTED) != 0;
+	}
+
+	/**
 	 * This enum is used for dynamic flag monkey business 
 	 */
 	public enum Flag {
@@ -101,7 +122,8 @@ public interface INatsueUserFlags {
 		recvnb(FLAG_RECEIVE_NB_NORNS, "Allows receipt of NB norns"),
 		norandom(FLAG_NO_RANDOM, "Disables random"),
 		recvgeat(FLAG_RECEIVE_GEATS, "Allows receipt of geats"),
-		muteglob(FLAG_MUTED_GLOBAL_CHAT, "Mutes the user in global chat");
+		muteglob(FLAG_MUTED_GLOBAL_CHAT, "Mutes the user in global chat"),
+		unlisted(FLAG_UNLISTED, "The user is not visible in who/etc.");
 
 		public final int value;
 		public final String detail;

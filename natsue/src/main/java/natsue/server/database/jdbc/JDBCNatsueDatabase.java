@@ -182,11 +182,12 @@ public class JDBCNatsueDatabase implements INatsueDatabase, ILogSource {
 	}
 
 	@Override
-	public boolean updateUserAuth(int uid, String hash, int flags) {
+	public boolean updateUserAuth(int uid, String hash, int flags, long twoFA) {
 		synchronized (this) {
 			txns.updateUserAuth.uid = uid;
 			txns.updateUserAuth.passwordHash = hash;
 			txns.updateUserAuth.flags = flags;
+			txns.updateUserAuth.twoFactorSeed = twoFA;
 			return txns.updateUserAuth.executeOuter(txnHost);
 		}
 	}

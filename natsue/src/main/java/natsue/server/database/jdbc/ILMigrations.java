@@ -54,6 +54,9 @@ public class ILMigrations {
 					"ALTER TABLE natsue_history_creatures ADD COLUMN updater_name_uid INT",
 					"ALTER TABLE natsue_history_creatures ADD COLUMN updater_text_uid INT"
 			),
+			new Migration(9, 10,
+					"ALTER TABLE natsue_users ADD COLUMN two_factor_seed BIGINT"
+			),
 	};
 
 	public static void migrate(Connection conn, ILDBVariant variant, ILogProvider ils) throws SQLException {

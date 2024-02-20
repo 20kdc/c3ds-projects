@@ -29,10 +29,10 @@ public interface IHubLoginAPI {
 		 * Called to construct the IHubClient.
 		 * This is not confirmation of success.
 		 * NOTE: Your IHubClient's getUserData must return the given INatsueUserData.Root.
-		 * The given INatsueUserData.Root is kept up to date until you logout.
+		 * The given INatsueUserData.LongTermPrivileged is kept up to date until you logout.
 		 * More importantly, the server needs this to remain the same so it can properly clean up.
 		 */
-		X receive(INatsueUserData.Root userData, IHubClientAPI clientAPI);
+		X receive(INatsueUserData.LongTermPrivileged userData, IHubClientAPI clientAPI);
 		/**
 		 * Called to confirm success, just before the hub can start calls on the client.
 		 */

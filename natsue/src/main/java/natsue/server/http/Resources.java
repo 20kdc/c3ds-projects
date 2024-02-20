@@ -23,7 +23,7 @@ class Resources {
 		je.objectStart();
 		je.writeKV("uin", nud.getUINString());
 		je.writeKV("exists", true);
-		je.writeKV("online", hub.isUINOnline(nud.getUIN()));
+		je.writeKV("online", hub.getConnectionByUIN(nud.getUIN()) != null);
 		// note: below disappear if the user doesn't exist, i.e. encodeUserByUIN
 		je.writeKV("nickname", nud.getNickname());
 		je.writeKV("nicknameFolded", nud.getNicknameFolded());

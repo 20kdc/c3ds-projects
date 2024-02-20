@@ -58,8 +58,9 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 		// -- attempt normal login --
 		IHubLoginAPI.LoginResult res = hub.loginUser(handshake.username, handshake.password, new ILoginReceiver<MainSessionState>() {
 			@Override
-			public MainSessionState receive(INatsueUserData.Root userData, IHubClientAPI clientAPI) {
-				return new MainSessionState(config, client, clientAPI, userData);
+			public MainSessionState receive(INatsueUserData.LongTermPrivileged userData, IHubClientAPI clientAPI) {
+				byte[] secret = userData.calculate2FASecret(handshake.password);
+				return new MainSessionState(config, client, handshake.clientVersion, secret, clientAPI, userData);
 			}
 			@Override
 			public void confirm(MainSessionState result) {

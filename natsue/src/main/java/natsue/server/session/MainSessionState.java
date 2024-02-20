@@ -13,6 +13,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cdsp.common.data.IOUtils;
 import natsue.config.Config;
+import natsue.data.TOTP;
+import natsue.data.babel.BabelClientVersion;
 import natsue.data.babel.CreatureHistoryBlob;
 import natsue.data.babel.PacketWriter;
 import natsue.data.babel.ctos.BaseCTOS;
@@ -36,14 +38,21 @@ import natsue.server.userdata.INatsueUserData;
  * This session state is used while connected to the hub.
  */
 public class MainSessionState extends BaseSessionState implements IHubClient, ILogSource {
-	public final INatsueUserData.Root userData;
+	public final INatsueUserData.LongTermPrivileged userData;
 	public final IHubClientAPI hub;
 	public final PingManager pingManager;
 	public final Config config;
 	public boolean notReallyOnline;
+	public final BabelClientVersion myClientVersion;
+	public final byte[] twoFASecret;
+	private volatile boolean has2FAAuthed;
 
-	public MainSessionState(Config cfg, ISessionClient c, IHubClientAPI h, INatsueUserData.Root uin) {
+	public MainSessionState(Config cfg, ISessionClient c, BabelClientVersion myClientVersion, byte[] twoFASecret, IHubClientAPI h, INatsueUserData.LongTermPrivileged uin) {
 		super(c);
+		this.myClientVersion = myClientVersion;
+		this.twoFASecret = twoFASecret;
+		if (twoFASecret == null)
+			has2FAAuthed = true;
 		config = cfg;
 		pingManager = new PingManager(c);
 		userData = uin;
@@ -61,7 +70,28 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	}
 
 	@Override
-	public boolean isSystem() {
+	public BabelClientVersion getClientVersion() {
+		return myClientVersion;
+	}
+
+	@Override
+	public boolean has2FAAuthed() {
+		return has2FAAuthed;
+	}
+
+	@Override
+	public boolean has2FAConfigured() {
+		return twoFASecret != null;
+	}
+
+	@Override
+	public boolean try2FAAuth(int code) {
+		if (twoFASecret != null) {
+			if (TOTP.verify(twoFASecret, code)) {
+				has2FAAuthed = true;
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -74,7 +104,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 		if (packet instanceof CTOSGetConnectionDetail) {
 			CTOSGetConnectionDetail pkt = (CTOSGetConnectionDetail) packet; 
 			// well, are they connected?
-			boolean result = hub.isUINOnline(pkt.targetUIN);
+			boolean result = hub.getConnectionByUIN(pkt.targetUIN) != null;
 			if (result) {
 				client.sendPacket(pkt.makeOkResponse());
 			} else {
@@ -97,7 +127,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 						// Any upcoming WWR handlers are delayed by the lock.
 						// So the state gotten either is accurate or will be updated once that lock is released.
 						synchronized (this) {
-							boolean online = hub.isUINOnline(pkt.targetUIN);
+							boolean online = hub.getConnectionByUIN(pkt.targetUIN) != null;
 							client.sendPacket(PacketWriter.writeUserLine(online, bsud.getBabelUserData().packed));
 						}
 					} catch (IOException e) {

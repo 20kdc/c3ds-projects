@@ -10,6 +10,7 @@ package natsue.server.system.cmd;
 import natsue.data.babel.UINUtils;
 import natsue.data.hli.ChatColours;
 import natsue.server.database.INatsueUserFlags;
+import natsue.server.hubapi.IHubClientAsSeenByOtherClients;
 import natsue.server.userdata.INatsueUserData;
 
 /**
@@ -26,7 +27,7 @@ public class WhoisBotCommand extends BaseBotCommand {
 
 	@Override
 	public void run(Context args) {
-		boolean showUINs = args.hub.isUINAdmin(args.senderUIN);
+		boolean showAdminDetails = args.sender.isAdmin();
 		while (args.remaining()) {
 			String user = args.nextArg();
 			INatsueUserData userData = args.commandLookupUser(user);
@@ -35,14 +36,19 @@ public class WhoisBotCommand extends BaseBotCommand {
 				args.response.append(userData.getNickname());
 				args.response.append(ChatColours.CHAT);
 				args.response.append(" - ");
-				if (args.hub.isUINOnline(userData.getUIN())) {
-					args.response.append("<tint 64 255 64>Online\n");
+				IHubClientAsSeenByOtherClients uci = args.hub.getConnectionByUIN(userData.getUIN());
+				if (uci != null) {
+					if (showAdminDetails) {
+						args.response.append("<tint 64 255 64>Online (" + uci.getClientVersion() + ")\n");
+					} else {
+						args.response.append("<tint 64 255 64>Online\n");
+					}
 				} else {
 					args.response.append("<tint 255 64 64>Offline\n");
 				}
 				// Only admins can see UINs.
 				// This isn't a security thing, but it's done in the wake of The Amazing Floatingry.
-				if (showUINs) {
+				if (showAdminDetails) {
 					args.response.append(ChatColours.CHAT);
 					args.response.append("UIN: ");
 					args.response.append(userData.getUINString());

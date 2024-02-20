@@ -14,13 +14,7 @@ import natsue.server.userdata.INatsueUserData;
 /**
  * Interface for a client connected to the hub (this means AUTHENTICATED!!!)
  */
-public interface IHubClient extends IWWRListener, INatsueUserData.Proxy {
-	/**
-	 * Is this a system user (hides from who command).
-	 * This may become an account flag at some point (i.e. FLAG_INVISIBLE/INVIS)
-	 */
-	boolean isSystem();
-
+public interface IHubClient extends IHubClientAsSeenByOtherClientsPrivileged, IWWRListener, INatsueUserData.Proxy {
 	/**
 	 * Incoming message!
 	 * reject is run if an error occurs.

@@ -12,6 +12,10 @@ import natsue.data.hli.ChatColours;
  * Help set bot command
  */
 public class HelpSetBotCommand extends BaseBotCommand {
+	/**
+	 * Other category listed (if any).
+	 */
+	public final Cat category2;
 
 	public HelpSetBotCommand(boolean isAdmin) {
 		super(isAdmin ? "ahelp" : "help", "[command]",
@@ -23,6 +27,7 @@ public class HelpSetBotCommand extends BaseBotCommand {
 					"Helpful information on commands.\nSpecifying a command gives more information on it.",
 				"help help",
 				isAdmin ? Cat.Admin : Cat.Public);
+		category2 = isAdmin ? Cat.Admin2FA : Cat.Public2FA;
 	}
 
 	@Override
@@ -34,7 +39,7 @@ public class HelpSetBotCommand extends BaseBotCommand {
 				return;
 			}
 			for (BaseBotCommand bbc : args.helpInfo) {
-				if (bbc.name.equals(cmd) && bbc.category == category) {
+				if (bbc.name.equals(cmd) && (bbc.category == category || bbc.category == category2)) {
 					args.response.append(bbc.name);
 					args.response.append(" ");
 					args.response.append(bbc.helpArgs);
@@ -69,7 +74,7 @@ public class HelpSetBotCommand extends BaseBotCommand {
 			if (category == Cat.Admin) {
 				args.response.append("You can send a global system message by mail, subject \"SYSTEM MSG\".\n");
 			} else {
-				if (args.hub.isUINAdmin(args.senderUIN)) {
+				if (args.sender.isAdmin()) {
 					args.response.append("ahelp: for admin commands!\n");
 				} else {
 					args.response.append("Remember that you can use the third button on the right (Window sizing) to expand the chat panel.\n");

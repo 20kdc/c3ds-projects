@@ -40,6 +40,11 @@ public interface INatsueUserData extends INatsueUserFlags {
 	String getNicknameFolded();
 
 	/**
+	 * If 2FA is configured for the account.
+	 */
+	boolean has2FAConfigured();
+
+	/**
 	 * Gets the UIN of this user.
 	 * Immutable.
 	 */
@@ -87,6 +92,12 @@ public interface INatsueUserData extends INatsueUserFlags {
 		String getPasswordHash();
 
 		/**
+		 * Calculates the 2FA secret, assuming the password is known.
+		 * Returns null if there is no 2FA secret.
+		 */
+		byte[] calculate2FASecret(String password);
+
+		/**
 		 * Updates the account's password.
 		 */
 		boolean setPassword(String password);
@@ -109,13 +120,17 @@ public interface INatsueUserData extends INatsueUserFlags {
 		default boolean unsetFlags(int flags) {
 			return updateFlags(~flags, 0);
 		}
+
+		/**
+		 * Update 2FA seed to this value.
+		 */
+		boolean update2FA(long value);
 	}
 
 	/**
 	 * Used to make sure nobody does anything stupid with a proxy.
 	 */
 	public interface Root extends INatsueUserData {
-		
 	}
 
 	public interface Proxy extends INatsueUserData {
@@ -209,6 +224,21 @@ public interface INatsueUserData extends INatsueUserFlags {
 
 		@Override
 		public boolean setPassword(String password) {
+			return false;
+		}
+
+		@Override
+		public byte[] calculate2FASecret(String password) {
+			return null;
+		}
+
+		@Override
+		public boolean has2FAConfigured() {
+			return false;
+		}
+
+		@Override
+		public boolean update2FA(long value) {
 			return false;
 		}
 

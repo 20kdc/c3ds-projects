@@ -31,6 +31,7 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 
 	private final int uid;
 	private volatile int flags;
+	private volatile long twoFactorSeed;
 	private final AtomicInteger refCount = new AtomicInteger();
 	private final HubUserDataCache parent;
 	private final boolean logged;
@@ -46,6 +47,7 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 		uid = ui.uid;
 		flags = ui.flags;
 		pwHash = ui.passwordHash;
+		twoFactorSeed = ui.twoFactorSeed;
 		parent = p;
 		logged = parent.config.logUserCacheManagement.getValue();
 	}
@@ -117,7 +119,7 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 				return false;
 			activity = "updating password";
 			String newHash = PWHash.hash(uid, password);
-			if (parent.database.updateUserAuth(uid, newHash, flags)) {
+			if (parent.database.updateUserAuth(uid, newHash, flags, twoFactorSeed)) {
 				pwHash = newHash;
 				activity = null;
 				return true;
@@ -128,13 +130,37 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 	}
 
 	@Override
+	public byte[] calculate2FASecret(String password) {
+		return PWHash.make2FA(twoFactorSeed, password);
+	}
+
+	@Override
+	public boolean has2FAConfigured() {
+		return twoFactorSeed != 0;
+	}
+
+	@Override
+	public boolean update2FA(long value) {
+		synchronized (this) {
+			if (isDead)
+				return false;
+			activity = "updating 2fa";
+			boolean tmp = parent.database.updateUserAuth(uid, pwHash, flags, value);
+			if (tmp)
+				twoFactorSeed = value;
+			activity = null;
+			return tmp;
+		}
+	}
+
+	@Override
 	public boolean updateFlags(int and, int xor) {
 		synchronized (this) {
 			if (isDead)
 				return false;
 			activity = "updating flags";
 			int newFlags = (flags & and) ^ xor;
-			if (parent.database.updateUserAuth(uid, pwHash, newFlags)) {
+			if (parent.database.updateUserAuth(uid, pwHash, newFlags, twoFactorSeed)) {
 				flags = newFlags;
 				activity = null;
 				return true;

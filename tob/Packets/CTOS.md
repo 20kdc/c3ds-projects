@@ -348,6 +348,7 @@ This provides the username and password for login.
 	* int two
 * +40: 0
 	* int zero
+	* **Extension: If this value is 20240219 or higher, this client is not actually Babel. Workarounds for networking-layer bugs may be disabled by Natsue. It is still assumed the original CAOS is executing.**
 * +44: Length of zero-terminated username
 	* int usernameLen
 	* Just to clarify, this length includes the null terminator, so an empty username would still be 1 here.

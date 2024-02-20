@@ -46,7 +46,7 @@ public class Config extends BaseConfig.Group {
 	public final ConfigGLST glst = new ConfigGLST();
 
 	/**
-	 * Nickname details
+	 * Nickname details, etc.
 	 */
 	public final ConfigAccounts accounts = new ConfigAccounts();
 
@@ -163,6 +163,9 @@ public class Config extends BaseConfig.Group {
 					"loud: messages user when adding (could be interfering with engine?)\n" +
 					"silent: does not\n" +
 					"reconnect: the contact command changes which contact System will try to add on connect (as this mechanism has been extremely stable)");
+
+	public final Bool contactAddLoudForTowerUsers = new Bool("contactAddLoudForTowerUsers", true)
+			.describe("Uses 'loud' contact add strategy if the user is running Tower");
 
 	/**
 	 * Log failed authentication attempts.

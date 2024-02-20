@@ -364,6 +364,7 @@ public class JDBCNatsueTxns {
 		public int uid;
 		public String passwordHash;
 		public int flags;
+		public long twoFactorSeed;
 
 		public UpdateUserAuth() {
 			super(true, Boolean.FALSE);
@@ -371,10 +372,11 @@ public class JDBCNatsueTxns {
 
 		@Override
 		protected Boolean executeInner(Connection conn) throws SQLException {
-			try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_users SET psha256=?, flags=? WHERE uid=?")) {
+			try (PreparedStatement stmt = conn.prepareStatement("UPDATE natsue_users SET psha256=?, flags=?, two_factor_seed=? WHERE uid=?")) {
 				stmt.setString(1, passwordHash);
 				stmt.setInt(2, flags);
-				stmt.setInt(3, uid);
+				stmt.setLong(3, twoFactorSeed);
+				stmt.setInt(4, uid);
 				stmt.executeUpdate();
 				return Boolean.TRUE;
 			}

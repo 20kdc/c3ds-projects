@@ -19,7 +19,7 @@ import natsue.server.userdata.INatsueUserData;
  */
 public class SystemCommands {
 	// DD/MM/YY
-	public static final String VERSION = "Natsue 19/02/24";
+	public static final String VERSION = "Natsue Indev 20/02/24";
 	public static final String VERSION_URL = "https://github.com/20kdc/c3ds-projects/tree/main/natsue";
 
 	public static final BaseBotCommand[] commands = new BaseBotCommand[] {
@@ -65,7 +65,7 @@ public class SystemCommands {
 				String newPW = args.toEnd();
 				try (INatsueUserData.LongTermPrivileged ltp = args.hub.openUserDataByUINLT(args.senderUIN)) {
 					if ((ltp != null) && ltp.setPassword(newPW)) {
-						args.response.append("Reset password to: " + newPW + "\n");
+						args.appendNewPassword(newPW, ltp);
 					} else {
 						args.response.append("Failed (not a normal user?)\n");
 					}
@@ -80,7 +80,9 @@ public class SystemCommands {
 					return;
 				}
 				boolean first = true;
-				for (INatsueUserData data : args.hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
+				for (INatsueUserData data : args.hub.listAllUsersOnlineYesIMeanAllOfThem()) {
+					if (data.isUnlisted())
+						continue;
 					if (!first) {
 						args.response.append(ChatColours.CHAT);
 						args.response.append(", ");
@@ -119,5 +121,6 @@ public class SystemCommands {
 		new DefrostBotCommand(),
 		new CryoGetBotCommand(),
 		new GetVCHandshakeResponseBotCommand(),
+		new TwoFABotCommand()
 	};
 }

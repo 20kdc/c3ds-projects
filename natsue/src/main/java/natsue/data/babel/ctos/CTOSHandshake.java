@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 
 import cdsp.common.data.IOUtils;
 import natsue.config.ConfigMessages;
+import natsue.data.babel.BabelClientVersion;
 import natsue.data.babel.PacketReader;
 
 /**
@@ -28,6 +29,11 @@ public class CTOSHandshake extends BaseCTOS {
 	 * Password
 	 */
 	public String password;
+
+	/**
+	 * Inferred client version
+	 */
+	public BabelClientVersion clientVersion;
 
 	public CTOSHandshake() {
 	}
@@ -49,6 +55,9 @@ public class CTOSHandshake extends BaseCTOS {
 		byte[] data = IOUtils.getBytes(inputStream, totalLen);
 		username = new String(data, 0, usernameLen - 1, PacketReader.CHARSET);
 		password = new String(data, usernameLen, passwordLen - 1, PacketReader.CHARSET);
+		clientVersion = BabelClientVersion.Babel;
+		if (hdrExt.getInt(8) >= 20240219)
+			clientVersion = BabelClientVersion.Tower;
 	}
 
 	@Override

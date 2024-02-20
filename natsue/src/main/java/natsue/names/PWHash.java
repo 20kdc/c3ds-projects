@@ -51,6 +51,24 @@ public class PWHash {
 		return "G1:" + Base64.getEncoder().encodeToString(digest);
 	}
 
+	/**
+	 * Get the 2FA secret.
+	 */
+	public static byte[] make2FA(long twoFactorSeed, String password) {
+		byte[] data = (twoFactorSeed + ":" + password).getBytes(PacketReader.CHARSET);
+		byte[] digest;
+		byte[] result = new byte[10];
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			md.update(data);
+			digest = md.digest();
+			System.arraycopy(digest, 0, result, 0, result.length);
+			return result;
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public static void main(String[] args) {
 		System.out.println(hash(Integer.valueOf(args[0]), args[1]));
 	}

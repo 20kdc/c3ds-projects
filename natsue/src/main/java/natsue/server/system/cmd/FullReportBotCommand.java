@@ -24,7 +24,7 @@ public class FullReportBotCommand extends BaseBotCommand {
 				"Debugging",
 				"Dumps absolutely all details to a PRAY file you will receive.",
 				"",
-				Cat.Admin);
+				Cat.Admin2FA);
 	}
 
 	@Override

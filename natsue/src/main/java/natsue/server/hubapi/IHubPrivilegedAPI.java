@@ -21,9 +21,12 @@ import natsue.server.userdata.INatsueUserData;
  */
 public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivilegedProxy, IHubLoginAPI, IRejector {
 	/**
-	 * Returns all user info that does not belong to system users.
+	 * Returns all user info.
 	 */
-	LinkedList<INatsueUserData> listAllNonSystemUsersOnlineYesIMeanAllOfThem();
+	LinkedList<IHubClientAsSeenByOtherClients> listAllUsersOnlineYesIMeanAllOfThem();
+
+	// see base
+	IHubClientAsSeenByOtherClientsPrivileged getConnectionByUIN(long uin);
 
 	/**
 	 * Adds a client to the system, or returns false if that couldn't happen due to a conflict.
@@ -72,7 +75,7 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	void considerRandomStatus(INatsueUserData.LongTerm user);
 
 	/**
-	 * Attempst to find anything unusual.
+	 * Attempts to find anything unusual.
 	 */
 	String runSystemCheck(boolean detailed);
 

@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import cdsp.common.data.pray.PRAYBlock;
 import cdsp.common.data.pray.PRAYTags;
 import natsue.config.Config;
+import natsue.data.babel.BabelClientVersion;
 import natsue.data.babel.BabelShortUserData;
 import natsue.data.babel.PacketReader;
 import natsue.data.babel.UINUtils;
@@ -26,6 +27,8 @@ import natsue.log.ILogSource;
 import natsue.server.cryo.CryoFunctions;
 import natsue.server.hubapi.IHubClient;
 import natsue.server.hubapi.IHubPrivilegedClientAPI;
+import natsue.server.hubapi.IHubClientAsSeenByOtherClients;
+import natsue.server.hubapi.IHubClientAsSeenByOtherClientsPrivileged;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
 import natsue.server.system.cmd.BaseBotCommand;
 import natsue.server.system.cmd.BaseBotCommand.Cat;
@@ -44,7 +47,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	public final IHubPrivilegedClientAPI hub;
 	private final ILogProvider logParent;
 	public static final long UIN = UINUtils.SERVER_UIN;
-	public static final INatsueUserData.Root IDENTITY = new INatsueUserData.Fixed(new BabelShortUserData("", "", "!System", UIN), FLAG_RECEIVE_NB_NORNS | FLAG_RECEIVE_GEATS | FLAG_NO_RANDOM);
+	public static final INatsueUserData.Root IDENTITY = new INatsueUserData.Fixed(new BabelShortUserData("", "", "!System", UIN), FLAG_RECEIVE_NB_NORNS | FLAG_RECEIVE_GEATS | FLAG_NO_RANDOM | FLAG_UNLISTED);
 	public final HashMap<String, BaseBotCommand> botCommands = new HashMap<>();
 	public final LinkedList<BaseBotCommand> botCommandsHelp;
 
@@ -90,6 +93,12 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 					INatsueUserData userData = args.commandLookupUser(user);
 					if (userData != null) {
 						ContactAddStrategy cas = config.contactAddStrategy.getValue();
+						if (config.contactAddLoudForTowerUsers.getValue()) {
+							IHubClientAsSeenByOtherClients uci = hub.getConnectionByUIN(userData.getUIN());
+							if (uci != null)
+								if (uci.getClientVersion() != BabelClientVersion.Babel)
+									cas = ContactAddStrategy.loud;
+						}
 						boolean sendNow = true;
 						switch (cas) {
 						case loud:
@@ -148,8 +157,23 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
-	public boolean isSystem() {
-		return true;
+	public BabelClientVersion getClientVersion() {
+		return BabelClientVersion.Internal;
+	}
+
+	@Override
+	public boolean has2FAAuthed() {
+		return false;
+	}
+
+	@Override
+	public boolean try2FAAuth(int code) {
+		return false;
+	}
+
+	@Override
+	public boolean has2FAConfigured() {
+		return false;
 	}
 
 	@Override
@@ -163,10 +187,10 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 		if (online) {
 			Long whoAreWeAdding;
 			synchronized (userContactMapLock) {
-				Long theirUINObj = theirData.getUIN();
-				whoAreWeAdding = userContactMap.getOrDefault(theirUINObj, UIN);
-				userContactMap.remove(theirUINObj);
+				whoAreWeAdding = userContactMap.remove(theirData.getUIN());
 			}
+			if (whoAreWeAdding == null)
+				whoAreWeAdding = UIN;
 			PackedMessage pm = StandardMessages.addToContactList(theirData.getUIN(), whoAreWeAdding);
 			hub.sendMessage(theirData.getUIN(), pm, MsgSendType.Temp, theirData.getUIN());
 		} else {
@@ -254,10 +278,12 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	private void handleSnailMessage(PackedMessage packed, String subject, String msg) {
 		if ((subject != null) && (msg != null)) {
 			if (subject.equalsIgnoreCase("SYSTEM MSG")) {
-				if (hub.isUINAdmin(packed.senderUIN)) {
-					for (INatsueUserData sud : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
+				IHubClientAsSeenByOtherClients user = hub.getConnectionByUIN(packed.senderUIN);
+				if (user == null)
+					return;
+				if (user.isAdmin()) {
+					for (INatsueUserData sud : hub.listAllUsersOnlineYesIMeanAllOfThem())
 						hub.sendMessage(sud.getUIN(), StandardMessages.systemMessage(sud.getUIN(), msg), MsgSendType.Temp, packed.senderUIN);
-					}
 				} else {
 					hub.rejectMessage(UIN, packed, "Have to be admin");
 				}
@@ -279,8 +305,9 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			if (!sendToGlobalChatExcept(senderUIN, senderNick, text)) {
 				sendChatMessage(senderUIN, chatID, "Error: not in global chat.\nAttempting to correct.\n");
 				// Just remove EVERYBODY who could have screwed this up. Reset things.
-				for (INatsueUserData potential : hub.listAllNonSystemUsersOnlineYesIMeanAllOfThem()) {
-					if (potential.getUIN() != senderUIN) {
+				for (INatsueUserData potential : hub.listAllUsersOnlineYesIMeanAllOfThem()) {
+					long uin = potential.getUIN();
+					if (uin != senderUIN && uin != UIN) {
 						PackedMessage pm = StandardMessages.chatLeave(potential.getUIN(), potential.getNickname(), CHATID_GLOBAL, potential.getUIN(), potential.getNickname());
 						hub.sendMessage(senderUIN, pm, MsgSendType.Temp, senderUIN);
 						pm = StandardMessages.chatLeave(senderUIN, senderNick, CHATID_GLOBAL, senderUIN, senderNick);
@@ -290,7 +317,11 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 				addToGlobalChat(nud);
 			}
 		} else {
-			BaseBotCommand.Context ctx = new BaseBotCommand.Context(hub, senderUIN, text, this, botCommandsHelp);
+			// user should be online
+			IHubClientAsSeenByOtherClientsPrivileged user = hub.getConnectionByUIN(senderUIN);
+			if (user == null)
+				return;
+			BaseBotCommand.Context ctx = new BaseBotCommand.Context(hub, user, text, this, botCommandsHelp);
 			handleCommand(ctx);
 			sendChatMessage(senderUIN, chatID, ctx.response.toString());
 		}
@@ -360,8 +391,10 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 			BaseBotCommand cmdI = botCommands.get(cmd);
 			if (cmdI == null) {
 				ctx.response.append("Unknown command. Try 'help'\n");
-			} else if (cmdI.category.requiresAdmin && !hub.isUINAdmin(ctx.senderUIN)) {
+			} else if (cmdI.category.requiresAdmin && !ctx.sender.isAdmin()) {
 				ctx.response.append("You're not allowed to do that!\n");
+			} else if (cmdI.category.requires2FA && !ctx.sender.has2FAAuthed()) {
+				ctx.response.append("This operation is dangerous - You need to authenticate using 2FA using `2fa CODE`, i.e. `2fa 123456`.\n");
 			} else {
 				cmdI.run(ctx);
 			}

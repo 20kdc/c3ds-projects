@@ -16,20 +16,27 @@ import natsue.data.babel.UINUtils;
 public class NatsueDBUserInfo implements INatsueUserFlags {
 	public final String nickname, nicknameFolded;
 	/**
-	 * Hex-encoded lowercase sha256 hash of the password.
+	 * See PWHash.
 	 */
 	public final String passwordHash;
 	public final int uid;
 	public final int flags;
 	public final long creationUnixTime;
+	/**
+	 * 2FA seed. 0 indicates invalid.
+	 * If 2FA is required for dangerous commands is managed on a per-account level.
+	 * This is because bootstrapping 2FA across the admin accounts can be kind of hazardous.
+	 */
+	public final long twoFactorSeed;
 
-	public NatsueDBUserInfo(int ui, String n, String nf, String p, int f, long l) {
+	public NatsueDBUserInfo(int ui, String n, String nf, String p, int f, long l, long t) {
 		uid = ui;
 		nickname = n;
 		nicknameFolded = nf;
 		passwordHash = p;
 		flags = f;
 		creationUnixTime = l;
+		twoFactorSeed = t;
 	}
 
 	public long getUIN() {

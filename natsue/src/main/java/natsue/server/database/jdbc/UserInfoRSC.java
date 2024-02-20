@@ -15,12 +15,12 @@ import natsue.server.database.NatsueDBUserInfo;
 
 public class UserInfoRSC implements ILResultSetConverter<NatsueDBUserInfo> {
 	public static final UserInfoRSC INSTANCE = new UserInfoRSC();
-	public static final String SELECTION = "uid, nickname, nickname_folded, psha256, flags, creation_unix_time";
-	public static final String VALUES = "?, ?, ?, ?, ?, ?";
+	public static final String SELECTION = "uid, nickname, nickname_folded, psha256, flags, creation_unix_time, two_factor_seed";
+	public static final String VALUES = "?, ?, ?, ?, ?, ?, ?";
 
 	@Override
 	public NatsueDBUserInfo fromResultSet(ResultSet rs) throws SQLException {
-		return new NatsueDBUserInfo(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getLong(6));
+		return new NatsueDBUserInfo(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getLong(6), rs.getLong(7));
 	}
 
 	@Override
@@ -31,5 +31,6 @@ public class UserInfoRSC implements ILResultSetConverter<NatsueDBUserInfo> {
 		s.setString(4, userInfo.passwordHash);
 		s.setInt(5, userInfo.flags);
 		s.setLong(6, userInfo.creationUnixTime);
+		s.setLong(7, userInfo.twoFactorSeed);
 	}
 }

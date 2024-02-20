@@ -104,5 +104,5 @@ public interface INatsueDatabase {
 	/**
 	 * Tries to update a user's authentication details.
 	 */
-	boolean updateUserAuth(int uid, String hash, int flags);
+	boolean updateUserAuth(int uid, String hash, int flags, long twoFA);
 }

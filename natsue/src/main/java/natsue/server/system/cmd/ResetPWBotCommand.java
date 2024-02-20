@@ -21,7 +21,7 @@ public class ResetPWBotCommand extends BaseBotCommand {
 				"Reset password",
 				"Resets the password of a user, and reports it to you (so you can then tell them).",
 				"Bubblespone",
-				Cat.Admin);
+				Cat.Admin2FA);
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class ResetPWBotCommand extends BaseBotCommand {
 				try {
 					newPW = Long.toHexString(SecureRandom.getInstanceStrong().nextLong() | 0x8000000000000000L);
 					if (userData.setPassword(newPW)) {
-						args.response.append("Reset password to: " + newPW + "\n");
+						args.appendNewPassword(newPW, userData);
 					} else {
 						args.response.append("Failed (not a normal user?)\n");
 					}
