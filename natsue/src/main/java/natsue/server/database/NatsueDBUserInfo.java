@@ -23,7 +23,7 @@ public class NatsueDBUserInfo implements INatsueUserFlags {
 	public final int flags;
 	public final long creationUnixTime;
 	/**
-	 * 2FA seed. 0 indicates invalid.
+	 * 2FA seed.
 	 * If 2FA is required for dangerous commands is managed on a per-account level.
 	 * This is because bootstrapping 2FA across the admin accounts can be kind of hazardous.
 	 */

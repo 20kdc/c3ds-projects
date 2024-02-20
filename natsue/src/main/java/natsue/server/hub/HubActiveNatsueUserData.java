@@ -119,7 +119,7 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 				return false;
 			activity = "updating password";
 			String newHash = PWHash.hash(uid, password);
-			if (parent.database.updateUserAuth(uid, newHash, flags, twoFactorSeed)) {
+			if (parent.database.updateUserAuth(uid, newHash, flags & ~FLAG_2FA_ENABLED, 0)) {
 				pwHash = newHash;
 				activity = null;
 				return true;
@@ -131,12 +131,9 @@ class HubActiveNatsueUserData implements INatsueUserData.LongTermPrivileged, ILo
 
 	@Override
 	public byte[] calculate2FASecret(String password) {
+		if (!is2FAEnabled())
+			return null;
 		return PWHash.make2FA(twoFactorSeed, password);
-	}
-
-	@Override
-	public boolean has2FAConfigured() {
-		return twoFactorSeed != 0;
 	}
 
 	@Override

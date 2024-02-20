@@ -12,6 +12,7 @@ import java.security.SecureRandom;
 import natsue.data.TOTP;
 import natsue.data.babel.UINUtils;
 import natsue.names.PWHash;
+import natsue.server.database.INatsueUserFlags;
 import natsue.server.userdata.INatsueUserData;
 
 /**
@@ -34,7 +35,7 @@ public class TwoFABotCommand extends BaseBotCommand {
 		}
 		String str = args.nextArg();
 		// DO NOT DO THIS UNLESS YOU KNOW WHAT YOU ARE DOING
-		if (str.equalsIgnoreCase("confirm_enable_2fa")) {
+		if (str.equalsIgnoreCase("confirm_enable")) {
 			if (!args.remaining()) {
 				args.response.append("Password is required to setup 2FA\n");
 				return;
@@ -45,7 +46,7 @@ public class TwoFABotCommand extends BaseBotCommand {
 					args.response.append("How do you not exist?\n");
 					return;
 				}
-				if (userData.has2FAConfigured()) {
+				if (userData.is2FAEnabled()) {
 					args.response.append("You have already enabled 2FA\n");
 					return;
 				}
@@ -55,7 +56,7 @@ public class TwoFABotCommand extends BaseBotCommand {
 				}
 				long newVal;
 				try {
-					newVal = SecureRandom.getInstanceStrong().nextLong() | 1;
+					newVal = SecureRandom.getInstanceStrong().nextLong();
 				} catch (Exception ex) {
 					throw new RuntimeException(ex);
 				}
@@ -72,12 +73,14 @@ public class TwoFABotCommand extends BaseBotCommand {
 				args.response.append("Do not lose this!\n");
 				if (!userData.update2FA(newVal)) {
 					args.response.append("2FA DB field update failed\n");
+				} else if (!userData.setFlags(INatsueUserFlags.FLAG_2FA_ENABLED)) {
+					args.response.append("2FA flag update failed\n");
 				} else {
 					args.response.append("2FA successfully enabled.\nYou will need to reconnect.\n");
 				}
 				return;
 			}
-		} else if (str.equalsIgnoreCase("confirm_disable_2fa")) {
+		} else if (str.equalsIgnoreCase("confirm_disable")) {
 			if (args.remaining()) {
 				args.response.append("No parameters to confirm_disable_2fa\n");
 				return;
@@ -91,8 +94,8 @@ public class TwoFABotCommand extends BaseBotCommand {
 					args.response.append("How do you not exist?\n");
 					return;
 				}
-				if (!userData.update2FA(0)) {
-					args.response.append("2FA DB field update failed\n");
+				if (!userData.unsetFlags(INatsueUserFlags.FLAG_2FA_ENABLED)) {
+					args.response.append("2FA disable failed\n");
 				} else {
 					args.response.append("2FA successfully disabled.\n");
 				}
@@ -112,7 +115,7 @@ public class TwoFABotCommand extends BaseBotCommand {
 		}
 		if (args.sender.try2FAAuth(code)) {
 			args.response.append("Success!\n");
-		} else if (!args.sender.has2FAConfigured()) {
+		} else if (!args.sender.is2FAEnabled()) {
 			args.response.append("2FA not configured.\n");
 		} else {
 			args.response.append("Code invalid.\n");

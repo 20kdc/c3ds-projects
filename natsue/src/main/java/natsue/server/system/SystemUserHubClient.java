@@ -172,11 +172,6 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
-	public boolean has2FAConfigured() {
-		return false;
-	}
-
-	@Override
 	public boolean forceDisconnect(boolean sync) {
 		// You can't disconnect !System, that'd be absurd
 		return false;

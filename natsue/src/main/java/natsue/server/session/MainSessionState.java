@@ -80,11 +80,6 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	}
 
 	@Override
-	public boolean has2FAConfigured() {
-		return twoFASecret != null;
-	}
-
-	@Override
 	public boolean try2FAAuth(int code) {
 		if (twoFASecret != null) {
 			if (TOTP.verify(twoFASecret, code)) {

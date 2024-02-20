@@ -57,6 +57,12 @@ public class RemoteFlagControlBotCommand extends BaseBotCommand {
 					args.response.append("\n");
 					return;
 				}
+				if (fObj.doNotDirectlyWrite) {
+					args.response.append("Flag unsafe to write: ");
+					args.response.append(flag);
+					args.response.append("\n");
+					return;
+				}
 				if (add) {
 					set |= fObj.value;
 				} else {

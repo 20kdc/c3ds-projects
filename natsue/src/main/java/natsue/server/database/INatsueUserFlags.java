@@ -47,6 +47,11 @@ public interface INatsueUserFlags {
 	public static final int FLAG_UNLISTED = 64;
 
 	/**
+	 * Account has 2FA enabled for admin actions
+	 */
+	public static final int FLAG_2FA_ENABLED = 128;
+
+	/**
 	 * Gets the flags of this user.
 	 * These can be mutated by modUserFlags on regular users.
 	 * See INatsueUserFlags for flag values.
@@ -113,24 +118,31 @@ public interface INatsueUserFlags {
 		return (getFlags() & FLAG_UNLISTED) != 0;
 	}
 
+	default boolean is2FAEnabled() {
+		return (getFlags() & FLAG_2FA_ENABLED) != 0;
+	}
+
 	/**
 	 * This enum is used for dynamic flag monkey business 
 	 */
 	public enum Flag {
-		admin(FLAG_ADMINISTRATOR, "For bonus RP points, call yourself a Warpshaper... ;)"),
-		frozen(FLAG_FROZEN, "Prevents login and message receipt"),
-		recvnb(FLAG_RECEIVE_NB_NORNS, "Allows receipt of NB norns"),
-		norandom(FLAG_NO_RANDOM, "Disables random"),
-		recvgeat(FLAG_RECEIVE_GEATS, "Allows receipt of geats"),
-		muteglob(FLAG_MUTED_GLOBAL_CHAT, "Mutes the user in global chat"),
-		unlisted(FLAG_UNLISTED, "The user is not visible in who/etc.");
+		admin(FLAG_ADMINISTRATOR, "For bonus RP points, call yourself a Warpshaper... ;)", false),
+		frozen(FLAG_FROZEN, "Prevents login and message receipt", false),
+		recvnb(FLAG_RECEIVE_NB_NORNS, "Allows receipt of NB norns", false),
+		norandom(FLAG_NO_RANDOM, "Disables random", false),
+		recvgeat(FLAG_RECEIVE_GEATS, "Allows receipt of geats", false),
+		muteglob(FLAG_MUTED_GLOBAL_CHAT, "Mutes the user in global chat", false),
+		unlisted(FLAG_UNLISTED, "The user is not visible in who/etc.", false),
+		auth2f(FLAG_2FA_ENABLED, "Certain dangerous actions require 2FA.", true);
 
 		public final int value;
 		public final String detail;
+		public final boolean doNotDirectlyWrite;
 
-		Flag(int v, String d) {
+		Flag(int v, String d, boolean dnw) {
 			value = v;
 			detail = d;
+			doNotDirectlyWrite = dnw;
 		}
 
 		/**

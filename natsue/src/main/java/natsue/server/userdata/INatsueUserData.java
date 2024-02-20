@@ -40,11 +40,6 @@ public interface INatsueUserData extends INatsueUserFlags {
 	String getNicknameFolded();
 
 	/**
-	 * If 2FA is configured for the account.
-	 */
-	boolean has2FAConfigured();
-
-	/**
 	 * Gets the UIN of this user.
 	 * Immutable.
 	 */
@@ -99,6 +94,7 @@ public interface INatsueUserData extends INatsueUserFlags {
 
 		/**
 		 * Updates the account's password.
+		 * This also disables 2FA.
 		 */
 		boolean setPassword(String password);
 
@@ -230,11 +226,6 @@ public interface INatsueUserData extends INatsueUserFlags {
 		@Override
 		public byte[] calculate2FASecret(String password) {
 			return null;
-		}
-
-		@Override
-		public boolean has2FAConfigured() {
-			return false;
 		}
 
 		@Override
