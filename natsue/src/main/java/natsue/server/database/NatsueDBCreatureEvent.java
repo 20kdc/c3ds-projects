@@ -17,26 +17,28 @@ public class NatsueDBCreatureEvent {
 	public final int eventType;
 	public final int worldTime;
 	public final int ageTicks;
-	public final int unixTime;
+	public final int unixTime32;
 	public final int lifeStage;
 	public final String param1, param2, worldName, worldID, userID;
+	public final long sendUnixTime;
 
 	/**
 	 * Main constructor. When changing this, be aware of it's callers!
 	 */
-	public NatsueDBCreatureEvent(int senderUID, String moniker, int eventIndex, int eventType, int worldTime, int ageTicks, int unixTime, int lifeStage, String param1, String param2, String worldName, String worldID, String userID) {
+	public NatsueDBCreatureEvent(int senderUID, String moniker, int eventIndex, int eventType, int worldTime, int ageTicks, int unixTime32, int lifeStage, String param1, String param2, String worldName, String worldID, String userID, long sendUnixTime) {
 		this.senderUID = senderUID;
 		this.moniker = moniker;
 		this.eventIndex = eventIndex;
 		this.eventType = eventType;
 		this.worldTime = worldTime;
 		this.ageTicks = ageTicks;
-		this.unixTime = unixTime;
+		this.unixTime32 = unixTime32;
 		this.lifeStage = lifeStage;
 		this.param1 = param1;
 		this.param2 = param2;
 		this.worldName = worldName;
 		this.worldID = worldID;
 		this.userID = userID;
+		this.sendUnixTime = sendUnixTime;
 	}
 }

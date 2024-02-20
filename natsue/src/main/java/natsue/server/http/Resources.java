@@ -11,6 +11,7 @@ import natsue.data.babel.UINUtils;
 import natsue.server.database.NatsueDBCreatureEvent;
 import natsue.server.database.NatsueDBCreatureInfo;
 import natsue.server.database.NatsueDBWorldInfo;
+import natsue.server.database.UnixTime;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.userdata.INatsueUserData;
 
@@ -100,7 +101,7 @@ class Resources {
 		je.writeKV("eventType", ev.eventType);
 		je.writeKV("worldTime", ev.worldTime);
 		je.writeKV("ageTicks", ev.ageTicks);
-		je.writeKV("unixTime", ev.unixTime);
+		je.writeKV("unixTime", UnixTime.inferFrom32(ev.unixTime32, ev.sendUnixTime));
 		je.writeKV("lifeStage", ev.lifeStage);
 		je.writeKV("param1", ev.param1);
 		je.writeKV("param2", ev.param2);

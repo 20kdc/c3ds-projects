@@ -10,8 +10,33 @@ package natsue.server.database;
  * Quick thing to stuff this into.
  */
 public class UnixTime {
-
+	/**
+	 * Gets unix time in seconds since the epoch.
+	 */
 	public static long get() {
 		return System.currentTimeMillis() / 1000;
+	}
+
+	/**
+	 * With 2038 coming up alarmingly fast, use a sliding window to infer time.
+	 */
+	public static long inferFrom32(int unixTime32, long sendUnixTime) {
+		long divider = (sendUnixTime & 0xFFFFFFFFL) ^ 0x80000000L;
+		long unsigned = unixTime32 & 0xFFFFFFFFL;
+		long eraBase = sendUnixTime & ~0xFFFFFFFFL;
+		// this works because of very heavy unit testing
+		if ((divider & 0x80000000L) != 0) {
+			if (divider > unsigned) {
+				return unsigned + eraBase;
+			} else {
+				return unsigned + eraBase - 0x100000000L;
+			}
+		} else {
+			if (divider > unsigned) {
+				return unsigned + eraBase + 0x100000000L;
+			} else {
+				return unsigned + eraBase;
+			}
+		}
 	}
 }

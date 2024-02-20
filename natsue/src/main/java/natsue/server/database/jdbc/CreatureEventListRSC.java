@@ -19,7 +19,7 @@ public class CreatureEventListRSC implements ILResultSetConverter<NatsueDBCreatu
 	public static final String SELECTION =
 		"sender_uid, moniker, event_index, " +
 		"event_type, world_time, age_ticks, unix_time, life_stage, " +
-		"param1, param2, world_name, world_id, user_id";
+		"param1, param2, world_name, world_id, user_id, send_unix_time";
 
 	@Override
 	public NatsueDBCreatureEvent fromResultSet(ResultSet rs) throws SQLException {
@@ -51,7 +51,9 @@ public class CreatureEventListRSC implements ILResultSetConverter<NatsueDBCreatu
 			// worldID
 			rs.getString(12),
 			// userID
-			rs.getString(13)
+			rs.getString(13),
+			// sendUnixTime
+			rs.getLong(14)
 		);
 	}
 }
