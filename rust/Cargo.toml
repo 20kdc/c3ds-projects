@@ -1,0 +1,4 @@
+[workspace]
+resolver = "2"
+members = [ "libkc3ds","s16tool"]
+

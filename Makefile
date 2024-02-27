@@ -16,6 +16,7 @@ rel: COPYING.txt README.md CREDITS.txt assorted-caos
 	echo "r`date +%s` (Full)" > release-id.txt
 	echo "Linux host:" $(HOST_LINUX) >> release-id.txt
 	echo "Godot available:" $(HOST_GODOT) >> release-id.txt
+	echo "mdbook available:" $(HOST_MDBOOK) >> release-id.txt
 	echo "Java/Maven available:" $(HOST_JAVA) >> release-id.txt
 	echo "git status:" >> release-id.txt
 	git status >> release-id.txt
@@ -29,6 +30,7 @@ rel: COPYING.txt README.md CREDITS.txt assorted-caos
 rel-sdk: COPYING.txt README.md CREDITS.txt assorted-caos
 	echo "r`date +%s` (SDK)" > release-id.txt
 	echo "Linux host:" $(HOST_LINUX) >> release-id.txt
+	echo "mdbook available:" $(HOST_MDBOOK) >> release-id.txt
 	echo "Java/Maven available:" $(HOST_JAVA) >> release-id.txt
 	echo "git status:" >> release-id.txt
 	git status >> release-id.txt
