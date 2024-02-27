@@ -13,13 +13,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 
-import natsue.data.Snowflake;
+import cdsp.common.util.Snowflake;
+import cdsp.common.util.UnixTime;
 import natsue.data.babel.UINUtils;
 import natsue.server.database.NatsueDBCreatureEvent;
 import natsue.server.database.NatsueDBCreatureInfo;
 import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.database.NatsueDBWorldInfo;
-import natsue.server.database.UnixTime;
 
 public class JDBCNatsueTxns {
 	public final UserByUID userByUID = new UserByUID();

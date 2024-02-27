@@ -29,8 +29,6 @@ import natsue.server.hubapi.IHubPrivilegedClientAPI;
 import natsue.server.hubapi.IHubClientAsSeenByOtherClients;
 import natsue.server.hubapi.IHubClientAsSeenByOtherClientsPrivileged;
 import natsue.server.packet.QuotaManager;
-import natsue.server.session.ISessionClient;
-import natsue.server.session.MainSessionState;
 import natsue.server.system.SystemCommands;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
 import natsue.server.userdata.IHubUserDataCachePrivileged;
@@ -173,10 +171,11 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	/**
 	 * WARNING: Only call if you're absolutely sure the person isn't presently online!
 	 */
-	private void spoolMessage(long destinationUIN, PackedMessage message, int trueSenderUID, boolean fromRejector) {
+	private void spoolMessage(long destinationUIN, PackedMessage message, int trueSenderUID, boolean fromRejector, boolean compress) {
 		NatsueDBUserInfo ui = database.getUserByUIN(destinationUIN);
 		if (ui != null) {
-			if (!database.spoolMessage(ui.uid, trueSenderUID, message.toByteArray(config.messages))) {
+			// compress is AND'd with config by caller
+			if (!database.spoolMessage(ui.uid, trueSenderUID, message.toByteArray(compress))) {
 				if (!fromRejector) {
 					// Spooling failed. There is almost nothing we can do, but there is one last thing we can try.
 					rejectMessage(destinationUIN, message, "User " + UINUtils.toString(destinationUIN) + " spool failure");
@@ -195,7 +194,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				ihc = users.connectedClients.get(destinationUIN);
 			}
 			if (ihc != null) {
-				ihc.incomingMessage(message, null);
+				ihc.incomingMessage(message, null, type.compressIfAllowed);
 			} else {
 				sendMessageFailed(destinationUIN, message, type, causeUIN, "Target offline");
 			}
@@ -214,7 +213,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				ihc.incomingMessage(message, () -> {
 					// If this gets run, we apparently couldn't send the message after all...
 					sendMessageFailed(destinationUIN, message, type, causeUIN, "Target went offline during transmit");
-				});
+				}, type.compressIfAllowed);
 			}
 		}
 	}
@@ -223,7 +222,7 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		case Discard:
 			return;
 		case Spool:
-			spoolMessage(destinationUIN, message, UINUtils.asDBUID(causeUIN), type.isReject);
+			spoolMessage(destinationUIN, message, UINUtils.asDBUID(causeUIN), type.isReject, type.compressIfAllowed && config.messages.compressPRAYChunks.getValue());
 			return;
 		case Reject:
 			rejectMessage(destinationUIN, message, reason);
@@ -272,13 +271,24 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				for (int i = 0; i < maxSpool; i++) {
 					byte[] pm = database.popFirstSpooledMessage(uid);
 					if (pm != null) {
-						PackedMessage pmi = PackedMessage.read(pm, config.messages);
-						final int pmiSenderUID = UINUtils.asDBUID(pmi.senderUIN);
-						cc.incomingMessage(pmi, () -> {
+						if (!cc.incomingMessageByteArrayFastPath(pm, () -> {
 							// Note that BECAUSE THESE MESSAGES ARE ALREADY SPOOLED,
 							//  it's okay to spool them again at this level.
-							database.spoolMessage(uid, pmiSenderUID, pm);
-						});
+							try {
+								PackedMessage pmi = PackedMessage.read(pm, config.messages);
+								final int pmiSenderUID = UINUtils.asDBUID(pmi.senderUIN);
+								database.spoolMessage(uid, pmiSenderUID, pm);
+							} catch (Exception ex) {
+								log(ex);
+							}
+						})) {
+							// slow-path
+							PackedMessage pmi = PackedMessage.read(pm, config.messages);
+							final int pmiSenderUID = UINUtils.asDBUID(pmi.senderUIN);
+							cc.incomingMessage(pmi, () -> {
+								database.spoolMessage(uid, pmiSenderUID, pm);
+							}, true);
+						}
 					} else {
 						break;
 					}
@@ -517,13 +527,5 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 		if (detailed)
 			cryo.runSystemCheck(sb);
 		return sb.toString();
-	}
-
-	@Override
-	public synchronized ISessionClient acquireSessionClientForResearchCommands(long senderUIN) {
-		// This is bad.
-		IHubClient ihc = users.connectedClients.get(senderUIN);
-		MainSessionState mss = (MainSessionState) ihc;
-		return mss.client;
 	}
 }

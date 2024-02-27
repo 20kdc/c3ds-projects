@@ -67,10 +67,10 @@ public abstract class PackedMessage {
 		}
 	}
 
-	public abstract byte[] getOrPackContents(ConfigMessages msg);
+	public abstract byte[] getOrPackContents(boolean compress);
 
-	public byte[] toByteArray(ConfigMessages msg) {
-		byte[] messageData = getOrPackContents(msg);
+	public byte[] toByteArray(boolean compressIfAllowed) {
+		byte[] messageData = getOrPackContents(compressIfAllowed);
 		int len = messageData.length + HEADER_LEN;
 		ByteBuffer bb = IOUtils.newBuffer(len);
 		bb.putInt(len);

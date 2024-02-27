@@ -9,7 +9,7 @@ package natsue.server.system.cmd;
 
 import java.security.SecureRandom;
 
-import natsue.data.TOTP;
+import cdsp.common.util.TOTP;
 import natsue.data.babel.UINUtils;
 import natsue.names.PWHash;
 import natsue.server.database.INatsueUserFlags;

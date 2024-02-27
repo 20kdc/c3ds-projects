@@ -31,7 +31,7 @@ public class GetVCHandshakeResponseBotCommand extends BaseBotCommand {
 			args.response.append("Too many args.\n");
 			return;
 		}
-		ISessionClient escalator = args.hub.acquireSessionClientForResearchCommands(args.senderUIN);
+		ISessionClient escalator = args.sender.acquireSessionClientForResearchCommands();
 		try {
 			long vcrUIN = UINUtils.VC_RESEARCH_UIN;
 			escalator.sendPacket(PacketWriter.writeVirtualConnect(vcrUIN, (short) 1));

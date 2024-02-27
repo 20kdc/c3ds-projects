@@ -30,6 +30,7 @@ import natsue.server.hubapi.IHubPrivilegedClientAPI;
 import natsue.server.hubapi.IHubClientAsSeenByOtherClients;
 import natsue.server.hubapi.IHubClientAsSeenByOtherClientsPrivileged;
 import natsue.server.hubapi.IHubPrivilegedAPI.MsgSendType;
+import natsue.server.session.ISessionClient;
 import natsue.server.system.cmd.BaseBotCommand;
 import natsue.server.system.cmd.BaseBotCommand.Cat;
 import natsue.server.system.cmd.BaseBotCommand.Context;
@@ -172,6 +173,11 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
+	public ISessionClient acquireSessionClientForResearchCommands() {
+		return null;
+	}
+
+	@Override
 	public boolean forceDisconnect(boolean sync) {
 		// You can't disconnect !System, that'd be absurd
 		return false;
@@ -197,7 +203,7 @@ public class SystemUserHubClient implements IHubClient, ILogSource {
 	}
 
 	@Override
-	public void incomingMessage(PackedMessage message, Runnable reject) {
+	public void incomingMessage(PackedMessage message, Runnable reject, boolean compressIfAllowed) {
 		if (message instanceof PackedMessagePRAY) {
 			try {
 				LinkedList<PRAYBlock> info = ((PackedMessagePRAY) message).messageBlocks;

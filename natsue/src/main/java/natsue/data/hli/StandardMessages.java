@@ -93,6 +93,19 @@ public class StandardMessages {
 	}
 
 	/**
+	 * Mail message
+	 */
+	public static PackedMessage mail(long senderUIN, String senderNick, String dateSent, String subject, String message) {
+		PRAYTags res = new PRAYTags(PacketReader.CHARSET);
+		res.strMap.put("Sender UserID", UINUtils.toString(senderUIN));
+		res.strMap.put("Sender Nickname", senderNick);
+		res.strMap.put("Date Sent", dateSent);
+		res.strMap.put("Subject", subject);
+		res.strMap.put("Message", message);
+		return tagsMessage(senderUIN, "MESG", res);
+	}
+
+	/**
 	 * Generates a PRAY block name.
 	 */
 	public static String generateBlockName(String type) {

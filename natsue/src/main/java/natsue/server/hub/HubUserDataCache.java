@@ -11,13 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import cdsp.common.util.UnixTime;
 import natsue.config.ConfigAccounts;
 import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.names.NicknameVerifier;
 import natsue.names.PWHash;
-import natsue.server.database.UnixTime;
 import natsue.server.database.INatsueDatabase;
 import natsue.server.database.NatsueDBUserInfo;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;

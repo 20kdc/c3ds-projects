@@ -9,7 +9,7 @@ package natsue.server.system.cmd;
 
 import java.util.List;
 
-import natsue.data.TOTP;
+import cdsp.common.util.TOTP;
 import natsue.data.babel.UINUtils;
 import natsue.data.hli.ChatColours;
 import natsue.log.ILogSource;

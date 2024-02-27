@@ -20,7 +20,16 @@ public interface IHubClient extends IHubClientAsSeenByOtherClientsPrivileged, IW
 	 * reject is run if an error occurs.
 	 * If reject is null, the message success is not tracked.
 	 */
-	void incomingMessage(PackedMessage message, Runnable reject);
+	void incomingMessage(PackedMessage message, Runnable reject, boolean compressIfAllowed);
+
+	/**
+	 * Incoming message byte array fast path, for spooled messages.
+	 * Returns false if not supported - then the caller must decode the message.
+	 * Otherwise returns true and acts as normal.
+	 */
+	default boolean incomingMessageByteArrayFastPath(byte[] message, Runnable reject) {
+		return false;
+	}
 
 	/**
 	 * This connection is stale or we don't like the client or something.

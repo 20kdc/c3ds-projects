@@ -12,8 +12,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cdsp.common.data.IOUtils;
+import cdsp.common.util.TOTP;
 import natsue.config.Config;
-import natsue.data.TOTP;
 import natsue.data.babel.BabelClientVersion;
 import natsue.data.babel.CreatureHistoryBlob;
 import natsue.data.babel.PacketWriter;
@@ -88,6 +88,11 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public ISessionClient acquireSessionClientForResearchCommands() {
+		return client;
 	}
 
 	@Override
@@ -169,7 +174,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 					"YOU'VE BEEN SAVED FROM CRASHING, BUT CLOSE THE GAME SAFELY AS SOON AS POSSIBLE.\n" +
 					"\n" +
 					"Do ask me about this! - 20kdc");
-			client.sendPacket(PacketWriter.writeMessage(pm.toByteArray(config.messages)));
+			client.sendPacket(PacketWriter.writeMessage(pm.toByteArray(config.messages.compressPRAYChunks.getValue())));
 		} else if (packet instanceof CTOSVirtualCircuit) {
 			// Do nothing.
 			//CTOSVirtualCircuit vc = (CTOSVirtualCircuit) packet;
@@ -213,19 +218,24 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	}
 
 	@Override
-	public void incomingMessage(PackedMessage message, Runnable reject) {
+	public void incomingMessage(PackedMessage message, Runnable reject, boolean compressIfAllowed) {
+		incomingMessageByteArrayFastPath(message.toByteArray(config.messages.compressPRAYChunks.getValue() && compressIfAllowed), reject);
+	}
+
+	@Override
+	public boolean incomingMessageByteArrayFastPath(byte[] message, Runnable reject) {
 		// First of all, send the message
 		try {
-			client.sendPacket(PacketWriter.writeMessage(message.toByteArray(config.messages)));
+			client.sendPacket(PacketWriter.writeMessage(message));
 		} catch (Exception ex) {
 			log(ex);
 			if (reject != null)
 				reject.run();
-			return;
+			return true;
 		}
 		// Now setup tracking for if that fails
 		if (reject == null)
-			return;
+			return true;
 		final AtomicBoolean hasRejected = new AtomicBoolean();
 		byte[] pingPacket = pingManager.addPing((status) -> {
 			if (hasRejected.getAndSet(true))
@@ -236,7 +246,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 		if (pingPacket == null) {
 			if (!hasRejected.getAndSet(true))
 				reject.run();
-			return;
+			return true;
 		}
 		try {
 			client.sendPacket(pingPacket);
@@ -245,6 +255,7 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 			if (!hasRejected.getAndSet(true))
 				reject.run();
 		}
+		return true;
 	}
 
 	@Override
@@ -256,4 +267,5 @@ public class MainSessionState extends BaseSessionState implements IHubClient, IL
 	public void markNotReallyOnline() {
 		notReallyOnline = true;
 	}
+
 }

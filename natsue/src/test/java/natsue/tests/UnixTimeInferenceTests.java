@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import natsue.server.database.UnixTime;
+import cdsp.common.util.UnixTime;
 
 public class UnixTimeInferenceTests {
 	@Test

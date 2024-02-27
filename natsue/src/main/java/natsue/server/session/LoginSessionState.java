@@ -69,7 +69,7 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 					long uin = result.userData.getUIN();
 					client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, result.hub.getServerUIN(), uin));
 					// send API version
-					client.sendPacket(PacketWriter.writeMessage(new PackedMessageWrit(uin, "natsue_version", 2468, HypercallFWModule.HVAPI_VERSION, SystemCommands.VERSION).toByteArray(config.messages)));
+					client.sendPacket(PacketWriter.writeMessage(new PackedMessageWrit(uin, "natsue_version", 2468, HypercallFWModule.HVAPI_VERSION, SystemCommands.VERSION).toByteArray(config.messages.compressPRAYChunks.getValue())));
 				} catch (Exception ex) {
 					if (client.logFailedAuth())
 						log(ex);
@@ -87,7 +87,7 @@ public class LoginSessionState extends BaseSessionState implements ILogSource {
 			// Alright, this gets complicated
 			long uin = af.who.uin;
 			client.sendPacket(PacketWriter.writeHandshakeResponse(PacketWriter.HANDSHAKE_RESPONSE_OK, af.serverUIN, uin));
-			client.sendPacket(PacketWriter.writeMessage(StandardMessages.systemMessage(uin, config.accountFrozenText.getValue()).toByteArray(config.messages)));
+			client.sendPacket(PacketWriter.writeMessage(StandardMessages.systemMessage(uin, config.accountFrozenText.getValue()).toByteArray(config.messages.compressPRAYChunks.getValue())));
 			try {
 				// We don't want the client to consider this a complete login.
 				// But we need enough time for the client to receive our message without the error coming up.

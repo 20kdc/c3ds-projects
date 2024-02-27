@@ -57,6 +57,8 @@ Mail sent via the Message Centre.
 + `"Subject"`: String
 + `"Message"`: String
 
+Messages can be 12 lines, assuming no wrapping occurs.
+
 ## "CHAT"
 
 Various kinds of chat message are sent via this chunk type.

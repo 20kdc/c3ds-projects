@@ -12,11 +12,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.LinkedList;
 
+import cdsp.common.util.UnixTime;
 import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
 import natsue.names.CreatureDataVerifier;
-import natsue.server.database.UnixTime;
 import natsue.server.http.JSONEncoder;
 
 /**

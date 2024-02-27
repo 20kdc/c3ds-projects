@@ -11,8 +11,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import natsue.data.TOTP;
-import natsue.data.TOTP.InvalidTOTPKeyException;
+import cdsp.common.util.TOTP;
+import cdsp.common.util.TOTP.InvalidTOTPKeyException;
 
 public class TOTPTests {
 

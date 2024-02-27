@@ -32,7 +32,7 @@ public class FullReportBotCommand extends BaseBotCommand {
 		byte[] data = args.hub.runSystemCheck(true).getBytes(StandardCharsets.UTF_8);
 		PRAYBlock pray = new PRAYBlock("INVI", StandardMessages.generateBlockName("INVI") + ".txt", data, PacketReader.CHARSET);
 		PackedMessage pm = new PackedMessagePRAY(args.senderUIN, pray);
-		args.hub.sendMessage(args.senderUIN, pm, MsgSendType.Temp, args.senderUIN);
+		args.hub.sendMessage(args.senderUIN, pm, MsgSendType.SystemReport, args.senderUIN);
 		args.response.append("Check your Warp In directory!");
 	}
 }

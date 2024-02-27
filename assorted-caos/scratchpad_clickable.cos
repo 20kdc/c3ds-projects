@@ -1,33 +1,13 @@
-/*
  * c3ds-projects - Assorted compatibility fixes & useful tidbits
  * Written starting in 2022 by contributors (see CREDITS.txt)
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
- */
 
-package natsue.data.babel.pm;
+ * Agent you can dump blocking CAOS into if you need to on script 1000.
+ * use "call 1001 TEXT null" to talk!
 
-/**
- * PackedMessage of an unknown type!
- */
-public class PackedMessageUnknown extends PackedMessage {
-	public byte[] messageData;
+new: simp 1 2 42087 "ds lemon pod" 1 30 8000 clac 1000 attr 38 flto 32 32
+scrp 1 2 42087 1001 rtar 1 2 10 mesg wrt+ targ 126 _p1_ ownr 0 endm
 
-	public PackedMessageUnknown(int type) {
-		super(type);
-	}
-
-	public PackedMessageUnknown(long uin, int t) {
-		super(uin, t);
-	}
-
-	public PackedMessageUnknown(long uin, int t, byte[] data) {
-		super(uin, t);
-		messageData = data;
-	}
-
-	@Override
-	public byte[] getOrPackContents(boolean compress) {
-		return messageData;
-	}
-}
+ * example: call net: ruso (tower test circuit)
+scrp 1 2 42087 1000 net: ruso va00 call 1001 va00 null endm

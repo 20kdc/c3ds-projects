@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import cdsp.common.util.UnixTime;
 import natsue.data.babel.CreatureHistoryBlob;
 import natsue.data.babel.UINUtils;
 import natsue.server.database.INatsueDatabase;
@@ -22,7 +23,6 @@ import natsue.server.database.INatsueUserFlags;
 import natsue.server.database.NatsueDBCreatureEvent;
 import natsue.server.database.NatsueDBCreatureInfo;
 import natsue.server.database.NatsueDBWorldInfo;
-import natsue.server.database.UnixTime;
 import natsue.server.hubapi.IHubPrivilegedAPI;
 import natsue.server.photo.IPhotoStorage;
 import natsue.server.system.SystemCommands;

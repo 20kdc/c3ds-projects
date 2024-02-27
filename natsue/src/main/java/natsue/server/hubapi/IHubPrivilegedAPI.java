@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.server.cryo.CryoFrontend;
 import natsue.server.firewall.IRejector;
-import natsue.server.session.ISessionClient;
 import natsue.server.userdata.IHubUserDataCachePrivilegedProxy;
 import natsue.server.userdata.INatsueUserData;
 
@@ -85,30 +84,47 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	CryoFrontend getCryoFE();
 
 	/**
-	 * For VERY SPECIFIC shenanigans.
-	 * Research commands ONLY, please.
-	 */
-	ISessionClient acquireSessionClientForResearchCommands(long senderUIN);
-
-	/**
 	 * Controls message behaviour.
 	 */
 	public static enum MsgSendType {
-		// Chat/etc.
-		Temp(false, MsgSendFailBehaviour.Discard),
-		// mail
-		Perm(false, MsgSendFailBehaviour.Spool),
-		// Norns
-		PermReturnIfOffline(false, MsgSendFailBehaviour.Reject),
-		// Rejects
-		TempReject(true, MsgSendFailBehaviour.Discard),
-		PermReject(true, MsgSendFailBehaviour.Spool);
+		/**
+		 * Chat/etc.
+		 * Discarded if target missing.
+		 */
+		Temp(false, MsgSendFailBehaviour.Discard, true),
+		/**
+		 * Special message type for system reports
+		 * These MUST be decompressed!!!
+		 * This allows quick extraction in an emergency.
+		 */
+		SystemReport(false, MsgSendFailBehaviour.Discard, false),
+		/**
+		 * Mail/etc.
+		 * Will be persisted.
+		 */
+		Perm(false, MsgSendFailBehaviour.Spool, true),
+		/**
+		 * Norns.
+		 * Will be rejected if target missing.
+		 */
+		PermReturnIfOffline(false, MsgSendFailBehaviour.Reject, true),
+		/**
+		 * Rejected temporary message.
+		 * These don't exist right now.
+		 * (We never have a reason to send these back!)
+		 */
+		TempReject(true, MsgSendFailBehaviour.Discard, true),
+		/**
+		 * Rejected permanent message.
+		 */
+		PermReject(true, MsgSendFailBehaviour.Spool, true);
 
-		public final boolean isReject;
+		public final boolean isReject, compressIfAllowed;
 		public final MsgSendFailBehaviour failBehaviour;
 
-		MsgSendType(boolean ir, MsgSendFailBehaviour ss) {
+		MsgSendType(boolean ir, MsgSendFailBehaviour ss, boolean compressIfAllowed) {
 			isReject = ir;
+			this.compressIfAllowed = compressIfAllowed;
 			failBehaviour = ss;
 		}
 	}

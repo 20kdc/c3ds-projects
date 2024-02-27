@@ -5,23 +5,7 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package natsue.server.hubapi;
-
-import natsue.server.session.ISessionClient;
-
 /**
- * Public interface exposed from IHubClient via ServerHub.getUserConnectionInfo
+ * Utilities
  */
-public interface IHubClientAsSeenByOtherClientsPrivileged extends IHubClientAsSeenByOtherClients {
-	/**
-	 * Attempt to 2FA-auth this connection.
-	 */
-	boolean try2FAAuth(int code);
-
-	/**
-	 * For VERY SPECIFIC shenanigans.
-	 * Research commands ONLY, please.
-	 * Can return null.
-	 */
-	ISessionClient acquireSessionClientForResearchCommands();
-}
+package cdsp.common.util;
