@@ -19,9 +19,9 @@ import java.util.Arrays;
  * Random little IO utilities.
  */
 public class IOUtils {
-    /**
-     * Creates a new little-endian ByteBuffer.
-     */
+	/**
+	 * Creates a new little-endian ByteBuffer.
+	 */
 	public static ByteBuffer newBuffer(int size) {
 		ByteBuffer res = ByteBuffer.allocate(size);
 		res.order(ByteOrder.LITTLE_ENDIAN);
@@ -50,61 +50,63 @@ public class IOUtils {
 		return new String(name, 0, len, charset);
 	}
 
-    /**
-     * Makes sure to read the given amount of bytes from the input stream (no more or less).
-     */
-    public static void readFully(InputStream socketInput, byte[] data, int ofs, int len) throws IOException {
-        int end = ofs + len;
-        while (ofs < end) {
-            int amount = socketInput.read(data, ofs, end - ofs);
-            if (amount <= 0)
-                throw new EOFException("Out of data");
-            ofs += amount;
-        }
-    }
+	/**
+	 * Makes sure to read the given amount of bytes from the input stream (no more
+	 * or less).
+	 */
+	public static void readFully(InputStream socketInput, byte[] data, int ofs, int len) throws IOException {
+		int end = ofs + len;
+		while (ofs < end) {
+			int amount = socketInput.read(data, ofs, end - ofs);
+			if (amount <= 0)
+				throw new EOFException("Out of data");
+			ofs += amount;
+		}
+	}
 
-    /**
-     * Makes sure to read the given amount of bytes from the input stream (no more or less).
-     */
-    public static byte[] getBytes(InputStream socketInput, int len) throws IOException {
-        byte[] data = new byte[len];
-        readFully(socketInput, data, 0, len);
-        return data;
-    }
+	/**
+	 * Makes sure to read the given amount of bytes from the input stream (no more
+	 * or less).
+	 */
+	public static byte[] getBytes(InputStream socketInput, int len) throws IOException {
+		byte[] data = new byte[len];
+		readFully(socketInput, data, 0, len);
+		return data;
+	}
 
-    /**
-     * Makes sure to read the given amount of bytes from the input stream (no more or less).
-     * Returns a little-endian ByteBuffer.
-     */
-    public static ByteBuffer getWrappedBytes(InputStream socketInput, int len) throws IOException {
-        return wrapLE(getBytes(socketInput, len));
-    }
+	/**
+	 * Makes sure to read the given amount of bytes from the input stream (no more
+	 * or less). Returns a little-endian ByteBuffer.
+	 */
+	public static ByteBuffer getWrappedBytes(InputStream socketInput, int len) throws IOException {
+		return wrapLE(getBytes(socketInput, len));
+	}
 
-    /**
-     * Converts a byte[] to a little-endian ByteBuffer.
-     */
-    public static ByteBuffer wrapLE(byte[] total) {
-        return wrapLE(total, 0, total.length);
-    }
+	/**
+	 * Converts a byte[] to a little-endian ByteBuffer.
+	 */
+	public static ByteBuffer wrapLE(byte[] total) {
+		return wrapLE(total, 0, total.length);
+	}
 
-    /**
-     * Converts a byte[] to a little-endian ByteBuffer.
-     */
-    public static ByteBuffer wrapLE(byte[] total, int ofs, int len) {
-        ByteBuffer bb = ByteBuffer.wrap(total, ofs, len);
-        bb.order(ByteOrder.LITTLE_ENDIAN);
-        return bb;
-    }
+	/**
+	 * Converts a byte[] to a little-endian ByteBuffer.
+	 */
+	public static ByteBuffer wrapLE(byte[] total, int ofs, int len) {
+		ByteBuffer bb = ByteBuffer.wrap(total, ofs, len);
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+		return bb;
+	}
 
-    /**
-     * Gets a string with "stream-like" ByteBuffer access
-     */
-    public static String getString(ByteBuffer bb, Charset charset) {
-        int len = bb.getInt();
-        byte[] baseArray = bb.array();
-        int pos = bb.position();
-        String str = new String(baseArray, bb.arrayOffset() + pos, len, charset);
-        bb.position(pos + len);
-        return str;
-    }
+	/**
+	 * Gets a string with "stream-like" ByteBuffer access
+	 */
+	public static String getString(ByteBuffer bb, Charset charset) {
+		int len = bb.getInt();
+		byte[] baseArray = bb.array();
+		int pos = bb.position();
+		String str = new String(baseArray, bb.arrayOffset() + pos, len, charset);
+		bb.position(pos + len);
+		return str;
+	}
 }

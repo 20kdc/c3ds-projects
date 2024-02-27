@@ -18,36 +18,36 @@ import cdsp.common.data.DirLookup.Location;
 
 @SuppressWarnings("serial")
 public class JGameInfo extends JPanel {
-    public JGameInfo(GameInfo gameInfo) {
-        setLayout(new BorderLayout());
-        LinkedList<JGameInfoLocation> jgils = new LinkedList<>();
-        JTabbedPane directories = new JTabbedPane();
-        for (Location loc : Location.values()) {
-            JGameInfoLocation jgil = new JGameInfoLocation(this, gameInfo.locations.get(loc), () -> {
-                gameInfo.saveToDefaultLocation();
-            });
-            jgils.add(jgil);
-            directories.addTab(loc.nameInternal, jgil);
-        }
-        add(BorderLayout.CENTER, directories);
-        JPanel buttonbar = new JPanel();
-        buttonbar.setLayout(new BoxLayout(buttonbar, BoxLayout.X_AXIS));
-        buttonbar.add(new JButtonWR("Add Game Directory", () -> {
-            File res = JGameInfoLocation.selectDirectory(this);
-            if (res != null) {
-                gameInfo.fromGameDirectory(res);
-                for (JGameInfoLocation jgil : jgils)
-                    jgil.refreshDirs();
-            }
-            gameInfo.saveToDefaultLocation();
-        }));
-        buttonbar.add(new JButtonWR("Clear All", () -> {
-            for (LinkedList<File> llf : gameInfo.locations.values())
-                llf.clear();
-            for (JGameInfoLocation jgil : jgils)
-                jgil.refreshDirs();
-            gameInfo.saveToDefaultLocation();
-        }));
-        add(BorderLayout.SOUTH, buttonbar);
-    }
+	public JGameInfo(GameInfo gameInfo) {
+		setLayout(new BorderLayout());
+		LinkedList<JGameInfoLocation> jgils = new LinkedList<>();
+		JTabbedPane directories = new JTabbedPane();
+		for (Location loc : Location.values()) {
+			JGameInfoLocation jgil = new JGameInfoLocation(this, gameInfo.locations.get(loc), () -> {
+				gameInfo.saveToDefaultLocation();
+			});
+			jgils.add(jgil);
+			directories.addTab(loc.nameInternal, jgil);
+		}
+		add(BorderLayout.CENTER, directories);
+		JPanel buttonbar = new JPanel();
+		buttonbar.setLayout(new BoxLayout(buttonbar, BoxLayout.X_AXIS));
+		buttonbar.add(new JButtonWR("Add Game Directory", () -> {
+			File res = JGameInfoLocation.selectDirectory(this);
+			if (res != null) {
+				gameInfo.fromGameDirectory(res);
+				for (JGameInfoLocation jgil : jgils)
+					jgil.refreshDirs();
+			}
+			gameInfo.saveToDefaultLocation();
+		}));
+		buttonbar.add(new JButtonWR("Clear All", () -> {
+			for (LinkedList<File> llf : gameInfo.locations.values())
+				llf.clear();
+			for (JGameInfoLocation jgil : jgils)
+				jgil.refreshDirs();
+			gameInfo.saveToDefaultLocation();
+		}));
+		add(BorderLayout.SOUTH, buttonbar);
+	}
 }

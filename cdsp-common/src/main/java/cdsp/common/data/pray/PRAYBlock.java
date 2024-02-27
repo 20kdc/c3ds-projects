@@ -23,9 +23,9 @@ import cdsp.common.data.IOUtils;
  * PRAY Block (and utilities for PRAY files).
  */
 public class PRAYBlock {
-    /**
-     * Character set. Typically StandardCharsets.ISO_8859_1.
-     */
+	/**
+	 * Character set. Typically StandardCharsets.ISO_8859_1.
+	 */
 	public final Charset charset;
 
 	/**
@@ -34,8 +34,8 @@ public class PRAYBlock {
 	private final byte[] type = new byte[4];
 
 	/**
-	 * Mirror of type, keep up to date!
-	 * Exists just as a way to reduce unnecessary conversion.
+	 * Mirror of type, keep up to date! Exists just as a way to reduce unnecessary
+	 * conversion.
 	 */
 	private String typeStr;
 
@@ -56,9 +56,9 @@ public class PRAYBlock {
 		this.charset = charset;
 	}
 
-    /**
-     * Initializes a new PRAY block.
-     */
+	/**
+	 * Initializes a new PRAY block.
+	 */
 	public PRAYBlock(String string, String str2, byte[] byteArray, Charset charset) {
 		this.charset = charset;
 		setType(string);
@@ -75,36 +75,36 @@ public class PRAYBlock {
 	}
 
 	/**
-     * Sets the name of this PRAY block, as a string.
-     */
+	 * Sets the name of this PRAY block, as a string.
+	 */
 	public void setName(String t) {
 		IOUtils.setFixedLength(name, t, charset);
 	}
 
-    /**
-     * Gets the type of this PRAY block, as a string.
-     */
+	/**
+	 * Gets the type of this PRAY block, as a string.
+	 */
 	public String getType() {
 		return typeStr;
 	}
 
 	/**
-     * Gets the name of this PRAY block, as a string.
-     */
+	 * Gets the name of this PRAY block, as a string.
+	 */
 	public String getName() {
 		return IOUtils.getFixedLength(name, charset);
 	}
 
 	/**
-     * Copies this PRAY block.
-     */
+	 * Copies this PRAY block.
+	 */
 	public PRAYBlock copy() {
 		return new PRAYBlock(getType(), getName(), data.clone(), charset);
 	}
 
-    /**
-     * Copies a list of PRAY blocks.
-     */
+	/**
+	 * Copies a list of PRAY blocks.
+	 */
 	public static LinkedList<PRAYBlock> copyList(Iterable<PRAYBlock> src) {
 		LinkedList<PRAYBlock> blocks = new LinkedList<>();
 		for (PRAYBlock blk : src)
@@ -112,9 +112,9 @@ public class PRAYBlock {
 		return blocks;
 	}
 
-    /**
-     * Reads a PRAY file into a list of PRAY blocks.
-     */
+	/**
+	 * Reads a PRAY file into a list of PRAY blocks.
+	 */
 	public static LinkedList<PRAYBlock> read(ByteBuffer dataSlice, int maxDecompressedSize, Charset charset) {
 		if (dataSlice.get() != (byte) 'P')
 			throw new RuntimeException("Not a PRAY file!");
@@ -134,9 +134,9 @@ public class PRAYBlock {
 		return blocks;
 	}
 
-    /**
-     * Reads a PRAY block from a ByteBuffer.
-     */
+	/**
+	 * Reads a PRAY block from a ByteBuffer.
+	 */
 	public static PRAYBlock readOne(ByteBuffer dataSlice, int maxBlockSize, int maxTotalSize, Charset charset) {
 		PRAYBlock block = new PRAYBlock(charset);
 		dataSlice.get(block.type);
@@ -147,12 +147,14 @@ public class PRAYBlock {
 		int flags = dataSlice.getInt();
 
 		if (decompressedDataSize > maxBlockSize)
-			throw new RuntimeException("Too much data in PRAY block: DC:" + decompressedDataSize + ", MS:" + maxBlockSize + ", MT:" + maxTotalSize);
+			throw new RuntimeException("Too much data in PRAY block: DC:" + decompressedDataSize + ", MS:"
+					+ maxBlockSize + ", MT:" + maxTotalSize);
 
 		block.data = new byte[decompressedDataSize];
 
 		if ((flags & 1) != 0) {
-			ByteArrayInputStream bais = new ByteArrayInputStream(dataSlice.array(), dataSlice.arrayOffset() + dataSlice.position(), compressedDataSize);
+			ByteArrayInputStream bais = new ByteArrayInputStream(dataSlice.array(),
+					dataSlice.arrayOffset() + dataSlice.position(), compressedDataSize);
 			InflaterInputStream iis = new InflaterInputStream(bais);
 			try {
 				int pos = 0;
@@ -191,9 +193,9 @@ public class PRAYBlock {
 		}
 	}
 
-    /**
-     * Writes a PRAY file to a byte array.
-     */
+	/**
+	 * Writes a PRAY file to a byte array.
+	 */
 	public static byte[] write(Iterable<PRAYBlock> blocks, boolean compressPRAYChunks) {
 		int totalLen = 4;
 		int blockCount = 0;
@@ -209,20 +211,27 @@ public class PRAYBlock {
 			totalLen += pbp.calcSize();
 		}
 		ByteBuffer total = IOUtils.newBuffer(totalLen);
-		total.put((byte) 'P'); total.put((byte) 'R'); total.put((byte) 'A'); total.put((byte) 'Y');
+		total.put((byte) 'P');
+		total.put((byte) 'R');
+		total.put((byte) 'A');
+		total.put((byte) 'Y');
 		for (PRAYBlockPrepared pb : preparedBlocks)
 			pb.put(total);
 		return total.array();
 	}
 
-    /**
-     * Writes a PRAY file to a byte array, for a simpler PRAY file (more efficient GC/RAM-wise)
-     */
+	/**
+	 * Writes a PRAY file to a byte array, for a simpler PRAY file (more efficient
+	 * GC/RAM-wise)
+	 */
 	public static byte[] writeFileWithOneBlock(PRAYBlock pb, boolean compressPRAYChunks) {
 		PRAYBlockPrepared pbp = prepareBlock(pb, compressPRAYChunks);
 		int totalLen = 4 + pbp.calcSize();
 		ByteBuffer total = IOUtils.newBuffer(totalLen);
-		total.put((byte) 'P'); total.put((byte) 'R'); total.put((byte) 'A'); total.put((byte) 'Y');
+		total.put((byte) 'P');
+		total.put((byte) 'R');
+		total.put((byte) 'A');
+		total.put((byte) 'Y');
 		pbp.put(total);
 		return total.array();
 	}
@@ -233,6 +242,7 @@ public class PRAYBlock {
 		final int fullSize;
 		final boolean compressed;
 		final byte[] data;
+
 		private PRAYBlockPrepared(PRAYBlock base, int fs, boolean c, byte[] d) {
 			type = base.type;
 			name = base.name;
@@ -240,6 +250,7 @@ public class PRAYBlock {
 			compressed = c;
 			data = d;
 		}
+
 		private void put(ByteBuffer total) {
 			total.put(type);
 			total.put(name);
@@ -248,6 +259,7 @@ public class PRAYBlock {
 			total.putInt(compressed ? 1 : 0);
 			total.put(data);
 		}
+
 		public int calcSize() {
 			return 16 + 128 + data.length;
 		}

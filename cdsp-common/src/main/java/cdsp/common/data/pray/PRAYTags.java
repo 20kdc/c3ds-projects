@@ -20,9 +20,9 @@ import cdsp.common.data.IOUtils;
  * PRAY tags block manipulator.
  */
 public class PRAYTags {
-    /**
-     * Character set, see PRAYBlock
-     */
+	/**
+	 * Character set, see PRAYBlock
+	 */
 	public final Charset charset;
 
 	/**
@@ -43,8 +43,7 @@ public class PRAYTags {
 	}
 
 	/**
-	 * Reads block contents into this manipulator.
-	 * The manipulator is not cleared.
+	 * Reads block contents into this manipulator. The manipulator is not cleared.
 	 */
 	public void read(byte[] block) {
 		ByteBuffer bb = IOUtils.wrapLE(block);
@@ -61,9 +60,9 @@ public class PRAYTags {
 		}
 	}
 
-    /**
-     * Writes this manipulator's contents into a block byte array.
-     */
+	/**
+	 * Writes this manipulator's contents into a block byte array.
+	 */
 	public byte[] toByteArray() {
 		LinkedList<byte[]> intKeyByteArrays = new LinkedList<byte[]>();
 		LinkedList<Integer> intValues = new LinkedList<Integer>();

@@ -13,32 +13,25 @@ import java.io.File;
  * Directory lookup device.
  */
 public interface DirLookup {
-    public File findFile(Location location, String name);
-    public static enum Location {
-        // nameInternal is saved into files.
-        BACKGROUNDS("Backgrounds", "Backgrounds", false),
-        BODY_DATA("Body Data", "Body Data", false),
-        BOOTSTRAP("Bootstrap", "Bootstrap", false),
-        CATALOGUE("Catalogue", "Catalogue", false),
-        CREATURE_DATABASE("Creature Database", "Creature Galleries", false),
-        EXPORTED_CREATURES("Exported Creatures", "My Creatures", false),
-        GENETICS("Genetics", "Genetics", true),
-        IMAGES("Images", "Images", true),
-        JOURNAL("Journal", "Journal", true),
-        MAIN("Main", ".", false),
-        OVERLAY_DATA("Overlay Data", "Overlay Data", false),
-        RESOURCE_FILES("Resource Files", "My Agents", false),
-        SOUNDS("Sounds", "Sounds", false),
-        USERS("Users", "Users", false),
-        WORLDS("Worlds", "My Worlds", false);
+	public File findFile(Location location, String name);
 
-        public final String nameInternal, nameTypical;
-        public final boolean hasWorld;
+	public static enum Location {
+		// nameInternal is saved into files.
+		BACKGROUNDS("Backgrounds", "Backgrounds", false), BODY_DATA("Body Data", "Body Data", false),
+		BOOTSTRAP("Bootstrap", "Bootstrap", false), CATALOGUE("Catalogue", "Catalogue", false),
+		CREATURE_DATABASE("Creature Database", "Creature Galleries", false),
+		EXPORTED_CREATURES("Exported Creatures", "My Creatures", false), GENETICS("Genetics", "Genetics", true),
+		IMAGES("Images", "Images", true), JOURNAL("Journal", "Journal", true), MAIN("Main", ".", false),
+		OVERLAY_DATA("Overlay Data", "Overlay Data", false), RESOURCE_FILES("Resource Files", "My Agents", false),
+		SOUNDS("Sounds", "Sounds", false), USERS("Users", "Users", false), WORLDS("Worlds", "My Worlds", false);
 
-        Location(String nameInternal, String nameTypical, boolean hasWorld) {
-            this.nameInternal = nameInternal;
-            this.nameTypical = nameTypical;
-            this.hasWorld = hasWorld;
-        }
-    }
+		public final String nameInternal, nameTypical;
+		public final boolean hasWorld;
+
+		Location(String nameInternal, String nameTypical, boolean hasWorld) {
+			this.nameInternal = nameInternal;
+			this.nameTypical = nameTypical;
+			this.hasWorld = hasWorld;
+		}
+	}
 }

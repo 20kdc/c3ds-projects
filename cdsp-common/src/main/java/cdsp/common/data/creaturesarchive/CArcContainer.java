@@ -17,29 +17,30 @@ import java.util.zip.InflaterInputStream;
  * CreaturesArchive container utilities.
  */
 public class CArcContainer {
-    private static byte[] MAGIC;
-    static {
-        String res = "Creatures Evolution Engine - Archived information file. zLib 1.13 compressed.\u001A\u0004";
-        MAGIC = res.getBytes(StandardCharsets.UTF_8);
-    }
+	private static byte[] MAGIC;
+	static {
+		String res = "Creatures Evolution Engine - Archived information file. zLib 1.13 compressed.\u001A\u0004";
+		MAGIC = res.getBytes(StandardCharsets.UTF_8);
+	}
 
-    /**
-     * Wraps an input stream with an InflaterInputStream, after skipping the CreaturesArchive header.
-     */
-    public static InflaterInputStream wrapInputStream(InputStream outer) throws IOException {
-        // magic text
-        for (byte b : MAGIC)
-            if (outer.read() != b)
-                throw new IOException("Did not match CreaturesArchive magic number.");
-        return new InflaterInputStream(outer);
-    }
+	/**
+	 * Wraps an input stream with an InflaterInputStream, after skipping the
+	 * CreaturesArchive header.
+	 */
+	public static InflaterInputStream wrapInputStream(InputStream outer) throws IOException {
+		// magic text
+		for (byte b : MAGIC)
+			if (outer.read() != b)
+				throw new IOException("Did not match CreaturesArchive magic number.");
+		return new InflaterInputStream(outer);
+	}
 
-    /**
-     * Wraps an output stream with a DeflaterOutputStream, after writing the CreaturesArchive header.
-     * Be sure to properly close the stream.
-     */
-    public static OutputStream wrapOutputStream(OutputStream outer) throws IOException {
-        outer.write(MAGIC);
-        return new DeflaterOutputStream(outer);
-    }
+	/**
+	 * Wraps an output stream with a DeflaterOutputStream, after writing the
+	 * CreaturesArchive header. Be sure to properly close the stream.
+	 */
+	public static OutputStream wrapOutputStream(OutputStream outer) throws IOException {
+		outer.write(MAGIC);
+		return new DeflaterOutputStream(outer);
+	}
 }

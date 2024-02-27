@@ -20,40 +20,41 @@ import org.json.JSONWriter;
  * Application configuration directory & friends
  */
 public class AppConfig {
-    private static final File configRoot = configRootPos();
-    private static File configRootPos() {
-        File userHome = new File(System.getProperty("user.home", "."));
-        return new File(new File(new File(userHome, ".local"), "share"), "cdsp-common");
-    }
+	private static final File configRoot = configRootPos();
 
-    /**
-     * Loads a config file (or returns null).
-     */
-    public static Object load(String name) {
-        try {
-            File f = new File(configRoot, name);
-            if (!f.exists())
-                return null;
-            try (FileInputStream fis = new FileInputStream(f)) {
-                return new JSONTokener(new InputStreamReader(fis, StandardCharsets.UTF_8)).nextValue();
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
+	private static File configRootPos() {
+		File userHome = new File(System.getProperty("user.home", "."));
+		return new File(new File(new File(userHome, ".local"), "share"), "cdsp-common");
+	}
 
-    /**
-     * Saves a config file (or at least tries to).
-     */
-    public static void save(String name, Object val) {
-        try {
-            configRoot.mkdirs();
-            File f = new File(configRoot, name);
-            byte[] bd = JSONWriter.valueToString(val).getBytes(StandardCharsets.UTF_8);
-            Files.write(f.toPath(), bd);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
+	/**
+	 * Loads a config file (or returns null).
+	 */
+	public static Object load(String name) {
+		try {
+			File f = new File(configRoot, name);
+			if (!f.exists())
+				return null;
+			try (FileInputStream fis = new FileInputStream(f)) {
+				return new JSONTokener(new InputStreamReader(fis, StandardCharsets.UTF_8)).nextValue();
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * Saves a config file (or at least tries to).
+	 */
+	public static void save(String name, Object val) {
+		try {
+			configRoot.mkdirs();
+			File f = new File(configRoot, name);
+			byte[] bd = JSONWriter.valueToString(val).getBytes(StandardCharsets.UTF_8);
+			Files.write(f.toPath(), bd);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 }
