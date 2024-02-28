@@ -9,5 +9,8 @@ pub use self::colours::*;
 mod raster;
 pub use self::raster::*;
 
+mod bitcopy;
+pub use self::bitcopy::*;
+
 mod bitdither;
 pub use self::bitdither::*;

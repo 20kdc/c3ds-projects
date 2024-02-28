@@ -30,6 +30,7 @@ impl<P: Copy + Sized + Default> Raster<P> {
     }
 
     /// Generate Raster from a function.
+    /// If you don't particularly care that much about performance, or you think the optimizer will handle it anyway, you can implement a lot of ops this way.
     pub fn generate<F: FnMut(usize, usize) -> P>(width: usize, height: usize, f: &mut F) -> Raster<P> {
         let mut vec = Vec::with_capacity(width * height);
         for y in 0 .. height {
@@ -45,7 +46,7 @@ impl<P: Copy + Sized + Default> Raster<P> {
     }
 }
 
-/// Something like Raster (object safe)
+/// Covers both [Raster] and [RasterRegion].
 pub trait RasterishObj<P: Copy + Sized + Default> {
     /// Gets the region width.
     fn width(&self) -> usize;
@@ -112,16 +113,6 @@ pub trait RasterishMutObj<P: Copy + Sized + Default> : RasterishObj<P> {
     fn region_mut<'x>(&'x mut self, x: usize, y: usize, width: usize, height: usize) -> RasterRegionMut<'x, P>;
 }
 
-/// Something like Raster.
-pub trait Rasterish<P: Copy + Sized + Default> : RasterishObj<P> {
-    /// Remap the colours of this Rasterish in some way, creating a Raster.
-    fn map<R: Copy + Sized + Default, F: FnMut(usize, usize, P) -> R>(&self, f: &mut F) -> Raster<R> {
-        Raster::generate(self.width(), self.height(), &mut |x, y| {
-            f(x, y, self.pixel(x, y))
-        })
-    }
-}
-
 pub struct RasterRegion<'a, P: Copy + Sized> {
     backing: &'a dyn RasterishObj<P>,
     x: usize,
@@ -136,6 +127,16 @@ pub struct RasterRegionMut<'a, P: Copy + Sized> {
     y: usize,
     width: usize,
     height: usize,
+}
+
+/// Something like Raster.
+pub trait Rasterish<P: Copy + Sized + Default> : RasterishObj<P> {
+    /// Remap the colours of this Rasterish in some way, creating a Raster.
+    fn map<R: Copy + Sized + Default, F: FnMut(usize, usize, P) -> R>(&self, f: &mut F) -> Raster<R> {
+        Raster::generate(self.width(), self.height(), &mut |x, y| {
+            f(x, y, self.pixel(x, y))
+        })
+    }
 }
 
 /// Something like Raster.
@@ -164,9 +165,6 @@ impl<P: Copy + Sized + Default> RasterishObj<P> for Raster<P> {
     }
 }
 
-impl<P: Copy + Sized + Default> Rasterish<P> for Raster<P> {
-}
-
 impl<P: Copy + Sized + Default> RasterishMutObj<P> for Raster<P> {
     #[inline]
     fn row_mut<'a>(&'a mut self, y: usize) -> &'a mut [P] {
@@ -183,8 +181,6 @@ impl<P: Copy + Sized + Default> RasterishMutObj<P> for Raster<P> {
             height,
         }
     }
-}
-impl<P: Copy + Sized + Default> RasterishMut<P> for Raster<P> {
 }
 
 impl<'b, P: Copy + Sized + Default> RasterishObj<P> for RasterRegion<'b, P> {
@@ -208,9 +204,6 @@ impl<'b, P: Copy + Sized + Default> RasterishObj<P> for RasterRegion<'b, P> {
     }
 }
 
-impl<'b, P: Copy + Sized + Default> Rasterish<P> for RasterRegion<'b, P> {
-}
-
 impl<'b, P: Copy + Sized + Default> RasterishObj<P> for RasterRegionMut<'b, P> {
     #[inline]
     fn width(&self) -> usize { self.width }
@@ -232,9 +225,6 @@ impl<'b, P: Copy + Sized + Default> RasterishObj<P> for RasterRegionMut<'b, P> {
     }
 }
 
-impl<'b, P: Copy + Sized + Default> Rasterish<P> for RasterRegionMut<'b, P> {
-}
-
 impl<'b, P: Copy + Sized + Default> RasterishMutObj<P> for RasterRegionMut<'b, P> {
     #[inline]
     fn row_mut<'a>(&'a mut self, y: usize) -> &'a mut [P] {
@@ -251,5 +241,29 @@ impl<'b, P: Copy + Sized + Default> RasterishMutObj<P> for RasterRegionMut<'b, P
         }
     }
 }
+
+// implement extensions
+
+impl<P: Copy + Sized + Default> Rasterish<P> for Raster<P> {
+}
+
+impl<P: Copy + Sized + Default> RasterishMut<P> for Raster<P> {
+}
+
+impl<'b, P: Copy + Sized + Default> Rasterish<P> for RasterRegion<'b, P> {
+}
+
+impl<'b, P: Copy + Sized + Default> Rasterish<P> for RasterRegionMut<'b, P> {
+}
+
 impl<'b, P: Copy + Sized + Default> RasterishMut<P> for RasterRegionMut<'b, P> {
+}
+
+impl<P: Copy + Sized + Default> Rasterish<P> for dyn RasterishObj<P> + '_ {
+}
+
+impl<P: Copy + Sized + Default> Rasterish<P> for dyn RasterishMutObj<P> + '_ {
+}
+
+impl<P: Copy + Sized + Default> RasterishMut<P> for dyn RasterishMutObj<P> + '_ {
 }

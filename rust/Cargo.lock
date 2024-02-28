@@ -9,3 +9,6 @@ version = "0.1.0"
 [[package]]
 name = "s16tool"
 version = "0.1.0"
+dependencies = [
+ "libkc3ds",
+]

@@ -2,5 +2,7 @@
 name = "libkc3ds"
 version = "0.1.0"
 edition = "2015"
+license = "CC0-1.0"
+description = "The Rust functions used in 20kdc/c3ds-projects."
 
 [dependencies]

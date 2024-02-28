@@ -4,3 +4,4 @@ version = "0.1.0"
 edition = "2015"
 
 [dependencies]
+libkc3ds = { path = "../libkc3ds", version = "0.1.0"}
