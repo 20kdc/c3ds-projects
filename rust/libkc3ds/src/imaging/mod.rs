@@ -14,3 +14,5 @@ pub use self::bitcopy::*;
 
 mod bitdither;
 pub use self::bitdither::*;
+
+pub mod s16dither;

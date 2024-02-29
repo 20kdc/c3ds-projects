@@ -141,6 +141,15 @@ pub trait Rasterish<P: Copy + Sized + Default> : RasterishObj<P> {
 
 /// Something like Raster.
 pub trait RasterishMut<P: Copy + Sized + Default> : Rasterish<P> + RasterishMutObj<P> {
+    /// Remap the colours of this Rasterish in some way, in-place.
+    fn map_inplace<F: FnMut(usize, usize, P) -> P>(&mut self, f: &mut F) {
+        for y in 0 .. self.height() {
+            let row = self.row_mut(y);
+            for (x, v) in row.iter_mut().enumerate() {
+                *v = f(x, y, *v);
+            }
+        }
+    }
 }
 
 impl<P: Copy + Sized + Default> RasterishObj<P> for Raster<P> {

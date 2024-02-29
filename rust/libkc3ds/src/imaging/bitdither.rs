@@ -7,21 +7,22 @@ use super::*;
 
 /// Interpolation tables used by bitdither
 pub const INTERPOLATION_TABLES: [[BitCopyInterpolation;256];9] = [
-    bitcopy_interpolation_table(0),
-    bitcopy_interpolation_table(1),
-    bitcopy_interpolation_table(2),
-    bitcopy_interpolation_table(3),
-    bitcopy_interpolation_table(4),
-    bitcopy_interpolation_table(5),
-    bitcopy_interpolation_table(6),
-    bitcopy_interpolation_table(7),
-    bitcopy_interpolation_table(8)
+    bitcopy_interpolation_table(0, true),
+    bitcopy_interpolation_table(1, true),
+    bitcopy_interpolation_table(2, true),
+    bitcopy_interpolation_table(3, true),
+    bitcopy_interpolation_table(4, true),
+    bitcopy_interpolation_table(5, true),
+    bitcopy_interpolation_table(6, true),
+    bitcopy_interpolation_table(7, true),
+    bitcopy_interpolation_table(8, true)
 ];
 
 /// Method of dithering down by bit-count.
 pub trait BitDitherMethod {
     /// Dither down an 8-bit channel to the given bit-count.
-    /// Note that this process ultimately _masks_ the bits. This is so that the results can be fed nicely into the "floor" colour converters.
+    /// Note that this process will always result in bitcopied bits.
+    /// This is because this makes for accurate previews and it works nicely with the "floor" methods.
     fn run(&self, input: Raster<u8>, bits: u8) -> Raster<u8>;
 }
 
@@ -42,9 +43,9 @@ pub trait DitherPattern: BitDitherMethod {
 }
 
 impl<T: DitherPattern> BitDitherMethod for T {
-    fn run(&self, input: Raster<u8>, bits: u8) -> Raster<u8> {
+    fn run(&self, mut input: Raster<u8>, bits: u8) -> Raster<u8> {
         let interpolation = &INTERPOLATION_TABLES[bits as usize];
-        input.map(&mut |x, y, v| {
+        input.map_inplace(&mut |x, y, v| {
             let ie = &interpolation[v as usize];
             let level = (ie.frac_num * self.levels()) / ie.frac_div;
             if self.get(x, y, level) {
@@ -52,7 +53,8 @@ impl<T: DitherPattern> BitDitherMethod for T {
             } else {
                 ie.to as u8
             }
-        })
+        });
+        input
     }
 }
 
@@ -62,6 +64,19 @@ struct BitDitherMethodFromPattern(&'static dyn DitherPattern);
 impl BitDitherMethod for BitDitherMethodFromPattern {
     fn run(&self, input: Raster<u8>, bits: u8) -> Raster<u8> {
         self.0.run(input, bits)
+    }
+}
+
+/// You know, that method
+struct BitDitherMethodFloor();
+
+impl BitDitherMethod for BitDitherMethodFloor {
+    fn run(&self, mut input: Raster<u8>, bits: u8) -> Raster<u8> {
+        let bcf = BitCopyField::new(bits as usize, 8);
+        input.map_inplace(&mut |_, _, v| {
+            bcf.bitcopy(v as usize) as u8
+        });
+        input
     }
 }
 
@@ -192,6 +207,7 @@ pub const DITHER_PATTERN_BAYER4_RANDOM: &'static dyn DitherPattern = &DitherPatt
 
 /// All bitdither methods
 pub const ALL_BITDITHER_METHODS: &[(&'static str, &'static dyn BitDitherMethod)] = &[
+    ("floor", &BitDitherMethodFloor()),
     ("nearest", &BitDitherMethodFromPattern(DITHER_PATTERN_NEAREST)),
     ("checkers", &BitDitherMethodFromPattern(DITHER_PATTERN_CHECKERS)),
     ("bayer2", &BitDitherMethodFromPattern(DITHER_PATTERN_BAYER2)),
