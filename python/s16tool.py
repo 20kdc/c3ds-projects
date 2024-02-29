@@ -18,7 +18,7 @@ import PIL.Image
 
 from libkc3ds.s16 import decode_cs16, decode_blk, encode_c16, encode_s16, identify_cs16, stitch_blk, S16Image, CDMODE_DEFAULT, ADMODE_DEFAULT
 from libkc3ds.s16pil import pil_to_565, pil_to_565_blk, s16image_to_pil_rgba
-from libkc3ds.bitdither import dither_channel
+from libkc3ds.bitdither import dither_channel, BITCOPY_TABLES
 
 # ---- Command Line ----
 
