@@ -79,6 +79,16 @@ pub trait RasterishObj<P: Copy + Sized + Default> {
         self.row(y)[x]
     }
 
+    /// Gets a pixel (coordinates checked).
+    #[inline]
+    fn pixel_checked_signed<'a>(&'a self, x: isize, y: isize) -> Option<P> {
+        if !self.in_range_signed(x, y) {
+            None
+        } else {
+            Some(self.pixel(x as usize, y as usize))
+        }
+    }
+
     /// Creates a Raster from this Rasterish.
     fn to_raster(&self) -> Raster<P> {
         let mut res = Raster::new(self.width(), self.height());

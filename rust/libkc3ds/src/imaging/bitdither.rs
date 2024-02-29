@@ -5,17 +5,20 @@
 
 use super::*;
 
+/// Linear light interpolation
+const INTERPOLATE_LL = true;
+
 /// Interpolation tables used by bitdither
 pub const INTERPOLATION_TABLES: [[BitCopyInterpolation;256];9] = [
-    bitcopy_interpolation_table(0, true),
-    bitcopy_interpolation_table(1, true),
-    bitcopy_interpolation_table(2, true),
-    bitcopy_interpolation_table(3, true),
-    bitcopy_interpolation_table(4, true),
-    bitcopy_interpolation_table(5, true),
-    bitcopy_interpolation_table(6, true),
-    bitcopy_interpolation_table(7, true),
-    bitcopy_interpolation_table(8, true)
+    bitcopy_interpolation_table(0, INTERPOLATE_LL),
+    bitcopy_interpolation_table(1, INTERPOLATE_LL),
+    bitcopy_interpolation_table(2, INTERPOLATE_LL),
+    bitcopy_interpolation_table(3, INTERPOLATE_LL),
+    bitcopy_interpolation_table(4, INTERPOLATE_LL),
+    bitcopy_interpolation_table(5, INTERPOLATE_LL),
+    bitcopy_interpolation_table(6, INTERPOLATE_LL),
+    bitcopy_interpolation_table(7, INTERPOLATE_LL),
+    bitcopy_interpolation_table(8, INTERPOLATE_LL)
 ];
 
 /// Method of dithering down by bit-count.

@@ -3,19 +3,11 @@
 // To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 // You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-mod colours;
-pub use self::colours::*;
+use super::*;
 
-mod raster;
-pub use self::raster::*;
-
-mod bitcopy;
-pub use self::bitcopy::*;
-
-mod bitdither;
-pub use self::bitdither::*;
-
-pub mod s16dither;
-
-mod spritefile;
-pub use self::spritefile::*;
+/// S16 sheet.
+pub struct S16Sheet {
+    /// Copy of the colour model.
+    pub model: ColourModelRGB16,
+    pub frames: Vec<Raster<u16>>
+}

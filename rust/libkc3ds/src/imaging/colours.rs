@@ -84,6 +84,9 @@ pub trait ColourModel<P: Copy + Sized + Default> {
     /// This must be lossless for any value returned from `decode`, assuming no invalid values.
     /// The inverse is not true, `decode` may not return what was passed to `encode` (due to loss of precision in the format).
     fn encode(&self, v: RGB24) -> P;
+
+    /// Boxify self - essentially a dynamic copy
+    fn to_box(&self) -> Box<&dyn ColourModel<P>>;
 }
 
 /// Bit positions for packed RGB
@@ -135,6 +138,10 @@ impl ColourModel<u16> for ColourModelRGB16 {
             | ((g as u16) << self.g_pos)
             | ((b as u16) << self.b_pos);
         test
+    }
+
+    fn to_box(&self) -> Box<&dyn ColourModel<u16>> {
+        Box::new(self)
     }
 }
 
