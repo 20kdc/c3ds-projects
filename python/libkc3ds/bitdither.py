@@ -38,92 +38,44 @@ BITCOPY_TABLES = [
 	_gen_bitcopy(8)
 ]
 
-def dither_point_nearest_list(points: list):
+def dither_point_mapprob_list(points: list, gamma: bool):
 	"""
-	Given a list of 0-255 ints, creates a list mapping 256 values to the nearest.
+	Given a sorted list of 0-255 ints, creates a list of 256 entries as follows:
+	[first, prob, second]
+	first and second are values from points.
+	prob is the floating-point fraction to blend between first and second.
 	"""
-	lst = []
-	for i in range(256):
-		nearest = 0
-		nearest_dist = 512
-		for v in points:
-			dist = abs(v - i)
-			if dist < nearest_dist:
-				nearest = v
-				nearest_dist = dist
-		lst.append(nearest)
-	return lst
-
-def dither_point_first_list(points: list):
-	"""
-	Given a list of 0-255 ints, creates a list giving the index to the first
-	instance of a given number.
-	"""
-	lst = []
-	last_value = -1
-	last_index = -1
-	idx = 0
-	for v in points:
-		if v != last_value:
-			lst.append(idx)
-			last_value = v
-			last_index = idx
-		else:
-			lst.append(last_index)
-		idx += 1
-	return lst
-
-def dither_point_last_list(points: list):
-	"""
-	Given a list of 0-255 ints, creates a list giving the index to the last
-	instance of a given number.
-	"""
-	# reverse inputs
-	tmprev = list(points)
-	tmprev.reverse()
-	# do it
-	lst = dither_point_first_list(tmprev)
-	# reverse results
-	lst.reverse()
-	for i in range(len(lst)):
-		lst[i] = len(points) - (lst[i] + 1)
-	return lst
-
-def dither_point_mapprob_list(points: list):
-	"""
-	Given a list of 0-255 ints, creates a list of 256 entries as follows:
-	[nearest, prob, second]
-	nearest and second are values from points.
-	prob is the floating-point fraction to blend between nearest and second.
-	prob should not reach above 0.5 (as that should change the nearest)
-	"""
-	nearest = dither_point_nearest_list(points)
-	first = dither_point_first_list(nearest)
-	last = dither_point_last_list(nearest)
 	res = []
-	for target in range(256):
-		v = nearest[target]
-		relevant_idx = target
-		if target < v:
-			# below
-			relevant_idx = first[target] - 1
-		elif target > v:
-			# above
-			relevant_idx = last[target] + 1
-		if relevant_idx == target or relevant_idx < 0 or relevant_idx >= 256:
-			# nothing to interpolate to
-			res.append([v, 0.0, v])
-		else:
-			v2 = nearest[relevant_idx]
-			if v == v2:
-				raise Exception("Not supposed to happen: " + str(v) + " " + str(v2) + " " + str(target) + " " + str(relevant_idx))
-			dist_to_relevant = float(abs(v - v2))
-			dist_to_target = float(abs(v - target))
-			res.append([v, dist_to_target / dist_to_relevant, v2])
+	last_point = points[0]
+	# up until first point
+	while len(res) < last_point:
+		res.append([last_point, 0, last_point])
+	for pt in points:
+		# up until this point
+		while len(res) < pt:
+			# the hard part
+			val_a = float(last_point)
+			val_h = float(len(res))
+			val_b = float(pt)
+			# linear light correction
+			# don't worry about the scales they'll be fine
+			if gamma:
+				# testing with 1-bit output revealed 2.2 is too far
+				val_a = pow(val_a, 2.15)
+				val_h = pow(val_h, 2.15)
+				val_b = pow(val_b, 2.15)
+			# continue
+			fraction = max(0, min(1, (val_h - val_a) / (val_b - val_a)))
+			res.append([last_point, fraction, pt])
+		last_point = pt
+	# extend last point
+	while len(res) < 256:
+		res.append([last_point, 0, last_point])
+	assert len(res) == 256
 	return res
 
 # Bitcopy tables for varying amounts of bits.
-BITCOPY_MAPPROB_TABLES = [dither_point_mapprob_list(v) for v in BITCOPY_TABLES]
+BITCOPY_MAPPROB_TABLES = [dither_point_mapprob_list(v, True) for v in BITCOPY_TABLES]
 
 # ---- Dithering ----
 
@@ -141,7 +93,7 @@ class DitherBitPattern():
 			for v in row:
 				total += 1
 				occupancy += v
-		self.value = (occupancy * 256) // total
+		self.value = (occupancy * 255) // total
 	def sample(self, x, y) -> bool:
 		"""
 		Returns the value (True or False) at the given position.
@@ -161,14 +113,15 @@ def dither_compile_bit_pattern_set(patterns: list):
 	Compiles a set of 256 patterns from a list.
 	The patterns are measured to determine the best places for them.
 	Each entry is as follows:
-	[nearest, prob, second] - where nearest and second are patterns.
+	[first, prob, second] - where first and second are patterns.
 	"""
 	ppt = []
 	pdc = {}
 	for p in patterns:
 		pdc[p.value] = p
 		ppt.append(p.value)
-	pmap = dither_point_mapprob_list(ppt)
+	ppt.sort()
+	pmap = dither_point_mapprob_list(ppt, False)
 	pset = []
 	for i in range(256):
 		mapprob = pmap[i]
@@ -238,7 +191,10 @@ def dither_bitpattern(w: int, h: int, data, values: list, mask: int, patterns: l
 		vmapprob = values[data[i]]
 		vmapfrac = min(255, max(0, int(vmapprob[1] * 255)))
 		pmapprob = patterns[vmapfrac]
-		if pmapprob[0].sample(i % w, i // w) != 0:
+		pmi = 0
+		if pmapprob[1] >= 0.5:
+			pmi = 2
+		if pmapprob[pmi].sample(i % w, i // w) != 0:
 			data[i] = vmapprob[2] & mask
 		else:
 			data[i] = vmapprob[0] & mask
@@ -282,7 +238,11 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str):
 		# Nearest pixel value
 		mapprob = BITCOPY_MAPPROB_TABLES[bits]
 		for i in range(len(data)):
-			data[i] = mapprob[data[i]][0] & mask
+			mp = mapprob[data[i]]
+			if mp[1] >= 0.5:
+				data[i] = mp[2] & mask
+			else:
+				data[i] = mp[0] & mask
 	elif strategy == "debug1bit":
 		# Testing only.
 		for i in range(len(data)):
