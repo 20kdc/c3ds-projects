@@ -8,7 +8,7 @@
 pub struct Raster<P: Copy + Sized> {
     width: usize,
     height: usize,
-    pixels: Vec<P>
+    pixels: Vec<P>,
 }
 
 impl<P: Copy + Sized + Default> Raster<P> {
@@ -25,23 +25,27 @@ impl<P: Copy + Sized + Default> Raster<P> {
         Raster {
             width,
             height,
-            pixels: vec
+            pixels: vec,
         }
     }
 
     /// Generate Raster from a function.
     /// If you don't particularly care that much about performance, or you think the optimizer will handle it anyway, you can implement a lot of ops this way.
-    pub fn generate<F: FnMut(usize, usize) -> P>(width: usize, height: usize, f: &mut F) -> Raster<P> {
+    pub fn generate<F: FnMut(usize, usize) -> P>(
+        width: usize,
+        height: usize,
+        f: &mut F,
+    ) -> Raster<P> {
         let mut vec = Vec::with_capacity(width * height);
-        for y in 0 .. height {
-            for x in 0 .. width {
+        for y in 0..height {
+            for x in 0..width {
                 vec.push(f(x, y));
             }
         }
         Raster {
             width,
             height,
-            pixels: vec
+            pixels: vec,
         }
     }
 }
@@ -70,7 +74,7 @@ pub trait RasterishObj<P: Copy + Sized + Default> {
     /// Gets a span.
     #[inline]
     fn span<'a>(&'a self, x: usize, y: usize, width: usize) -> &'a [P] {
-        &self.row(y)[x .. x + width]
+        &self.row(y)[x..x + width]
     }
 
     /// Gets a pixel.
@@ -99,18 +103,19 @@ pub trait RasterishObj<P: Copy + Sized + Default> {
     }
 
     /// Outputs a not-mutable region.
-    fn region<'x>(&'x self, x: usize, y: usize, width: usize, height: usize) -> RasterRegion<'x, P>;
+    fn region<'x>(&'x self, x: usize, y: usize, width: usize, height: usize)
+        -> RasterRegion<'x, P>;
 }
 
 /// Something like Raster (object safe)
-pub trait RasterishMutObj<P: Copy + Sized + Default> : RasterishObj<P> {
+pub trait RasterishMutObj<P: Copy + Sized + Default>: RasterishObj<P> {
     /// Gets a row mutably.
     fn row_mut<'a>(&'a mut self, y: usize) -> &'a mut [P];
 
     /// Gets a span mutably.
     #[inline]
     fn span_mut<'a>(&'a mut self, x: usize, y: usize, width: usize) -> &'a mut [P] {
-        &mut self.row_mut(y)[x .. x + width]
+        &mut self.row_mut(y)[x..x + width]
     }
 
     /// Gets a pixel mutably.
@@ -120,7 +125,13 @@ pub trait RasterishMutObj<P: Copy + Sized + Default> : RasterishObj<P> {
     }
 
     /// Outputs a mutable region.
-    fn region_mut<'x>(&'x mut self, x: usize, y: usize, width: usize, height: usize) -> RasterRegionMut<'x, P>;
+    fn region_mut<'x>(
+        &'x mut self,
+        x: usize,
+        y: usize,
+        width: usize,
+        height: usize,
+    ) -> RasterRegionMut<'x, P>;
 }
 
 pub struct RasterRegion<'a, P: Copy + Sized> {
@@ -140,9 +151,12 @@ pub struct RasterRegionMut<'a, P: Copy + Sized> {
 }
 
 /// Something like Raster.
-pub trait Rasterish<P: Copy + Sized + Default> : RasterishObj<P> {
+pub trait Rasterish<P: Copy + Sized + Default>: RasterishObj<P> {
     /// Remap the colours of this Rasterish in some way, creating a Raster.
-    fn map<R: Copy + Sized + Default, F: FnMut(usize, usize, P) -> R>(&self, f: &mut F) -> Raster<R> {
+    fn map<R: Copy + Sized + Default, F: FnMut(usize, usize, P) -> R>(
+        &self,
+        f: &mut F,
+    ) -> Raster<R> {
         Raster::generate(self.width(), self.height(), &mut |x, y| {
             f(x, y, self.pixel(x, y))
         })
@@ -150,10 +164,10 @@ pub trait Rasterish<P: Copy + Sized + Default> : RasterishObj<P> {
 }
 
 /// Something like Raster.
-pub trait RasterishMut<P: Copy + Sized + Default> : Rasterish<P> + RasterishMutObj<P> {
+pub trait RasterishMut<P: Copy + Sized + Default>: Rasterish<P> + RasterishMutObj<P> {
     /// Remap the colours of this Rasterish in some way, in-place.
     fn map_inplace<F: FnMut(usize, usize, P) -> P>(&mut self, f: &mut F) {
-        for y in 0 .. self.height() {
+        for y in 0..self.height() {
             let row = self.row_mut(y);
             for (x, v) in row.iter_mut().enumerate() {
                 *v = f(x, y, *v);
@@ -164,16 +178,26 @@ pub trait RasterishMut<P: Copy + Sized + Default> : Rasterish<P> + RasterishMutO
 
 impl<P: Copy + Sized + Default> RasterishObj<P> for Raster<P> {
     #[inline]
-    fn width(&self) -> usize { self.width }
+    fn width(&self) -> usize {
+        self.width
+    }
     #[inline]
-    fn height(&self) -> usize { self.height }
+    fn height(&self) -> usize {
+        self.height
+    }
     #[inline]
     fn row<'a>(&'a self, y: usize) -> &'a [P] {
         let pos = y * self.width;
-        &self.pixels[pos .. pos + self.width]
+        &self.pixels[pos..pos + self.width]
     }
     #[inline]
-    fn region<'x>(&'x self, x: usize, y: usize, width: usize, height: usize) -> RasterRegion<'x, P> {
+    fn region<'x>(
+        &'x self,
+        x: usize,
+        y: usize,
+        width: usize,
+        height: usize,
+    ) -> RasterRegion<'x, P> {
         RasterRegion {
             backing: self,
             x,
@@ -188,10 +212,16 @@ impl<P: Copy + Sized + Default> RasterishMutObj<P> for Raster<P> {
     #[inline]
     fn row_mut<'a>(&'a mut self, y: usize) -> &'a mut [P] {
         let pos = y * self.width;
-        &mut self.pixels[pos .. pos + self.width]
+        &mut self.pixels[pos..pos + self.width]
     }
     #[inline]
-    fn region_mut<'x>(&'x mut self, x: usize, y: usize, width: usize, height: usize) -> RasterRegionMut<'x, P> {
+    fn region_mut<'x>(
+        &'x mut self,
+        x: usize,
+        y: usize,
+        width: usize,
+        height: usize,
+    ) -> RasterRegionMut<'x, P> {
         RasterRegionMut {
             backing: self,
             x,
@@ -204,15 +234,25 @@ impl<P: Copy + Sized + Default> RasterishMutObj<P> for Raster<P> {
 
 impl<'b, P: Copy + Sized + Default> RasterishObj<P> for RasterRegion<'b, P> {
     #[inline]
-    fn width(&self) -> usize { self.width }
-    #[inline]
-    fn height(&self) -> usize { self.height }
-    #[inline]
-    fn row<'a>(&'a self, y: usize) -> &'a [P] {
-        &self.backing.row(self.y + y)[self.x .. self.x + self.width]
+    fn width(&self) -> usize {
+        self.width
     }
     #[inline]
-    fn region<'x>(&'x self, x: usize, y: usize, width: usize, height: usize) -> RasterRegion<'x, P> {
+    fn height(&self) -> usize {
+        self.height
+    }
+    #[inline]
+    fn row<'a>(&'a self, y: usize) -> &'a [P] {
+        &self.backing.row(self.y + y)[self.x..self.x + self.width]
+    }
+    #[inline]
+    fn region<'x>(
+        &'x self,
+        x: usize,
+        y: usize,
+        width: usize,
+        height: usize,
+    ) -> RasterRegion<'x, P> {
         RasterRegion {
             backing: self,
             x,
@@ -225,15 +265,25 @@ impl<'b, P: Copy + Sized + Default> RasterishObj<P> for RasterRegion<'b, P> {
 
 impl<'b, P: Copy + Sized + Default> RasterishObj<P> for RasterRegionMut<'b, P> {
     #[inline]
-    fn width(&self) -> usize { self.width }
-    #[inline]
-    fn height(&self) -> usize { self.height }
-    #[inline]
-    fn row<'a>(&'a self, y: usize) -> &'a [P] {
-        &self.backing.row(self.y + y)[self.x .. self.x + self.width]
+    fn width(&self) -> usize {
+        self.width
     }
     #[inline]
-    fn region<'x>(&'x self, x: usize, y: usize, width: usize, height: usize) -> RasterRegion<'x, P> {
+    fn height(&self) -> usize {
+        self.height
+    }
+    #[inline]
+    fn row<'a>(&'a self, y: usize) -> &'a [P] {
+        &self.backing.row(self.y + y)[self.x..self.x + self.width]
+    }
+    #[inline]
+    fn region<'x>(
+        &'x self,
+        x: usize,
+        y: usize,
+        width: usize,
+        height: usize,
+    ) -> RasterRegion<'x, P> {
         RasterRegion {
             backing: self,
             x,
@@ -247,10 +297,16 @@ impl<'b, P: Copy + Sized + Default> RasterishObj<P> for RasterRegionMut<'b, P> {
 impl<'b, P: Copy + Sized + Default> RasterishMutObj<P> for RasterRegionMut<'b, P> {
     #[inline]
     fn row_mut<'a>(&'a mut self, y: usize) -> &'a mut [P] {
-        &mut self.backing.row_mut(self.y + y)[self.x .. self.x + self.width]
+        &mut self.backing.row_mut(self.y + y)[self.x..self.x + self.width]
     }
     #[inline]
-    fn region_mut<'x>(&'x mut self, x: usize, y: usize, width: usize, height: usize) -> RasterRegionMut<'x, P> {
+    fn region_mut<'x>(
+        &'x mut self,
+        x: usize,
+        y: usize,
+        width: usize,
+        height: usize,
+    ) -> RasterRegionMut<'x, P> {
         RasterRegionMut {
             backing: self,
             x,
@@ -263,26 +319,18 @@ impl<'b, P: Copy + Sized + Default> RasterishMutObj<P> for RasterRegionMut<'b, P
 
 // implement extensions
 
-impl<P: Copy + Sized + Default> Rasterish<P> for Raster<P> {
-}
+impl<P: Copy + Sized + Default> Rasterish<P> for Raster<P> {}
 
-impl<P: Copy + Sized + Default> RasterishMut<P> for Raster<P> {
-}
+impl<P: Copy + Sized + Default> RasterishMut<P> for Raster<P> {}
 
-impl<'b, P: Copy + Sized + Default> Rasterish<P> for RasterRegion<'b, P> {
-}
+impl<'b, P: Copy + Sized + Default> Rasterish<P> for RasterRegion<'b, P> {}
 
-impl<'b, P: Copy + Sized + Default> Rasterish<P> for RasterRegionMut<'b, P> {
-}
+impl<'b, P: Copy + Sized + Default> Rasterish<P> for RasterRegionMut<'b, P> {}
 
-impl<'b, P: Copy + Sized + Default> RasterishMut<P> for RasterRegionMut<'b, P> {
-}
+impl<'b, P: Copy + Sized + Default> RasterishMut<P> for RasterRegionMut<'b, P> {}
 
-impl<P: Copy + Sized + Default> Rasterish<P> for dyn RasterishObj<P> + '_ {
-}
+impl<P: Copy + Sized + Default> Rasterish<P> for dyn RasterishObj<P> + '_ {}
 
-impl<P: Copy + Sized + Default> Rasterish<P> for dyn RasterishMutObj<P> + '_ {
-}
+impl<P: Copy + Sized + Default> Rasterish<P> for dyn RasterishMutObj<P> + '_ {}
 
-impl<P: Copy + Sized + Default> RasterishMut<P> for dyn RasterishMutObj<P> + '_ {
-}
+impl<P: Copy + Sized + Default> RasterishMut<P> for dyn RasterishMutObj<P> + '_ {}

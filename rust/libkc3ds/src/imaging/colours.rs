@@ -18,7 +18,10 @@ impl ARGB32 {
     }
 
     /// Combines channels
-    pub fn combine_channels(a: &dyn RasterishObj<u8>, rgb: &dyn RasterishObj<RGB24>) -> Raster<ARGB32> {
+    pub fn combine_channels(
+        a: &dyn RasterishObj<u8>,
+        rgb: &dyn RasterishObj<RGB24>,
+    ) -> Raster<ARGB32> {
         Raster::generate(a.width(), a.height(), &mut |x, y| {
             ARGB32(a.pixel(x, y), rgb.pixel(x, y))
         })
@@ -26,9 +29,7 @@ impl ARGB32 {
 
     /// Adds opaque alpha.
     pub fn opaque(rgb: &dyn RasterishObj<RGB24>) -> Raster<ARGB32> {
-        rgb.map(&mut |_, _, v| {
-            ARGB32(255, v)
-        })
+        rgb.map(&mut |_, _, v| ARGB32(255, v))
     }
 }
 
@@ -38,16 +39,22 @@ pub struct RGB24(pub u8, pub u8, pub u8);
 
 impl RGB24 {
     /// Separates channels into three rasters (for use with bitdither).
-    pub fn separate_channels(source: &dyn RasterishObj<RGB24>) -> (Raster<u8>, Raster<u8>, Raster<u8>) {
+    pub fn separate_channels(
+        source: &dyn RasterishObj<RGB24>,
+    ) -> (Raster<u8>, Raster<u8>, Raster<u8>) {
         (
             source.map(&mut |_, _, v| v.0),
             source.map(&mut |_, _, v| v.1),
-            source.map(&mut |_, _, v| v.2)
+            source.map(&mut |_, _, v| v.2),
         )
     }
 
     /// Combines channels (for use with bitdither).
-    pub fn combine_channels(r: &dyn RasterishObj<u8>, g: &dyn RasterishObj<u8>, b: &dyn RasterishObj<u8>) -> Raster<RGB24> {
+    pub fn combine_channels(
+        r: &dyn RasterishObj<u8>,
+        g: &dyn RasterishObj<u8>,
+        b: &dyn RasterishObj<u8>,
+    ) -> Raster<RGB24> {
         Raster::generate(r.width(), r.height(), &mut |x, y| {
             RGB24(r.pixel(x, y), g.pixel(x, y), b.pixel(x, y))
         })
@@ -67,16 +74,12 @@ pub trait ColourModel<P: Copy + Sized + Default> {
 
     /// Decodes an entire raster.
     fn decode_raster_blk(&self, source: &dyn RasterishObj<P>) -> Raster<RGB24> {
-        source.map(&mut |_, _, v| {
-            self.decode(v)
-        })
+        source.map(&mut |_, _, v| self.decode(v))
     }
 
     /// Decodes a raster with transparency handling.
     fn decode_raster_spr(&self, source: &dyn RasterishObj<P>) -> Raster<ARGB32> {
-        source.map(&mut |_, _, v| {
-            ARGB32(if self.opaque(v) { 255 } else { 0 }, self.decode(v))
-        })
+        source.map(&mut |_, _, v| ARGB32(if self.opaque(v) { 255 } else { 0 }, self.decode(v)))
     }
 
     /// Converts a pixel to this colour model from a RGB24 colour in a naive manner.
@@ -134,9 +137,8 @@ impl ColourModel<u16> for ColourModelRGB16 {
         let r = self.r_bits.shiftdown(v.0 as usize) as u8;
         let g = self.g_bits.shiftdown(v.1 as usize) as u8;
         let b = self.b_bits.shiftdown(v.2 as usize) as u8;
-        let test = ((r as u16) << self.r_pos)
-            | ((g as u16) << self.g_pos)
-            | ((b as u16) << self.b_pos);
+        let test =
+            ((r as u16) << self.r_pos) | ((g as u16) << self.g_pos) | ((b as u16) << self.b_pos);
         test
     }
 
@@ -146,7 +148,7 @@ impl ColourModel<u16> for ColourModelRGB16 {
 }
 
 /// RGB565 bit positions
-pub const CM_RGB565BP: ColourModelRGB16 = ColourModelRGB16 {
+pub const CM_RGB565: ColourModelRGB16 = ColourModelRGB16 {
     r_pos: 11,
     g_pos: 5,
     b_pos: 0,
@@ -156,12 +158,12 @@ pub const CM_RGB565BP: ColourModelRGB16 = ColourModelRGB16 {
     r_mask: 0xF800,
     g_mask: 0x07E0,
     b_mask: 0x001F,
-    nudge:  0x0020,
-    transparency_check_mask: 0xFFFF
+    nudge: 0x0020,
+    transparency_check_mask: 0xFFFF,
 };
 
 /// RGB1555 bit positions
-pub const CM_RGB1555BP: ColourModelRGB16 = ColourModelRGB16 {
+pub const CM_RGB1555: ColourModelRGB16 = ColourModelRGB16 {
     r_pos: 10,
     g_pos: 5,
     b_pos: 0,
@@ -172,11 +174,11 @@ pub const CM_RGB1555BP: ColourModelRGB16 = ColourModelRGB16 {
     g_mask: 0x03E0,
     b_mask: 0x001F,
     nudge: 1,
-    transparency_check_mask: 0x7FFF
+    transparency_check_mask: 0x7FFF,
 };
 
 /// RGB5551 bit positions
-pub const CM_RGB5551BP: ColourModelRGB16 = ColourModelRGB16 {
+pub const CM_RGB5551: ColourModelRGB16 = ColourModelRGB16 {
     r_pos: 11,
     g_pos: 6,
     b_pos: 1,
@@ -187,5 +189,5 @@ pub const CM_RGB5551BP: ColourModelRGB16 = ColourModelRGB16 {
     g_mask: 0x07C0,
     b_mask: 0x003E,
     nudge: 2,
-    transparency_check_mask: 0xFFFE
+    transparency_check_mask: 0xFFFE,
 };

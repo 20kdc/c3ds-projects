@@ -6,7 +6,12 @@
 use super::*;
 
 /// Dithers for sprites given bit-dithering algorithms.
-pub fn spr(image: &Raster<ARGB32>, model: &ColourModelRGB16, colour: &dyn BitDitherMethod, alpha: &dyn BitDitherMethod) -> Raster<u16> {
+pub fn spr(
+    image: &Raster<ARGB32>,
+    model: &ColourModelRGB16,
+    colour: &dyn BitDitherMethod,
+    alpha: &dyn BitDitherMethod,
+) -> Raster<u16> {
     let raster_alpha = ARGB32::raster_a(image);
     // should be 0x00 / 0xFF
     let alpha_stage = alpha.run(raster_alpha, 1);
@@ -27,7 +32,11 @@ pub fn spr(image: &Raster<ARGB32>, model: &ColourModelRGB16, colour: &dyn BitDit
 }
 
 /// Dithers for backgrounds given bit-dithering algorithms.
-pub fn blk(image: &Raster<RGB24>, model: &ColourModelRGB16, colour: &dyn BitDitherMethod) -> Raster<u16> {
+pub fn blk(
+    image: &Raster<RGB24>,
+    model: &ColourModelRGB16,
+    colour: &dyn BitDitherMethod,
+) -> Raster<u16> {
     let (raster_r, raster_g, raster_b) = RGB24::separate_channels(image);
     let res_r = colour.run(raster_r, model.r_bits.bits() as u8);
     let res_g = colour.run(raster_g, model.g_bits.bits() as u8);

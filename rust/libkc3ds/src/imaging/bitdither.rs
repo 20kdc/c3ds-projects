@@ -6,10 +6,10 @@
 use super::*;
 
 /// Linear light interpolation
-const INTERPOLATE_LL = true;
+const INTERPOLATE_LL: bool = true;
 
 /// Interpolation tables used by bitdither
-pub const INTERPOLATION_TABLES: [[BitCopyInterpolation;256];9] = [
+pub const INTERPOLATION_TABLES: [[BitCopyInterpolation; 256]; 9] = [
     bitcopy_interpolation_table(0, INTERPOLATE_LL),
     bitcopy_interpolation_table(1, INTERPOLATE_LL),
     bitcopy_interpolation_table(2, INTERPOLATE_LL),
@@ -18,7 +18,7 @@ pub const INTERPOLATION_TABLES: [[BitCopyInterpolation;256];9] = [
     bitcopy_interpolation_table(5, INTERPOLATE_LL),
     bitcopy_interpolation_table(6, INTERPOLATE_LL),
     bitcopy_interpolation_table(7, INTERPOLATE_LL),
-    bitcopy_interpolation_table(8, INTERPOLATE_LL)
+    bitcopy_interpolation_table(8, INTERPOLATE_LL),
 ];
 
 /// Method of dithering down by bit-count.
@@ -76,19 +76,13 @@ struct BitDitherMethodFloor();
 impl BitDitherMethod for BitDitherMethodFloor {
     fn run(&self, mut input: Raster<u8>, bits: u8) -> Raster<u8> {
         let bcf = BitCopyField::new(bits as usize, 8);
-        input.map_inplace(&mut |_, _, v| {
-            bcf.bitcopy(v as usize) as u8
-        });
+        input.map_inplace(&mut |_, _, v| bcf.bitcopy(v as usize) as u8);
         input
     }
 }
 
 /// Static dithering pattern.
-struct DitherPatternStatic<'a> (
-    usize,
-    usize,
-    &'a [usize]
-);
+struct DitherPatternStatic<'a>(usize, usize, &'a [usize]);
 
 impl<'a> DitherPattern for DitherPatternStatic<'a> {
     fn levels(&self) -> usize {
@@ -104,10 +98,7 @@ impl<'a> DitherPattern for DitherPatternStatic<'a> {
 }
 
 /// Multiplicative dither pattern
-struct DitherPatternMultiply<'a>(
-    &'a dyn DitherPattern,
-    &'a dyn DitherPattern,
-);
+struct DitherPatternMultiply<'a>(&'a dyn DitherPattern, &'a dyn DitherPattern);
 
 impl<'a> DitherPattern for DitherPatternMultiply<'a> {
     fn levels(&self) -> usize {
@@ -149,75 +140,66 @@ impl DitherPattern for DitherPatternRandom {
     }
 }
 
-pub const DITHER_PATTERN_NEAREST: &'static dyn DitherPattern = &DitherPatternStatic(
-    1, 1,
-    &[
-        1,
-    ]
-);
+pub const DITHER_PATTERN_NEAREST: &'static dyn DitherPattern = &DitherPatternStatic(1, 1, &[1]);
 
-pub const DITHER_PATTERN_CHECKERS: &'static dyn DitherPattern = &DitherPatternStatic(
-    2, 2,
-    &[
-        4, 2,
-        2, 4
-    ]
-);
+pub const DITHER_PATTERN_CHECKERS: &'static dyn DitherPattern =
+    &DitherPatternStatic(2, 2, &[4, 2, 2, 4]);
 
 // From DHALF.txt, source https://github.com/SixLabors/ImageSharp/blob/main/src/ImageSharp/Processing/Processors/Dithering/DHALF.TXT
 
-pub const DITHER_PATTERN_BAYER2: &'static dyn DitherPattern = &DitherPatternStatic(
-    2, 2,
-    &[
-        1, 3,
-        4, 2
-    ]
-);
+pub const DITHER_PATTERN_BAYER2: &'static dyn DitherPattern =
+    &DitherPatternStatic(2, 2, &[1, 3, 4, 2]);
 
 pub const DITHER_PATTERN_BAYER4: &'static dyn DitherPattern = &DitherPatternStatic(
-    4, 4,
-    &[
-         1,  9,  3, 11,
-        13,  5, 15,  7,
-         4, 12,  2, 10,
-        16,  8, 14,  6
-    ]
+    4,
+    4,
+    &[1, 9, 3, 11, 13, 5, 15, 7, 4, 12, 2, 10, 16, 8, 14, 6],
 );
 
 // All the random combinations
 
 pub const DITHER_PATTERN_RANDOM: &'static dyn DitherPattern = &DitherPatternRandom();
 
-pub const DITHER_PATTERN_NEAREST_RANDOM: &'static dyn DitherPattern = &DitherPatternMultiply(
-    DITHER_PATTERN_NEAREST,
-    DITHER_PATTERN_RANDOM
-);
+pub const DITHER_PATTERN_NEAREST_RANDOM: &'static dyn DitherPattern =
+    &DitherPatternMultiply(DITHER_PATTERN_NEAREST, DITHER_PATTERN_RANDOM);
 
-pub const DITHER_PATTERN_CHECKERS_RANDOM: &'static dyn DitherPattern = &DitherPatternMultiply(
-    DITHER_PATTERN_CHECKERS,
-    DITHER_PATTERN_RANDOM
-);
+pub const DITHER_PATTERN_CHECKERS_RANDOM: &'static dyn DitherPattern =
+    &DitherPatternMultiply(DITHER_PATTERN_CHECKERS, DITHER_PATTERN_RANDOM);
 
-pub const DITHER_PATTERN_BAYER2_RANDOM: &'static dyn DitherPattern = &DitherPatternMultiply(
-    DITHER_PATTERN_BAYER2,
-    DITHER_PATTERN_RANDOM
-);
+pub const DITHER_PATTERN_BAYER2_RANDOM: &'static dyn DitherPattern =
+    &DitherPatternMultiply(DITHER_PATTERN_BAYER2, DITHER_PATTERN_RANDOM);
 
-pub const DITHER_PATTERN_BAYER4_RANDOM: &'static dyn DitherPattern = &DitherPatternMultiply(
-    DITHER_PATTERN_BAYER4,
-    DITHER_PATTERN_RANDOM
-);
+pub const DITHER_PATTERN_BAYER4_RANDOM: &'static dyn DitherPattern =
+    &DitherPatternMultiply(DITHER_PATTERN_BAYER4, DITHER_PATTERN_RANDOM);
 
 /// All bitdither methods
 pub const ALL_BITDITHER_METHODS: &[(&'static str, &'static dyn BitDitherMethod)] = &[
     ("floor", &BitDitherMethodFloor()),
-    ("nearest", &BitDitherMethodFromPattern(DITHER_PATTERN_NEAREST)),
-    ("checkers", &BitDitherMethodFromPattern(DITHER_PATTERN_CHECKERS)),
+    (
+        "nearest",
+        &BitDitherMethodFromPattern(DITHER_PATTERN_NEAREST),
+    ),
+    (
+        "checkers",
+        &BitDitherMethodFromPattern(DITHER_PATTERN_CHECKERS),
+    ),
     ("bayer2", &BitDitherMethodFromPattern(DITHER_PATTERN_BAYER2)),
     ("bayer4", &BitDitherMethodFromPattern(DITHER_PATTERN_BAYER4)),
     ("random", &BitDitherMethodFromPattern(DITHER_PATTERN_RANDOM)),
-    ("nearest-random", &BitDitherMethodFromPattern(DITHER_PATTERN_NEAREST_RANDOM)),
-    ("checkers-random", &BitDitherMethodFromPattern(DITHER_PATTERN_CHECKERS_RANDOM)),
-    ("bayer2-random", &BitDitherMethodFromPattern(DITHER_PATTERN_BAYER2_RANDOM)),
-    ("bayer4-random", &BitDitherMethodFromPattern(DITHER_PATTERN_BAYER4_RANDOM)),
+    (
+        "nearest-random",
+        &BitDitherMethodFromPattern(DITHER_PATTERN_NEAREST_RANDOM),
+    ),
+    (
+        "checkers-random",
+        &BitDitherMethodFromPattern(DITHER_PATTERN_CHECKERS_RANDOM),
+    ),
+    (
+        "bayer2-random",
+        &BitDitherMethodFromPattern(DITHER_PATTERN_BAYER2_RANDOM),
+    ),
+    (
+        "bayer4-random",
+        &BitDitherMethodFromPattern(DITHER_PATTERN_BAYER4_RANDOM),
+    ),
 ];
