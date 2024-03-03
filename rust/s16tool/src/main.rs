@@ -5,6 +5,7 @@
 
 extern crate libkc3ds;
 extern crate norncli;
+extern crate image;
 
 use libkc3ds::imaging::*;
 use libkc3ds::io::cs16::CS16HeaderCommon;
