@@ -190,7 +190,7 @@ impl S16Type {
         match self {
             Self::S16_565 => Some(C16Type::C16_565),
             Self::S16_555 => Some(C16Type::C16_555),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -207,13 +207,9 @@ pub struct S16Sheet {
 impl S16Sheet {
     /// Compresses. Will return None if this is in a format which cannot be compressed (N/M16).
     pub fn compress(&self) -> Option<C16Sheet> {
-        self.id.to_equivalent_c16().map(|v| {
-            C16Sheet {
-                id: v,
-                frames: self.frames.iter().map(|f| {
-                    C16Frame::compress(f)
-                }).collect()
-            }
+        self.id.to_equivalent_c16().map(|v| C16Sheet {
+            id: v,
+            frames: self.frames.iter().map(|f| C16Frame::compress(f)).collect(),
         })
     }
 }
@@ -307,7 +303,7 @@ impl C16SpanStart {
         match self {
             Self::End => 0,
             Self::Colour(len) => *len | 0x8000,
-            Self::Transparent(len) => *len
+            Self::Transparent(len) => *len,
         }
     }
     /// Instruction data length (in words)
@@ -343,9 +339,9 @@ impl C16Frame {
     pub fn compress(frame: &S16Frame) -> C16Frame {
         C16Frame {
             width: frame.width(),
-            rows: (0 .. frame.height()).map(|v| {
-                c16_row_compress(&frame.row(v))
-            }).collect()
+            rows: (0..frame.height())
+                .map(|v| c16_row_compress(frame.row(v)))
+                .collect(),
         }
     }
 
@@ -390,7 +386,7 @@ pub fn c16_row_validate(row: &C16Row, expected_x: usize) -> bool {
         if let Some(v) = row_iter.next() {
             let span = C16SpanStart::decode(*v);
             for _ in 0..span.data_len() {
-                if let None = row_iter.next() {
+                if row_iter.next().is_none() {
                     return false;
                 }
             }
@@ -399,7 +395,7 @@ pub fn c16_row_validate(row: &C16Row, expected_x: usize) -> bool {
             break;
         }
     }
-    return x == expected_x;
+    x == expected_x
 }
 
 /// Compresses a row for C16
@@ -410,19 +406,31 @@ pub fn c16_row_compress(input: &[u16]) -> C16Row {
     for (i, v) in input.iter().enumerate() {
         let transparent = *v == 0;
         if transparent != last_change_transparent {
-            c16_row_compress_add(&mut res, last_change_transparent, &input[last_change_index .. i]);
+            c16_row_compress_add(
+                &mut res,
+                last_change_transparent,
+                &input[last_change_index..i],
+            );
             last_change_index = i;
             last_change_transparent = transparent;
         }
     }
-    c16_row_compress_add(&mut res, last_change_transparent, &input[last_change_index .. input.len()]);
+    c16_row_compress_add(
+        &mut res,
+        last_change_transparent,
+        &input[last_change_index..input.len()],
+    );
     res
 }
 
 fn c16_row_compress_add(row: &mut C16Row, transparent: bool, mut span: &[u16]) {
-    while span.len() > 0 {
-        let segment_len = if span.len() > 32767 { 32767 } else { span.len() };
-        let segment = &span[0 .. segment_len];
+    while !span.is_empty() {
+        let segment_len = if span.len() > 32767 {
+            32767
+        } else {
+            span.len()
+        };
+        let segment = &span[0..segment_len];
         let start = if transparent {
             C16SpanStart::Transparent(segment_len as u16).encode()
         } else {
@@ -434,6 +442,6 @@ fn c16_row_compress_add(row: &mut C16Row, transparent: bool, mut span: &[u16]) {
                 row.push(*v);
             }
         }
-        span = &span[segment_len .. span.len()];
+        span = &span[segment_len..span.len()];
     }
 }

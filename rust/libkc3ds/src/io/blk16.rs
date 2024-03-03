@@ -49,7 +49,7 @@ impl BLK16Header {
         // *deliberately* incorrect to match how these files are supposed to be written
         // engine doesn't care'
         let mut calculated_base = 6;
-        for _ in 0 .. imgc {
+        for _ in 0..imgc {
             endianness.w_u32(&mut data, ptr, calculated_base as u32);
             endianness.w_u16(&mut data, ptr + 4, BLK_TILE_SIZE as u16);
             endianness.w_u16(&mut data, ptr + 6, BLK_TILE_SIZE as u16);
@@ -100,10 +100,15 @@ pub fn read_blk(header: &BLK16Header, data: &[u8]) -> Result<BLK16, ()> {
     let mut ptr = header.size();
     let mut blk = BLK16 {
         variant: header.variant,
-        blocks: Raster::new(header.width as usize, header.height as usize)
+        blocks: Raster::new(header.width as usize, header.height as usize),
     };
     let endianness = blk.variant.endianness();
-    for (x, y) in (BLKCoordinateIterator { x: 0, y: 0, w: header.width, h: header.height }) {
+    for (x, y) in (BLKCoordinateIterator {
+        x: 0,
+        y: 0,
+        w: header.width,
+        h: header.height,
+    }) {
         let tile = &mut blk.blocks.pixel_mut(x as usize, y as usize);
         for row in &mut tile.0 {
             for pixel in row {
@@ -120,11 +125,16 @@ pub fn build_blk(blk: BLK16) -> Vec<u8> {
     let header = BLK16Header {
         variant: blk.variant,
         width: blk.blocks.width() as u16,
-        height: blk.blocks.height() as u16
+        height: blk.blocks.height() as u16,
     };
     let mut data = header.to_bytes();
     let endianness = blk.variant.endianness();
-    for (x, y) in (BLKCoordinateIterator { x: 0, y: 0, w: header.width, h: header.height }) {
+    for (x, y) in (BLKCoordinateIterator {
+        x: 0,
+        y: 0,
+        w: header.width,
+        h: header.height,
+    }) {
         let tile = blk.blocks.pixel(x as usize, y as usize);
         for row in &tile.0 {
             for pixel in row {

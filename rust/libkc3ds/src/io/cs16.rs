@@ -20,8 +20,8 @@ pub fn identify(data: &[u8]) -> Option<CS16Type> {
 /// Gets headers for a S16/C16.
 pub fn headers(t: CS16Type, data: &[u8]) -> Result<CS16Header, ()> {
     match t {
-        CS16Type::S16(st) => headers_s16(st, data).map(|v| CS16Header::S16(v)),
-        CS16Type::C16(st) => headers_c16(st, data).map(|v| CS16Header::C16(v)),
+        CS16Type::S16(st) => headers_s16(st, data).map(CS16Header::S16),
+        CS16Type::C16(st) => headers_c16(st, data).map(CS16Header::C16),
     }
 }
 

@@ -173,7 +173,7 @@ pub const DITHER_PATTERN_BAYER4_RANDOM: &'static dyn DitherPattern =
     &DitherPatternMultiply(DITHER_PATTERN_BAYER4, DITHER_PATTERN_RANDOM);
 
 /// All bitdither methods
-pub const ALL_BITDITHER_METHODS: &[(&'static str, &'static dyn BitDitherMethod)] = &[
+pub const ALL_BITDITHER_METHODS: &[(&str, &'static dyn BitDitherMethod)] = &[
     ("floor", &BitDitherMethodFloor()),
     (
         "nearest",

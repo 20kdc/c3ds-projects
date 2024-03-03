@@ -137,9 +137,8 @@ impl ColourModel<u16> for ColourModelRGB16 {
         let r = self.r_bits.shiftdown(v.0 as usize) as u8;
         let g = self.g_bits.shiftdown(v.1 as usize) as u8;
         let b = self.b_bits.shiftdown(v.2 as usize) as u8;
-        let test =
-            ((r as u16) << self.r_pos) | ((g as u16) << self.g_pos) | ((b as u16) << self.b_pos);
-        test
+
+        ((r as u16) << self.r_pos) | ((g as u16) << self.g_pos) | ((b as u16) << self.b_pos)
     }
 
     fn to_box(&self) -> Box<&dyn ColourModel<u16>> {
