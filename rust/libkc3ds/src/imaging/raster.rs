@@ -198,7 +198,7 @@ pub trait RasterishMut<P: Copy + Sized + Default>: Rasterish<P> + RasterishMutOb
     }
 
     /// Draw the source to the given coordinates using the given "applier" function `(src, dst) -> res`.
-    /// This is NOT checked to ensure in-bounds (will panic) - see [draw_clipped].
+    /// This is NOT checked to ensure in-bounds (will panic) - see `draw_clipped`.
     fn draw<S: Rasterish<P>, F: Fn(P, P) -> P>(
         &mut self,
         source: &S,
@@ -235,7 +235,7 @@ pub trait RasterishMut<P: Copy + Sized + Default>: Rasterish<P> + RasterishMutOb
     }
 
     /// Copy the source to the given coordinates.
-    /// This is NOT checked to ensure in-bounds (will panic) - see [copy_clipped].
+    /// This is NOT checked to ensure in-bounds (will panic) - see `copy_clipped`.
     fn copy<S: Rasterish<P>>(&mut self, source: &S, x: usize, y: usize) {
         for sy in 0..source.height() {
             let src_row = source.row(sy);
