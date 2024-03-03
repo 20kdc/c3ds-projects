@@ -23,6 +23,20 @@ pub fn identify(data: &[u8]) -> Option<BLK16Type> {
     }
 }
 
+/// Identifies and gets headers for a BLK.
+pub fn identify_and_headers(data: &[u8]) -> Result<BLK16Header, ()> {
+    if let Some(id) = identify(data) {
+        headers(id, data)
+    } else {
+        Err(())
+    }
+}
+
+/// Identifies, gets headers for, and then reads a BLK.
+pub fn identify_and_read(data: &[u8]) -> Result<BLK16, ()> {
+    read_blk(&identify_and_headers(data)?, data)
+}
+
 /// BLK header.
 /// The redundant (and sometimes incorrect!) data is ignored.
 pub struct BLK16Header {

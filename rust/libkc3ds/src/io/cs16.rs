@@ -25,11 +25,39 @@ pub fn headers(t: CS16Type, data: &[u8]) -> Result<CS16Header, ()> {
     }
 }
 
+/// Identifies and gets headers for a S16/C16.
+pub fn identify_and_headers(data: &[u8]) -> Result<CS16Header, ()> {
+    if let Some(val) = identify(data) {
+        headers(val, data)
+    } else {
+        Err(())
+    }
+}
+
 /// Reads and decompresses a S16/C16.
 pub fn read_and_decompress(header: &CS16Header, data: &[u8]) -> Result<CS16Sheet, ()> {
     match header {
         CS16Header::S16(st) => read_s16(st, data).map(|v| v.into()),
         CS16Header::C16(st) => read_c16(st, data).map(|v| v.into()),
+    }
+}
+
+/// Just do absolutely everything and get a CS16Sheet.
+pub fn identify_and_decompress(data: &[u8]) -> Result<CS16Sheet, ()> {
+    read_and_decompress(&identify_and_headers(data)?, data)
+}
+
+/// Builds from a CS16Sheet.
+pub fn build(t: &CS16Sheet) -> Vec<u8> {
+    match t.id {
+        CS16Type::S16(s16) => build_s16(&S16Sheet {
+            id: s16,
+            frames: t.frames.clone(),
+        }),
+        CS16Type::C16(c16) => build_c16(&C16Sheet {
+            id: c16,
+            frames: t.frames.iter().map(|v| C16Frame::compress(v)).collect(),
+        }),
     }
 }
 
@@ -248,7 +276,7 @@ pub fn headers_c16(t: C16Type, data: &[u8]) -> Result<C16Header, ()> {
         };
         ptr += 8;
         if ih.height > 1 {
-            for _ in 0..ih.height {
+            for _ in 1..ih.height {
                 ih.row_bases.push(endianness.r_u32(data, ptr)?);
                 ptr += 4;
             }

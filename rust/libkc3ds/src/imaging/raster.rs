@@ -183,6 +183,14 @@ pub trait Rasterish<P: Copy + Sized + Default>: RasterishObj<P> {
             f(x, y, self.pixel(x, y))
         })
     }
+    /// For each of the colours of this Rasterish...
+    fn for_each<F: FnMut(usize, usize, P)>(&self, f: &mut F) {
+        for y in 0..self.height() {
+            for (x, p) in self.row(y).iter().enumerate() {
+                f(x, y, *p);
+            }
+        }
+    }
 }
 
 /// Something like Raster.
