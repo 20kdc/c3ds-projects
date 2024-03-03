@@ -6,5 +6,5 @@
 mod endianness;
 pub use self::endianness::*;
 
-mod cs16;
-pub use self::cs16::*;
+pub mod blk16;
+pub mod cs16;

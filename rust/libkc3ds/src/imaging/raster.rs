@@ -3,54 +3,9 @@
 // To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 // You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-/// Vec-ized raster of pixels.
-#[derive(Clone)]
-pub struct Raster<P: Copy + Sized> {
-    width: usize,
-    height: usize,
-    pixels: Vec<P>,
-}
+use super::Raster;
 
-impl<P: Copy + Sized + Default> Raster<P> {
-    /// New Raster.
-    pub fn new(width: usize, height: usize) -> Raster<P> {
-        Self::new_filled(width, height, P::default())
-    }
-
-    /// New Raster with the given fill colour.
-    pub fn new_filled(width: usize, height: usize, fill_colour: P) -> Raster<P> {
-        let total = width * height;
-        let mut vec = Vec::with_capacity(total);
-        vec.resize(total, fill_colour);
-        Raster {
-            width,
-            height,
-            pixels: vec,
-        }
-    }
-
-    /// Generate Raster from a function.
-    /// If you don't particularly care that much about performance, or you think the optimizer will handle it anyway, you can implement a lot of ops this way.
-    pub fn generate<F: FnMut(usize, usize) -> P>(
-        width: usize,
-        height: usize,
-        f: &mut F,
-    ) -> Raster<P> {
-        let mut vec = Vec::with_capacity(width * height);
-        for y in 0..height {
-            for x in 0..width {
-                vec.push(f(x, y));
-            }
-        }
-        Raster {
-            width,
-            height,
-            pixels: vec,
-        }
-    }
-}
-
-/// Covers both [Raster] and [RasterRegion].
+/// Covers [Raster], [super::RasterTile], and [RasterRegion].
 pub trait RasterishObj<P: Copy + Sized + Default> {
     /// Gets the region width.
     fn width(&self) -> usize;
@@ -105,6 +60,18 @@ pub trait RasterishObj<P: Copy + Sized + Default> {
     /// Outputs a not-mutable region.
     fn region<'x>(&'x self, x: usize, y: usize, width: usize, height: usize)
         -> RasterRegion<'x, P>;
+
+    /// Outputs a clipped region.
+    /// Because X/Y are not signed, there is never any desync in the coordinate system for non-empty regions.
+    fn region_clipped<'x>(&'x self, x: usize, y: usize, width: usize, height: usize) -> RasterRegion<'x, P> {
+        if x >= self.width() || y >= self.height() {
+            self.region(0, 0, 0, 0)
+        } else {
+            let remaining_w = self.width() - x;
+            let remaining_h = self.height() - y;
+            self.region(x, y, if width > remaining_w { remaining_w } else { width }, if height > remaining_h { remaining_h } else { height })
+        }
+    }
 }
 
 /// Something like Raster (object safe)
@@ -124,6 +91,12 @@ pub trait RasterishMutObj<P: Copy + Sized + Default>: RasterishObj<P> {
         &mut self.row_mut(y)[x]
     }
 
+    /// Sets a pixel.
+    #[inline]
+    fn set_pixel(&mut self, x: usize, y: usize, v: P) {
+        *self.pixel_mut(x, y) = v;
+    }
+
     /// Outputs a mutable region.
     fn region_mut<'x>(
         &'x mut self,
@@ -132,22 +105,34 @@ pub trait RasterishMutObj<P: Copy + Sized + Default>: RasterishObj<P> {
         width: usize,
         height: usize,
     ) -> RasterRegionMut<'x, P>;
+
+    /// Outputs a clipped mutable region.
+    /// Because X/Y are not signed, there is never any desync in the coordinate system for non-empty regions.
+    fn region_clipped_mut<'x>(&'x mut self, x: usize, y: usize, width: usize, height: usize) -> RasterRegionMut<'x, P> {
+        if x >= self.width() || y >= self.height() {
+            self.region_mut(0, 0, 0, 0)
+        } else {
+            let remaining_w = self.width() - x;
+            let remaining_h = self.height() - y;
+            self.region_mut(x, y, if width > remaining_w { remaining_w } else { width }, if height > remaining_h { remaining_h } else { height })
+        }
+    }
 }
 
 pub struct RasterRegion<'a, P: Copy + Sized> {
-    backing: &'a dyn RasterishObj<P>,
-    x: usize,
-    y: usize,
-    width: usize,
-    height: usize,
+    pub backing: &'a dyn RasterishObj<P>,
+    pub x: usize,
+    pub y: usize,
+    pub width: usize,
+    pub height: usize,
 }
 
 pub struct RasterRegionMut<'a, P: Copy + Sized> {
-    backing: &'a mut dyn RasterishMutObj<P>,
-    x: usize,
-    y: usize,
-    width: usize,
-    height: usize,
+    pub backing: &'a mut dyn RasterishMutObj<P>,
+    pub x: usize,
+    pub y: usize,
+    pub width: usize,
+    pub height: usize,
 }
 
 /// Something like Raster.
@@ -174,61 +159,43 @@ pub trait RasterishMut<P: Copy + Sized + Default>: Rasterish<P> + RasterishMutOb
             }
         }
     }
-}
 
-impl<P: Copy + Sized + Default> RasterishObj<P> for Raster<P> {
-    #[inline]
-    fn width(&self) -> usize {
-        self.width
-    }
-    #[inline]
-    fn height(&self) -> usize {
-        self.height
-    }
-    #[inline]
-    fn row<'a>(&'a self, y: usize) -> &'a [P] {
-        let pos = y * self.width;
-        &self.pixels[pos..pos + self.width]
-    }
-    #[inline]
-    fn region<'x>(
-        &'x self,
-        x: usize,
-        y: usize,
-        width: usize,
-        height: usize,
-    ) -> RasterRegion<'x, P> {
-        RasterRegion {
-            backing: self,
-            x,
-            y,
-            width,
-            height,
+    /// Draw the source to the given coordinates using the given "applier" function `(src, dst) -> res`.
+    /// This is NOT checked to ensure in-bounds (will panic) - see [draw_clipped].
+    fn draw<S: Rasterish<P>, F: Fn(P, P) -> P>(&mut self, source: &S, x: usize, y: usize, blit: &F) {
+        for sy in 0..source.height() {
+            let src_row = source.row(sy);
+            let dst_row = self.row_mut(sy + y);
+            for (sx, sv) in src_row.iter().enumerate() {
+                dst_row[x + sx] = blit(*sv, dst_row[x + sx]);
+            }
         }
     }
-}
 
-impl<P: Copy + Sized + Default> RasterishMutObj<P> for Raster<P> {
+    /// Blit the source to the given coordinates using the given "applier" function `(src, dst) -> res`.
+    /// This is checked and won't draw out-of-bounds.
     #[inline]
-    fn row_mut<'a>(&'a mut self, y: usize) -> &'a mut [P] {
-        let pos = y * self.width;
-        &mut self.pixels[pos..pos + self.width]
+    fn draw_clipped<S: Rasterish<P>, F: Fn(P, P) -> P>(&mut self, source: &S, x: usize, y: usize, blit: &F) {
+        let mut region = self.region_clipped_mut(x, y, source.width(), source.height());
+        region.draw(&source.region_clipped(0, 0, region.width(), region.height()), 0, 0, blit);
     }
-    #[inline]
-    fn region_mut<'x>(
-        &'x mut self,
-        x: usize,
-        y: usize,
-        width: usize,
-        height: usize,
-    ) -> RasterRegionMut<'x, P> {
-        RasterRegionMut {
-            backing: self,
-            x,
-            y,
-            width,
-            height,
+
+    /// Copy the source to the given coordinates.
+    /// This is NOT checked to ensure in-bounds (will panic) - see [copy_clipped].
+    fn copy<S: Rasterish<P>>(&mut self, source: &S, x: usize, y: usize) {
+        for sy in 0..source.height() {
+            let src_row = source.row(sy);
+            let dst_row = &mut self.row_mut(sy + y)[x .. x + source.width()];
+            dst_row.copy_from_slice(src_row);
         }
+    }
+
+    /// Copy the source to the given coordinates.
+    /// This is checked and won't draw out-of-bounds.
+    #[inline]
+    fn copy_clipped<S: Rasterish<P>>(&mut self, source: &S, x: usize, y: usize) {
+        let mut region = self.region_clipped_mut(x, y, source.width(), source.height());
+        region.copy(&source.region_clipped(0, 0, region.width(), region.height()), 0, 0);
     }
 }
 
@@ -318,10 +285,6 @@ impl<'b, P: Copy + Sized + Default> RasterishMutObj<P> for RasterRegionMut<'b, P
 }
 
 // implement extensions
-
-impl<P: Copy + Sized + Default> Rasterish<P> for Raster<P> {}
-
-impl<P: Copy + Sized + Default> RasterishMut<P> for Raster<P> {}
 
 impl<'b, P: Copy + Sized + Default> Rasterish<P> for RasterRegion<'b, P> {}
 

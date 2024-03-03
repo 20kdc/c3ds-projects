@@ -3,27 +3,22 @@
 // To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 // You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-mod colours;
-pub use self::colours::*;
+use super::*;
 
-mod raster;
-pub use self::raster::*;
+/// Size of a BLK tile
+pub const BLK_TILE_SIZE: usize = 128;
 
-mod raster_impl;
-pub use self::raster_impl::*;
+/// BLK types are S16 types
+pub type BLK16Type = S16Type;
 
-mod bitcopy;
-pub use self::bitcopy::*;
+/// BLK tiles are RasterTile
+pub type BLK16Tile = RasterTile<u16, BLK_TILE_SIZE, BLK_TILE_SIZE>;
 
-mod bitdither;
-pub use self::bitdither::*;
-
-pub mod s16dither;
-
-mod spritefile;
-pub use self::spritefile::*;
-
-mod blockfile;
-pub use self::blockfile::*;
-
-pub(crate) mod power_table;
+/// BLK file data.
+#[derive(Clone)]
+pub struct BLK16 {
+    /// Type of S16.
+    /// BLK files inherit their endianness and colour model from S16.
+    pub variant: BLK16Type,
+    pub blocks: Raster<BLK16Tile>,
+}

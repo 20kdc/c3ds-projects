@@ -65,10 +65,14 @@ pub trait Endianness {
 }
 
 /// Little-endian endianness
+#[derive(Clone, Copy)]
 pub struct EndiannessLE();
+pub const ENDIANNESS_LE: EndiannessLE = EndiannessLE();
 
 /// Big-endian endianness
+#[derive(Clone, Copy)]
 pub struct EndiannessBE();
+pub const ENDIANNESS_BE: EndiannessBE = EndiannessBE();
 
 impl Endianness for EndiannessLE {
     #[inline]
