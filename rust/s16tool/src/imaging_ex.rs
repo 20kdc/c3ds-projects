@@ -9,10 +9,14 @@ use libkc3ds::imaging::*;
 pub fn import(name: &str) -> Raster<ARGB32> {
     let dynimg = image::load_from_memory(&std::fs::read(name).unwrap()).unwrap();
     let img8 = dynimg.into_rgba8();
-    Raster::generate(img8.width() as usize, img8.height() as usize, &mut |x, y| {
-        let pixel = img8.get_pixel(x as u32, y as u32).0;
-        ARGB32(pixel[3], RGB24(pixel[0], pixel[1], pixel[2]))
-    })
+    Raster::generate(
+        img8.width() as usize,
+        img8.height() as usize,
+        &mut |x, y| {
+            let pixel = img8.get_pixel(x as u32, y as u32).0;
+            ARGB32(pixel[3], RGB24(pixel[0], pixel[1], pixel[2]))
+        },
+    )
 }
 
 /// Exports an image
@@ -22,7 +26,15 @@ pub fn export_rgb(name: &str, image: &Raster<RGB24>, bmp: bool) {
         let px = image.pixel(x as usize, y as usize);
         *p = image::Rgb([px.0, px.1, px.2]);
     });
-    img.save_with_format(name, if bmp { image::ImageFormat::Bmp } else { image::ImageFormat::Png } ).unwrap();
+    img.save_with_format(
+        name,
+        if bmp {
+            image::ImageFormat::Bmp
+        } else {
+            image::ImageFormat::Png
+        },
+    )
+    .unwrap();
 }
 
 /// Exports an image
@@ -30,9 +42,17 @@ pub fn export_argb(name: &str, image: &Raster<ARGB32>, bmp: bool) {
     let mut img = image::RgbaImage::new(image.width() as u32, image.height() as u32);
     img.enumerate_pixels_mut().for_each(|(x, y, p)| {
         let px = image.pixel(x as usize, y as usize);
-        *p = image::Rgba([px.1.0, px.1.1, px.1.2, px.0]);
+        *p = image::Rgba([px.1 .0, px.1 .1, px.1 .2, px.0]);
     });
-    img.save_with_format(name, if bmp { image::ImageFormat::Bmp } else { image::ImageFormat::Png } ).unwrap();
+    img.save_with_format(
+        name,
+        if bmp {
+            image::ImageFormat::Bmp
+        } else {
+            image::ImageFormat::Png
+        },
+    )
+    .unwrap();
 }
 
 /// Exports an image

@@ -50,11 +50,12 @@ impl<T: DitherPattern> BitDitherMethod for T {
         let interpolation = &INTERPOLATION_TABLES[bits as usize];
         input.map_inplace(&mut |x, y, v| {
             let ie = &interpolation[v as usize];
-            let level = (ie.frac_num * self.levels()) / ie.frac_div;
+            // levels * 2 is used for rounding up, that's then dealt with by the (x+1)>>1
+            let level = (((ie.frac_num * self.levels() * 2) / ie.frac_div) + 1) >> 1;
             if self.get(x, y, level) {
-                ie.from as u8
-            } else {
                 ie.to as u8
+            } else {
+                ie.from as u8
             }
         });
         input
@@ -89,7 +90,7 @@ impl<'a> DitherPattern for DitherPatternStatic<'a> {
         self.0 * self.1
     }
     fn get(&self, x: usize, y: usize, level: usize) -> bool {
-        self.2[x + (y * self.0)] >= level
+        level >= self.2[(x % self.0) + ((y % self.1) * self.0)]
     }
 
     fn upcast(&self) -> &dyn BitDitherMethod {

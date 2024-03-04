@@ -1,0 +1,3 @@
+#!/bin/sh
+cargo fmt
+cargo install --path s16tool
