@@ -144,7 +144,7 @@ impl DitherPattern for DitherPatternRandom {
 pub const DITHER_PATTERN_NEAREST: &'static dyn DitherPattern = &DitherPatternStatic(1, 1, &[1]);
 
 pub const DITHER_PATTERN_CHECKERS: &'static dyn DitherPattern =
-    &DitherPatternStatic(2, 2, &[4, 2, 2, 4]);
+    &DitherPatternStatic(2, 2, &[3, 1, 1, 3]);
 
 // From DHALF.txt, source https://github.com/SixLabors/ImageSharp/blob/main/src/ImageSharp/Processing/Processors/Dithering/DHALF.TXT
 
