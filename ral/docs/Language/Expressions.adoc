@@ -232,6 +232,21 @@ This is particularly important for working with inline statements and expression
 let modu = @'modu'!str;
 ```
 
+#### Included Strings
+
+The keyword `includeStr` signals a file to be loaded (as if by `include`), read as UTF-8, and used as a constant string.
+
+`include` meanwhile does the same, but reads the file in the CAOS native character set.
+
+This allows world switchers to write their magic.cos files in RAL (as a separate compilation).
+
+_Beware! It is not possible to use arbitrary binary data here. There are bugs in RAL and there are bugs in CAOS that make this impossible._
+
+```
+let somethingBinary = include "world.cos";
+let somethingText = includeStr "notice.txt";
+```
+
 ##### Initial Scope
 
 The initial scope is the set of variables available in every script.

@@ -21,6 +21,11 @@ public interface IDocPath {
 	Reader open() throws IOException;
 
 	/**
+	 * Assuming this path points to a file, returns all bytes.
+	 */
+	byte[] readAllBytes() throws IOException;
+
+	/**
 	 * Gets a path relative to this one.
 	 * Returning null implies the operation is invalid.
 	 */

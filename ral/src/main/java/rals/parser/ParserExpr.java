@@ -6,12 +6,15 @@
  */
 package rals.parser;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import rals.caos.CAOSUtils;
 import rals.code.MacroArg;
 import rals.cond.*;
+import rals.diag.SrcPosFile;
 import rals.diag.SrcRange;
 import rals.expr.*;
 import rals.hcm.HCMIntents;
@@ -263,6 +266,19 @@ public class ParserExpr {
 				throw new RuntimeException("lambda at " + tkn.lineNumber + " has no expression");
 			SrcRange range = tkn.extent.expand(lx.genLN());
 			return new RALLambda(range, args, expr);
+		} else if (tkn.isKeyword("include") || tkn.isKeyword("includeStr")) {
+			String where = parseConstString(ifc);
+			lx.back();
+			Token endTkn = lx.next();
+			IDocPath target = ifc.includeParse.resolveInclude(where, ifc.hereParent);
+			SrcPosFile incSPF = new SrcPosFile(tkn.lineNumber, target, where);
+			ifc.hcm.assignIncludeRange(tkn, endTkn, incSPF);
+			try {
+				byte[] data = target.readAllBytes();
+				return new RALConstant.Str(ts, new String(data, tkn.isKeyword("include") ? CAOSUtils.CAOS_CHARSET : StandardCharsets.UTF_8));
+			} catch (Exception ex) {
+				throw new RuntimeException("include_str @ " + tkn.lineNumber + ": " + where, ex);
+			}
 		} else if (tkn.isKeyword("(")) {
 			RALExprUR interior = parseExpr(ifc, false);
 			lx.requireNextKw(")");

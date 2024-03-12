@@ -1,0 +1,2 @@
+#!/bin/sh
+podman run --rm --entrypoint bash -p 127.0.0.1:20001:20001 -it c3ds-projects-aquarium

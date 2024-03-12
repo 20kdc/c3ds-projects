@@ -4,6 +4,7 @@
 		<list name="lKeywords">
 			<!-- meta -->
 			<item>include</item>
+			<item>includeStr</item>
 			<item>addSearchPath</item>
 			<item>codeGenFeatureLevel</item>
 			<!-- type system decls -->

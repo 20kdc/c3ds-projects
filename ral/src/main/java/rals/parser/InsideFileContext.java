@@ -16,12 +16,16 @@ import rals.types.TypeSystem;
  * Context for parsing inside of a file.
  */
 public class InsideFileContext {
+	public final IncludeParseContext includeParse;
+	public final IDocPath hereParent;
 	public final DiagRecorder diags;
 	public final Lexer lexer;
 	public final TypeSystem typeSystem;
 	public final ScriptsUR module;
 	public final IHCMRecorder hcm;
-	public InsideFileContext(IncludeParseContext ipc, Lexer lx) {
+	public InsideFileContext(IncludeParseContext ipc, Lexer lx, IDocPath hereParent) {
+		this.includeParse = ipc;
+		this.hereParent = hereParent;
 		typeSystem = ipc.typeSystem;
 		module = ipc.module;
 		lexer = lx;

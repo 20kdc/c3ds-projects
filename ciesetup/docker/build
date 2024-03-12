@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
-make -C ../.. ciesetup
+if [ -e ../../Makefile ]; then
+	make -C ../.. ciesetup
+fi
 make -C ..
 docker build -f c2e.Dockerfile -t c3ds-projects-cie:c2e ..
 docker build -f ds.Dockerfile -t c3ds-projects-cie:ds ..

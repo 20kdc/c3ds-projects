@@ -67,7 +67,11 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 	}
 
 	public static class Str extends Single {
+		/**
+		 * Value. It is very important to keep in mind CAOSUtils.CAOS_CHARSET.
+		 */
 		public final String value;
+
 		public Str(TypeSystem ts, String s) {
 			super(ts.gString);
 			value = s;

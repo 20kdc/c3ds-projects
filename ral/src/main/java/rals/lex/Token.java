@@ -25,6 +25,7 @@ public class Token {
 	static {
 		// meta
 		keywords.add("include");
+		keywords.add("includeStr");
 		keywords.add("addSearchPath");
 		keywords.add("codeGenFeatureLevel");
 		// type system declarations

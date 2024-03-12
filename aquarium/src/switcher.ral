@@ -1,0 +1,57 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "common.ral";
+
+install {
+	aquaStderr();
+	outs("\n[natsue aquarium login]\n");
+	fileOclo();
+	fileIope(FILE_DIR_MAIN, "stdin");
+	aquaStderr();
+	outs("user: ");
+	fileOclo();
+	eameStr("aquarium_user") = innl();
+	aquaStderr();
+	outs("pass: ");
+	fileOclo();
+	eameStr("aquarium_pass") = innl();
+	let state = aquaWSStateGet();
+	aquaEvent(AQUA_EVC_SWITCHER_START, '{state}', "Aquarium starting...");
+	aquaStderr();
+	let gen = aquaWSGenGet();
+	let tryRunWorld = true;
+	if state == AQUA_WS_STATE_NOMINAL {
+		state = AQUA_WS_STATE_DIED;
+	} else if state == AQUA_WS_STATE_DIED {
+		outs("Aquarium has crashed.\n");
+		state = AQUA_WS_STATE_DIED_AGAIN;
+	} else if state == AQUA_WS_STATE_DIED_AGAIN {
+		outs("Aquarium has crashed twice in a row. World generation ID will be incremented. Please investigate.\n");
+		gen += 1;
+		aquaWSGenSet(gen);
+		state = AQUA_WS_STATE_HALT;
+	} else if state == AQUA_WS_STATE_HALT {
+		aquaEvent(AQUA_EVC_SWITCHER_HALT, "", "Aquarium has found itself in a boot-loop and cannot proceed");
+		fileOope(FILE_DIR_MAIN, "aquariumBootLoopDetected", false);
+		fileOclo();
+		tryRunWorld = false;
+	} else {
+		outs("Invalid state number, assuming nominal.\n");
+		state = AQUA_WS_STATE_NOMINAL;
+	}
+	if tryRunWorld {
+		aquaWSStateSet(state);
+		let worldId = 'Aquarium-{gen}';
+		eameStr("aquarium_world_id") = worldId;
+		if wnti(worldId) == -1 {
+			aquaEvent(AQUA_EVC_SWITCHER_NEW_WORLD, '{worldId}', "Creating a new world");
+			wrldS(worldId);
+		}
+		load(worldId);
+	}
+}

@@ -1,0 +1,91 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+class Pointer 2 1 1;
+include "std/engine.ral";
+
+// event codes
+
+// "{state}" : aquarium launch with given state
+AQUA_EVC_SWITCHER_START = "switcher-start";
+// "" : too many failures
+AQUA_EVC_SWITCHER_HALT = "switcher-halt";
+// "{worldName}" : new world
+AQUA_EVC_SWITCHER_NEW_WORLD = "switcher-new-world";
+// "{worldName}" : startup ok
+AQUA_EVC_MONITOR_STARTUP_OK = "monitor-startup-ok";
+// "" : online
+AQUA_EVC_MONITOR_ONLINE = "monitor-online";
+// "" : offline
+AQUA_EVC_MONITOR_OFFLINE = "monitor-offline";
+// "{erra}\t{rawe}" : failed login
+AQUA_EVC_MONITOR_LOGIN_ERROR = "monitor-login-error";
+
+// states
+
+// First boot or everything is OK.
+AQUA_WS_STATE_NOMINAL = 0;
+
+// Crashed before aquarium declared stable.
+// Retry.
+AQUA_WS_STATE_DIED = 1;
+
+// Crashed before aquarium declared stable for a second time.
+// Wipe world, retry.
+AQUA_WS_STATE_DIED_AGAIN = 2;
+
+// Aquarium cannot continue.
+AQUA_WS_STATE_HALT = 3;
+
+// Gets the state of the state machine.
+macro aquaWSStateGet() {
+	fileIope(FILE_DIR_MAIN, "aquariumStateMachine");
+	let val = AQUA_WS_STATE_NOMINAL;
+	if inok() {
+		val = inni();
+	}
+	fileIclo();
+	return val;
+};
+
+// Sets the state of the state machine.
+macro () aquaWSStateSet(int @value) {
+	fileOope(FILE_DIR_MAIN, "aquariumStateMachine", false);
+	outv(value);
+	fileOclo();
+}
+
+// Gets the generation number.
+macro aquaWSGenGet() {
+	fileIope(FILE_DIR_MAIN, "aquariumWorldsKilled");
+	let val = 0;
+	if inok() {
+		val = inni();
+	}
+	fileIclo();
+	return val;
+};
+
+// Sets the generation number.
+macro () aquaWSGenSet(int @value) {
+	fileOope(FILE_DIR_MAIN, "aquariumWorldsKilled", false);
+	outv(value);
+	fileOclo();
+}
+
+// Open stdout
+macro aquaStdout() fileOope(FILE_DIR_MAIN, "stdout", true);
+
+// Open stderr
+macro aquaStderr() fileOope(FILE_DIR_MAIN, "stderr", true);
+
+// Writes an event.
+macro () aquaEvent(str @name, str @mach, str @text) {
+	aquaStdout();
+	outs('AQUA\t{rtim()}\t{name}\t{mach}\t{text}\n');
+	fileOclo();
+}

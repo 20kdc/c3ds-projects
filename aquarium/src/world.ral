@@ -1,0 +1,81 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "common.ral";
+include "std/ds.ral";
+
+class AquariumCentral 1 2 42083;
+class AquariumEventHandler 1 2 42084;
+
+AQUA_SECONDS_BETWEEN_LOGIN_ATTEMPTS = 60;
+
+install {
+	// kill DS agents we don't want
+	foreach (DSAutorecovery in enum) {
+		kill(targ);
+	}
+	// *particularly* this thing
+	// it pauses the world (we do not want this)
+	foreach (DSLoginWindow in enum) {
+		kill(targ);
+	}
+	gameStr("user_of_this_world") = eameStr("aquarium_user");
+	// remove redundant copies
+	foreach (AquariumCentral in enum) {
+		kill(targ);
+	}
+	foreach (AquariumEventHandler in enum) {
+		kill(targ);
+	}
+	newSimp(AquariumCentral, "blnk", 0, 0, 0);
+	newSimp(AquariumEventHandler, "blnk", 0, 0, 0);
+}
+
+script AquariumCentral:init {
+	wait(20);
+	// if we're crashing after a set amount of time, this guarantees we make forward progress
+	save();
+	inst();
+	aquaWSStateSet(AQUA_WS_STATE_NOMINAL);
+	aquaEvent(AQUA_EVC_MONITOR_STARTUP_OK, '{eameStr("aquarium_world_id")}', "Aquarium OK");
+	let loginTimer = 0;
+	loop {
+		// update timers
+		loginTimer -= 1;
+		if loginTimer < 0 {
+			loginTimer = 0;
+		}
+		// network
+		if !netLine() {
+			if loginTimer <= 0 {
+				netPass(gameStr("user_of_this_world"), eameStr("aquarium_pass"));
+				netLine(true);
+				inst();
+				if netLine() {
+					gameStr("status") = "online";
+					targ = gameAgent("ds_gui_topleft");
+					part(7);
+					pose(1);
+				} else {
+					aquaEvent(AQUA_EVC_MONITOR_LOGIN_ERROR, '{netErra()}\t{netRawe()}', "OFFLINE");
+				}
+				loginTimer = AQUA_SECONDS_BETWEEN_LOGIN_ATTEMPTS;
+			}
+		}
+		// 1 second before each daemon refresh
+		wait(20);
+		inst();
+	}
+}
+
+script AquariumEventHandler:netOnline {
+	aquaEvent(AQUA_EVC_MONITOR_ONLINE, "", "ONLINE");
+}
+
+script AquariumEventHandler:netOffline {
+	aquaEvent(AQUA_EVC_MONITOR_OFFLINE, "", "OFFLINE");
+}

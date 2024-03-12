@@ -114,6 +114,8 @@ ExprAtom ::=
 		"@=" StringEmbed |
 		("{" Stmt* ("}" | ("return" Expr? ";" "}"))) |
 		"lambda" MacroArgList ExprAtom |
+		"include" ExprAtom |
+		"includeStr" ExprAtom |
 		"(" Expr? ")" |
 		("++" | "--" | "!" | "~" | "-") ExprAtom |
 		"[" ConstByteListExpr "]"

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * The only one that should ever normally be used outside of the LSP.
@@ -46,6 +47,11 @@ public class FileDocPath implements IDocPath {
 	@Override
 	public Reader open() throws IOException {
 		return new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+	}
+
+	@Override
+	public byte[] readAllBytes() throws IOException {
+		return Files.readAllBytes(file.toPath());
 	}
 
 	@Override

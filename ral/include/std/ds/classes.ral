@@ -8,6 +8,10 @@
 // Definitions of classes that get extended here
 include "std/c3ds.ral";
 
+// "DS/autorecovery.cos"
+// Autorecovery agent
+class DSAutorecovery 1 1 226;
+
 // "DS/babel_connection_information.cos"
 // Shift-Control-B Babel status tool
 class DSBabelConnectionInformation 1 1 201;
@@ -56,3 +60,7 @@ field int DSFavPlaceIcon.risingXShake 99;
 // _p1_ is the new icon's `placeIndex`.
 // This is auto-called by DSFavPlaceController based on the object variables of the icon.
 script DSFavPlaceIcon:onSwitch 1000;
+
+// "DS/zzz_gamestart_login.cos"
+// Login window.
+class DSLoginWindow 1 2 206;

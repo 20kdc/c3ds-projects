@@ -11,6 +11,7 @@
 // Definitions
 
 extern int fprintf(void * file, const char * fmt, ...);
+extern int fflush(void * file);
 extern void * stderr;
 
 extern int scanf(const char * fmt, ...);
@@ -47,10 +48,12 @@ static void putcs(cppstring_t * cpp) {
 int DisplayDialog__18RuntimeErrorDialog(runtime_error_dialog_t * dialog) {
 	fprintf(stderr, "CAOS Error: ");
 	putcs(&dialog->error);
+	fflush(stderr);
 #ifdef HEADLESS
 	abort();
 #endif
 	fprintf(stderr, "Enter 1 to ignore the error, 2 to freeze the agent, 3 to kill the agent, 4 to pause the game, or 5 to stop the script:\n");
+	fflush(stderr);
 	int retCode = 1;
 	scanf("%i", &retCode);
 	fprintf(stderr, "Ok, %i\n", retCode);
@@ -71,10 +74,12 @@ int DisplayDialog__11ErrorDialog(error_dialog_t * dialog) {
 	fprintf(stderr, "\nSOURCE: ");
 	putcs(&dialog->source);
 	fprintf(stderr, "\n");
+	fflush(stderr);
 #ifdef HEADLESS
 	abort();
 #endif
 	fprintf(stderr, "Enter 0 to continue, 1 to quit, and 2 to abort:\n");
+	fflush(stderr);
 	int retCode = 0;
 	scanf("%i", &retCode);
 	fprintf(stderr, "Ok, %i\n", retCode);

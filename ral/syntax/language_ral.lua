@@ -42,6 +42,7 @@ end
 local ral_symbols = {
 	-- meta
 	["include"] = "keyword",
+	["includeStr"] = "keyword",
 	["addSearchPath"] = "keyword",
 	["codeGenFeatureLevel"] = "keyword",
 	-- type system declarations

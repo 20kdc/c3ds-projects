@@ -30,4 +30,27 @@ public class IncludeParseContext {
 		outputIncludesToErr = err;
 		hcm = h;
 	}
+
+	public IDocPath resolveInclude(String inc, IDocPath relTo) {
+		LinkedList<IDocPath> attempts = new LinkedList<>();
+		// relative path
+		if (relTo != null) {
+			IDocPath f = relTo.getRelative(inc);
+			if (f != null)
+				attempts.add(f);
+		}
+		// search paths
+		for (IDocPath sp : searchPaths) {
+			IDocPath f = sp.getRelative(inc);
+			if (f != null)
+				attempts.add(f);
+		}
+		// now attempt them all
+		for (IDocPath f : attempts) {
+			if (!f.isFile())
+				continue;
+			return f;
+		}
+		throw new RuntimeException("Ran out of search paths trying to find " + inc + " from " + relTo + ", tried: " + attempts);
+	}
 }

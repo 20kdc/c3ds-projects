@@ -14,6 +14,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import rals.parser.FileDocPath;
@@ -155,6 +156,14 @@ public class LSPDocRepo {
 			String override = stored.get(this);
 			if (override != null)
 				return new StringReader(override);
+			throw new FileNotFoundException("URI " + uri + " not available");
+		}
+
+		@Override
+		public byte[] readAllBytes() throws IOException {
+			String override = stored.get(this);
+			if (override != null)
+				return override.getBytes(StandardCharsets.UTF_8);
 			throw new FileNotFoundException("URI " + uri + " not available");
 		}
 
