@@ -1,0 +1,39 @@
+#!/bin/sh
+set -e
+SCRIPT_PATH="`readlink -e "$0"`"
+SCRIPT_DIR="`dirname "$SCRIPT_PATH"`"
+
+if [ $# -gt 0 ]; then
+	if [ "$1" = "--headless" ]; then
+		LC2E_HEADLESS="1"
+		shift
+	fi
+fi
+
+if [ "$LC2E_HEADLESS" = "1" ]; then
+	test -e "$SCRIPT_DIR/language.cfg" || (cp "$SCRIPT_DIR/language-en-GB.cfg" "$SCRIPT_DIR/language.cfg" ; echo "headless and needed to configure a language, autoconfiguring en-GB")
+else
+	test -e "$SCRIPT_DIR/language.cfg" || "$SCRIPT_DIR/select-language" || exit 1
+fi
+cp "$SCRIPT_DIR/language.cfg" ./language.cfg
+
+if [ ! -e engine ]; then
+	# We need this link because LD_PRELOAD separates by spaces for some reason.
+	ln -s "$SCRIPT_DIR" ./
+fi
+
+if [ ! -e lc2e-netbabel.so ]; then
+	# We want this here to make sure lc2e sees the netbabel module - I have suspicions it'll act funny otherwise.
+	ln -s engine/lc2e-netbabel.so ./
+fi
+
+# do these as late as possible
+if [ "$LC2E_HEADLESS" = "1" ]; then
+	export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:engine"
+	export LD_PRELOAD="$LD_PRELOAD:engine/runtime_headless.so"
+	exec "$SCRIPT_DIR/lc2e" "$@"
+else
+	export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:engine"
+	export LD_PRELOAD="$LD_PRELOAD:engine/runtime.so"
+	exec "$SCRIPT_DIR/lc2e" "$@"
+fi

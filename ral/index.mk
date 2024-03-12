@@ -1,6 +1,6 @@
 # RAL packaging as part of c3ds-projects
 
-RAL_REL := ral/ral.jar ral/ral ral/ral.cmd ral/raljector ral/raljector.cmd ral/raltest ral/raltest.cmd
+RAL_REL := ral/ral.jar ral/ral ral/ral.cmd ral/raljector ral/raljector.cmd ral/raltest ral/raltest.cmd ral/install
 
 # RAL executable itself
 

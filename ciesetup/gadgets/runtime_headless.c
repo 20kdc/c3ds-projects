@@ -59,8 +59,11 @@ typedef struct {
 static const sdl_px_t the_pixel_format = {
 	.bipp = 16,
 	.bypp = 2,
+	.rs = 11,
 	.rm = 0xF800,
+	.gs = 5,
 	.gm = 0x07E0,
+	.bs = 0,
 	.bm = 0x001F
 };
 

@@ -40,7 +40,7 @@ $(R)ds_195_64_dec.tar: gadgets/debz2.py $(R)ds_195_64.tar
 
 INTERMEDIATES += $(R)pkg_engine.tar
 
-$(R)pkg_engine.tar: $(R)ds_195_64_dec.tar gadgets/prep_engine.py gadgets/dummy.so gadgets/runtime.so gadgets/runtime_headless.so
+$(R)pkg_engine.tar: $(R)ds_195_64_dec.tar gadgets/prep_engine.py gadgets/dummy.so gadgets/runtime.so gadgets/runtime_headless.so gadgets/run-game
 	# alright, so, this is where things get hairy, because BASICALLY,
 	#  their script assumes you want separate global/user directories
 	# we don't want this because it makes agent install act funny IIRC?
@@ -58,15 +58,14 @@ $(R)pkg_engine.tar: $(R)ds_195_64_dec.tar gadgets/prep_engine.py gadgets/dummy.s
 
 INTERMEDIATES += $(R)pkg_dockingstation.tar
 
-$(R)pkg_dockingstation.tar: $(R)ds_195_64_dec.tar gadgets/prep_dockingstation.py gadgets/preplib.py
-	# alright, so, this is where things get hairy, because BASICALLY,
-	#  their script assumes you want separate global/user directories
-	# we don't want this because it makes agent install act funny IIRC?
-	# but if we nuke their script we have to take over for it, and that's where the workarounds come in
+$(R)pkg_dockingstation.tar: $(R)ds_195_64_dec.tar gadgets/prep_dockingstation.py gadgets/preplib.py ../efw-integration/efw.zip
+	# similar to the engine package, have to mess around a lot to make it work
 	mkdir -p $(R)tmp_dockingstation
 	cd $(R)tmp_dockingstation ; tar -xf ../ds_195_64_dec.tar
 	# time to do modifications HERE
 	cd $(R)tmp_dockingstation ; python3 ../$(UNR)gadgets/prep_dockingstation.py ../$(UNR)gadgets/
+	# update to new server
+	cd $(R)tmp_dockingstation ; unzip ../$(UNR)../efw-integration/efw.zip
 	# rearrange
 	mkdir -p $(R)tmp_pkg_dockingstation
 	mv $(R)tmp_dockingstation "$(R)tmp_pkg_dockingstation/Docking Station"

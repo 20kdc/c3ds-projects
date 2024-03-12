@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+./build
+podman run --rm -p 127.0.0.1:20001:20001 -it c3ds-projects-cie:c3ds

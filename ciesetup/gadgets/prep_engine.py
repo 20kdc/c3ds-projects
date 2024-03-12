@@ -114,16 +114,6 @@ os.chmod("engine/select-language", 0o755)
 
 os.system("ln -s engine/select-language select-language")
 
-# Language selector insurance
-
-launcher_file = open("engine/ensure-language", "w")
-launcher_file.write("#!/bin/sh\n")
-launcher_file.write(get_script_path)
-launcher_file.write("test -e \"$SCRIPT_DIR/language.cfg\" || \"$SCRIPT_DIR/select-language\" || exit 1\n")
-launcher_file.write("cp \"$SCRIPT_DIR/language.cfg\" ./language.cfg\n")
-launcher_file.close()
-os.chmod("engine/ensure-language", 0o755)
-
 # Just so you know!
 
 launcher_file = open("engine/error", "w")
@@ -137,49 +127,7 @@ os.chmod("engine/error", 0o755)
 
 # Main game runner script
 
-launcher_file = open("engine/run-game", "w")
-launcher_file.write("#!/bin/sh\n")
-launcher_file.write(get_script_path)
-launcher_file.write("\"$SCRIPT_DIR/ensure-language\"\n")
-launcher_file.write("if [ ! -e engine ]; then\n")
-launcher_file.write("\t# We need this link because LD_PRELOAD separates by spaces for some reason.\n")
-launcher_file.write("\tln -s \"$SCRIPT_DIR\" ./\n")
-launcher_file.write("fi\n")
-launcher_file.write("if [ ! -e lc2e-netbabel.so ]; then\n")
-launcher_file.write("\t# We want this here to make sure lc2e sees the netbabel module - I have suspicions it'll act funny otherwise.\n")
-launcher_file.write("\tln -s engine/lc2e-netbabel.so ./\n")
-launcher_file.write("fi\n")
-launcher_file.write("# do these as late as possible\n")
-launcher_file.write("export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:engine\"\n")
-launcher_file.write("export LD_PRELOAD=\"$LD_PRELOAD:engine/runtime.so\"\n")
-launcher_file.write("exec \"$SCRIPT_DIR/lc2e\"\n")
-launcher_file.close()
-os.chmod("engine/run-game", 0o755)
-
-# Main game runner script (headless)
-
-launcher_file = open("engine/run-game-headless", "w")
-launcher_file.write("#!/bin/sh\n")
-launcher_file.write(get_script_path)
-launcher_file.write("if [ ! -e engine ]; then\n")
-launcher_file.write("\t# We need this link because LD_PRELOAD separates by spaces for some reason.\n")
-launcher_file.write("\tln -s \"$SCRIPT_DIR\" ./\n")
-launcher_file.write("fi\n")
-launcher_file.write("if [ ! -e engine/language.cfg ]; then\n")
-launcher_file.write("\techo \"headless, language autoset to en-GB\"\n")
-launcher_file.write("\tcp engine/language-en-GB.cfg engine/language.cfg\n")
-launcher_file.write("fi\n")
-launcher_file.write("cp engine/language.cfg language.cfg\n")
-launcher_file.write("if [ ! -e lc2e-netbabel.so ]; then\n")
-launcher_file.write("\t# We want this here to make sure lc2e sees the netbabel module - I have suspicions it'll act funny otherwise.\n")
-launcher_file.write("\tln -s engine/lc2e-netbabel.so ./\n")
-launcher_file.write("fi\n")
-launcher_file.write("# do these as late as possible\n")
-launcher_file.write("export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:engine\"\n")
-launcher_file.write("export LD_PRELOAD=\"$LD_PRELOAD:engine/runtime_headless.so\"\n")
-launcher_file.write("exec \"$SCRIPT_DIR/lc2e\"\n")
-launcher_file.close()
-os.chmod("engine/run-game-headless", 0o755)
+os.system("cp " + gadgets_base + "run-game ./engine/")
 
 # Fancy aliases
 
@@ -187,7 +135,7 @@ launcher_file = open("dockingstation", "w")
 launcher_file.write("#!/bin/sh\n")
 launcher_file.write(geocentric)
 launcher_file.write("cd \"Docking Station\" || engine/error \"The Docking Station directory does not exist or is inaccessible.\" || exit 1\n")
-launcher_file.write("exec ../engine/run-game")
+launcher_file.write("exec ../engine/run-game \"$@\"")
 launcher_file.close()
 os.chmod("dockingstation", 0o755)
 
@@ -195,7 +143,7 @@ launcher_file = open("creatures3", "w")
 launcher_file.write("#!/bin/sh\n")
 launcher_file.write(geocentric)
 launcher_file.write("cd \"Creatures 3\" || engine/error \"The Creatures 3 directory does not exist or is inaccessible.\" || exit 1\n")
-launcher_file.write("exec ../engine/run-game")
+launcher_file.write("exec ../engine/run-game \"$@\"")
 launcher_file.close()
 os.chmod("creatures3", 0o755)
 

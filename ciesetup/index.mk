@@ -17,8 +17,18 @@ rel: ciesetup/gadgets/prep_creatures3.py
 rel: ciesetup/gadgets/prep_engine.py
 # C3u2 patch marker
 rel: ciesetup/gadgets/c3u2-patch.catalogue
+# Regular scripts
+rel: ciesetup/gadgets/run-game
 # Acts as a placeholder file
 rel: ciesetup/repo/.gitignore
+
+# - Docker -
+
+rel: ciesetup/docker/build
+rel: ciesetup/docker/build-and-test
+rel: ciesetup/docker/c2e.Dockerfile
+rel: ciesetup/docker/c3ds.Dockerfile
+rel: ciesetup/docker/ds.Dockerfile
 
 # - Shared objects -
 

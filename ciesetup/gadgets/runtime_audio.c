@@ -34,10 +34,10 @@
 
 // Definitions
 
-extern int puts(const char * str);
-extern int putchar(int c);
-extern int printf(const char * fmt, ...);
 extern void * memset(void * s, int c, unsigned long n);
+
+extern int fprintf(void * file, const char * fmt, ...);
+extern void * stderr;
 
 extern void * SDL_CreateMutex();
 extern int SDL_mutexP(void *); // lock
@@ -76,7 +76,7 @@ static void ensureMutex() {
 	if (!mutex) {
 		mutex = SDL_CreateMutex();
 		if (!mutex) {
-			printf("ciesetup: unable to create audio mutex, something has gone very wrong\n");
+			fprintf(stderr, "ciesetup: unable to create audio mutex, something has gone very wrong\n");
 			abort();
 		}
 	}
@@ -85,7 +85,7 @@ static int ensureBasics() {
 	if (!paLibrary)
 		paLibrary = dlmopen(LM_ID_NEWLM, "libportaudio.so.2", RTLD_LAZY);
 	if (!paLibrary) {
-		printf("ciesetup: libportaudio.so.2 could not be loaded\n");
+		fprintf(stderr, "ciesetup: libportaudio.so.2 could not be loaded\n");
 		return 1;
 	}
 	if (!paInitialized) {
@@ -93,7 +93,7 @@ static int ensureBasics() {
 		int (*pai)() = dlsym(paLibrary, "Pa_Initialize");
 		// because it'd be a total mess to keep track of, we'll never properly de-initialize Pa
 		if (pai()) {
-			printf("ciesetup: Pa_Initialize failed\n");
+			fprintf(stderr, "ciesetup: Pa_Initialize failed\n");
 			return 1;
 		}
 		paInitialized = 1;
@@ -130,7 +130,7 @@ int SDL_OpenAudio(audiospec_t * in, audiospec_t * out) {
 	sdlAudioSpec = *in;
 	// copy this here so ourStreamCallback can get it
 	// the format given is (always?) AUDIO_S16LSB
-	printf("ciesetup: engine wants %ihz, %i channels, format %i\n", (int) sdlAudioSpec.sampleRate, (int) sdlAudioSpec.channels, (int) sdlAudioSpec.format);
+	fprintf(stderr, "ciesetup: engine wants %ihz, %i channels, format %i\n", (int) sdlAudioSpec.sampleRate, (int) sdlAudioSpec.channels, (int) sdlAudioSpec.format);
 	if (out) {
 		// we get the opportunity to make adjustments here that SDL_mixer is forced to listen to
 		// in practice, this means we're allowed to boost the sample rate
@@ -139,18 +139,18 @@ int SDL_OpenAudio(audiospec_t * in, audiospec_t * out) {
 		out->sampleRate = 44100;
 		out->format = 32784;
 	}
-	printf("ciesetup: will give %ihz, %i channels, format %i\n", (int) sdlAudioSpec.sampleRate, (int) sdlAudioSpec.channels, (int) sdlAudioSpec.format);
+	fprintf(stderr, "ciesetup: will give %ihz, %i channels, format %i\n", (int) sdlAudioSpec.sampleRate, (int) sdlAudioSpec.channels, (int) sdlAudioSpec.format);
 	if (ensureBasics()) {
 		// whoops
-		printf("ciesetup: basics were not available, faking audio\n");
+		fprintf(stderr, "ciesetup: basics were not available, faking audio\n");
 	} else {
 		// alright
 		int (*pfn)(void **, int, int, int, double, int, void *, void *) = dlsym(paLibrary, "Pa_OpenDefaultStream");
 		if (pfn(&paStream, 0, sdlAudioSpec.channels, paInt16, sdlAudioSpec.sampleRate, 512, ourStreamCallback, (void *) 0)) {
-			printf("ciesetup: unable to open stream, faking audio\n");
+			fprintf(stderr, "ciesetup: unable to open stream, faking audio\n");
 			paStream = (void *) 0;
 		} else {
-			printf("ciesetup: opened audio stream, here we go\n");
+			fprintf(stderr, "ciesetup: opened audio stream, here we go\n");
 			void (*pfn2)(void *) = dlsym(paLibrary, "Pa_StartStream");
 			pfn2(paStream);
 		}

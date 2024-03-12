@@ -10,9 +10,9 @@
 
 // Definitions
 
-extern int puts(const char * str);
-extern int putchar(int c);
-extern int printf(const char * fmt, ...);
+extern int fprintf(void * file, const char * fmt, ...);
+extern void * stderr;
+
 extern int scanf(const char * fmt, ...);
 extern void abort();
 
@@ -41,19 +41,19 @@ typedef struct {
 static void putcs(cppstring_t * cpp) {
 	cppstring_content_t * ca = cpp->content_fwd - 16;
 	for (int i = 0; i < ca->length; i++)
-		putchar(ca->content[i]);
+		fprintf(stderr, "%c", ca->content[i]);
 }
 
 int DisplayDialog__18RuntimeErrorDialog(runtime_error_dialog_t * dialog) {
-	puts("CAOS Error: ");
+	fprintf(stderr, "CAOS Error: ");
 	putcs(&dialog->error);
 #ifdef HEADLESS
 	abort();
 #endif
-	printf("Enter 1 to ignore the error, 2 to freeze the agent, 3 to kill the agent, 4 to pause the game, or 5 to stop the script:\n");
+	fprintf(stderr, "Enter 1 to ignore the error, 2 to freeze the agent, 3 to kill the agent, 4 to pause the game, or 5 to stop the script:\n");
 	int retCode = 1;
 	scanf("%i", &retCode);
-	printf("Ok, %i\n", retCode);
+	fprintf(stderr, "Ok, %i\n", retCode);
 	dialog->moveCameraSet = 1;
 	return retCode;
 }
@@ -66,18 +66,18 @@ typedef struct {
 } error_dialog_t;
 
 int DisplayDialog__11ErrorDialog(error_dialog_t * dialog) {
-	printf("System Error: ");
+	fprintf(stderr, "System Error: ");
 	putcs(&dialog->error);
-	printf("\nSOURCE: ");
+	fprintf(stderr, "\nSOURCE: ");
 	putcs(&dialog->source);
-	printf("\n");
+	fprintf(stderr, "\n");
 #ifdef HEADLESS
 	abort();
 #endif
-	printf("Enter 0 to continue, 1 to quit, and 2 to abort:\n");
+	fprintf(stderr, "Enter 0 to continue, 1 to quit, and 2 to abort:\n");
 	int retCode = 0;
 	scanf("%i", &retCode);
-	printf("Ok, %i\n", retCode);
+	fprintf(stderr, "Ok, %i\n", retCode);
 	return retCode;
 }
 

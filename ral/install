@@ -1,0 +1,4 @@
+#!/bin/sh
+ln -s "`pwd`/ral" ~/.local/bin/
+ln -s "`pwd`/raltest" ~/.local/bin/
+ln -s "`pwd`/raljector" ~/.local/bin/
