@@ -3,11 +3,17 @@
 R = repo/
 UNR = ../
 
-INTERMEDIATES :=
+INTERMEDIATES := $(R)unified.tar
 
 # Global rules
 
 default: ds
+
+$(R)unified.tar: $(R)pkg_creatures3.tar $(R)pkg_dockingstation.tar $(R)pkg_engine.tar
+	rm -f $(R)unified.tar
+	tar --concatenate -f $(R)unified.tar $(R)pkg_engine.tar
+	tar --concatenate -f $(R)unified.tar $(R)pkg_dockingstation.tar
+	tar --concatenate -f $(R)unified.tar $(R)pkg_creatures3.tar
 
 test: $(R)unified.tar
 	mkdir -p /media/ramdisk/ds

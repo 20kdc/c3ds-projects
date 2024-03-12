@@ -31,7 +31,58 @@ void put_scrap__FiiPc() asm("put_scrap__FiiPc");
 void put_scrap__FiiPc() {
 }
 
-// SDL shenanigans
+// Fake SDL's video subsystem
 int SDL_Init() {
 	return 0;
+}
+
+typedef struct {
+	void * pal;
+	char bipp, bypp, rl, gl, bl, al, rs, gs, bs, as;
+	int rm, gm, bm, am;
+	int ck;
+	char a;
+} sdl_px_t;
+
+typedef struct {
+	int flags;
+	int vmem;
+	const sdl_px_t * vfmt;
+	int w;
+	int h;
+} sdl_vi_t;
+
+typedef struct {
+	short x, y, w, h;
+} sdl_r_t;
+
+static const sdl_px_t the_pixel_format = {
+	.bipp = 16,
+	.bypp = 2,
+	.rm = 0xF800,
+	.gm = 0x07E0,
+	.bm = 0x001F
+};
+
+static const sdl_vi_t the_video_format = {
+	.flags = 0,
+	.vmem = 0,
+	.vfmt = &the_pixel_format
+};
+
+const sdl_vi_t * SDL_GetVideoInfo() {
+	return &the_video_format;
+}
+
+void * SDL_ListModes() {
+	return (void *) -1;
+}
+
+extern void * SDL_CreateRGBSurface(int f, int w, int h, int d, int r, int g, int b, int a);
+
+void * SDL_SetVideoMode(int w, int h, int bpp, int flags) {
+	return SDL_CreateRGBSurface(0, w, h, 16, 0xF800, 0x07E0, 0x001F, 0);
+}
+
+void SDL_UpdateRect() {
 }
