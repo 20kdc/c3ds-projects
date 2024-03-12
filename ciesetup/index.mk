@@ -3,7 +3,7 @@
 # We also need to ship ciesetup itself (which is shipped as a Makefile, sort of a DIY "fix the game" mechanism)
 
 .PHONY: ciesetup
-ciesetup: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
+ciesetup: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so ciesetup/gadgets/runtime_headless.so
 
 # Core Makefiles
 rel: ciesetup/Makefile ciesetup/ds.mk ciesetup/c3.mk
@@ -22,8 +22,8 @@ rel: ciesetup/repo/.gitignore
 
 # - Shared objects -
 
-rel: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
-all: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so
+rel: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so ciesetup/gadgets/runtime_headless.so
+all: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so ciesetup/gadgets/runtime_headless.so
 
 ciesetup/gadgets/dummy.so: ciesetup/gadgets/dummy.c
 	$(CC) -m32 -o $@ -shared -nostdlib $<
@@ -31,3 +31,5 @@ ciesetup/gadgets/dummy.so: ciesetup/gadgets/dummy.c
 ciesetup/gadgets/runtime.so: ciesetup/gadgets/runtime_audio.c ciesetup/gadgets/runtime_dialogs.c
 	$(CC) -m32 -o $@ -shared -nostdlib $^
 
+ciesetup/gadgets/runtime_headless.so: ciesetup/gadgets/runtime_audio.c ciesetup/gadgets/runtime_dialogs.c ciesetup/gadgets/runtime_headless.c
+	$(CC) -m32 -DHEADLESS -o $@ -shared -nostdlib $^

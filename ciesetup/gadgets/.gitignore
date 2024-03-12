@@ -1,5 +1,6 @@
 dummy.so
 runtime.so
+runtime_headless.so
 *.pyc
 __pycache__
 

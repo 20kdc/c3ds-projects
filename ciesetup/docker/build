@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+make -C ../.. ciesetup
+make -C ..
+docker build -f c2e.Dockerfile -t c3ds-projects-cie:c2e ..
+docker build -f ds.Dockerfile -t c3ds-projects-cie:ds ..
+if [ -e ../repo/pkg_creatures3.tar ]; then
+	docker build -f c3ds.Dockerfile -t c3ds-projects-cie:c3ds ..
+fi

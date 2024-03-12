@@ -14,6 +14,7 @@ extern int puts(const char * str);
 extern int putchar(int c);
 extern int printf(const char * fmt, ...);
 extern int scanf(const char * fmt, ...);
+extern void abort();
 
 // C++ structs
 
@@ -46,6 +47,9 @@ static void putcs(cppstring_t * cpp) {
 int DisplayDialog__18RuntimeErrorDialog(runtime_error_dialog_t * dialog) {
 	puts("CAOS Error: ");
 	putcs(&dialog->error);
+#ifdef HEADLESS
+	abort();
+#endif
 	printf("Enter 1 to ignore the error, 2 to freeze the agent, 3 to kill the agent, 4 to pause the game, or 5 to stop the script:\n");
 	int retCode = 1;
 	scanf("%i", &retCode);
@@ -67,6 +71,9 @@ int DisplayDialog__11ErrorDialog(error_dialog_t * dialog) {
 	printf("\nSOURCE: ");
 	putcs(&dialog->source);
 	printf("\n");
+#ifdef HEADLESS
+	abort();
+#endif
 	printf("Enter 0 to continue, 1 to quit, and 2 to abort:\n");
 	int retCode = 0;
 	scanf("%i", &retCode);
