@@ -1,0 +1,67 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "std/c3ds.ral";
+
+// This file contains stuff that's out-of-world, or at least intersects with it.
+// In particular, all pointer-tools go here.
+
+// "DS/autorecovery.cos"
+// Autorecovery agent
+class DSAutorecovery 1 1 226;
+
+// "DS/babel_connection_information.cos"
+// Shift-Control-B Babel status tool
+class DSBabelConnectionInformation 1 1 201;
+
+// not active
+DS_BABELCONNECTIONINFORMATION_MODE_NONE = 0;
+// 'fast info' (`net: what`)
+DS_BABELCONNECTIONINFORMATION_MODE_FAST = 1;
+// full+fast
+DS_BABELCONNECTIONINFORMATION_MODE_FULL_FAST = 2;
+// full only
+DS_BABELCONNECTIONINFORMATION_MODE_FULL = 3;
+
+// See `DS_BABELCONNECTIONINFORMATION_MODE_` constants.
+field int DSBabelConnectionInformation.mode 0;
+
+// "DS/babel_fast_info.cos": Sub-tool of babel_connection_information
+// Shows output of "net: what"
+class DSBabelFastInfo 1 1 58;
+
+// "DS/keycode displayer.cos"
+class DSKeycodeDisplayer 1 2 205;
+field bool DSKeycodeDisplayer.toolActive 0;
+
+// "DS/dev tool.cos"
+
+field bool PointerToolMultiplexer.toolTaxonomyActive 2;
+
+// Shows the classifier of `hots()` (if any). Managed by `PointerToolMultiplexer`.
+class UITaxonomyTool 1 1 143;
+
+// "DS/new_ds_fav_places.cos"
+class DSFavPlaceController 1 1 225;
+class DSFavPlaceSignpost 1 3 0;
+
+// DS favorite place icon.
+class DSFavPlaceIcon 1 4 0;
+field bool DSFavPlaceIcon.highlighted 0;
+field int DSFavPlaceIcon.metaroom 1;
+// Index in the favorites list.
+field int DSFavPlaceIcon.placeIndex 50;
+// 'X shake' velocity as the icon rises
+field int DSFavPlaceIcon.risingXShake 99;
+
+// _p1_ is the new icon's `placeIndex`.
+// This is auto-called by DSFavPlaceController based on the object variables of the icon.
+script DSFavPlaceIcon:onSwitch 1000;
+
+// "DS/zzz_gamestart_login.cos"
+// Login window.
+class DSLoginWindow 1 2 206;

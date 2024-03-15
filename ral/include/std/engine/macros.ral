@@ -90,3 +90,26 @@ macro () outPrayKeyI(str @key, int @val) {
 	outx(key);
 	outv(val);
 }
+
+// String utilties
+
+// Returns true if the string starts with the given prefix.
+macro (bool res) strStartsWith(str val, str prefix) {
+	if strl(val) < strl(prefix) {
+		res = false;
+	} else {
+		res = subs(val, 1, strl(prefix)) == prefix;
+	}
+}
+
+// Returns true if the string ends with the given suffix.
+macro (bool res) strEndsWith(str val, str suffix) {
+	let ofs = strl(val);
+	if ofs < strl(suffix) {
+		res = false;
+	} else {
+		ofs -= strl(suffix);
+		ofs += 1;
+		res = subs(val, ofs, strl(suffix)) == suffix;
+	}
+}

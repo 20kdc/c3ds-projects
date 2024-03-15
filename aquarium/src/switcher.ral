@@ -8,23 +8,37 @@
 include "common.ral";
 
 install {
+	aquaSetup();
+}
+
+script AquaLoop:init {
+	// clear some space
 	aquaStderr();
-	outs("\n[natsue aquarium login]\n");
-	fileOclo();
-	fileIope(FILE_DIR_MAIN, "stdin");
-	aquaStderr();
-	outs("user: ");
-	fileOclo();
+	outs("\n");
+	// check for double-invoke
+	if eameBool("aquarium_launched") {
+		outs("Aquarium: switcher launched twice. User must have requested quit; shutting down.\n");
+		quit();
+		stop();
+	}
+	eameBool("aquarium_launched") = true;
+	// get login
+	fileIope(FILE_DIR_MAIN, "aquariumLogin");
 	eameStr("aquarium_user") = innl();
-	aquaStderr();
-	outs("pass: ");
-	fileOclo();
 	eameStr("aquarium_pass") = innl();
+	fileIclo();
+	// alright, actually start
 	let state = aquaWSStateGet();
 	aquaEvent(AQUA_EVC_SWITCHER_START, '{state}', "Aquarium starting...");
 	aquaStderr();
 	let gen = aquaWSGenGet();
-	let tryRunWorld = true;
+	if eameStr("aquarium_user") == "" {
+		aquaEvent(AQUA_EVC_SWITCHER_HALT, "", "Username not given");
+		aquaAbort();
+	} else if eameStr("aquarium_pass") == "" {
+		aquaEvent(AQUA_EVC_SWITCHER_HALT, "", "Password not given");
+		aquaAbort();
+	}
 	if state == AQUA_WS_STATE_NOMINAL {
 		state = AQUA_WS_STATE_DIED;
 	} else if state == AQUA_WS_STATE_DIED {
@@ -37,21 +51,29 @@ install {
 		state = AQUA_WS_STATE_HALT;
 	} else if state == AQUA_WS_STATE_HALT {
 		aquaEvent(AQUA_EVC_SWITCHER_HALT, "", "Aquarium has found itself in a boot-loop and cannot proceed");
-		fileOope(FILE_DIR_MAIN, "aquariumBootLoopDetected", false);
-		fileOclo();
-		tryRunWorld = false;
+		aquaAbort();
 	} else {
 		outs("Invalid state number, assuming nominal.\n");
 		state = AQUA_WS_STATE_NOMINAL;
 	}
-	if tryRunWorld {
-		aquaWSStateSet(state);
-		let worldId = 'Aquarium-{gen}';
-		eameStr("aquarium_world_id") = worldId;
-		if wnti(worldId) == -1 {
-			aquaEvent(AQUA_EVC_SWITCHER_NEW_WORLD, '{worldId}', "Creating a new world");
-			wrldS(worldId);
-		}
-		load(worldId);
+	// alright, actually start the world
+	aquaWSStateSet(state);
+	let worldId = 'Aquarium-{gen}';
+	eameStr("aquarium_world_id") = worldId;
+	if wnti(worldId) == -1 {
+		aquaEvent(AQUA_EVC_SWITCHER_NEW_WORLD, '{worldId}', "Creating a new world");
+		wrldS(worldId);
+	}
+	load(worldId);
+}
+
+// This ensures the server correctly reacts to kill signals.
+// Basically, SDL translates kill signals into `SDL_QUIT`.
+// `SDL_QUIT` is then translated into `VK_ESCAPE`.
+script AquaHandler:rawKeyDown {
+	inst();
+	if _p1_ == VK_ESCAPE {
+		aquaEvent(AQUA_EVC_SWITCHER_KILL, "", "kill signal received, shutting down...");
+		quit();
 	}
 }

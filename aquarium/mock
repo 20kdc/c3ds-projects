@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+# wipe scratch instance
+rm -rf /media/ramdisk/aquarium
+mkdir /media/ramdisk/aquarium
+# figure out paths
+AQ_HERE="`readlink -f .`"
+REPO="`readlink -f ../ciesetup/repo`"
+# build instance
+cd /media/ramdisk/aquarium
+tar -xf "$REPO/pkg_dockingstation.tar"
+tar -xf "$REPO/pkg_engine.tar"
+tar -xf "$REPO/pkg_creatures3.tar"
+rm -rf "Docking Station/Bootstrap/000 Switcher"
+mkdir "Docking Station/Bootstrap/000 Switcher"
+mkdir "Docking Station/Bootstrap/100 Aquarium"
+cp "engine/language-en-GB.cfg" "engine/language.cfg"
+ln -s /proc/self/fd/0 "Docking Station/Journal/stdin"
+ln -s /proc/self/fd/1 "Docking Station/Journal/stdout"
+ln -s /proc/self/fd/2 "Docking Station/Journal/stderr"
+# alright, we're done
+cd "$AQ_HERE"
+exec ./mock-update

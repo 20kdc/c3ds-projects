@@ -18,7 +18,7 @@ Constants are the simplest kind of expression.
 
 There are four types of constant in RAL.
 
-* Integer (`int` type): `1234`
+* Integer (`int` type): `1234` or `0x4D2`
 * Floats (`float` type): `1234.5`
 * Strings: `"Hello!"`
 * Byte-strings: `[1, 2, 3]` (These values cannot be stored, and are only for use with commands such as `anim`.)

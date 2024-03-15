@@ -236,7 +236,7 @@ Sends a message to agent `a` with message `msgId`, parameters `p1` and `p2`, and
 Note that you may want to use the emit syntax instead: `someAgent->someMessage(p1, p2) after delay;`
 Also note that messages are not immediate.
 */
-macro () mesgWrtP(Agent @a, int @msgId, any @p1, any @p2, int @delay) @'mesg writ {a, msgId, p1, p2, delay}';
+macro () mesgWrtP(Agent @a, int @msgId, any @p1, any @p2, int @delay) @'mesg wrt+ {a, msgId, p1, p2, delay}';
 
 // Sets if the `targ` agent is horizontally mirrored.
 macro () mira(bool @a) @'mira {a}';

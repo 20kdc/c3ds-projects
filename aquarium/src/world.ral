@@ -8,42 +8,68 @@
 include "common.ral";
 include "std/ds.ral";
 
-class AquariumCentral 1 2 42083;
-class AquariumEventHandler 1 2 42084;
+script AquaTask:reinjectAquarium 1000;
 
 AQUA_SECONDS_BETWEEN_LOGIN_ATTEMPTS = 60;
 
 install {
-	// kill DS agents we don't want
+	// if we're here, we're updated for this session
+	eameBool("aquarium_updated_yet") = true;
+	// we need to stop these IMMEDIATELY
+	// may undo changes made by Aquarium
 	foreach (DSAutorecovery in enum) {
 		kill(targ);
 	}
-	// *particularly* this thing
-	// it pauses the world (we do not want this)
+	// pauses world if allowed to run
 	foreach (DSLoginWindow in enum) {
 		kill(targ);
 	}
+	// we *should* do these early (we don't *have to*, we just should)
+	foreach (UIKeyboardHandlerHelpDialog in enum) {
+		// Aquarium's exit handler and DS's exit handler conflict.
+		kill(targ);
+	}
 	gameStr("user_of_this_world") = eameStr("aquarium_user");
-	// remove redundant copies
-	foreach (AquariumCentral in enum) {
-		kill(targ);
-	}
-	foreach (AquariumEventHandler in enum) {
-		kill(targ);
-	}
-	newSimp(AquariumCentral, "blnk", 0, 0, 0);
-	newSimp(AquariumEventHandler, "blnk", 0, 0, 0);
+	aquaSetup();
 }
 
-script AquariumCentral:init {
-	wait(20);
-	// if we're crashing after a set amount of time, this guarantees we make forward progress
-	save();
+script AquaLoop:init {
+	// avoid JECT crash risk by doing this all here
 	inst();
+
+	// bye-bye portals
+	foreach (DSPortal in enum) {
+		dsPortalClear(targ.index);
+		kill(targ);
+	}
+
+	// portal 0: ingress
+	// dsPortalNew(0);
+	// mvto(2443.0, 9145.0);
+	// dsPortalAddFrom(0, DS_PORTAL_USER_ANY);
+	// mesgWrit(targ!, DSPortal->msgAct1);
+
+	// WE ARE OFFICIALLY DONE WITH SETUP, NOW LET'S WAIT FOR ERRORS
+	// if we're crashing after a set amount of time, this guarantees we make forward progress
+	wait(20);
+	inst();
+	save();
+
+	// ALL OKAY! let's tell WS the good news!
 	aquaWSStateSet(AQUA_WS_STATE_NOMINAL);
 	aquaEvent(AQUA_EVC_MONITOR_STARTUP_OK, '{eameStr("aquarium_world_id")}', "Aquarium OK");
+
 	let loginTimer = 0;
 	loop {
+		// so when the world loads, we need to reinit
+		// this reload is VERY IMPORTANT as it's part of crash detection
+		// it also does nice things like cleaning up floating dialogs, and applying
+		// script updates
+		if !eameBool("aquarium_updated_yet") {
+			// doing this outside of a task **WILL CRASH THE GAME**
+			aquaLaunchTask("World reloaded, reinject aquarium", AquaTask->reinjectAquarium, null, null);
+			stop();
+		}
 		// update timers
 		loginTimer -= 1;
 		if loginTimer < 0 {
@@ -72,10 +98,28 @@ script AquariumCentral:init {
 	}
 }
 
-script AquariumEventHandler:netOnline {
+script AquaHandler:netOnline {
+	inst();
 	aquaEvent(AQUA_EVC_MONITOR_ONLINE, "", "ONLINE");
 }
 
-script AquariumEventHandler:netOffline {
+script AquaHandler:netOffline {
+	inst();
 	aquaEvent(AQUA_EVC_MONITOR_OFFLINE, "", "OFFLINE");
+}
+
+// This ensures the server correctly reacts to kill signals.
+// Basically, SDL translates kill signals into `SDL_QUIT`.
+// `SDL_QUIT` is then translated into `VK_ESCAPE`.
+script AquaHandler:rawKeyDown {
+	inst();
+	if _p1_ == VK_ESCAPE {
+		aquaEvent(AQUA_EVC_MONITOR_KILL, "", "kill signal received, shutting down...");
+		save();
+		quit();
+	}
+}
+
+script AquaTask:reinjectAquarium {
+	ject("zzz_aquarium.cos", JECT_FULL);
 }

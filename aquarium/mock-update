@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+ral compileDebug src/world.ral zzz_aquarium.cos
+ral compile src/switcher.ral switcher.cos
+# continue...
+AQ_WORLD="`readlink -f zzz_aquarium.cos`"
+AQ_SWITCHER="`readlink -f switcher.cos`"
+AQ_LOGIN="`readlink -f aquariumLogin`"
+cd /media/ramdisk/aquarium
+cp "$AQ_SWITCHER" "Docking Station/Bootstrap/000 Switcher/"
+cp "$AQ_WORLD" "Docking Station/Bootstrap/100 Aquarium/"
+cp "$AQ_LOGIN" "Docking Station/Journal/"
+exec ./dockingstation

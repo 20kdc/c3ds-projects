@@ -5,62 +5,12 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// --- IMPORTANT RULE ---
+// Any given .cos file should be handled in one specific location, unless it's split between C3/DS definitions.
+
 // Definitions of classes that get extended here
 include "std/c3ds.ral";
 
-// "DS/autorecovery.cos"
-// Autorecovery agent
-class DSAutorecovery 1 1 226;
-
-// "DS/babel_connection_information.cos"
-// Shift-Control-B Babel status tool
-class DSBabelConnectionInformation 1 1 201;
-
-// 0: None
-// 1: 'fast info'
-// 2: full+fast
-// 3: full only
-field int DSBabelConnectionInformation.mode 0;
-
-// "DS/babel_fast_info.cos": Sub-tool of babel_connection_information
-// Shows output of "net: what"
-class DSBabelFastInfo 1 1 58;
-
-// "DS/dev tool.cos"
-
-field bool PointerToolMultiplexer.toolTaxonomyActive 2;
-
-// Shows the classifier of `hots()` (if any). Managed by `PointerToolMultiplexer`.
-class UITaxonomyTool 1 1 143;
-
-// "DS/justanut pod.cos"
-
-// The Justanut is a kind of seed.
-class DSJustanut 2 3 17;
-
-// "DS/lemon pod.cos"
-
-// The Lemon is a kind of fruit.
-class DSLemon 2 8 7;
-
-
-// "DS/new_ds_fav_places.cos"
-class DSFavPlaceController 1 1 225;
-class DSFavPlaceSignpost 1 3 0;
-
-// DS favorite place icon.
-class DSFavPlaceIcon 1 4 0;
-field bool DSFavPlaceIcon.highlighted 0;
-field int DSFavPlaceIcon.metaroom 1;
-// Index in the favorites list.
-field int DSFavPlaceIcon.placeIndex 50;
-// 'X shake' velocity as the icon rises
-field int DSFavPlaceIcon.risingXShake 99;
-
-// _p1_ is the new icon's `placeIndex`.
-// This is auto-called by DSFavPlaceController based on the object variables of the icon.
-script DSFavPlaceIcon:onSwitch 1000;
-
-// "DS/zzz_gamestart_login.cos"
-// Login window.
-class DSLoginWindow 1 2 206;
+include "std/ds/classes/system.ral";
+include "std/ds/classes/warp.ral";
+include "std/ds/classes/pods.ral";

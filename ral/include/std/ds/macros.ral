@@ -7,57 +7,81 @@
 
 include "std/ds/classes.ral";
 
-// "DS/justanut pod.cos"
+// "DS/NEW portals.cos"
 
-/*
-Creates a Justanut, including initializing physics.
-Be sure to run this in INST and run dsJustanutFinish.
-*/
-macro () dsJustanutNew() {
-	newSimp(DSJustanut, "justanut pod", 9, 18, 51);
-	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_PNTR_PICKUP);
-	perm(64);
-	bhvr(BHVR_PICKUP | BHVR_EAT);
-	pose(1);
-	accg(3);
-	aero(5);
-	fric(99);
-	elas(20);
+// Is this portal index in use?
+macro dsPortalIDInUse(int index) {
+	let result = false;
+	foreach (DSPortal in enum) {
+		if targ.index == index {
+			result = true;
+			break;
+		}
+	}
+	return result;
+};
+
+// Allocates a portal ID. Returns -1 on failure.
+macro dsPortalIDAlloc() {
+	let id = 9;
+	for ; id > -1; id--; {
+		if !dsPortalIDInUse(0) {
+			break;
+		}
+	}
+	return id;
+};
+
+// Wipes settings for the given portal.
+macro () dsPortalClear(int @id) {
+	let base = '_portal{id}';
+	let suffixR = '{base}receive';
+	let suffixS = '{base}send';
+	let gvar = gamn("");
+	while gvar != "" {
+		let tvar = gvar;
+		// advance early so that removal is harmless (hopefully)
+		gvar = gamn(gvar);
+		// remove?
+		if strEndsWith(tvar, suffixR) || strEndsWith(tvar, suffixS)
+			delg(tvar);
+	}
 }
 
-/*
-Finishes creation of a Justanut (after placement on the map).
-*/
-macro () dsJustanutFinish() {
-	emit(7, 0.5);
-	tick(200);
+// Special: Any online user
+DS_PORTAL_USER_ANY = "!net: ruso";
+// Special: Any friend
+DS_PORTAL_USER_FRIEND = "!friend";
+
+// Adds a source for the given portal.
+macro () dsPortalAddFrom(int @id, str @user) {
+	gameInt('{user}_portal{id}receive') = 1;
 }
 
-// "DS/lemon pod.cos"
-
-/*
-Creates a Lemon, including initializing physics.
-Be sure to run this in INST and run dsLemonFinish.
-*/
-macro () dsLemonNew() {
-	newSimp(DSLemon, "ds lemon pod", 2, 30, 355);
-	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_PNTR_PICKUP);
-	perm(64);
-	bhvr(BHVR_PICKUP | BHVR_EAT);
-	accg(2);
-	aero(2);
-	fric(100);
-	elas(30);
-	name("eaten") = "no";
+// Adds a target for the given portal.
+macro () dsPortalAddTo(int @id, str @user) {
+	gameInt('{user}_portal{id}send') = 1;
 }
 
-/*
-Finishes creation of a Lemon (after placement on the map).
-*/
-macro () dsLemonFinish() {
-	emit(6, 0.5);
-	tick(200);
-}
+// "DS/zzz_gamestart_login.cos" and friends
+
+// Attempts to login to the DS servers, assuming `netPass` has been called.
+// This function takes care of poking the topleft UI and setting the status.
+// Returns true if login was successful.
+macro dsTryLogin() {
+	netLine(true);
+	inst();
+	let res = netLine();
+	if res {
+		gameStr("status") = "online";
+		targ = gameAgent("ds_gui_topleft");
+		if targ != null {
+			part(7);
+			pose(1);
+		}
+	}
+	return res;
+};
 
 // "DS/new_ds_fav_places.cos"
 

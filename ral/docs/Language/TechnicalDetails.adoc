@@ -66,8 +66,8 @@ However, in practice, there are only 5:
 
 - String Embedding - starts with `'`, `{}` inside surrounds expressions (which are 'outside' of the string - it's complicated)
 
-- Float/Integer - must start with a digit, `+`, or `-`,  and must contain at least one digit, `.`, or `e`.
-  
+- Float/Integer - must start with a digit, `+`, or `-`. If it starts with `+` or `-`, must be followed by a digit or `.`. In either case, followed by any number of alphanumeric characters (`a-z`, `A-Z`, `0-9`) and `.` characters.
+  - If the token begins with `0x` (case-sensitive), then this is cut off and the remainder is always parsed as a hexadecimal integer.
   - The distinction between Float and Integer is based on Java's `Integer.parseInt` and `Float.parseFloat` functions.
     If the number parses as an integer, then that is what you get.
     Otherwise, if the number parses as a float, that's what you get.

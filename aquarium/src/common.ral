@@ -16,6 +16,8 @@ AQUA_EVC_SWITCHER_START = "switcher-start";
 AQUA_EVC_SWITCHER_HALT = "switcher-halt";
 // "{worldName}" : new world
 AQUA_EVC_SWITCHER_NEW_WORLD = "switcher-new-world";
+// "" : kill signal
+AQUA_EVC_SWITCHER_KILL = "switcher-kill";
 // "{worldName}" : startup ok
 AQUA_EVC_MONITOR_STARTUP_OK = "monitor-startup-ok";
 // "" : online
@@ -24,6 +26,57 @@ AQUA_EVC_MONITOR_ONLINE = "monitor-online";
 AQUA_EVC_MONITOR_OFFLINE = "monitor-offline";
 // "{erra}\t{rawe}" : failed login
 AQUA_EVC_MONITOR_LOGIN_ERROR = "monitor-login-error";
+// "" : kill signal
+AQUA_EVC_MONITOR_KILL = "monitor-kill";
+// "{id}\t{unid}" : task started
+AQUA_EVC_TASKMGR_START = "taskmgr-start";
+// "{id}\t{unid}" : task finished
+AQUA_EVC_TASKMGR_END = "taskmgr-end";
+
+// universal class structure
+
+// This thing represents the main loop.
+// AquaLoop gets killed to reset this.
+class AquaLoop 1 2 42083;
+// This thing represents the event handler.
+class AquaHandler 1 2 42084;
+// This thing represents a running background task.
+// These are *NOT* killed on update.
+class AquaTask 1 2 42085;
+// Task details.
+field str AquaTask.what 0;
+// Task details, machine-readable
+field str AquaTask.what_machine 1;
+
+// Sets up loop and handler agents in the world.
+macro () aquaSetup() {
+	foreach (AquaLoop in enum) {
+		kill(targ);
+	}
+	foreach (AquaHandler in enum) {
+		kill(targ);
+	}
+	newSimp(AquaLoop, "blnk", 0, 0, 0);
+	newSimp(AquaHandler, "blnk", 0, 0, 0);
+	imsk(IMSK_KEY_DOWN);
+}
+
+// Launches a task.
+macro () aquaLaunchTask(str @reason, int id, any @p1, any @p2) {
+	newSimp(AquaTask, "blnk", 0, 0, 0);
+	alias targ!AquaTask;
+	targ.what = '{unid()}: {id}: {reason}';
+	targ.what_machine = '{id}\t{unid()}';
+	aquaEvent(AQUA_EVC_TASKMGR_START, targ.what_machine, 'Start: {targ.what}');
+	tick(1);
+	mesgWrtP(targ, id, p1, p2, 0);
+}
+
+script AquaTask:timer {
+	inst();
+	aquaEvent(AQUA_EVC_TASKMGR_END, ownr.what_machine, 'End: {ownr.what}');
+	kill(ownr);
+}
 
 // states
 
@@ -75,6 +128,13 @@ macro () aquaWSGenSet(int @value) {
 	fileOope(FILE_DIR_MAIN, "aquariumWorldsKilled", false);
 	outv(value);
 	fileOclo();
+}
+
+// Abort and signal a boot loop so we won't be restarted
+macro () aquaAbort() {
+	fileOope(FILE_DIR_MAIN, "aquariumBootLoopDetected", false);
+	fileOclo();
+	stop();
 }
 
 // Open stdout

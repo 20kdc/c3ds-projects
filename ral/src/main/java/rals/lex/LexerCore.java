@@ -24,8 +24,11 @@ public class LexerCore implements Supplier<Token> {
 	private final DiagRecorder diags;
 
 	private static final String LONERS = ";[]{}(),.";
+	// Starts a potential number.
 	private static final String NUM_START = "+-0123456789";
-	private static final String NUM_BODY = "0123456789.e";
+	// If a character is in NUM_START but not NUM_BODY, one of these must follow.
+	private static final String NUM_CONFIRM = "0123456789.";
+	private static final String NUM_BODY = "0123456789.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private static final String OPERATORS_BREAKING = "<>=?!/*-+:&|^%~@";
 	private static final String OPERATORS_UNBREAKING = "";
 	private static final String OPERATORS = OPERATORS_BREAKING + OPERATORS_UNBREAKING;
@@ -180,7 +183,7 @@ public class LexerCore implements Supplier<Token> {
 				// this isn't a NUM_BODY so check next char
 				int c2 = getNextByte();
 				sb.append((char) c2);
-				if ((c2 == -1) || (NUM_BODY.indexOf(c2) == -1)) {
+				if ((c2 == -1) || (NUM_CONFIRM.indexOf(c2) == -1)) {
 					// nope
 					// Note that because we fallthrough to other token types, 'c' is still in play
 					// Hence only go back one byte
@@ -202,6 +205,14 @@ public class LexerCore implements Supplier<Token> {
 					sb.append((char) c);
 				}
 				String str = sb.toString();
+				if (str.startsWith("0x")) {
+					// Hex constants
+					try {
+						return new Token.Int(completeExtent(startOfToken), consumeComment(), Integer.parseInt(str.substring(2), 16));
+					} catch (Exception ex) {
+						// nope
+					}
+				}
 				try {
 					return new Token.Int(completeExtent(startOfToken), consumeComment(), Integer.parseInt(str));
 				} catch (Exception ex) {

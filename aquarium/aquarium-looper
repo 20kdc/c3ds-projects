@@ -1,0 +1,12 @@
+#!/bin/sh
+trap "kill %1" TERM
+echo " -- Aquarium Looper -- " > /dev/stderr
+rm -f "Journal/aquariumBootLoopDetected"
+rm -f "Journal/aquariumStateMachine"
+while true; do
+	../dockingstation --headless &
+	wait -n
+	if [ -e Journal/aquariumBootLoopDetected ]; then
+		exit 1
+	fi
+done

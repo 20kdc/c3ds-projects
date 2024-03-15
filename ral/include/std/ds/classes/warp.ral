@@ -1,0 +1,63 @@
+/*
+* c3ds-projects - Assorted compatibility fixes & useful tidbits
+* Written starting in 2022 by contributors (see CREDITS.txt)
+* To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+* You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+*/
+
+include "std/c3ds.ral";
+
+// Definitions for Warp-relevant objects.
+// This means anything that involves the Warp, except BCI (that's a pointertool, so system gets it)
+
+// "DS/warning icons.cos"
+
+// Controller of warning icons.
+class DSWarningController 1 1 164;
+
+// Warning icon.
+class DSWarningIcon 1 2 46;
+
+// "DS/NEW portals.cos"
+
+// A Docking Station portal.
+class DSPortal 3 9 1;
+
+// Index of the portal. These are used in the ID system.
+field int DSPortal.index 0;
+
+// Name of the portal
+field str DSPortal.name 1;
+
+// Closed (portable lil' unit)
+DS_PORTAL_STATE_CLOSED = 0;
+// Open (empty frame)
+DS_PORTAL_STATE_OPEN = 1;
+// Connected (blue swirl)
+// Notably, if the portal is connected depends on the online status of the target.
+DS_PORTAL_STATE_CONNECTED = 2;
+
+// State of the portal (see `DS_PORTAL_STATE_` constants)
+field int DSPortal.state 3;
+
+// Creates a new DSPortal. Be sure to allocate an ID!
+macro () dsPortalNew(int @id, str @name) {
+	newSimp(DSPortal, "ds portals", 39, 0, 400);
+	attr(ATTR_PHYSICS | ATTR_COLLIDE | ATTR_AGNT_PICKUP | ATTR_PNTR_PICKUP | ATTR_PNTR_ACT1);
+	clac(2);
+	elas(0);
+	accg(5);
+	aero(10);
+	perm(60);
+	puhl(-1, 95, 110);
+	alias targ!DSPortal;
+	targ.index = id;
+	targ.name = name;
+}
+
+macro dsPortalDefaultName() read("workshop", 7);
+
+// Creates a new DSPortal. Be sure to allocate an ID!
+macro () dsPortalNew(int @id) {
+	dsPortalNew(id, dsPortalDefaultName());
+}

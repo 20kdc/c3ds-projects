@@ -1,0 +1,66 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "std/c3ds.ral";
+
+macro () oval(any @val) {
+	let tp = type(val);
+	if tp == TYPE_NULL {
+		outs("null");
+	} else if tp == TYPE_COMPOUND {
+		outs("compound ");
+		targ = val!Agent;
+		outv(unid());
+	} else if tp == TYPE_CREATURE {
+		outs("creature ");
+		targ = val!Agent;
+		outv(unid());
+	} else if tp == TYPE_POINTER {
+		outs("pointer ");
+		targ = val!Agent;
+		outv(unid());
+	} else if tp == TYPE_SIMPLE {
+		outs("simple ");
+		targ = val!Agent;
+		outv(unid());
+	} else if tp == TYPE_VEHICLE {
+		outs("vehicle ");
+		targ = val!Agent;
+		outv(unid());
+	} else if tp == TYPE_UNKNOWN {
+		outs("unknown");
+	} else if tp == TYPE_STRING {
+		outx(val!str);
+	} else if tp == TYPE_FLOAT {
+		outv(val!float);
+	} else if tp == TYPE_INT {
+		outv(val!int);
+	} else {
+		outs("?");
+	}
+}
+
+install {
+	outs("\nGAME Variables\n\n");
+	let gvar = gamn("");
+	while gvar != "" {
+		outx(gvar);
+		outs(": ");
+		oval(game(gvar));
+		outs("\n");
+		gvar = gamn(gvar);
+	}
+	outs("\nEAME Variables\n\n");
+	let evar = eamn("");
+	while evar != "" {
+		outx(evar);
+		outs(": ");
+		oval(eame(evar));
+		outs("\n");
+		evar = eamn(evar);
+	}
+}

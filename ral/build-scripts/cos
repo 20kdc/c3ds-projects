@@ -5,6 +5,7 @@ genSample() {
 }
 
 genSample genlangconversion || exit
+genSample list-eame-game || exit
 
 genSample talking-lemon-finished || exit
 genSample talking-lemon-finished-interface || exit

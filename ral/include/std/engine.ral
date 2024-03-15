@@ -10,4 +10,4 @@
 include "std/engine/consts.ral";
 include "std/engine/scripts.ral";
 include "std/engine/macros.ral";
-
+include "std/engine/vk.ral";
