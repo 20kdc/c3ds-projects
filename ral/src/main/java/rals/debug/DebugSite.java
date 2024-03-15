@@ -29,11 +29,13 @@ import rals.parser.FileDocPath;
  */
 public class DebugSite {
 	public final DebugSite parent;
+	public final int depth;
 	public final SrcPosUntranslated location;
 	public final String[] vaNames = new String[100];
 
 	public DebugSite(DebugSite p, SrcPosUntranslated loc, CompileContext cc) {
 		parent = p;
+		depth = (p != null) ? p.depth + 1 : 1;
 		location = loc;
 		for (Map.Entry<IVAHandle, Integer> lv : cc.getVAHandleEntrySet())
 			vaNames[lv.getValue()] = lv.getKey().toString();
@@ -42,8 +44,10 @@ public class DebugSite {
 	public DebugSite(JSONObject jo) {
 		if (jo.has("parent")) {
 			parent = new DebugSite(jo.getJSONObject("parent"));
+			depth = parent.depth + 1;
 		} else {
 			parent = null;
+			depth = 1;
 		}
 		location = new SrcPosUntranslated(new FileDocPath(new File(jo.getString("file"))), jo.getInt("line"), jo.getInt("character"));
 		for (int i = 0; i < vaNames.length; i++) {
@@ -53,10 +57,10 @@ public class DebugSite {
 		}
 	}
 
-	public JSONObject toJSON() {
+	public JSONObject toJSON(int frameCount) {
 		JSONObject jo = new JSONObject();
-		if (parent != null)
-			jo.put("parent", parent.toJSON());
+		if (parent != null && frameCount > 1)
+			jo.put("parent", parent.toJSON(frameCount - 1));
 		jo.put("file", ((FileDocPath) location.file).file.getAbsolutePath());
 		jo.put("line", location.line);
 		jo.put("character", location.character);
@@ -68,8 +72,8 @@ public class DebugSite {
 		return jo;
 	}
 
-	public String encode() {
-		byte[] data = toJSON().toString().getBytes(StandardCharsets.UTF_8);
+	public String encode(int frameCount) {
+		byte[] data = toJSON(frameCount).toString().getBytes(StandardCharsets.UTF_8);
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			GZIPOutputStream gos = new GZIPOutputStream(baos);

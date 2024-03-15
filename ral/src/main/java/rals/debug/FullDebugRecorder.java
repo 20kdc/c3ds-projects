@@ -6,14 +6,20 @@
  */
 package rals.debug;
 
+import cdsp.common.data.bytestring.ByteString;
+import rals.caos.CAOSUtils;
 import rals.cctx.*;
+import rals.code.CodeGenFeatureLevel;
 
 /**
  * Lots of stuff here...
  */
 public class FullDebugRecorder extends CommentingDebugRecorder {
-	public FullDebugRecorder() {
+	public final CodeGenFeatureLevel codeGenFeatureLevel;
+
+	public FullDebugRecorder(CodeGenFeatureLevel cgfl) {
 		super(true);
+		codeGenFeatureLevel = cgfl;
 	}
 
 	@Override
@@ -23,7 +29,24 @@ public class FullDebugRecorder extends CommentingDebugRecorder {
 
 	@Override
 	public void saveSiteAndCreateMarker(CodeWriter caller, DebugSite ds) {
-		caller.writeCode("sets va99 \"" + ds.encode() + "\"");
+		// [CAOS]
+		int depth = ds.depth;
+		while (depth > 0) {
+			try {
+				ByteString wanted = new ByteString(ds.encode(depth), CAOSUtils.CAOS_CHARSET);
+				ByteString.Builder b = new ByteString.Builder(wanted.length() + 2);
+				b.writeASCII("sets va99 ");
+				CAOSUtils.stringIntoCAOSConstant(b, wanted, codeGenFeatureLevel);
+				caller.writeCode(b);
+				return;
+			} catch (CAOSUtils.ConstantTooLargeForVMException vme) {
+				// oops
+			}
+			depth--;
+		}
+		// uhoh
+		caller.writeComment("Unable to represent frame in acceptable constant string bounds for this VM.");
+		caller.writeCode("sets va99 \"\"");
 	}
 
 	@Override

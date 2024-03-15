@@ -8,6 +8,8 @@ package rals.expr;
 
 import java.util.Set;
 
+import cdsp.common.data.bytestring.ByteString;
+import rals.caos.CAOSUtils;
 import rals.cctx.*;
 import rals.code.*;
 import rals.types.*;
@@ -53,6 +55,8 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 			return toString();
 		}
 
+		public abstract ByteString getInlineCAOSConst(CompileContextNW context);
+
 		public abstract RALConstant.Single cast(RALType rt);
 
 		@Override
@@ -70,56 +74,61 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		/**
 		 * Value. It is very important to keep in mind CAOSUtils.CAOS_CHARSET.
 		 */
-		public final String value;
+		public final String valueChars;
+		/**
+		 * Value as bytes.
+		 */
+		public final ByteString valueBytes;
 
 		public Str(TypeSystem ts, String s) {
 			super(ts.gString);
-			value = s;
+			valueChars = s;
+			valueBytes = new ByteString(s, CAOSUtils.CAOS_CHARSET);
 		}
+
 		public Str(RALType t, String s) {
 			super(t);
-			value = s;
+			valueChars = s;
+			valueBytes = new ByteString(s, CAOSUtils.CAOS_CHARSET);
+		}
+
+		public Str(TypeSystem ts, ByteString s) {
+			super(ts.gString);
+			valueChars = s.toString(CAOSUtils.CAOS_CHARSET);
+			valueBytes = s;
+		}
+
+		public Str(RALType t, ByteString s) {
+			super(t);
+			valueChars = s.toString(CAOSUtils.CAOS_CHARSET);
+			valueBytes = s;
+		}
+
+		@Override
+		public ByteString getInlineCAOSConst(CompileContextNW context) {
+			return CAOSUtils.stringIntoCAOSConstant(valueBytes, context.typeSystem.codeGenFeatureLevel).toByteString();
 		}
 
 		@Override
 		public Str cast(RALType rt) {
-			return new Str(rt, value);
+			return new Str(rt, valueBytes);
 		}
 
 		@Override
 		public int hashCode() {
-			return value.hashCode();
+			return valueChars.hashCode();
 		}
 
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof Str)
-				return value.equals(((Str) obj).value);
+				return valueChars.equals(((Str) obj).valueChars);
 			return false;
 		}
 
 		@Override
 		public String toString() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('\"');
-			for (char c : value.toCharArray()) {
-				if ((c == '\\') || (c == '\"')) {
-					sb.append('\\');
-					sb.append(c);
-				} else if (c == '\r') {
-					sb.append("\\r");
-				} else if (c == '\n') {
-					sb.append("\\n");
-				} else if (c == '\t') {
-					sb.append("\\t");
-				} else if (c == 0) {
-					sb.append("\\0");
-				} else {
-					sb.append(c);
-				}
-			}
-			sb.append('\"');
-			return sb.toString();
+			return CAOSUtils.stringIntoCAOSConstant(valueBytes, CodeGenFeatureLevel.customEngine).toString(CAOSUtils.CAOS_CHARSET);
 		}
 	}
 
@@ -168,6 +177,11 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		}
 
 		@Override
+		public ByteString getInlineCAOSConst(CompileContextNW context) {
+			return new ByteString(toString(), CAOSUtils.CAOS_CHARSET);
+		}
+
+		@Override
 		public String toString() {
 			return Integer.toString(value);
 		}
@@ -207,6 +221,11 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 				return value == ((Flo) obj).value;
 			}
 			return false;
+		}
+
+		@Override
+		public ByteString getInlineCAOSConst(CompileContextNW context) {
+			return new ByteString(toString(), CAOSUtils.CAOS_CHARSET);
 		}
 
 		@Override
@@ -279,6 +298,11 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		// don't bother with equality checks, it's not worth it
 
 		@Override
+		public ByteString getInlineCAOSConst(CompileContextNW context) {
+			return new ByteString(toString(), CAOSUtils.CAOS_CHARSET);
+		}
+
+		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("[ ");
@@ -316,6 +340,11 @@ public abstract class RALConstant extends RALExprSlice implements RALExprUR {
 		@Override
 		public Callable cast(RALType rt) {
 			return new Callable(rt, value);
+		}
+
+		@Override
+		public ByteString getInlineCAOSConst(CompileContextNW context) {
+			return null;
 		}
 
 		@Override

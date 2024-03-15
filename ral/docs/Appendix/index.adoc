@@ -95,3 +95,4 @@ _Importantly, RALjector will accept any debug information supplied in the correc
 
 _Also importantly, debug information is specific to the user writing the debug information._
 
+_Even more importantly, the CAOS lexer is in danger of crashing if a constant string contains over 519 bytes, escapes counting as only one byte. If this risk becomes relevant, RAL will remove outer debug frames until it fits._

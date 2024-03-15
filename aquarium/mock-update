@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 ral compileDebug src/world.ral zzz_aquarium.cos
-ral compile src/switcher.ral switcher.cos
+ral compileDebug src/switcher.ral switcher.cos
 # continue...
 AQ_WORLD="`readlink -f zzz_aquarium.cos`"
 AQ_SWITCHER="`readlink -f switcher.cos`"

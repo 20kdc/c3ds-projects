@@ -8,10 +8,11 @@ package rals.test;
 
 import org.junit.Test;
 
+import rals.caos.CAOSUtils;
+
 public class CAOSCharsetActsAsExpectedTest {
 	@Test
 	public void test() {
-		/* let's just get Aquarium back on schedule hmm
 		for (int i = 0; i < 256; i++) {
 			byte[] data = new byte[] {(byte) i};
 			String res = new String(data, CAOSUtils.CAOS_CHARSET);
@@ -23,6 +24,5 @@ public class CAOSCharsetActsAsExpectedTest {
 			if (data2[0] != (byte) i)
 				throw new RuntimeException("CAOS charset non-transitively maps " + i + " (" + res + ") to " + (data2[0] & 0xFF));
 		}
-		*/
 	}
 }

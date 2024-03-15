@@ -6,6 +6,8 @@
  */
 package rals.cctx;
 
+import cdsp.common.data.bytestring.ByteSequence;
+import rals.caos.CAOSUtils;
 import rals.debug.DebugSite;
 import rals.debug.IDebugRecorder;
 
@@ -58,6 +60,10 @@ public class CodeWriter {
 		writer.append('\n');
 	}
 
+	public void writeComment(ByteSequence comment) {
+		writeComment(comment.toString(CAOSUtils.CAOS_CHARSET));
+	}
+
 	public void writeCode(int pre, String text, int post) {
 		indent += pre;
 		writeCode(text);
@@ -81,5 +87,23 @@ public class CodeWriter {
 				writeIndent();
 		}
 		writer.append("\n");
+	}
+
+	public void writeCode(int pre, ByteSequence text, int post) {
+		indent += pre;
+		writeCode(text);
+		indent += post;
+	}
+
+	public void writeCode(int pre, ByteSequence text) {
+		writeCode(pre, text, 0);
+	}
+
+	public void writeCode(ByteSequence text, int post) {
+		writeCode(0, text, post);
+	}
+
+	public void writeCode(ByteSequence text) {
+		writeCode(text.toString(CAOSUtils.CAOS_CHARSET));
 	}
 }

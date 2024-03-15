@@ -61,7 +61,7 @@ public class ParserExpr {
 	public static String parseConstString(InsideFileContext ifc) {
 		RALConstant re = parseConst(ifc);
 		if (re instanceof RALConstant.Str) {
-			return ((RALConstant.Str) re).value;
+			return ((RALConstant.Str) re).valueChars;
 		} else {
 			throw new RuntimeException("Expected constant string.");
 		}

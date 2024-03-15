@@ -17,6 +17,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import rals.caos.CAOSUtils;
 import rals.code.*;
@@ -62,7 +63,7 @@ public class Main {
 			IncludeParseContext ic = Parser.run(stdLibDP, new File(args[1]));
 			StringBuilder outText = new StringBuilder();
 			OuterCompileContext cctx = new OuterCompileContext(outText, new DummyDebugRecorder());
-			OuterCompileContext cctxDbg = new OuterCompileContext(outText, new FullDebugRecorder());
+			OuterCompileContext cctxDbg = new OuterCompileContext(outText, new FullDebugRecorder(ic.typeSystem.codeGenFeatureLevel));
 			Scripts resolvedCode = ic.module.resolve(ic.diags, ic.hcm);
 			if (args[0].equals("compile")) {
 				resolvedCode.compile(cctx);
@@ -89,7 +90,7 @@ public class Main {
 			}
 			StringBuilder sb = new StringBuilder();
 			boolean ok = false;
-			DummyDebugRecorder ddr = new DummyDebugRecorder();
+			Function<CodeGenFeatureLevel, IDebugRecorder> ddr = (cgfl) -> new DummyDebugRecorder();
 			if (args[0].equals("inject")) {
 				ok = inject(sb, stdLibDP, new File(args[1]), ddr, null, ScriptSection.Events, ScriptSection.Install);
 			} else if (args[0].equals("injectInstall")) {
@@ -166,7 +167,7 @@ public class Main {
 		return ralStandardLibrary;
 	}
 
-	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, IDebugRecorder di, Consumer<TypeSystem> exportTaxonomy, ScriptSection... sections) {
+	public static boolean inject(StringBuilder sb, IDocPath stdLibDP, File f, Function<CodeGenFeatureLevel, IDebugRecorder> di, Consumer<TypeSystem> exportTaxonomy, ScriptSection... sections) {
 		try {
 			IncludeParseContext ic = Parser.run(stdLibDP, f);
 			LinkedList<String> queuedRequests = new LinkedList<>();
@@ -174,7 +175,7 @@ public class Main {
 				exportTaxonomy.accept(ic.typeSystem);
 			Scripts resolvedCode = ic.module.resolve(ic.diags, ic.hcm);
 			for (ScriptSection s : sections)
-				resolvedCode.compileSectionForInject(queuedRequests, di, s);
+				resolvedCode.compileSectionForInject(queuedRequests, di.apply(ic.typeSystem.codeGenFeatureLevel), s);
 			String res = ic.diags.unwrapToString();
 			if (res != null) {
 				sb.append("Compile failed:\n");

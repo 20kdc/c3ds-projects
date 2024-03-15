@@ -9,12 +9,14 @@ package rals.tooling.raljector;
 import java.awt.FileDialog;
 import java.awt.GridLayout;
 import java.io.File;
+import java.util.function.Function;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
 import rals.Main;
+import rals.code.CodeGenFeatureLevel;
 import rals.code.OuterCompileContext;
 import rals.code.ScriptSection;
 import rals.code.Scripts;
@@ -121,7 +123,7 @@ public class RALjector extends JFrame {
 						debugState.debugTaxonomy = new DebugTaxonomyData(ipc.typeSystem);
 						Scripts scr = ipc.module.resolve(ipc.diags, ipc.hcm);
 						StringBuilder finishedCode = new StringBuilder();
-						scr.compile(new OuterCompileContext(finishedCode, getDebugRecorder()));
+						scr.compile(new OuterCompileContext(finishedCode, getDebugRecorder().apply(ipc.typeSystem.codeGenFeatureLevel)));
 						String errors = scr.diags.unwrapToString();
 						if (errors != null) {
 							sb.append("Compile errors:\n");
@@ -153,8 +155,8 @@ public class RALjector extends JFrame {
 		setVisible(true);
 	}
 
-	private IDebugRecorder getDebugRecorder() {
-		return injectWithDebugInfo ? new FullDebugRecorder() : new DummyDebugRecorder();
+	private Function<CodeGenFeatureLevel, IDebugRecorder> getDebugRecorder() {
+		return injectWithDebugInfo ? (cgfl) -> new FullDebugRecorder(cgfl) : (cgfl) -> new DummyDebugRecorder();
 	}
 
 	public void updateTexts() {
@@ -178,7 +180,7 @@ public class RALjector extends JFrame {
 		if (currentFile == null) {
 			sb.append("No file!");
 		} else {
-			if (Main.inject(sb, stdLibDP, currentFile, injectWithDebugInfo ? new FullDebugRecorder() : new DummyDebugRecorder(), (ts) -> {
+			if (Main.inject(sb, stdLibDP, currentFile, getDebugRecorder(), (ts) -> {
 				debugState.debugTaxonomy = new DebugTaxonomyData(ts);
 			}, sections)) {
 				sb.append("\nInject successful.");

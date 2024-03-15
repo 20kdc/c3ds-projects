@@ -12,9 +12,9 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 import cdsp.common.data.IOUtils;
+import cdsp.common.data.bytestring.W1252Fixed;
 import natsue.config.ConfigMessages;
 import natsue.data.babel.ctos.BaseCTOS;
 import natsue.data.babel.ctos.CTOSClientCommand;
@@ -38,7 +38,7 @@ public class PacketReader {
 	/**
 	 * The standard character set used by the game.
 	 */
-	public static final Charset CHARSET = StandardCharsets.ISO_8859_1;
+	public static final Charset CHARSET = W1252Fixed.INSTANCE;
 
 	public static long getUIN(ByteBuffer initial, int ofs) {
 		// HID gets masked in this, which is good and important

@@ -8,6 +8,11 @@ package rals.caos;
 
 import java.nio.charset.Charset;
 
+import cdsp.common.data.bytestring.ByteSequence;
+import cdsp.common.data.bytestring.ByteString;
+import cdsp.common.data.bytestring.W1252Fixed;
+import rals.code.CodeGenFeatureLevel;
+
 /**
  * Utilities for writing CAOS.
  */
@@ -15,7 +20,7 @@ public class CAOSUtils {
 	/**
 	 * Character set for a standard copy of Creatures 3 or Docking Station.
 	 */
-	public static final Charset CAOS_CHARSET = Charset.forName("Cp1252");
+	public static final Charset CAOS_CHARSET = W1252Fixed.INSTANCE;
 
 	/**
 	 * Converts a VA index into the VA name.
@@ -33,6 +38,56 @@ public class CAOSUtils {
 	public static String vaToString(int va) {
 		// [CAOS]
 		return vaToString("va", va);
+	}
+
+	/**
+	 * Checks if a string is inbounds.
+	 */
+	public static void checkStringCAOSConstant(ByteSequence value, CodeGenFeatureLevel codeGen) {
+		if (codeGen.lexerConstantStringLimit != -1)
+			if (value.length() > codeGen.lexerConstantStringLimit)
+				throw new ConstantTooLargeForVMException();
+	}
+
+	/**
+	 * Converts into a CAOS constant.
+	 * Note the code gen feature level - this controls a check that prevents crashes!
+	 */
+	public static ByteString.Builder stringIntoCAOSConstant(ByteSequence value, CodeGenFeatureLevel codeGen) {
+		ByteString.Builder res = new ByteString.Builder(value.length() + 2);
+		stringIntoCAOSConstant(res, value, codeGen);
+		return res;
+	}
+
+	/**
+	 * Converts into a CAOS constant.
+	 * Note the code gen feature level - this controls a check that prevents crashes!
+	 */
+	public static void stringIntoCAOSConstant(ByteString.Builder res, ByteSequence value, CodeGenFeatureLevel codeGen) {
+		checkStringCAOSConstant(value, codeGen);
+		byte[] valueBytes = value.getBytes();
+		res.write('"');
+		for (byte c : valueBytes) {
+			if ((c == '\\') || (c == '\"')) {
+				res.write('\\');
+				res.write(c);
+			} else if (c == '\r') {
+				res.write('\\');
+				res.write('r');
+			} else if (c == '\n') {
+				res.write('\\');
+				res.write('n');
+			} else if (c == '\t') {
+				res.write('\\');
+				res.write('t');
+			} else if (c == 0) {
+				res.write('\\');
+				res.write('0');
+			} else {
+				res.write(c);
+			}
+		}
+		res.write('"');
 	}
 
 	/**
@@ -67,5 +122,15 @@ public class CAOSUtils {
 			}
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * Indicates the constant needs to be broken down.
+	 */
+	@SuppressWarnings("serial")
+	public static class ConstantTooLargeForVMException extends RuntimeException {
+		public ConstantTooLargeForVMException() {
+			super("A constant string was too large for the target CAOS VM.");
+		}
 	}
 }

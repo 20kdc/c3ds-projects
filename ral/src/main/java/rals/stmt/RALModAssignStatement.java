@@ -271,15 +271,15 @@ public class RALModAssignStatement extends RALStatementUR {
 					return stepConstAddNumbers(ts, (RALConstant.Number) l, (RALConstant.Number) r);
 				} else if (r instanceof RALConstant.Str) {
 					// NUM + STR
-					return new RALConstant.Str(ts, l.toString() + ((RALConstant.Str) r).value);
+					return new RALConstant.Str(ts, l.toString() + ((RALConstant.Str) r).valueChars);
 				}
 			} else if (l instanceof RALConstant.Str) {
 				if (r instanceof RALConstant.Number) {
 					// STR + NUM
-					return new RALConstant.Str(ts, ((RALConstant.Str) l).value + r.toString());
+					return new RALConstant.Str(ts, ((RALConstant.Str) l).valueChars + r.toString());
 				} else if (r instanceof RALConstant.Str) {
 					// STR + STR
-					return new RALConstant.Str(ts, ((RALConstant.Str) l).value + ((RALConstant.Str) r).value);
+					return new RALConstant.Str(ts, ((RALConstant.Str) l).valueChars + ((RALConstant.Str) r).valueChars);
 				}
 			}
 			return null;

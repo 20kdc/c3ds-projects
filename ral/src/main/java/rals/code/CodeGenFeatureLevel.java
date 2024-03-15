@@ -10,16 +10,19 @@ package rals.code;
  * Controls engine features used by output code.
  */
 public enum CodeGenFeatureLevel {
-	c3(false, true, "Creatures 3"),
-	ds(true, true, "Docking Station"),
-	customEngine(true, false, "Custom Engine");
+	c3(false, true, 519, "Creatures 3"),
+	ds(true, true, 519, "Docking Station"),
+	customEngine(true, false, -1, "Custom Engine");
 
 	public final boolean hasMVXX, requiresEnumBreakout;
+	// -1: no limit
+	public final int lexerConstantStringLimit;
 	public final String defInfo;
 
-	CodeGenFeatureLevel(boolean mv, boolean breakout, String details) {
+	CodeGenFeatureLevel(boolean mv, boolean breakout, int unstableLexer, String details) {
 		hasMVXX = mv;
 		requiresEnumBreakout = breakout;
+		lexerConstantStringLimit = unstableLexer;
 		defInfo = details;
 	}
 }

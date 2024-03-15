@@ -1,5 +1,5 @@
 #!/bin/sh
 set -e
-ral compile src/world.ral zzz_aquarium.cos
-ral compile src/switcher.ral switcher.cos
+ral compileDebug src/world.ral zzz_aquarium.cos
+ral compileDebug src/switcher.ral switcher.cos
 docker build -t c3ds-projects-aquarium .
