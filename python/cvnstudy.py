@@ -7,12 +7,23 @@
 
 # Just exists to figure out some stuff don't mind me
 syllable_types = ["V", "CV", "VN", "CVN"]
+
+done = {}
+
 for i in syllable_types:
 	for j in syllable_types:
 		for k in syllable_types:
 			total = i + j + k
+			# must be 6 characters
 			if len(total) != 6:
 				continue
+			# vowel clusters not allowed
 			if "VV" in total:
 				continue
+			# to prevent a massive proliferation of 'N', substitute 'C' where valid
+			total = total.replace("NV", "CV")
+			# can't repeat
+			if total in done:
+				continue
 			print(total)
+			done[total] = True

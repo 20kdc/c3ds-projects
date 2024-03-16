@@ -26,31 +26,15 @@ macro (bool ok) aquaHivetokgenVerifyHalf(str @half) {
 }
 
 macro (str structure) aquaHivetokgenHalfStructure() {
-	let choice = rand(0, 11);
+	let choice = rand(0, 3);
 	if choice == 0 {
-		structure = "VCVCVN";
-	} else if choice == 1 {
-		structure = "VCVNCV";
-	} else if choice == 2 {
-		structure = "VCVNVN";
-	} else if choice == 3 {
 		structure = "CVCVCV";
-	} else if choice == 4 {
-		structure = "CVCVNV";
-	} else if choice == 5 {
-		structure = "VNVCVN";
-	} else if choice == 6 {
+	} else if choice == 1 {
+		structure = "VCVCVN";
+	} else if choice == 2 {
+		structure = "VCVNCV";
+	} else if choice == 3 {
 		structure = "VNCVCV";
-	} else if choice == 7 {
-		structure = "VNVNCV";
-	} else if choice == 8 {
-		structure = "VNVNVN";
-	} else if choice == 9 {
-		structure = "VNCVNV";
-	} else if choice == 10 {
-		structure = "CVNVCV";
-	} else if choice == 11 {
-		structure = "CVNVNV";
 	} else {
 		// wtf
 		structure = "VVVVVV";
