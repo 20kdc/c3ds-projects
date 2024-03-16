@@ -6,7 +6,7 @@
 # You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 # Just exists to figure out some stuff don't mind me
-syllable_types = ["V", "CV", "VN", "CVN"]
+syllable_types = ["", "V", "CV", "VN", "CVN"]
 
 done = {}
 

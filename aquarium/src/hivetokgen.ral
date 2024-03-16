@@ -26,7 +26,7 @@ macro (bool ok) aquaHivetokgenVerifyHalf(str @half) {
 }
 
 macro (str structure) aquaHivetokgenHalfStructure() {
-	let choice = rand(0, 3);
+	let choice = rand(0, 4);
 	if choice == 0 {
 		structure = "CVCVCV";
 	} else if choice == 1 {
@@ -35,6 +35,8 @@ macro (str structure) aquaHivetokgenHalfStructure() {
 		structure = "VCVNCV";
 	} else if choice == 3 {
 		structure = "VNCVCV";
+	} else if choice == 4 {
+		structure = "CVNCVN";
 	} else {
 		// wtf
 		structure = "VVVVVV";
