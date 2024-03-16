@@ -63,7 +63,7 @@ macro (str name) aquaHivetokgenHalf() {
 		// writes out a string of C/V/N (Countdown but fixed places)
 		let structure = aquaHivetokgenHalfStructure();
 		interim = "";
-		for i = 0; i < 6; i++; {
+		for i = 1; i <= 6; i++; {
 			if subs(structure, i, 1) == "V" {
 				let vowelChoice = rand(1, 5);
 				interim += subs("aeiou", vowelChoice, 1);
