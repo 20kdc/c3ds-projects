@@ -5,16 +5,14 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-include "common.ral";
-include "std/ds.ral";
+include "world_header.ral";
 
-script AquaTask:reinjectAquarium 1000;
-
-AQUA_SECONDS_BETWEEN_LOGIN_ATTEMPTS = 60;
+include "updater.ral";
+include "map.ral";
+include "warp.ral";
+include "life_events.ral";
 
 install {
-	// if we're here, we're updated for this session
-	eameBool("aquarium_updated_yet") = true;
 	// we need to stop these IMMEDIATELY
 	// may undo changes made by Aquarium
 	foreach (DSAutorecovery in enum) {
@@ -29,7 +27,14 @@ install {
 		// Aquarium's exit handler and DS's exit handler conflict.
 		kill(targ);
 	}
+	// these are sane right
 	gameStr("user_of_this_world") = eameStr("aquarium_user");
+	gameInt("breeding_limit") = 64;
+	gameInt("total_population") = 66;
+	// name generator test
+	// aquaStderr();
+	// outs('generator test: {aquaHivetokgen()}\n');
+	// continue...
 	aquaSetup();
 }
 
@@ -37,17 +42,19 @@ script AquaLoop:init {
 	// avoid JECT crash risk by doing this all here
 	inst();
 
-	// bye-bye portals
-	foreach (DSPortal in enum) {
-		dsPortalClear(targ.index);
-		kill(targ);
+	// do daemon CALLs
+	for daemon = 0; daemon < AQUA_DAEMONS; daemon++; {
+		aquaEvent(AQUA_EVC_MONITOR_STARTING_DAEMON, '{eameStr("aquarium_world_id")}\t{daemon}', 'Starting daemon {daemon}');
+		callIndirect(AQUA_DSC_OPEN + daemon, 0, 0);
+	}
+	// for good measure
+	// this will catch errors that might otherwise occur immediately after we declare the world OK
+	for daemon = 0; daemon < AQUA_DAEMONS; daemon++; {
+		aquaEvent(AQUA_EVC_MONITOR_LOOPING_DAEMON, '{eameStr("aquarium_world_id")}\t{daemon}', 'Looping daemon {daemon} to check for errors');
+		callIndirect(AQUA_DSC_LOOP + daemon, 0, 0);
 	}
 
-	// portal 0: ingress
-	// dsPortalNew(0);
-	// mvto(2443.0, 9145.0);
-	// dsPortalAddFrom(0, DS_PORTAL_USER_ANY);
-	// mesgWrit(targ!, DSPortal->msgAct1);
+	aquaEvent(AQUA_EVC_MONITOR_STARTUP_SOAK, '{eameStr("aquarium_world_id")}', "Daemons ready, waiting for a second to confirm world doesn't crash");
 
 	// WE ARE OFFICIALLY DONE WITH SETUP, NOW LET'S WAIT FOR ERRORS
 	// if we're crashing after a set amount of time, this guarantees we make forward progress
@@ -59,53 +66,14 @@ script AquaLoop:init {
 	aquaWSStateSet(AQUA_WS_STATE_NOMINAL);
 	aquaEvent(AQUA_EVC_MONITOR_STARTUP_OK, '{eameStr("aquarium_world_id")}', "Aquarium OK");
 
-	let loginTimer = 0;
 	loop {
-		// so when the world loads, we need to reinit
-		// this reload is VERY IMPORTANT as it's part of crash detection
-		// it also does nice things like cleaning up floating dialogs, and applying
-		// script updates
-		if !eameBool("aquarium_updated_yet") {
-			// doing this outside of a task **WILL CRASH THE GAME**
-			aquaLaunchTask("World reloaded, reinject aquarium", AquaTask->reinjectAquarium, null, null);
-			stop();
-		}
-		// update timers
-		loginTimer -= 1;
-		if loginTimer < 0 {
-			loginTimer = 0;
-		}
-		// network
-		if !netLine() {
-			if loginTimer <= 0 {
-				netPass(gameStr("user_of_this_world"), eameStr("aquarium_pass"));
-				netLine(true);
-				inst();
-				if netLine() {
-					gameStr("status") = "online";
-					targ = gameAgent("ds_gui_topleft");
-					part(7);
-					pose(1);
-				} else {
-					aquaEvent(AQUA_EVC_MONITOR_LOGIN_ERROR, '{netErra()}\t{netRawe()}', "OFFLINE");
-				}
-				loginTimer = AQUA_SECONDS_BETWEEN_LOGIN_ATTEMPTS;
-			}
+		for daemon = 0; daemon < AQUA_DAEMONS; daemon++; {
+			callIndirect(AQUA_DSC_LOOP + daemon, 0, 0);
 		}
 		// 1 second before each daemon refresh
 		wait(20);
 		inst();
 	}
-}
-
-script AquaHandler:netOnline {
-	inst();
-	aquaEvent(AQUA_EVC_MONITOR_ONLINE, "", "ONLINE");
-}
-
-script AquaHandler:netOffline {
-	inst();
-	aquaEvent(AQUA_EVC_MONITOR_OFFLINE, "", "OFFLINE");
 }
 
 // This ensures the server correctly reacts to kill signals.
@@ -114,12 +82,8 @@ script AquaHandler:netOffline {
 script AquaHandler:rawKeyDown {
 	inst();
 	if _p1_ == VK_ESCAPE {
-		aquaEvent(AQUA_EVC_MONITOR_KILL, "", "kill signal received, shutting down...");
+		aquaEvent(AQUA_EVC_MONITOR_SIGTERM, "", "kill signal received, shutting down...");
 		save();
 		quit();
 	}
-}
-
-script AquaTask:reinjectAquarium {
-	ject("zzz_aquarium.cos", JECT_FULL);
 }

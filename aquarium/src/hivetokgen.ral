@@ -1,0 +1,79 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "std/c3ds.ral";
+
+macro (bool ok) aquaHivetokgenVerifyHalf(str @half) {
+	let really_ok = true;
+	if sins(half, 1, "ji") != -1 {
+		really_ok = false;
+	} else if sins(half, 1, "ti") != -1 {
+		really_ok = false;
+	} else if sins(half, 1, "wo") != -1 {
+		really_ok = false;
+	} else if sins(half, 1, "wu") != -1 {
+		really_ok = false;
+	} else if sins(half, 1, "nm") != -1 {
+		really_ok = false;
+	} else if sins(half, 1, "nn") != -1 {
+		really_ok = false;
+	}
+	ok = really_ok;
+}
+
+macro (str name) aquaHivetokgenHalf() {
+	let str interim;
+	while true {
+		// valid combinations:
+		let vowels = "";
+		let consonants = "";
+		for i = 0; i < 3; i++; {
+			let vowelChoice = rand(1, 5);
+			let consonantChoice = rand(1, 9);
+			vowels += subs("aeiou", vowelChoice, 1);
+			consonants += subs("jklmnpstw", vowelChoice, 1);
+		}
+		alias vA = subs(vowels, 1, 1);
+		alias vB = subs(vowels, 2, 1);
+		alias vC = subs(vowels, 3, 1);
+		alias cA = subs(consonants, 1, 1);
+		alias cB = subs(consonants, 2, 1);
+		alias cC = subs(consonants, 3, 1);
+		// in theory this could be better-studied, but this should make some names for now
+		let choice = rand(0, 6);
+		if choice == 0 {
+			// CVNCVN
+			interim = '{cA}{vA}n{cB}{vB}n';
+		} else if choice == 1 {
+			// CVCVNV
+			interim = '{cA}{vA}{cB}{vB}n{vC}';
+		} else if choice == 2 {
+			// CVNVCV
+			interim = '{cA}{vA}n{vB}{cB}{vC}';
+		} else if choice == 3 {
+			// CVCVCV
+			interim = '{cA}{vA}{cB}{vB}{cC}{vC}';
+		} else if choice == 4 {
+			// VCVCVN
+			interim = '{vA}{cA}{vB}{cB}{vC}n';
+		} else if choice == 5 {
+			// VCVNCV
+			interim = '{vA}{cA}{vB}n{cB}{vC}';
+		} else if choice == 6 {
+			// VNCVCV
+			interim = '{vA}n{cA}{vB}{cB}{vC}';
+		}
+		if aquaHivetokgenVerifyHalf(interim) {
+			break;
+		}
+	}
+	// do capitalization
+	name = uppa(subs(interim, 1, 1)) + subs(interim, 2, 5);
+}
+
+// Generates a name!
+macro aquaHivetokgen() '{aquaHivetokgenHalf()} {aquaHivetokgenHalf()}';

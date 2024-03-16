@@ -1,0 +1,58 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "world_header.ral";
+include "hivetokgen.ral";
+
+script AquaHandler:lifeEvent {
+	inst();
+	// incoming!
+	alias moniker = _p1_!str;
+	alias evIndex = _p2_!int;
+
+	let evCros = histCros(moniker);
+	let evMute = histMute(moniker);
+	let evName = histName(moniker);
+	if evName == "" || sins(evName, 1, "\n") != -1 || sins(evName, 1, "\t") != -1 {
+		evName = aquaHivetokgen();
+		histName(moniker, evName);
+	}
+	let evGend = histGend(moniker);
+	let evGnus = histGnus(moniker);
+	let evWvet = histWvet(moniker);
+
+	let evCage = histCage(moniker, evIndex);
+	let evType = histType(moniker, evIndex);
+	let evRtim = histRtim(moniker, evIndex);
+	let evTage = histTage(moniker, evIndex);
+	let evWtik = histWtik(moniker, evIndex);
+	let evM1 = histMon1(moniker, evIndex);
+	let evM2 = histMon1(moniker, evIndex);
+	if sins(evM1, 1, "\t") != -1 || sins(evM1, 1, "\n") != -1 {
+		evM1 = "";
+	}
+	if sins(evM2, 1, "\t") != -1 || sins(evM2, 1, "\n") != -1 {
+		evM2 = "";
+	}
+
+	let evMachineReadable = '{moniker}\t{evCros}\t{evMute}\t{evGend}\t{evGnus}\t{evWvet}\t{evCage}\t{evType}\t{evRtim}\t{evTage}\t{evWtik}\t{evM1}\t{evM2}';
+	let str evHumanReadable;
+	if evType == HIST_TYPE_BORN {
+		evHumanReadable = '{evName} ({moniker}): Born ({evGend}, {evGnus})';
+	} else if evType == HIST_TYPE_DIED {
+		evHumanReadable = '{evName} ({moniker}): Died';
+	} else if evType == HIST_TYPE_WARP_IN {
+		evHumanReadable = '{evName} ({moniker}): Warped in';
+	} else if evType == HIST_TYPE_WARP_OUT {
+		evHumanReadable = '{evName} ({moniker}): Warped out';
+	} else if evType == HIST_TYPE_CHILD_LAID {
+		evHumanReadable = '{evName} ({moniker}): Laid egg';
+	} else {
+		evHumanReadable = '{evName} ({moniker}): Event {evType}, {evM1}, {evM2}';
+	}
+	aquaEvent(AQUA_EVC_MONITOR_LIFE_EVENT, evMachineReadable, evHumanReadable);
+}

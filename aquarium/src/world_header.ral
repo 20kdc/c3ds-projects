@@ -1,0 +1,32 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "common.ral";
+include "std/ds.ral";
+
+// Time until login will next be reattempted. Counts down. Stays at 0 when not in use.
+field int AquaLoop.loginTimer 0;
+AQUA_SECONDS_BETWEEN_LOGIN_ATTEMPTS = 60;
+
+// daemon table
+AQUA_DAEMON_UPDT = 0;
+AQUA_DAEMON_WRLD = 1;
+AQUA_DAEMON_WARP = 2;
+AQUA_DAEMONS = 3;
+
+AQUA_DSC_OPEN = 1500;
+AQUA_DSC_LOOP = 1600;
+
+script AquaLoop:updtOpen AQUA_DSC_OPEN + AQUA_DAEMON_UPDT;
+script AquaLoop:updtLoop AQUA_DSC_LOOP + AQUA_DAEMON_UPDT;
+script AquaLoop:wlrdOpen AQUA_DSC_OPEN + AQUA_DAEMON_WRLD;
+script AquaLoop:wlrdLoop AQUA_DSC_LOOP + AQUA_DAEMON_WRLD;
+script AquaLoop:warpOpen AQUA_DSC_OPEN + AQUA_DAEMON_WARP;
+script AquaLoop:warpLoop AQUA_DSC_LOOP + AQUA_DAEMON_WARP;
+
+// tasks
+script AquaTask:reinjectAquarium 1000;

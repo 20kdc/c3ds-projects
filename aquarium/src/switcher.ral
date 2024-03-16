@@ -14,7 +14,7 @@ install {
 script AquaLoop:init {
 	// clear some space
 	aquaStderr();
-	outs("\n");
+	outs("\n[switcher.ral]\n\n");
 	// check for double-invoke
 	if eameBool("aquarium_launched") {
 		outs("Aquarium: switcher launched twice. User must have requested quit; shutting down.\n");
@@ -73,7 +73,7 @@ script AquaLoop:init {
 script AquaHandler:rawKeyDown {
 	inst();
 	if _p1_ == VK_ESCAPE {
-		aquaEvent(AQUA_EVC_SWITCHER_KILL, "", "kill signal received, shutting down...");
+		aquaEvent(AQUA_EVC_SWITCHER_SIGTERM, "", "kill signal received, shutting down...");
 		quit();
 	}
 }

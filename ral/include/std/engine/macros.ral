@@ -113,3 +113,17 @@ macro (bool res) strEndsWith(str val, str suffix) {
 		res = subs(val, ofs, strl(suffix)) == suffix;
 	}
 }
+
+// Time utilities
+
+// Time macro that somewhat catches the 2038 error
+macro safeHasRTIMPassed(num @val) {
+	let res = false;
+	if val < 0 {
+		let time = rtim();
+		res = time < 0 && time >= val;
+	} else {
+		res = rtim() >= val;
+	}
+	return res;
+};

@@ -23,6 +23,23 @@ class DSWarningIcon 1 2 46;
 // A Docking Station portal.
 class DSPortal 3 9 1;
 
+// animation + state change for open wormhole, then recheck state
+script DSPortal:doOpenWormhole 1000;
+// animation + state change for close wormhole, then recheck state
+script DSPortal:doCloseWormhole 1001;
+// change name to _p1_
+script DSPortal:updateName 1002;
+// fakes an open/close for if a creature got in while the portal was "closed"
+// this is weird because it runs 1004 with null null, hmm
+script DSPortal:doCreatureImportWhileClosed 1003;
+script DSPortal:sendIncomingAlert 1004;
+// Note this doesn't update the portal's config, just the WWR
+script DSPortal:addUserToWWR 1005;
+// Still doesn't update the portal's config, just the WWR
+script DSPortal:rmUserFromWWR 1006;
+// Checks to see if touching portal dispenser, if so starts getting that whole thing setup
+script DSPortal:dropHandler 1007;
+
 // Index of the portal. These are used in the ID system.
 field int DSPortal.index 0;
 

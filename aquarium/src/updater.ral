@@ -1,0 +1,35 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "world_header.ral";
+
+script AquaLoop:updtOpen {
+	// if we're here, we're updated for this session
+	eameBool("aquarium_updated_yet") = true;
+}
+
+script AquaLoop:updtLoop {
+	// so when the world loads, we need to reinit
+	// this reload is VERY IMPORTANT as it's part of crash detection
+	// it also does nice things like cleaning up floating dialogs, and applying
+	// script updates
+	if !eameBool("aquarium_updated_yet") {
+		// doing this outside of a task **WILL CRASH THE GAME**
+		aquaLaunchTask("World reloaded, reinject aquarium", AquaTask->reinjectAquarium, null, null);
+		stop();
+	}
+	// way to abort using a file
+	fileIope(FILE_DIR_MAIN, "aquariumShutdown");
+	if inok() {
+		aquaEvent(AQUA_EVC_MONITOR_STOPFILE, "", "aquariumShutdown present, shutting down");
+		aquaAbort();
+	}
+}
+
+script AquaTask:reinjectAquarium {
+	ject("zzz_aquarium.cos", JECT_FULL);
+}

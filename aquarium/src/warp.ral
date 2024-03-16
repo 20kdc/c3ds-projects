@@ -1,0 +1,44 @@
+/*
+ * c3ds-projects - Assorted compatibility fixes & useful tidbits
+ * Written starting in 2022 by contributors (see CREDITS.txt)
+ * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+ * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+include "world_header.ral";
+
+script AquaLoop:warpOpen {
+	ownr.loginTimer = rtim();
+}
+
+script AquaLoop:warpLoop {
+	// network
+	if !netLine() {
+		if safeHasRTIMPassed(ownr.loginTimer) {
+			netPass(gameStr("user_of_this_world"), eameStr("aquarium_pass"));
+			netLine(true);
+			inst();
+			if netLine() {
+				gameStr("status") = "online";
+				targ = gameAgent("ds_gui_topleft");
+				part(7);
+				pose(1);
+			} else {
+				aquaEvent(AQUA_EVC_MONITOR_LOGIN_ERROR, '{netErra()}\t{netRawe()}', "OFFLINE");
+			}
+			ownr.loginTimer = rtim() + AQUA_SECONDS_BETWEEN_LOGIN_ATTEMPTS;
+		}
+	} else {
+		ownr.loginTimer = rtim();
+	}
+}
+
+script AquaHandler:netOnline {
+	inst();
+	aquaEvent(AQUA_EVC_MONITOR_ONLINE, "", "ONLINE");
+}
+
+script AquaHandler:netOffline {
+	inst();
+	aquaEvent(AQUA_EVC_MONITOR_OFFLINE, "", "OFFLINE");
+}

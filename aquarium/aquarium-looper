@@ -1,12 +1,37 @@
 #!/bin/sh
-trap "kill %1" TERM
-echo " -- Aquarium Looper -- " > /dev/stderr
-rm -f "Journal/aquariumBootLoopDetected"
-rm -f "Journal/aquariumStateMachine"
-while true; do
+echo "Aquarium Looper: Starting..." > /dev/stderr
+
+# setup symlinks
+rm -rf Users "My Worlds" "My Creatures" Journal
+
+mkdir -p "/data/Users"
+mkdir -p "/data/My Worlds"
+mkdir -p "/data/My Creatures"
+mkdir -p "/data/Journal"
+
+ln -s /data/Users Users
+ln -s "/data/My Worlds" "My Worlds"
+ln -s "/data/My Creatures" "My Creatures"
+ln -s /data/Journal Journal
+
+# clean up journal directory
+rm -f Journal/aquariumBootLoopDetected
+rm -f Journal/aquariumStateMachine
+
+# setup streams
+rm -f Journal/stdin
+rm -f Journal/stderr
+rm -f Journal/stdout
+ln -s /proc/self/fd/0 Journal/stdin
+ln -s /proc/self/fd/1 Journal/stdout
+ln -s /proc/self/fd/2 Journal/stderr
+
+# main loop
+while [ ! -e Journal/aquariumBootLoopDetected ]; do
 	../dockingstation --headless &
-	wait -n
-	if [ -e Journal/aquariumBootLoopDetected ]; then
-		exit 1
-	fi
+	wait %1
 done
+
+# bye!
+echo "Aquarium Looper: boot loop detected, bailing..." > /dev/stderr
+exit 1

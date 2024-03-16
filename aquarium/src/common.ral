@@ -17,8 +17,14 @@ AQUA_EVC_SWITCHER_HALT = "switcher-halt";
 // "{worldName}" : new world
 AQUA_EVC_SWITCHER_NEW_WORLD = "switcher-new-world";
 // "" : kill signal
-AQUA_EVC_SWITCHER_KILL = "switcher-kill";
-// "{worldName}" : startup ok
+AQUA_EVC_SWITCHER_SIGTERM = "switcher-sigterm";
+// "{worldName}\t{daemon}" : starting daemon
+AQUA_EVC_MONITOR_STARTING_DAEMON = "monitor-starting-daemon";
+// "{worldName}\t{daemon}" : looping daemon (checks for errors)
+AQUA_EVC_MONITOR_LOOPING_DAEMON = "monitor-looping-daemon";
+// "{worldName}" : all daemons started, waiting for a second to do soak test
+AQUA_EVC_MONITOR_STARTUP_SOAK = "monitor-startup-soak";
+// "{worldName}" : soak test succeeded, startup ok
 AQUA_EVC_MONITOR_STARTUP_OK = "monitor-startup-ok";
 // "" : online
 AQUA_EVC_MONITOR_ONLINE = "monitor-online";
@@ -27,7 +33,11 @@ AQUA_EVC_MONITOR_OFFLINE = "monitor-offline";
 // "{erra}\t{rawe}" : failed login
 AQUA_EVC_MONITOR_LOGIN_ERROR = "monitor-login-error";
 // "" : kill signal
-AQUA_EVC_MONITOR_KILL = "monitor-kill";
+AQUA_EVC_MONITOR_SIGTERM = "monitor-sigterm";
+// "" : got stopfile
+AQUA_EVC_MONITOR_STOPFILE = "monitor-stopfile";
+// "(a lot of details check the file)" : life event
+AQUA_EVC_MONITOR_LIFE_EVENT = "monitor-life-event";
 // "{id}\t{unid}" : task started
 AQUA_EVC_TASKMGR_START = "taskmgr-start";
 // "{id}\t{unid}" : task finished
@@ -134,6 +144,7 @@ macro () aquaWSGenSet(int @value) {
 macro () aquaAbort() {
 	fileOope(FILE_DIR_MAIN, "aquariumBootLoopDetected", false);
 	fileOclo();
+	quit();
 	stop();
 }
 
