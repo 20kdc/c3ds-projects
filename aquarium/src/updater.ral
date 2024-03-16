@@ -26,6 +26,9 @@ script AquaLoop:updtLoop {
 	fileIope(FILE_DIR_MAIN, "aquariumShutdown");
 	if inok() {
 		aquaEvent(AQUA_EVC_MONITOR_STOPFILE, "", "aquariumShutdown present, shutting down");
+		// be, like, doubly sure this is in inst() or we could end the world
+		inst();
+		save();
 		aquaAbort();
 	}
 }

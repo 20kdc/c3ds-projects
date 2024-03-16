@@ -25,48 +25,58 @@ macro (bool ok) aquaHivetokgenVerifyHalf(str @half) {
 	ok = really_ok;
 }
 
+macro (str structure) aquaHivetokgenHalfStructure() {
+	let choice = rand(0, 11);
+	if choice == 0 {
+		structure = "VCVCVN";
+	} else if choice == 1 {
+		structure = "VCVNCV";
+	} else if choice == 2 {
+		structure = "VCVNVN";
+	} else if choice == 3 {
+		structure = "CVCVCV";
+	} else if choice == 4 {
+		structure = "CVCVNV";
+	} else if choice == 5 {
+		structure = "VNVCVN";
+	} else if choice == 6 {
+		structure = "VNCVCV";
+	} else if choice == 7 {
+		structure = "VNVNCV";
+	} else if choice == 8 {
+		structure = "VNVNVN";
+	} else if choice == 9 {
+		structure = "VNCVNV";
+	} else if choice == 10 {
+		structure = "CVNVCV";
+	} else if choice == 11 {
+		structure = "CVNVNV";
+	} else {
+		// wtf
+		structure = "VVVVVV";
+	}
+}
+
 macro (str name) aquaHivetokgenHalf() {
 	let str interim;
 	while true {
-		// valid combinations:
-		let vowels = "";
-		let consonants = "";
-		for i = 0; i < 3; i++; {
-			let vowelChoice = rand(1, 5);
-			let consonantChoice = rand(1, 9);
-			vowels += subs("aeiou", vowelChoice, 1);
-			consonants += subs("jklmnpstw", vowelChoice, 1);
+		// writes out a string of C/V/N (Countdown but fixed places)
+		let structure = aquaHivetokgenHalfStructure();
+		interim = "";
+		for i = 0; i < 6; i++; {
+			if subs(structure, i, 1) == "V" {
+				let vowelChoice = rand(1, 5);
+				interim += subs("aeiou", vowelChoice, 1);
+			} else if subs(structure, i, 1) == "V" {
+				let consonantChoice = rand(1, 9);
+				interim += subs("jklmnpstw", consonantChoice, 1);
+			} else {
+				interim += "n";
+			}
 		}
-		alias vA = subs(vowels, 1, 1);
-		alias vB = subs(vowels, 2, 1);
-		alias vC = subs(vowels, 3, 1);
-		alias cA = subs(consonants, 1, 1);
-		alias cB = subs(consonants, 2, 1);
-		alias cC = subs(consonants, 3, 1);
-		// in theory this could be better-studied, but this should make some names for now
-		let choice = rand(0, 6);
-		if choice == 0 {
-			// CVNCVN
-			interim = '{cA}{vA}n{cB}{vB}n';
-		} else if choice == 1 {
-			// CVCVNV
-			interim = '{cA}{vA}{cB}{vB}n{vC}';
-		} else if choice == 2 {
-			// CVNVCV
-			interim = '{cA}{vA}n{vB}{cB}{vC}';
-		} else if choice == 3 {
-			// CVCVCV
-			interim = '{cA}{vA}{cB}{vB}{cC}{vC}';
-		} else if choice == 4 {
-			// VCVCVN
-			interim = '{vA}{cA}{vB}{cB}{vC}n';
-		} else if choice == 5 {
-			// VCVNCV
-			interim = '{vA}{cA}{vB}n{cB}{vC}';
-		} else if choice == 6 {
-			// VNCVCV
-			interim = '{vA}n{cA}{vB}{cB}{vC}';
-		}
+		// alright, now see if anything invalid crept in
+		// structure checks prevent VV from being possible, and NC is *usually* okay, but there are some invalid syllables and invalid sequences
+		// these are, however, rare enough that we can just regen
 		if aquaHivetokgenVerifyHalf(interim) {
 			break;
 		}
