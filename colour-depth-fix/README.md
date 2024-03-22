@@ -2,6 +2,8 @@
 
 This is designed to avert the 16-bit colour problem without using Xephyr (slow and potentially not available on Mac).
 
+**_You do not need to use this if your engine uses the SDL renderer, including the "Windows NT" version of Docking Station and including CE 1 beta 3b and onwards. However, the "Windows NT" version of the engine does not have good sound quality. Use CE 1 Beta 3b instead. It's just better._**
+
 This version should work with:
 
 * Docking Station engine "2.296 (CE 1 beta 1)"
@@ -12,8 +14,6 @@ This version should work with:
 
 Note that it will NOT do checksumming or anything like that, to avoid interference with other patches.
 However it does check that the bytes it's replacing are what it expects them to be, and this should be enough safety.
-
-See below section for ideas in regards to C3/etc.
 
 ## Application instructions
 
@@ -58,6 +58,8 @@ Yes, I'm aware that's for Creatures 2, but it works just as well for Creatures 3
 But there's a problem, you need to go into `winecfg` and set the ddraw DLL to `native, builtin`. This may not be ideal, especially if you ended up with a native Windows `ddraw.dll`.
 
 ### Where has the "Using the Docking Station engine on C3" section gone?
+
+Well, it's not necessary anymore because the C3 engine is supported directly, but:
 
 ~~This one's simpler - copy `Catalogue/vocab constructs.catalogue` from Docking Station to Creatures 3, and copy Docking Station's `engine.exe` across.~~
 
