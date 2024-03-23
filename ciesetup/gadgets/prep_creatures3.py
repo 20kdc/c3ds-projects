@@ -15,7 +15,31 @@ import preplib
 src = tarfile.TarFile(sys.argv[1], "r")
 dst = tarfile.TarFile(sys.argv[2], "w")
 
-lowercase_prefixes = ["./Sounds/", "./Backgrounds/", "./Overlay Data", "./Body Data/", "./Images/"]
+lowercase_prefixes = [
+	"./Sounds/",
+	"./Backgrounds/",
+	"./Overlay Data/",
+	"./Body Data/",
+	"./Images/"
+]
+# we need to be a bit more paranoid with C3
+# people will be cobbling these together out of their personal installs
+known_directories = [
+	"./Backgrounds/",
+	"./Body Data/",
+	"./Bootstrap/",
+	"./Catalogue/",
+	"./Creature Galleries/",
+	"./Genetics/",
+	"./Images/",
+	"./Journal/",
+	"./My Agents/",
+	"./My Creatures/",
+	"./My Worlds/",
+	"./Overlay Data/",
+	"./Sounds/",
+	"./Users/"
+]
 
 for member in src.getmembers():
 	member_name_lower = member.name.lower()
@@ -44,6 +68,11 @@ for member in src.getmembers():
 		continue
 	# determine if and what to lowercase
 	translated_name = member.name
+	# start by fixing any potential errors in directory names
+	for v in known_directories:
+		if translated_name.lower().startswith(v.lower()):
+			translated_name = v + translated_name[len(v):]
+	# continue
 	for v in lowercase_prefixes:
 		if translated_name.startswith(v):
 			translated_name = v + (translated_name[len(v):].lower())

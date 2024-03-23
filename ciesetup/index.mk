@@ -36,10 +36,10 @@ rel: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so ciesetup/gadgets/runt
 all: ciesetup/gadgets/dummy.so ciesetup/gadgets/runtime.so ciesetup/gadgets/runtime_headless.so
 
 ciesetup/gadgets/dummy.so: ciesetup/gadgets/dummy.c
-	$(CC) -m32 -o $@ -shared -nostdlib $<
+	$(CC) -m32 -fno-stack-protector -o $@ -shared -nostdlib $<
 
 ciesetup/gadgets/runtime.so: ciesetup/gadgets/runtime_audio.c ciesetup/gadgets/runtime_dialogs.c
-	$(CC) -m32 -o $@ -shared -nostdlib $^
+	$(CC) -m32 -fno-stack-protector -o $@ -shared -nostdlib $^
 
 ciesetup/gadgets/runtime_headless.so: ciesetup/gadgets/runtime_audio.c ciesetup/gadgets/runtime_dialogs.c ciesetup/gadgets/runtime_headless.c
-	$(CC) -m32 -DHEADLESS -o $@ -shared -nostdlib $^
+	$(CC) -m32 -fno-stack-protector -DHEADLESS -o $@ -shared -nostdlib $^
