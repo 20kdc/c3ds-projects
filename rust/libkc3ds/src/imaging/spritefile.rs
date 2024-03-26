@@ -272,6 +272,7 @@ pub struct C16Sheet {
 }
 
 /// A row, not including end-of-row markers or the end-of-image marker
+/// Beware, these may not be well-formed!
 pub type C16Row = Vec<u16>;
 
 /// Span start information
@@ -289,8 +290,8 @@ impl C16SpanStart {
         if v == 0 {
             Self::End
         } else {
-            let run_len = v & 0x7FFF;
-            if (v & 0x8000) != 0 {
+            let run_len = (v & 0xFFFE) >> 1;
+            if (v & 1) != 0 {
                 Self::Colour(run_len)
             } else {
                 Self::Transparent(run_len)
@@ -302,8 +303,8 @@ impl C16SpanStart {
     pub fn encode(&self) -> u16 {
         match self {
             Self::End => 0,
-            Self::Colour(len) => *len | 0x8000,
-            Self::Transparent(len) => *len,
+            Self::Colour(len) => (*len << 1) | 1,
+            Self::Transparent(len) => *len << 1,
         }
     }
     /// Instruction data length (in words)
@@ -360,7 +361,16 @@ impl C16Frame {
                         }
                         C16SpanStart::Colour(len) => {
                             for _ in 0..len {
-                                res.set_pixel(x, y, *row_iter.next().unwrap());
+                                // silently ignore pixels out of range, just in case
+                                if x >= self.width {
+                                    break;
+                                }
+                                let pd = row_iter.next();
+                                if let Some(px) = pd {
+                                    res.set_pixel(x, y, *px);
+                                } else {
+                                    break;
+                                }
                                 x += 1;
                             }
                         }
@@ -376,26 +386,6 @@ impl C16Frame {
         }
         res
     }
-}
-
-/// Validates a C16 row.
-pub fn c16_row_validate(row: &C16Row, expected_x: usize) -> bool {
-    let mut row_iter = row.iter();
-    let mut x: usize = 0;
-    loop {
-        if let Some(v) = row_iter.next() {
-            let span = C16SpanStart::decode(*v);
-            for _ in 0..span.data_len() {
-                if row_iter.next().is_none() {
-                    return false;
-                }
-            }
-            x += span.advance();
-        } else {
-            break;
-        }
-    }
-    x == expected_x
 }
 
 /// Compresses a row for C16

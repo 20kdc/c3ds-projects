@@ -18,24 +18,28 @@ pub fn identify(data: &[u8]) -> Option<CS16Type> {
 }
 
 /// Gets headers for a S16/C16.
-pub fn headers(t: CS16Type, data: &[u8]) -> Result<CS16Header, ()> {
+pub fn headers(t: CS16Type, data: &[u8]) -> Result<CS16Header, String> {
     match t {
-        CS16Type::S16(st) => headers_s16(st, data).map(CS16Header::S16),
-        CS16Type::C16(st) => headers_c16(st, data).map(CS16Header::C16),
+        CS16Type::S16(st) => headers_s16(st, data)
+            .map(CS16Header::S16)
+            .map_err(|_| "invalid S16 header".into()),
+        CS16Type::C16(st) => headers_c16(st, data)
+            .map(CS16Header::C16)
+            .map_err(|_| "invalid C16 header".into()),
     }
 }
 
 /// Identifies and gets headers for a S16/C16.
-pub fn identify_and_headers(data: &[u8]) -> Result<CS16Header, ()> {
+pub fn identify_and_headers(data: &[u8]) -> Result<CS16Header, String> {
     if let Some(val) = identify(data) {
         headers(val, data)
     } else {
-        Err(())
+        Err("unable to identify file".into())
     }
 }
 
 /// Reads and decompresses a S16/C16.
-pub fn read_and_decompress(header: &CS16Header, data: &[u8]) -> Result<CS16Sheet, ()> {
+pub fn read_and_decompress(header: &CS16Header, data: &[u8]) -> Result<CS16Sheet, String> {
     match header {
         CS16Header::S16(st) => read_s16(st, data).map(|v| v.into()),
         CS16Header::C16(st) => read_c16(st, data).map(|v| v.into()),
@@ -43,7 +47,7 @@ pub fn read_and_decompress(header: &CS16Header, data: &[u8]) -> Result<CS16Sheet
 }
 
 /// Just do absolutely everything and get a CS16Sheet.
-pub fn identify_and_decompress(data: &[u8]) -> Result<CS16Sheet, ()> {
+pub fn identify_and_decompress(data: &[u8]) -> Result<CS16Sheet, String> {
     read_and_decompress(&identify_and_headers(data)?, data)
 }
 
@@ -289,7 +293,7 @@ pub fn headers_c16(t: C16Type, data: &[u8]) -> Result<C16Header, ()> {
 // -- actual readers --
 
 /// Reads a S16.
-pub fn read_s16(header: &S16Header, data: &[u8]) -> Result<S16Sheet, ()> {
+pub fn read_s16(header: &S16Header, data: &[u8]) -> Result<S16Sheet, String> {
     let endianness = header.variant.endianness();
     let mut res = S16Sheet {
         id: header.variant,
@@ -300,7 +304,13 @@ pub fn read_s16(header: &S16Header, data: &[u8]) -> Result<S16Sheet, ()> {
         let mut ptr = ihdr.base as usize;
         for y in 0..ihdr.height {
             for x in 0..ihdr.width {
-                frame.set_pixel(x as usize, y as usize, endianness.r_u16(data, ptr)?);
+                frame.set_pixel(
+                    x as usize,
+                    y as usize,
+                    endianness
+                        .r_u16(data, ptr)
+                        .map_err(|_| "unable to read pixel")?,
+                );
                 ptr += 2;
             }
         }
@@ -310,34 +320,32 @@ pub fn read_s16(header: &S16Header, data: &[u8]) -> Result<S16Sheet, ()> {
 }
 
 /// Reads a C16.
-pub fn read_c16(header: &C16Header, data: &[u8]) -> Result<C16Sheet, ()> {
+pub fn read_c16(header: &C16Header, data: &[u8]) -> Result<C16Sheet, String> {
     let endianness = header.variant.endianness();
     let mut res = C16Sheet {
         id: header.variant,
         frames: Vec::new(),
     };
-    for ihdr in &header.images {
+    for (fidx, ihdr) in header.images.iter().enumerate() {
         let mut frame = C16Frame {
             width: ihdr.width as usize,
             rows: Vec::new(),
         };
         // read each row
         for idx in 0..ihdr.height {
-            if idx == 0 {
-                frame.rows.push(read_c16_row(
-                    endianness,
-                    data,
-                    ihdr.base as usize,
-                    frame.width,
-                )?);
+            let row_base = if idx == 0 {
+                ihdr.base as usize
             } else {
-                frame.rows.push(read_c16_row(
-                    endianness,
-                    data,
-                    ihdr.row_bases[idx as usize - 1] as usize,
-                    frame.width,
-                )?);
-            }
+                ihdr.row_bases[idx as usize - 1] as usize
+            };
+            frame
+                .rows
+                .push(read_c16_row(endianness, data, row_base).map_err(|err| {
+                    format!(
+                        "frame {}: error in row {} (start @ {}): {}",
+                        fidx, idx, row_base, err
+                    )
+                })?);
         }
         res.frames.push(frame);
     }
@@ -345,32 +353,35 @@ pub fn read_c16(header: &C16Header, data: &[u8]) -> Result<C16Sheet, ()> {
 }
 
 /// Reads a C16 row.
+/// Beware: The row may not necessarily be valid!
 fn read_c16_row(
     endianness: &'static dyn Endianness,
     data: &[u8],
     mut ptr: usize,
-    expected_x: usize,
-) -> Result<C16Row, ()> {
+) -> Result<C16Row, String> {
     let mut row = C16Row::new();
     loop {
-        let v = endianness.r_u16(data, ptr)?;
-        ptr += 2;
-        if v == 0 {
+        let vp = endianness.r_u16(data, ptr);
+        if let Ok(v) = vp {
+            ptr += 2;
+            if v == 0 {
+                break;
+            }
+            row.push(v);
+            for _ in 0..C16SpanStart::decode(v).data_len() {
+                let vp = endianness.r_u16(data, ptr);
+                if let Ok(v) = vp {
+                    ptr += 2;
+                    row.push(v);
+                } else {
+                    break;
+                }
+            }
+        } else {
             break;
         }
-        row.push(v);
-        for _ in 0..C16SpanStart::decode(v).data_len() {
-            let v = endianness.r_u16(data, ptr)?;
-            ptr += 2;
-            row.push(v);
-        }
     }
-    // verify the row
-    if !c16_row_validate(&row, expected_x) {
-        Err(())
-    } else {
-        Ok(row)
-    }
+    Ok(row)
 }
 
 /// Pushes a u16
