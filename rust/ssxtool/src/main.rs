@@ -88,26 +88,26 @@ fn encode_ssx(data: &[u8], key: &[u8]) -> Vec<u8> {
 }
 
 const DECODE_SCRIPT: &'static CLIVecCmd =
-    &CLIVecCmd("<IN> <HESKX> <OUT>", "", "decodes SSX files", |args| {
+    &CLIVecCmd("<IN> <OUT> <HESKX>", "", "decodes SSX/SAX files", |args| {
         if args.len() != 3 {
             return;
         }
         let indata = &std::fs::read(&args[0]).unwrap();
-        let inkey = &std::fs::read(&args[1]).unwrap();
+        let inkey = &std::fs::read(&args[2]).unwrap();
         let data = decode_ssx(indata, inkey);
-        std::fs::write(&args[2], data).unwrap();
+        std::fs::write(&args[1], data).unwrap();
         std::process::exit(0);
     });
 
 const ENCODE_SCRIPT: &'static CLIVecCmd =
-    &CLIVecCmd("<IN> <HESKX> <OUT>", "", "encodes SSX files", |args| {
+    &CLIVecCmd("<OUT> <IN> <HESKX>", "", "encodes SSX/SAX files", |args| {
         if args.len() != 3 {
             return;
         }
-        let indata = &std::fs::read(&args[0]).unwrap();
-        let inkey = &std::fs::read(&args[1]).unwrap();
+        let indata = &std::fs::read(&args[1]).unwrap();
+        let inkey = &std::fs::read(&args[2]).unwrap();
         let data = encode_ssx(indata, inkey);
-        std::fs::write(&args[2], data).unwrap();
+        std::fs::write(&args[0], data).unwrap();
         std::process::exit(0);
     });
 
