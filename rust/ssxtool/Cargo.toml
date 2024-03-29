@@ -1,0 +1,9 @@
+[package]
+name = "ssxtool"
+version = "0.1.0"
+edition = "2015"
+
+[dependencies]
+miniz_oxide = "0.7.2"
+norncli = { path = "../norncli", version = "0.1.0"}
+openssl = "0.10.64"
