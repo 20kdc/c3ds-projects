@@ -46,17 +46,19 @@ Before you continue with this guide, have you considered using the `eemfoo.org` 
 
 2. Somehow acquire the Natsue source code, say, by downloading this repository using Git or as a `.zip` file or a `.tar.gz` file.
 
-3. Using a terminal (or Command Prompt on Windows), `cd` to the `natsue` directory and run `mvn package`.
+3. Using a terminal (or Command Prompt on Windows), `cd` to the `c3ds-projects` directory and run `mvn clean` followed by `mvn install`.
 
-4. Assuming this succeeds, the file `target/natsue-server-0.666-SNAPSHOT-jar-with-dependencies.jar` now exists. While still within the `natsue` directory, run `java -jar target/natsue-server-0.666-SNAPSHOT-jar-with-dependencies.jar` to start the server for the first time.
+4. Assuming this succeeds, then `cd` into the `c3ds-projects/natsue/cradle` directory and run `mvn package`.
 
-5. Assuming *that* succeeds, immediately stop the server (Control-C on Linux, who knows on Windows).
+5. Assuming this succeeds, the file `target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` now exists in the `c3ds-projects/natsue/cradle` directory. While still within the `c3ds-projects/natsue/cradle` directory, run `java -jar target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` to start the server for the first time.
 
-6. Modify the generated `ntsuconf.txt` file to your liking. The meaning of each option is listed within the file.
+6. Assuming *that* succeeds, immediately stop the server (Control-C on Linux, who knows on Windows).
 
-7. Restart the server with the same `java -jar target/natsue-server-0.666-SNAPSHOT-jar-with-dependencies.jar` command.
+7. Modify the generated `ntsuconf.txt` file to your liking. The meaning of each option is listed within the file.
 
-8. Copy the provided `server.cfg` to your Docking Station directory and modify it to fit your server's IP and port. Repeat for all installations you wish to connect to the server.
+8. Restart the server with the same `java -jar target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` command.
+
+9. Copy the provided `server.cfg` to your Docking Station directory and modify it to fit your server's IP and port. Repeat for all installations you wish to connect to the server.
 
 ## Administrative Commands
 
