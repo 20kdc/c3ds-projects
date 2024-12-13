@@ -172,20 +172,13 @@ The folllowing fields are not guaranteed to exist (specifically if `exists` is f
 
 ## User Flags
 
-+ 1: Administrator
-  A member of a secretive order... or something.
-
-+ 2: Frozen
-  Can't login and if already logged in, has most activity shut down.
-
-+ 4: Receive NB Norns
-  Receives Norns with species fields that are not 1 or 2. These Norns will crash unprepared clients, so the server blocks them by default.
-
-+ 8: Opt out of NET: RUSO / `any on-line user`
-  Some people just don't like random creatures showing up.
-
-+ 16: Receive Geats
-  Receives Geats. While patches exist, having two Geats in a world generally leads to the wasteland bug unless the player is very careful. This is obviously not ideal, so don't do it.
-
-+ 32: Muted From Global Chat
-  The user is muted from global chat.
+| Bit | Name (`flag`) | Name (Full)      | Description |
+|-----|---------------|------------------|-------------|
+|   1 | `admin`       | Administrator    | A member of a secretive order... or something.
+|   2 | `frozen`      | Frozen           | Can't login. If already logged in, has most activity shut down.
+|   4 | `recvnb`      | Receive NB Norns | Receives Norns with species fields that are not 1 or 2. These Norns will crash unprepared clients, so the server blocks them by default.
+|   8 | `norandom`    | No Random        | Opts out of NET: RUSO / `any on-line user`. Some people just don't like random creatures showing up.
+|  16 | `recvgeat`    | Receive Geats    | Receives Geats. While patches exist, having two Geats in a world generally leads to the wasteland bug unless the player is very careful. This is obviously not ideal, so don't do it.
+|  32 | `muteglob`    | Global Chat Mute | The user is muted from global chat.
+|  64 | `unlisted`    | Unlisted         | The user is invisible to `who`.
+| 128 | `auth2f`      | 2FA Enabled      | The user must use two-factor authentication in order to access administrative commands.

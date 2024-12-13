@@ -9,6 +9,7 @@ package natsue.server.database;
 
 /**
  * Mixin for classes that contain Natsue user flags.
+ * Do keep the flag list in sync with WebAPI.md!
  */
 public interface INatsueUserFlags {
 	/**

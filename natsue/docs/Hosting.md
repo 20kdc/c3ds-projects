@@ -7,57 +7,35 @@ Before you continue with this guide, have you considered using the `eemfoo.org` 
 ## Disclaimers
 
 1. Natsue does not have any form of federation mechanism. The trust assumptions made by the Babel protocol are hard enough to secure by themselves.
-
 2. Natsue does not operate on a strict release policy. You're expected to use the `master` branch.
-
 3. It is not safe to change the server (or rather, user database) of a world after that world first logs into a server.
-
 4. Running multiple servers on the same database is *not a supported usecase.*
 
 ## Requirements
 
 * Something vaguely shaped like, or at least emulating, a computer that can run the below software.
-
 * Something that can run Docking Station (this is listed as a requirement *solely for testing and issuing administrative commands* and it need not be active at all times)
-
 * A Java JDK with a version above or equal to 8.
-  
-  * If you somehow don't have a system that packages one of these, maybe look at https://adoptium.net/en-gb/temurin/releases/ ?
-
+	* If you somehow don't have a system that packages one of these, maybe look at https://adoptium.net/en-gb/temurin/releases/ ?
 * Apache Maven: https://maven.apache.org/
-
 * A JDBC driver that quacks enough like either MySQL or SQLite to get by.
-  
-  * For any reasonable situation, Natsue will automatically use SQLite without any dedicated setup. If you've somehow managed to get into an unreasonable situation, then you're assumed to know what you're doing.
-
+	* For any reasonable situation, Natsue will automatically use SQLite without any dedicated setup. If you've somehow managed to get into an unreasonable situation, then you're assumed to know what you're doing.
 * At least one of:
-  
-  * Something to extract `.zip` files
-  
-  * Something to extract `.tar.gz` files
-  
-  * Git
-  
-  * Some other unforeseen way to acquire the contents of this repository
+	* Something to extract `.zip` files
+	* Something to extract `.tar.gz` files
+	* Git
+	* Some other unforeseen way to acquire the contents of this repository
 
 ## Procedure
 
 1. Ensure the above requirements are *installed.* Maven and Java must be available from your terminal/command prompt. Try `mvn --version` and `java --version` if you're unsure.
-
 2. Somehow acquire the Natsue source code, say, by downloading this repository using Git or as a `.zip` file or a `.tar.gz` file.
-
 3. Using a terminal (or Command Prompt on Windows), `cd` to the `c3ds-projects` directory and run `mvn clean` followed by `mvn install`.
-
 4. Assuming this succeeds, then `cd` into the `c3ds-projects/natsue/cradle` directory and run `mvn package`.
-
 5. Assuming this succeeds, the file `target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` now exists in the `c3ds-projects/natsue/cradle` directory. While still within the `c3ds-projects/natsue/cradle` directory, run `java -jar target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` to start the server for the first time.
-
 6. Assuming *that* succeeds, immediately stop the server (Control-C on Linux, who knows on Windows).
-
 7. Modify the generated `ntsuconf.txt` file to your liking. The meaning of each option is listed within the file.
-
 8. Restart the server with the same `java -jar target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` command.
-
 9. Copy the provided `server.cfg` to your Docking Station directory and modify it to fit your server's IP and port. Repeat for all installations you wish to connect to the server.
 
 ## Administrative Commands
@@ -67,6 +45,8 @@ Before you continue with this guide, have you considered using the `eemfoo.org` 
 *In order to grant yourself administrative access, you will need to manually edit the database. Within the `natsue_users` table, find the entry for you and change your `flags` from `0` to `1`.*
 
 Once you have admin access you can grant it to others using the `flags` command. To manually edit the database, use a tool such as https://sqlitebrowser.org/ or whatever is applicable to your server.
+
+For a list of all flags appliable to accounts, check the table in [Web API](WebAPI.md).
 
 ## How To Parse A Full Report
 
@@ -87,7 +67,5 @@ If a file called `kisspopui.html` exists in the directory, the server will templ
 Three strings are replaced with various content:
 
 * `$PAGE_TITLE`: Replaced with the page title.
-
 * `$SHIT_GOES_HERE`: Replaced with the usual HTML.
-
 * `$NATSUE_VERSION`: Replaced with the Natsue version link.
