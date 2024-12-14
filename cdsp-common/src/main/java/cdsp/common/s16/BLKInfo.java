@@ -43,7 +43,7 @@ public final class BLKInfo extends BLKSource {
 		int blockOfs = getBlockDataOfs(blockIndex);
 		S16Image res = new S16Image(BLOCK_SIZE, BLOCK_SIZE);
 		for (int i = 0; i < 128 * 128; i++) {
-			res.pixels[i] = byteBuffer.getShort(blockOfs);
+			res.pixels[i] = format.colourFormat.to565(byteBuffer.getShort(blockOfs));
 			blockOfs += 2;
 		}
 		return res;
