@@ -20,8 +20,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
+import cdsp.common.cpx.Injector;
 import rals.caos.CAOSUtils;
-import rals.tooling.Injector;
 import rals.types.Classifier;
 
 /**

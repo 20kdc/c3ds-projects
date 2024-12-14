@@ -15,7 +15,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.text.Document;
 
-import rals.tooling.Injector;
+import cdsp.common.cpx.Injector;
 
 /**
  * For viewing the debug log.

@@ -23,12 +23,13 @@ public class CDSPCommonUI {
 	}
 
 	public static boolean confirmDangerousOperation(Component parent, String text, String title) {
-		int res = JOptionPane.showOptionDialog(parent, text, title, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null);
+		int res = JOptionPane.showOptionDialog(parent, text, title, JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE, null, null, null);
 		return res == JOptionPane.YES_OPTION;
 	}
 
 	public static void fixAWT() {
-        System.setProperty("sun.awt.noerasebackground", "true");
-        System.setProperty("sun.awt.erasebackgroundonresize", "true");
+		System.setProperty("sun.awt.noerasebackground", "true");
+		System.setProperty("sun.awt.erasebackgroundonresize", "true");
 	}
 }

@@ -40,7 +40,7 @@ public class PhotoFunctions {
 	 */
 	public static S16Image ensureValidPhoto(byte[] photo, ConfigPhotos cfg, ILogSource logger) {
 		try {
-			CS16FrameInfo[] frames = CS16IO.readCS16FrameInfo(photo, 1);
+			CS16FrameInfo[] frames = CS16IO.readCS16FrameInfo(photo, 1, 139);
 			// wrong frame count
 			if (frames.length != 1) {
 				if (cfg.logPhotoErrors.getValue())

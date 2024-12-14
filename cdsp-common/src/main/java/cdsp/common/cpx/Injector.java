@@ -4,7 +4,7 @@
  * To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package rals.tooling;
+package cdsp.common.cpx;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -16,14 +16,20 @@ import java.io.RandomAccessFile;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 
-import rals.caos.CAOSUtils;
+import cdsp.common.data.bytestring.W1252Fixed;
 
 /**
- * CAOS into the game at maximum velocity!
- * Note that the library here is particularly lacking in features. 
+ * CAOS into the game at maximum velocity! Note that the library here is
+ * particularly lacking in features.
  */
 public class Injector {
+	/**
+	 * Character set for a standard copy of Creatures 3 or Docking Station.
+	 */
+	public static final Charset CAOS_CHARSET = W1252Fixed.INSTANCE;
+
 	public static String cpxRequest(String req) throws IOException {
 		boolean allowPipe = true;
 		String host = System.getenv("CPX_HOST");
@@ -47,12 +53,16 @@ public class Injector {
 
 		if (allowPipe && checkIfLikelyWindows()) {
 			// This is a HORRIBLE thing.
-			try (RandomAccessFile raf = new RandomAccessFile("\\\\.\\pipe\\CAOSWorkaroundBecauseWindowsIsAFuckedUpPieceOfShit", "rw")) {
+			try (RandomAccessFile raf = new RandomAccessFile(
+					"\\\\.\\pipe\\CAOSWorkaroundBecauseWindowsIsAFuckedUpPieceOfShit", "rw")) {
 				return cpxRequestInternal(req, raf, raf, null);
 			} catch (IOException ioe) {
-				// Any IOException (SPECIFICALLY) from the above implies we need to retry the request.
-				// That said, if we're even doing this and failed... print the stack trace to stderr.
-				// If you're using an up-to-date caosprox you shouldn't GET this error in these conditions, so.
+				// Any IOException (SPECIFICALLY) from the above implies we need to retry the
+				// request.
+				// That said, if we're even doing this and failed... print the stack trace to
+				// stderr.
+				// If you're using an up-to-date caosprox you shouldn't GET this error in these
+				// conditions, so.
 				ioe.printStackTrace();
 			}
 		}
@@ -62,6 +72,7 @@ public class Injector {
 			return cpxRequestInternal(req, new DataInputStream(cpxSocket.getInputStream()), dos, dos);
 		}
 	}
+
 	// this is stupid and dumb, frankly.
 	private static boolean checkIfLikelyWindows() {
 		String res = System.getProperty("os.name");
@@ -69,8 +80,10 @@ public class Injector {
 			return false;
 		return res.toLowerCase().contains("win");
 	}
-	private static String cpxRequestInternal(String req, DataInput inp, DataOutput oup, OutputStream needsFlushing) throws IOException {
-		byte[] data = req.getBytes(CAOSUtils.CAOS_CHARSET);
+
+	private static String cpxRequestInternal(String req, DataInput inp, DataOutput oup, OutputStream needsFlushing)
+			throws IOException {
+		byte[] data = req.getBytes(CAOS_CHARSET);
 		ByteBuffer tmp = ByteBuffer.allocate(48);
 		tmp.order(ByteOrder.LITTLE_ENDIAN);
 		tmp.putInt(0, data.length + 1);
@@ -97,11 +110,12 @@ public class Injector {
 				break;
 			}
 		}
-		String resultText = new String(resultData, 0, cutPoint, CAOSUtils.CAOS_CHARSET);
+		String resultText = new String(resultData, 0, cutPoint, CAOS_CHARSET);
 		if (resultCode != 0)
 			throw new CPXException(resultText);
 		return resultText;
 	}
+
 	public static class CPXException extends RuntimeException {
 		private static final long serialVersionUID = -6375845826233160433L;
 

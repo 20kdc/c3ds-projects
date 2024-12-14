@@ -130,7 +130,7 @@ public interface ByteSequence {
 				throw new IndexOutOfBoundsException();
 			if (srcEnd < srcBegin || srcEnd > length)
 				throw new IndexOutOfBoundsException();
-			
+
 		}
 
 		@Override

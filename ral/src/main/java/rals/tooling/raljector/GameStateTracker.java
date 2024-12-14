@@ -8,7 +8,7 @@ package rals.tooling.raljector;
 
 import java.util.function.Function;
 
-import rals.tooling.Injector;
+import cdsp.common.cpx.Injector;
 
 public class GameStateTracker {
 	/**

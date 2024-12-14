@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
  * CS16IO. (Writing needs all the line offsets, but that makes reading less
  * secure.) Importantly, these share backing storage (the ByteBuffer).
  */
-public class CS16FrameInfo {
+public final class CS16FrameInfo {
 	/**
 	 * Backing ByteBuffer. It is formally agreed not to seek this ByteBuffer.
 	 */

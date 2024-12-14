@@ -10,6 +10,7 @@ package cdsp.common.s16;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
@@ -45,7 +46,7 @@ public class CS16IO {
 	 * Autodetect CS16 format, then get frame info.
 	 */
 	public static CS16FrameInfo[] readCS16FrameInfo(byte[] buffer) {
-		return readCS16FrameInfo(buffer, 0xFFFF);
+		return readCS16FrameInfo(buffer, 0xFFFF, 0xFFFF);
 	}
 
 	/**
@@ -53,7 +54,7 @@ public class CS16IO {
 	 * frame count, rather than the usual implicit 65535-frame bound. This helps
 	 * keep allocation under control.
 	 */
-	public static CS16FrameInfo[] readCS16FrameInfo(byte[] buffer, int maxFrames) {
+	public static CS16FrameInfo[] readCS16FrameInfo(byte[] buffer, int maxFrames, int maxCompressedFrameHeight) {
 		ByteBuffer bb = ByteBuffer.wrap(buffer);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 		int magic = bb.getInt(0);
@@ -71,6 +72,8 @@ public class CS16IO {
 				int iw = bb.getShort(pos + 4) & 0xFFFF;
 				int ih = bb.getShort(pos + 6) & 0xFFFF;
 				if (fmt.compressed) {
+					if (ih > maxCompressedFrameHeight)
+						throw new RuntimeException("Height is above maximum compressed frame height");
 					int[] dataOfs = new int[ih];
 					dataOfs[0] = dptr;
 					for (int j = 1; j < ih; j++)
@@ -79,7 +82,7 @@ public class CS16IO {
 					result[i] = new CS16FrameInfo(bb, fmt, iw, ih, dataOfs);
 				} else {
 					pos += 8;
-					result[i] = new CS16FrameInfo(bb, fmt, iw, ih, new int[] {dptr});
+					result[i] = new CS16FrameInfo(bb, fmt, iw, ih, new int[] { dptr });
 				}
 			}
 			return result;
@@ -153,7 +156,7 @@ public class CS16IO {
 				if (i != 0)
 					pointers.add(headerSize + dataSection.size());
 				try {
-					dataSection.write(si.genC16Row(i));
+					dataSection.write(genC16Row(si, i, ByteOrder.LITTLE_ENDIAN));
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
@@ -174,5 +177,118 @@ public class CS16IO {
 		}
 		bb.put(dataSection.toByteArray());
 		return data;
+	}
+
+	/**
+	 * Generates a C16 row.
+	 */
+	private static byte[] genC16Row(S16Image image, int y, ByteOrder endian) {
+		int rp = y * image.width;
+		int runLength = 0;
+		boolean runTransparent = false;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		for (int i = 0; i < image.width; i++) {
+			boolean transparent = image.pixels[rp] == 0;
+			if (transparent != runTransparent || runLength == 32767) {
+				writeC16Run(baos, image.pixels, rp, runLength, runTransparent, endian);
+				runLength = 1;
+				runTransparent = transparent;
+			} else {
+				runLength++;
+			}
+			rp++;
+		}
+		writeC16Run(baos, image.pixels, rp, runLength, runTransparent, endian);
+		writeShort(baos, 0, endian);
+		return baos.toByteArray();
+	}
+
+	private static void writeC16Run(ByteArrayOutputStream baos, short[] pixels, int rp, int runLength, boolean runTransparent, ByteOrder endian) {
+		if (runLength == 0)
+			return;
+		int runBase = rp - runLength;
+		if (runTransparent) {
+			writeShort(baos, runLength << 1, endian);
+		} else {
+			writeShort(baos, (runLength << 1) | 1, endian);
+			for (int i = 0; i < runLength; i++)
+				writeShort(baos, pixels[runBase++], endian);
+		}
+	}
+
+	private static void writeShort(ByteArrayOutputStream baos, int s, ByteOrder endian) {
+		if (endian == ByteOrder.LITTLE_ENDIAN) {
+			baos.write(s);
+			baos.write(s >> 8);
+		} else {
+			baos.write(s >> 8);
+			baos.write(s);
+		}
+	}
+
+	private static void writeShort(OutputStream baos, int s, ByteOrder endian) throws IOException {
+		if (endian == ByteOrder.LITTLE_ENDIAN) {
+			baos.write(s);
+			baos.write(s >> 8);
+		} else {
+			baos.write(s >> 8);
+			baos.write(s);
+		}
+	}
+
+	/**
+	 * Autodetect CS16 format, then get BLK info.
+	 */
+	public static BLKInfo readBLKInfo(File file) throws IOException {
+		return readBLKInfo(Files.readAllBytes(file.toPath()));
+	}
+
+	/**
+	 * Autodetect CS16 format, then get BLK info.
+	 */
+	public static BLKInfo readBLKInfo(byte[] buffer) {
+		ByteBuffer bb = ByteBuffer.wrap(buffer);
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+		int magic = bb.getInt(0);
+		for (CS16Format fmt : CS16Format.values()) {
+			if (fmt.magic != magic)
+				continue;
+			if (fmt.compressed)
+				continue;
+			bb.order(fmt.endian);
+			int width = bb.getShort(4) & 0xFFFF;
+			int height = bb.getShort(6) & 0xFFFF;
+			int count = bb.getShort(8) & 0xFFFF;
+			return new BLKInfo(bb, fmt, width, height, 10 + (count * 8));
+		}
+		throw new RuntimeException("Unknown BLK type");
+	}
+
+	/**
+	 * Encodes a BLK file.
+	 */
+	public static void encodeBLK(OutputStream os, BLKSource source) throws IOException {
+		int count = source.width * source.height;
+		byte[] headBuffer = new byte[10 + (count * 8)];
+		ByteBuffer head = IOUtils.wrapLE(headBuffer);
+		head.putInt(0, source.format.magic);
+		head.putShort(4, (short) source.width);
+		head.putShort(6, (short) source.height);
+		head.putShort(8, (short) count);
+		BLKInfo tmpInfo = new BLKInfo(head, source.format, source.width, source.height, headBuffer.length);
+		int ptr = 10;
+		for (int i = 0; i < count; i++) {
+			head.putInt(ptr, tmpInfo.getBlockDataOfs(i));
+			head.putShort(ptr + 4, (short) BLKSource.BLOCK_SIZE);
+			head.putShort(ptr + 6, (short) BLKSource.BLOCK_SIZE);
+			ptr += 8;
+		}
+		// header done
+		os.write(headBuffer);
+		for (int i = 0; i < count; i++) {
+			S16Image img = source.getBlock(i);
+			for (int j = 0; j < BLKSource.BLOCK_SIZE * BLKSource.BLOCK_SIZE; j++)
+				writeShort(os, img.pixels[j], ByteOrder.LITTLE_ENDIAN);
+		}
 	}
 }

@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.function.Function;
 
-import rals.tooling.Injector;
+import cdsp.common.cpx.Injector;
 import rals.tooling.raljector.DebuggerDialog.FilterLibMode;
 import rals.types.Classifier;
 
