@@ -52,7 +52,7 @@ public class ValueMonitorDialog extends JFrame {
 			if (str != null) {
 				try {
 					final int validUnid = Integer.parseInt(str);
-					Injector.cpxRequest("execute\ndbg: tack agnt " + validUnid);
+					Injector.cpxRequest("execute\ndbg: tack agnt " + validUnid, CAOSUtils.CAOS_CHARSET);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 					trk.displayMessageToUser.fire("Unable to TACK: " + ex.toString());
@@ -94,7 +94,7 @@ public class ValueMonitorDialog extends JFrame {
 						// if we got this far, it's valid enough that we can make this happen
 						new ValueMonitorDialog(trk, validUnid + "." + currentOV[myVarId], () -> {
 							try {
-								String res = Injector.cpxRequest("execute\ntarg agnt " + validUnid + " outx dbga " + myVarId);
+								String res = Injector.cpxRequest("execute\ntarg agnt " + validUnid + " outx dbga " + myVarId, CAOSUtils.CAOS_CHARSET);
 								return CAOSUtils.unescapeOUTX(res.trim());
 							} catch (Exception ex) {
 								// do this because these errors can get weird
@@ -160,7 +160,7 @@ public class ValueMonitorDialog extends JFrame {
 						"else\n" +
 						" outs \"null\\n\"\n" +
 						"endi\n";
-				String allAVarRes = Injector.cpxRequest(code);
+				String allAVarRes = Injector.cpxRequest(code, CAOSUtils.CAOS_CHARSET);
 				String[] allAVarEsc = allAVarRes.split("\n");
 				if (allAVarEsc[0].equals("null")) {
 					agentHeader.setText("not a valid agent");

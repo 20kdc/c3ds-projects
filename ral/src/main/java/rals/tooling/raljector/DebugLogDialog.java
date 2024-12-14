@@ -16,6 +16,7 @@ import javax.swing.JTextPane;
 import javax.swing.text.Document;
 
 import cdsp.common.cpx.Injector;
+import rals.caos.CAOSUtils;
 
 /**
  * For viewing the debug log.
@@ -30,7 +31,7 @@ public class DebugLogDialog extends JFrame {
 		setSize(400, 300);
 		final Consumer<Object> refreshEv = (x) -> {
 			try {
-				String res = Injector.cpxRequest("execute\ndbg: poll\n");
+				String res = Injector.cpxRequest("execute\ndbg: poll\n", CAOSUtils.CAOS_CHARSET);
 				Document doc = valuePane.getDocument();
 				doc.insertString(doc.getLength(), res, null);
 			} catch (Exception ex) {

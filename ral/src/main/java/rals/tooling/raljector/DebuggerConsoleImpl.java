@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.function.Function;
 
 import cdsp.common.cpx.Injector;
+import rals.caos.CAOSUtils;
 import rals.tooling.raljector.DebuggerDialog.FilterLibMode;
 import rals.types.Classifier;
 
@@ -30,7 +31,7 @@ public class DebuggerConsoleImpl implements Function<String, String> {
 	public String apply(String var1) {
 		if (var1.startsWith("/")) {
 			try {
-				return Injector.cpxRequest("execute\n" + var1.substring(1)) + "\n";
+				return Injector.cpxRequest("execute\n" + var1.substring(1), CAOSUtils.CAOS_CHARSET) + "\n";
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				return "Error in injection: " + ex.getMessage() + "\n";
@@ -138,7 +139,7 @@ public class DebuggerConsoleImpl implements Function<String, String> {
 			Classifier cls = classifierArg(cmd, 3);
 			cmd.expectNoMore();
 			try {
-				doVV(Injector.cpxRequest("execute\nrtar " + cls.toCAOSString() + "\noutv unid\n").trim());
+				doVV(Injector.cpxRequest("execute\nrtar " + cls.toCAOSString() + "\noutv unid\n", CAOSUtils.CAOS_CHARSET).trim());
 			} catch (Exception ex) {
 				return "Error: " + ex.getMessage() + "\n";
 			}
@@ -177,7 +178,7 @@ public class DebuggerConsoleImpl implements Function<String, String> {
 		String magic = "dbg: tack ownr ";
 		String fgse = cls.toCAOSString() + " " + e;
 		try {
-			String code = Injector.cpxRequest("execute\nouts sorc " + fgse + "\n");
+			String code = Injector.cpxRequest("execute\nouts sorc " + fgse + "\n", CAOSUtils.CAOS_CHARSET);
 			if (!b) {
 				// want to get rid of it
 				if (code.startsWith(magic)) {
@@ -193,7 +194,7 @@ public class DebuggerConsoleImpl implements Function<String, String> {
 					code = magic + code;
 				}
 			}
-			return Injector.cpxRequest("scrp " + fgse + "\n" + code) + "\n";
+			return Injector.cpxRequest("scrp " + fgse + "\n" + code, CAOSUtils.CAOS_CHARSET) + "\n";
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return "Error in injection: " + ex.getMessage() + "\n";

@@ -9,6 +9,7 @@ package rals.tooling.raljector;
 import java.util.function.Function;
 
 import cdsp.common.cpx.Injector;
+import rals.caos.CAOSUtils;
 
 public class GameStateTracker {
 	/**
@@ -87,7 +88,8 @@ public class GameStateTracker {
 				"  outs \"\\n\"\n" +
 				" repe\n" +
 				"endi\n" +
-				""
+				"",
+				CAOSUtils.CAOS_CHARSET
 			);
 			String[] lines = res.split("\n");
 			tackUNID = Integer.parseInt(lines[0]);
@@ -106,7 +108,8 @@ public class GameStateTracker {
 					// Only do this part the first time
 					if (lastGameState != State.Tacked) {
 						String src = Injector.cpxRequest( 
-							"execute\nouts sorc " + codf + " " + codg + " " + cods + " " + code
+							"execute\nouts sorc " + codf + " " + codg + " " + cods + " " + code,
+							CAOSUtils.CAOS_CHARSET
 						);
 						rdf = new RawDebugFrame(lines, 7, codf, codg, cods, code, codp, src);
 						didCheese = stepDecider.apply(rdf);
@@ -116,7 +119,7 @@ public class GameStateTracker {
 						} else {
 							// never happened, honest
 							rdf = null;
-							Injector.cpxRequest("execute\ndbg: tack tack");
+							Injector.cpxRequest("execute\ndbg: tack tack", CAOSUtils.CAOS_CHARSET);
 						}
 					}
 					gameState = didCheese ? State.RunningTack : State.Tacked;
@@ -164,7 +167,7 @@ public class GameStateTracker {
 	public void tackPlay(Function<RawDebugFrame, Boolean> sd) {
 		stepDecider = sd;
 		try {
-			Injector.cpxRequest("execute\ndbg: tack tack");
+			Injector.cpxRequest("execute\ndbg: tack tack", CAOSUtils.CAOS_CHARSET);
 			gameState = State.RunningTack;
 		} catch (Exception ex) {
 			gameState = State.Offline;
@@ -175,7 +178,7 @@ public class GameStateTracker {
 	public void dbgPlay() {
 		stepDecider = DebugStepDecider.SKIP_METADATA;
 		try {
-			Injector.cpxRequest("execute\ndbg: play");
+			Injector.cpxRequest("execute\ndbg: play", CAOSUtils.CAOS_CHARSET);
 			gameState = State.Running;
 		} catch (Exception ex) {
 			gameState = State.Offline;

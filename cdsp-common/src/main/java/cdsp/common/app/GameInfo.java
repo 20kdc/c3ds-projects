@@ -9,7 +9,6 @@ package cdsp.common.app;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -18,11 +17,17 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import cdsp.common.data.DirLookup;
+import cdsp.common.data.bytestring.W1252Fixed;
 
 /**
  * Game information.
  */
 public class GameInfo implements DirLookup {
+	/**
+	 * File version (used for upgrades)
+	 */
+	public static final int VERSION = 1;
+
 	/**
 	 * Character set of the game.
 	 */
@@ -34,9 +39,18 @@ public class GameInfo implements DirLookup {
 	public final EnumMap<Location, LinkedList<File>> locations = new EnumMap<>(Location.class);
 
 	public GameInfo() {
-		charset = StandardCharsets.ISO_8859_1;
 		for (Location loc : Location.values())
 			locations.put(loc, new LinkedList<>());
+		reset();
+	}
+
+	/**
+	 * Does a full reset.
+	 */
+	public void reset() {
+		charset = W1252Fixed.INSTANCE;
+		for (LinkedList<File> llf : locations.values())
+			llf.clear();
 	}
 
 	/**
@@ -54,18 +68,34 @@ public class GameInfo implements DirLookup {
 	 * Load configuration from JSON.
 	 */
 	public void load(Object jsonObj) {
+		reset();
 		try {
 			if (jsonObj instanceof JSONObject) {
-				charset = Charset.forName(((JSONObject) jsonObj).getString("charset"));
-				JSONObject ljo = ((JSONObject) jsonObj).getJSONObject("locations");
-				for (Location loc : Location.values()) {
-					JSONArray locArr = ljo.optJSONArray(loc.nameInternal);
-					if (locArr != null) {
-						LinkedList<File> llf = locations.get(loc);
-						int len = locArr.length();
-						for (int i = 0; i < len; i++) {
-							String str = locArr.getString(i);
-							llf.add(new File(str));
+				JSONObject jo = (JSONObject) jsonObj;
+				int version = jo.optInt("version", 0);
+				try {
+					String charsetName = jo.getString("charset");
+					if (charsetName.equals("W1252Fixed")) {
+						charset = W1252Fixed.INSTANCE;
+					} else {
+						charset = Charset.forName(charsetName);
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				if (version == 0 && charset.name().equals("ISO-8859-1"))
+					charset = W1252Fixed.INSTANCE;
+				JSONObject ljo = jo.optJSONObject("locations");
+				if (ljo != null) {
+					for (Location loc : Location.values()) {
+						JSONArray locArr = ljo.optJSONArray(loc.nameInternal);
+						if (locArr != null) {
+							LinkedList<File> llf = locations.get(loc);
+							int len = locArr.length();
+							for (int i = 0; i < len; i++) {
+								String str = locArr.getString(i);
+								llf.add(new File(str));
+							}
 						}
 					}
 				}
@@ -87,6 +117,7 @@ public class GameInfo implements DirLookup {
 	 */
 	public JSONObject save() {
 		JSONObject obj = new JSONObject();
+		obj.put("version", VERSION);
 		obj.put("charset", charset.name());
 		JSONObject loc = new JSONObject();
 		for (Map.Entry<Location, LinkedList<File>> ent : locations.entrySet()) {

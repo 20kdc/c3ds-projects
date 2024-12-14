@@ -18,19 +18,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
-import cdsp.common.data.bytestring.W1252Fixed;
-
 /**
  * CAOS into the game at maximum velocity! Note that the library here is
  * particularly lacking in features.
  */
 public class Injector {
-	/**
-	 * Character set for a standard copy of Creatures 3 or Docking Station.
-	 */
-	public static final Charset CAOS_CHARSET = W1252Fixed.INSTANCE;
-
-	public static String cpxRequest(String req) throws IOException {
+	public static String cpxRequest(String req, Charset charset) throws IOException {
 		boolean allowPipe = true;
 		String host = System.getenv("CPX_HOST");
 		if ((host == null) || (host.equals(""))) {
@@ -55,7 +48,7 @@ public class Injector {
 			// This is a HORRIBLE thing.
 			try (RandomAccessFile raf = new RandomAccessFile(
 					"\\\\.\\pipe\\CAOSWorkaroundBecauseWindowsIsAFuckedUpPieceOfShit", "rw")) {
-				return cpxRequestInternal(req, raf, raf, null);
+				return cpxRequestInternal(req, raf, raf, null, charset);
 			} catch (IOException ioe) {
 				// Any IOException (SPECIFICALLY) from the above implies we need to retry the
 				// request.
@@ -69,7 +62,7 @@ public class Injector {
 
 		try (Socket cpxSocket = new Socket(host, Integer.parseInt(port))) {
 			DataOutputStream dos = new DataOutputStream(cpxSocket.getOutputStream());
-			return cpxRequestInternal(req, new DataInputStream(cpxSocket.getInputStream()), dos, dos);
+			return cpxRequestInternal(req, new DataInputStream(cpxSocket.getInputStream()), dos, dos, charset);
 		}
 	}
 
@@ -81,9 +74,9 @@ public class Injector {
 		return res.toLowerCase().contains("win");
 	}
 
-	private static String cpxRequestInternal(String req, DataInput inp, DataOutput oup, OutputStream needsFlushing)
+	private static String cpxRequestInternal(String req, DataInput inp, DataOutput oup, OutputStream needsFlushing, Charset charset)
 			throws IOException {
-		byte[] data = req.getBytes(CAOS_CHARSET);
+		byte[] data = req.getBytes(charset);
 		ByteBuffer tmp = ByteBuffer.allocate(48);
 		tmp.order(ByteOrder.LITTLE_ENDIAN);
 		tmp.putInt(0, data.length + 1);
@@ -110,7 +103,7 @@ public class Injector {
 				break;
 			}
 		}
-		String resultText = new String(resultData, 0, cutPoint, CAOS_CHARSET);
+		String resultText = new String(resultData, 0, cutPoint, charset);
 		if (resultCode != 0)
 			throw new CPXException(resultText);
 		return resultText;

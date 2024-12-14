@@ -108,7 +108,7 @@ public class Main {
 				System.exit(1);
 		} else if (args[0].equals("cpxConnectionTest")) {
 			// be a little flashy with this
-			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest(stdLibDP)));
+			System.out.println(Injector.cpxRequest("execute\n" + Parser.runCPXConnTest(stdLibDP), CAOSUtils.CAOS_CHARSET));
 		} else if (args[0].equals("lsp")) {
 			new LSPBaseProtocolLoop(new LanguageServer(ralStandardLibrary, false), false).run();
 		} else if (args[0].equals("lspLog")) {
@@ -184,7 +184,7 @@ public class Main {
 				return false;
 			}
 			for (String req : queuedRequests) {
-				sb.append(Injector.cpxRequest(req));
+				sb.append(Injector.cpxRequest(req, CAOSUtils.CAOS_CHARSET));
 				sb.append("\n");
 			}
 			return true;
