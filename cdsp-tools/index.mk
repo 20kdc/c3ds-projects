@@ -1,6 +1,6 @@
 # cdsp-tools packaging as part of c3ds-projects
 
-JTOOLS_REL := cdsp-tools/cdsp-tools.jar cdsp-tools/cdsp-tools cdsp-tools/cdsp-tools.cmd
+JTOOLS_REL := cdsp-tools/cdsp-tools.jar cdsp-tools/cdsp-tools cdsp-tools/cdsp-tools.cmd cdsp-tools/README.md
 
 # cdsp-tools JAR itself
 

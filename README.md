@@ -10,7 +10,7 @@ c3ds-projects contributors are in no way affiliated with Creature Labs, this is 
 + assorted-caos: Random dumping ground for CAOS
 + caosproxy: specification & tools for OS-independent and easier to access interconnect between tooling & the game
 + cdsp-common: Java library used by Natsue and RAL
-+ cdsp-tools: A place further Java-based tools may go at some point
++ cdsp-tools: A place for further Java-based tools
 + ciesetup: CIE setup improvements (Now containing Docker!)
 + colour-depth-fix: improves Linux & Mac compatibilty of Docking Station through renderer patching
 + creature-monitor-gd: tool for monitoring creatures that is hopefully more reliable than alternatives
@@ -19,6 +19,24 @@ c3ds-projects contributors are in no way affiliated with Creature Labs, this is 
 + tob: Babel protocol documentation attempt
 + ral: 'Experimental' language compiling to CAOS
 + rust: Rust libraries/etc. for this repository go here.
+
+## Where to put things and how to write them
+
+* CLI
+	* CLI tools with performance or external dependency requirements should be written in Rust and go in the `rust` section.
+	* Otherwise, most CLI tools should be written in Python and go in the `python` section.
+* GUI
+	* GUI tools should be written in Java. Godot 3.x is an option but is costly build-time-wise.
+		* The underlying library code goes in `cdsp-common` for use across the Java projects.
+* caosprox, ciesetup
+	* Code specifically meant to interface with native code in a specific environment should be written in whatever way reduces install dependencies. In practice, this means that it's written in C and compiled only for the target(s). Wine or other such layers are expected to be used as necessary.
+* Blender, age/breed DB, etc.
+	* Anything that needs to touch Blender has to be written in Python, as native dependencies are untenable.
+	* The age/breed DB solely exists in Python right now. It might be an idea to move it to something else, but for now this is what you get; the alternatives seem to be worse in various important ways. Unironically considering a TSV file.
+* Common Code
+	* All common Java code goes in `cdsp-common`.
+	* All common Python code goes in `python`.
+	* Common Rust code mostly goes in `libkc3ds`, except `norncli`.
 
 ## License
 
