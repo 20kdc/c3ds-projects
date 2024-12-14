@@ -13,7 +13,7 @@ import java.io.File;
  * Directory lookup device.
  */
 public interface DirLookup {
-	public File findFile(Location location, String name);
+	public File findFile(Location location, String name, boolean caseInsensitive);
 
 	public static enum Location {
 		// nameInternal is saved into files.

@@ -92,4 +92,30 @@ public final class S16Image {
 		bi.getRaster().setDataElements(0, 0, width, height, intpix);
 		return bi;
 	}
+
+	/**
+	 * To a BufferedImage for display. This version also tints the image.
+	 * Tint colour is roughly -0.5 to 0.5, (it can be just a bit lower than -0.5 in practice though)
+	 * Rotation is -1 to nearly 1.
+	 * Swap is 0 to 1.
+	 */
+	public BufferedImage toBITinted(boolean alphaAware, float red, float green, float blue, float rotation, float swap) {
+		BufferedImage bi = new BufferedImage(width, height,
+				alphaAware ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
+		int[] intpix = new int[pixels.length];
+		float[] tmp = new float[4];
+		for (int i = 0; i < pixels.length; i++) {
+			int val = CS16ColourFormat.argbFrom565(pixels[i], alphaAware);
+			Shaders.argbToFloats(tmp, val);
+			tmp[0] += red;
+			tmp[1] += green;
+			tmp[2] += blue;
+			Shaders.clampFloats(tmp);
+			Shaders.rotate(tmp, rotation);
+			Shaders.swap(tmp, swap);
+			intpix[i] = Shaders.floatsToARGB(tmp);
+		}
+		bi.getRaster().setDataElements(0, 0, width, height, intpix);
+		return bi;
+	}
 }

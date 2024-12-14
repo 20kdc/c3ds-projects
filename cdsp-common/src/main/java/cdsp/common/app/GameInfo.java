@@ -8,6 +8,7 @@
 package cdsp.common.app;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -141,11 +142,23 @@ public class GameInfo implements DirLookup {
 	 * Returns the location of a file.
 	 */
 	@Override
-	public File findFile(Location location, String name) {
+	public File findFile(Location location, String name, boolean caseInsensitive) {
+		FilenameFilter caseInsensitiveChecker = caseInsensitive ? new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String chkName) {
+				return chkName.equalsIgnoreCase(name);
+			}
+		} : null;
 		for (File f : locations.get(location)) {
 			File potential = new File(f, name);
 			if (potential.exists())
 				return potential;
+			if (caseInsensitiveChecker != null) {
+				File[] targets = f.listFiles(caseInsensitiveChecker);
+				if (targets != null)
+					if (targets[0] != null)
+						return targets[0];
+			}
 		}
 		return newFile(location, name);
 	}
