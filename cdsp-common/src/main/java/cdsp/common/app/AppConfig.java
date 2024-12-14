@@ -10,9 +10,11 @@ package cdsp.common.app;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.json.JSONWriter;
 
@@ -51,8 +53,13 @@ public class AppConfig {
 		try {
 			configRoot.mkdirs();
 			File f = new File(configRoot, name);
-			byte[] bd = JSONWriter.valueToString(val).getBytes(StandardCharsets.UTF_8);
-			Files.write(f.toPath(), bd);
+			StringWriter sw = new StringWriter();
+			if (val instanceof JSONObject) {
+				((JSONObject) val).write(sw, 4, 0);
+			} else {
+				sw.write(JSONWriter.valueToString(val));
+			}
+			Files.write(f.toPath(), sw.toString().getBytes(StandardCharsets.UTF_8));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
