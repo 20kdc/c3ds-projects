@@ -19,6 +19,11 @@ public final class BLKInfo extends BLKSource {
 	private final ByteBuffer byteBuffer;
 
 	/**
+	 * Format of the frame. This format must not be compressed.
+	 */
+	public final CS16Format format;
+
+	/**
 	 * Block data starts at this offset.
 	 * There is a comment in s16.py documenting the (broken) behaviour of a third-party "Creatures 3 Room Editor".
 	 * In short, working around the bug requires calculating block offsets ourselves.
@@ -26,7 +31,10 @@ public final class BLKInfo extends BLKSource {
 	public final int dataOfs;
 
 	public BLKInfo(ByteBuffer byteBuffer, CS16Format fmt, int w, int h, int dataOfs) {
-		super(fmt, w, h);
+		super(w, h);
+		if (fmt.compressed)
+			throw new RuntimeException("Compressed format not valid for BLK");
+		format = fmt;
 		this.byteBuffer = byteBuffer;
 		this.dataOfs = dataOfs;
 	}

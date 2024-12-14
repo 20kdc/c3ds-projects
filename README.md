@@ -31,7 +31,9 @@ Some parts of this repository use third-party dependencies (which are not includ
 
 + creature-monitor-gd uses Godot Engine ( https://godotengine.org/ ) and dependencies thereof.
 + natsue by default is packaged with sqlite-jdbc, mysql-connector-java, and dependencies of these (though these do not enter c3ds-projects binary releases).
-+ RAL uses JSON-java ( https://github.com/stleary/JSON-java ) as part of LSP support.
++ All Java projects in this repository use JSON-java ( https://github.com/stleary/JSON-java )
+	* RAL uses it for LSP support.
+	* `cdsp-common` and by extension `cdsp-tools` uses it for game directory configuration.
 + The libraries and programs written in Rust use Rust and the Rust Standard Library. They also use some external libraries including `image`.
 
 While c3ds-projects is under CC0, these dependencies are mostly not.

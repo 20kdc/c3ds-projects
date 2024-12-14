@@ -60,6 +60,7 @@ java:
 	mvn install
 	mvn package
 include ral/index.mk
+include cdsp-tools/index.mk
 endif
 
 # Stuff that has compilation steps that require Linux.

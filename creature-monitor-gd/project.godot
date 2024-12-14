@@ -158,7 +158,6 @@ CPXDaemon="*res://daemons/cpx_daemon.gd"
 
 [debug]
 
-gdscript/warnings/return_value_discarded=false
 gdscript/warnings/integer_division=false
 
 [editor_plugins]

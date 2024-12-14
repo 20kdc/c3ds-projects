@@ -14,19 +14,11 @@ public abstract class BLKSource {
 	public static final int BLOCK_SIZE = 128;
 
 	/**
-	 * Format of the frame. This format must not be compressed.
-	 */
-	public final CS16Format format;
-
-	/**
 	 * Width and height; in blocks.
 	 */
 	public final int width, height;
 
-	public BLKSource(CS16Format fmt, int w, int h) {
-		if (fmt.compressed)
-			throw new RuntimeException("Compressed format not valid for BLK");
-		format = fmt;
+	public BLKSource(int w, int h) {
 		width = w;
 		height = h;
 	}

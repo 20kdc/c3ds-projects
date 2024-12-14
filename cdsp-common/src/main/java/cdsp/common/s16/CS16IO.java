@@ -115,74 +115,71 @@ public class CS16IO {
 	}
 
 	/**
-	 * Encodes an S16.
+	 * Encodes an S16/C16.
 	 */
-	public static byte[] encodeS16(S16Image[] frames) {
+	public static byte[] encode(S16Image[] frames, CS16Format format) {
 		int headerSize = 6 + (8 * frames.length);
 		LinkedList<Integer> pointers = new LinkedList<>();
-		int dataSectionSize = 0;
-		for (S16Image si : frames) {
-			pointers.add(headerSize + dataSectionSize);
-			dataSectionSize += 2 * si.pixels.length;
-		}
-		byte[] data = new byte[headerSize + dataSectionSize];
-		ByteBuffer bb = IOUtils.wrapLE(data);
-		bb.putInt(CS16Format.S16_RGB565.magic);
-		bb.putShort((short) frames.length);
-		for (S16Image si : frames) {
-			bb.putInt(pointers.removeFirst());
-			bb.putShort((short) si.width);
-			bb.putShort((short) si.height);
-		}
-		for (S16Image si : frames)
-			for (short s : si.pixels)
-				bb.putShort(s);
-		return data;
-	}
-
-	/**
-	 * Encodes a C16.
-	 */
-	public static byte[] encodeC16(S16Image[] frames) {
-		int headerSize = 6 + (8 * frames.length);
-		LinkedList<Integer> pointers = new LinkedList<>();
-		ByteArrayOutputStream dataSection = new ByteArrayOutputStream();
-		for (S16Image si : frames)
-			if (si.height > 0)
-				headerSize += (si.height - 1) * 4;
-		for (S16Image si : frames) {
-			pointers.add(headerSize + dataSection.size());
-			for (int i = 0; i < si.height; i++) {
-				if (i != 0)
-					pointers.add(headerSize + dataSection.size());
-				try {
-					dataSection.write(genC16Row(si, i, ByteOrder.LITTLE_ENDIAN));
-				} catch (Exception e) {
-					throw new RuntimeException(e);
+		if (format.compressed) {
+			ByteArrayOutputStream dataSection = new ByteArrayOutputStream();
+			for (S16Image si : frames)
+				if (si.height > 0)
+					headerSize += (si.height - 1) * 4;
+			for (S16Image si : frames) {
+				pointers.add(headerSize + dataSection.size());
+				for (int i = 0; i < si.height; i++) {
+					if (i != 0)
+						pointers.add(headerSize + dataSection.size());
+					try {
+						dataSection.write(genC16Row(si, i, format));
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
+				dataSection.write(0);
+				dataSection.write(0);
 			}
-			dataSection.write(0);
-			dataSection.write(0);
-		}
-		byte[] data = new byte[headerSize + dataSection.size()];
-		ByteBuffer bb = IOUtils.wrapLE(data);
-		bb.putInt(CS16Format.C16_RGB565.magic);
-		bb.putShort((short) frames.length);
-		for (S16Image si : frames) {
-			bb.putInt(pointers.removeFirst());
-			bb.putShort((short) si.width);
-			bb.putShort((short) si.height);
-			for (int i = 1; i < si.height; i++)
+			byte[] data = new byte[headerSize + dataSection.size()];
+			ByteBuffer bb = IOUtils.wrapLE(data);
+			bb.putInt(format.magic);
+			bb.order(format.endian);
+			bb.putShort((short) frames.length);
+			for (S16Image si : frames) {
 				bb.putInt(pointers.removeFirst());
+				bb.putShort((short) si.width);
+				bb.putShort((short) si.height);
+				for (int i = 1; i < si.height; i++)
+					bb.putInt(pointers.removeFirst());
+			}
+			bb.put(dataSection.toByteArray());
+			return data;
+		} else {
+			int dataSectionSize = 0;
+			for (S16Image si : frames) {
+				pointers.add(headerSize + dataSectionSize);
+				dataSectionSize += 2 * si.pixels.length;
+			}
+			byte[] data = new byte[headerSize + dataSectionSize];
+			ByteBuffer bb = IOUtils.wrapLE(data);
+			bb.putInt(format.magic);
+			bb.order(format.endian);
+			bb.putShort((short) frames.length);
+			for (S16Image si : frames) {
+				bb.putInt(pointers.removeFirst());
+				bb.putShort((short) si.width);
+				bb.putShort((short) si.height);
+			}
+			for (S16Image si : frames)
+				for (short s : si.pixels)
+					bb.putShort(format.colourFormat.from565(s, true));
+			return data;
 		}
-		bb.put(dataSection.toByteArray());
-		return data;
 	}
 
 	/**
 	 * Generates a C16 row.
 	 */
-	private static byte[] genC16Row(S16Image image, int y, ByteOrder endian) {
+	private static byte[] genC16Row(S16Image image, int y, CS16Format format) {
 		int rp = y * image.width;
 		int runLength = 0;
 		boolean runTransparent = false;
@@ -190,7 +187,7 @@ public class CS16IO {
 		for (int i = 0; i < image.width; i++) {
 			boolean transparent = image.pixels[rp] == 0;
 			if (transparent != runTransparent || runLength == 32767) {
-				writeC16Run(baos, image.pixels, rp, runLength, runTransparent, endian);
+				writeC16Run(baos, image.pixels, rp, runLength, runTransparent, format);
 				runLength = 1;
 				runTransparent = transparent;
 			} else {
@@ -198,21 +195,24 @@ public class CS16IO {
 			}
 			rp++;
 		}
-		writeC16Run(baos, image.pixels, rp, runLength, runTransparent, endian);
-		writeShort(baos, 0, endian);
+		writeC16Run(baos, image.pixels, rp, runLength, runTransparent, format);
+		writeShort(baos, 0, format.endian);
 		return baos.toByteArray();
 	}
 
-	private static void writeC16Run(ByteArrayOutputStream baos, short[] pixels, int rp, int runLength, boolean runTransparent, ByteOrder endian) {
+	private static void writeC16Run(ByteArrayOutputStream baos, short[] pixels, int rp, int runLength, boolean runTransparent, CS16Format format) {
 		if (runLength == 0)
 			return;
 		int runBase = rp - runLength;
 		if (runTransparent) {
-			writeShort(baos, runLength << 1, endian);
+			writeShort(baos, runLength << 1, format.endian);
 		} else {
-			writeShort(baos, (runLength << 1) | 1, endian);
-			for (int i = 0; i < runLength; i++)
-				writeShort(baos, pixels[runBase++], endian);
+			writeShort(baos, (runLength << 1) | 1, format.endian);
+			for (int i = 0; i < runLength; i++) {
+				short val = pixels[runBase++];
+				val = format.colourFormat.from565(val, true);
+				writeShort(baos, val, format.endian);
+			}
 		}
 	}
 
@@ -267,15 +267,16 @@ public class CS16IO {
 	/**
 	 * Encodes a BLK file.
 	 */
-	public static void encodeBLK(OutputStream os, BLKSource source) throws IOException {
+	public static void encodeBLK(OutputStream os, BLKSource source, CS16Format format) throws IOException {
 		int count = source.width * source.height;
 		byte[] headBuffer = new byte[10 + (count * 8)];
 		ByteBuffer head = IOUtils.wrapLE(headBuffer);
-		head.putInt(0, source.format.magic);
+		head.putInt(0, format.magic);
+		head.order(format.endian);
 		head.putShort(4, (short) source.width);
 		head.putShort(6, (short) source.height);
 		head.putShort(8, (short) count);
-		BLKInfo tmpInfo = new BLKInfo(head, source.format, source.width, source.height, headBuffer.length);
+		BLKInfo tmpInfo = new BLKInfo(head, format, source.width, source.height, headBuffer.length);
 		int ptr = 10;
 		for (int i = 0; i < count; i++) {
 			head.putInt(ptr, tmpInfo.getBlockDataOfs(i));
@@ -288,7 +289,7 @@ public class CS16IO {
 		for (int i = 0; i < count; i++) {
 			S16Image img = source.getBlock(i);
 			for (int j = 0; j < BLKSource.BLOCK_SIZE * BLKSource.BLOCK_SIZE; j++)
-				writeShort(os, img.pixels[j], ByteOrder.LITTLE_ENDIAN);
+				writeShort(os, format.colourFormat.from565(img.pixels[j], false), format.endian);
 		}
 	}
 }

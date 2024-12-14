@@ -30,7 +30,6 @@ import cdsp.common.app.JButtonWR;
 import cdsp.common.app.JGameInfo;
 import cdsp.common.data.DirLookup;
 import cdsp.common.s16.BLKInfo;
-import cdsp.common.s16.CS16ColourFormat;
 import cdsp.common.s16.CS16Format;
 import cdsp.common.s16.CS16IO;
 import cdsp.common.s16.S16Image;
@@ -78,10 +77,13 @@ public class Main extends JFrame {
 			}
 		}));
 		add(new JButtonWR("Convert To RGB565", () -> {
-			converter(false);
+			converter(false, CS16Format.S16_RGB565, CS16Format.C16_RGB565);
 		}));
 		add(new JButtonWR("Rewrite All As RGB565", () -> {
-			converter(true);
+			converter(true, CS16Format.S16_RGB565, CS16Format.C16_RGB565);
+		}));
+		add(new JButtonWR("Rewrite All As RGB555 (Force Spew)", () -> {
+			converter(true, CS16Format.S16_RGB555, CS16Format.C16_RGB555);
 		}));
 		pack();
 		setLocationByPlatform(true);
@@ -89,7 +91,7 @@ public class Main extends JFrame {
 		setVisible(true);
 	}
 
-	private void converter(boolean forceOverwrite) {
+	private void converter(boolean forceOverwrite, CS16Format uncompressed, CS16Format compressed) {
 		LinkedList<File> locations = new LinkedList<>();
 		locations.addAll(gameInfo.locations.get(DirLookup.Location.IMAGES));
 		locations.addAll(gameInfo.locations.get(DirLookup.Location.BACKGROUNDS));
@@ -133,7 +135,7 @@ public class Main extends JFrame {
 						int c = 0;
 						for (File target : specificImages) {
 							try {
-								if (doConvert(target, false, forceOverwrite))
+								if (doConvert(target, false, forceOverwrite, uncompressed, compressed))
 									c++;
 							} catch (Exception ex) {
 								pw.append("Error in sprite: ");
@@ -150,7 +152,7 @@ public class Main extends JFrame {
 						}
 						for (File target : specificBackgrounds) {
 							try {
-								if (doConvert(target, true, forceOverwrite))
+								if (doConvert(target, true, forceOverwrite, uncompressed, compressed))
 									c++;
 							} catch (Exception ex) {
 								pw.append("Error in background: ");
@@ -184,7 +186,7 @@ public class Main extends JFrame {
 		}
 	}
 
-	private static boolean doConvert(File img, boolean blk, boolean forceOverwrite) throws IOException {
+	private static boolean doConvert(File img, boolean blk, boolean forceOverwrite, CS16Format uncompressed, CS16Format compressed) throws IOException {
 		Path path = img.toPath();
 		byte[] data = Files.readAllBytes(path);
 		if (blk) {
@@ -192,18 +194,15 @@ public class Main extends JFrame {
 			if (res.format == CS16Format.S16_RGB565 && !forceOverwrite)
 				return false;
 			ByteArrayOutputStream tmp = new ByteArrayOutputStream();
-			CS16IO.encodeBLK(tmp, res);
+			CS16IO.encodeBLK(tmp, res, uncompressed);
 			Files.write(path, tmp.toByteArray());
 		} else {
 			CS16Format originalFormat = CS16IO.determineFormat(data);
-			if ((originalFormat == CS16Format.C16_RGB565 || originalFormat == CS16Format.S16_RGB565) && !forceOverwrite)
+			CS16Format targetFormat = originalFormat.compressed ? compressed : uncompressed;
+			if ((originalFormat == targetFormat) && !forceOverwrite)
 				return false;
 			S16Image[] res = CS16IO.decodeCS16(img);
-			if (originalFormat.compressed) {
-				Files.write(path, CS16IO.encodeC16(res));
-			} else {
-				Files.write(path, CS16IO.encodeS16(res));
-			}
+			Files.write(path, CS16IO.encode(res, targetFormat));
 		}
 		return true;
 	}
