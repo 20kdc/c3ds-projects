@@ -31,11 +31,11 @@ public class CS16FrameInfo {
 	public final int width, height;
 
 	/**
-	 * Offset of the frame data.
+	 * Offsets of the frame data.
 	 */
-	public final int dataOfs;
+	public final int[] dataOfs;
 
-	public CS16FrameInfo(ByteBuffer byteBuffer, CS16Format fmt, int w, int h, int o) {
+	public CS16FrameInfo(ByteBuffer byteBuffer, CS16Format fmt, int w, int h, int[] o) {
 		this.byteBuffer = byteBuffer;
 		this.format = fmt;
 		width = w;
@@ -48,11 +48,12 @@ public class CS16FrameInfo {
 	 */
 	public S16Image decode() {
 		S16Image s16 = new S16Image(width, height);
-		int pos = dataOfs;
 		if (format.compressed) {
 			int pixIdx = 0;
 			for (int row = 0; row < height; row++) {
-				while (true) {
+				int pos = dataOfs[row];
+				int expectedEnd = pixIdx + width;
+				while (pixIdx < expectedEnd) {
 					short elm = byteBuffer.getShort(pos);
 					pos += 2;
 					if (elm == 0)
@@ -60,6 +61,8 @@ public class CS16FrameInfo {
 					int runLen = (elm >> 1) & 0x7FFF;
 					if ((elm & 1) != 0) {
 						for (int idx = 0; idx < runLen; idx++) {
+							if (pixIdx == expectedEnd)
+								break;
 							s16.pixels[pixIdx++] = format.colourFormat.to565(byteBuffer.getShort(pos));
 							pos += 2;
 						}
@@ -69,6 +72,7 @@ public class CS16FrameInfo {
 				}
 			}
 		} else {
+			int pos = dataOfs[0];
 			for (int i = 0; i < s16.pixels.length; i++) {
 				s16.pixels[i] = format.colourFormat.to565(byteBuffer.getShort(pos));
 				pos += 2;

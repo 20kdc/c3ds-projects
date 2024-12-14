@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import javax.swing.JFrame;
 
+import cdsp.common.app.CDSPCommonUI;
 import cdsp.common.s16.CS16IO;
 import cdsp.common.s16.S16Image;
 
@@ -31,6 +32,7 @@ public class CS16Viewer {
     }
 
     public static void main(String[] args) throws IOException {
+        CDSPCommonUI.fixAWT();
         FileDialog fd = new FileDialog((JFrame) null);
         fd.setVisible(true);
         S16Image[] fr = CS16IO.decodeCS16(fd.getFiles()[0]);
