@@ -30,6 +30,7 @@ import cdsp.common.app.JButtonWR;
 import cdsp.common.app.JGameInfo;
 import cdsp.common.data.DirLookup;
 import cdsp.common.s16.BLKInfo;
+import cdsp.common.s16.CS16ColourFormat;
 import cdsp.common.s16.CS16Format;
 import cdsp.common.s16.CS16IO;
 import cdsp.common.s16.S16Image;
@@ -44,7 +45,6 @@ public class Main extends JFrame {
 		// Continue
 		setTitle("cdsp-tools");
 		setLayout(new GridLayout(0, 1));
-		setAlwaysOnTop(true);
 		add(new JButtonWR("Configuration", () -> {
 			JDialog configPage = new JDialog(Main.this, "Configuration");
 			configPage.add(new JGameInfo(gameInfo));
@@ -78,89 +78,10 @@ public class Main extends JFrame {
 			}
 		}));
 		add(new JButtonWR("Convert To RGB565", () -> {
-			LinkedList<File> locations = new LinkedList<>();
-			locations.addAll(gameInfo.locations.get(DirLookup.Location.IMAGES));
-			locations.addAll(gameInfo.locations.get(DirLookup.Location.BACKGROUNDS));
-			StringWriter sw = new StringWriter();
-			sw.append("This will overwrite C16, S16 and BLK files in these game directories:\n");
-			for (File f : locations)
-				sw.append(f + "\n");
-			if (CDSPCommonUI.confirmDangerousOperation(Main.this, sw.toString(), "Warning!")) {
-				LinkedList<File> specificImages = new LinkedList<>();
-				LinkedList<File> specificBackgrounds = new LinkedList<>();
-				for (File f : locations) {
-					File[] parts = f.listFiles();
-					if (parts != null) {
-						for (File target : parts) {
-							if (!target.isFile())
-								continue;
-							String name = target.getName().toLowerCase();
-							if (name.endsWith(".c16") || name.endsWith(".s16"))
-								specificImages.add(target);
-							if (name.endsWith(".blk"))
-								specificBackgrounds.add(target);
-						}
-					}
-				}
-				JFrame conversionProgress = new JFrame("Converting...");
-				JProgressBar progress = new JProgressBar();
-				progress.setMaximum(specificImages.size() + specificBackgrounds.size());
-				conversionProgress.add(progress);
-				(new Thread() {
-					@Override
-					public void run() {
-						StringWriter sw = new StringWriter();
-						PrintWriter pw = new PrintWriter(sw);
-						try {
-							int i = 0;
-							for (File target : specificImages) {
-								try {
-									doConvert(target, false);
-								} catch (Exception ex) {
-									pw.append("Error in sprite: ");
-									pw.append(target.toString());
-									pw.append("\n");
-									ex.printStackTrace();
-									ex.printStackTrace(pw);
-								}
-								i++;
-								final int i2 = i;
-								EventQueue.invokeLater(() -> {
-									progress.setValue(i2);
-								});
-							}
-							for (File target : specificBackgrounds) {
-								try {
-									doConvert(target, true);
-								} catch (Exception ex) {
-									pw.append("Error in background: ");
-									pw.append(target.toString());
-									pw.append("\n");
-									ex.printStackTrace();
-									ex.printStackTrace(pw);
-								}
-								i++;
-								final int i2 = i;
-								EventQueue.invokeLater(() -> {
-									progress.setValue(i2);
-								});
-							}
-							pw.append(Integer.toString(i));
-							pw.append(" files processed\n");
-						} catch (Exception ex) {
-							pw.append("\nCritical exception\n");
-							ex.printStackTrace();
-							ex.printStackTrace(pw);
-						} finally {
-							EventQueue.invokeLater(() -> {
-								conversionProgress.setVisible(false);
-								JOptionPane.showMessageDialog(Main.this, sw.toString());
-							});
-						}
-					}
-				}).start();
-				conversionProgress.setVisible(true);
-			}
+			converter(false);
+		}));
+		add(new JButtonWR("Rewrite All As RGB565", () -> {
+			converter(true);
 		}));
 		pack();
 		setLocationByPlatform(true);
@@ -168,16 +89,115 @@ public class Main extends JFrame {
 		setVisible(true);
 	}
 
-	private static void doConvert(File img, boolean blk) throws IOException {
+	private void converter(boolean forceOverwrite) {
+		LinkedList<File> locations = new LinkedList<>();
+		locations.addAll(gameInfo.locations.get(DirLookup.Location.IMAGES));
+		locations.addAll(gameInfo.locations.get(DirLookup.Location.BACKGROUNDS));
+		StringWriter sw = new StringWriter();
+		if (forceOverwrite)
+			sw.append("*** warning: forceOverwrite enabled ***\n");
+		sw.append("This will overwrite C16, S16 and BLK files in these game directories:\n");
+		for (File f : locations)
+			sw.append(f + "\n");
+		if (CDSPCommonUI.confirmDangerousOperation(Main.this, sw.toString(), "Warning!")) {
+			LinkedList<File> specificImages = new LinkedList<>();
+			LinkedList<File> specificBackgrounds = new LinkedList<>();
+			for (File f : locations) {
+				File[] parts = f.listFiles();
+				if (parts != null) {
+					for (File target : parts) {
+						if (!target.isFile())
+							continue;
+						String name = target.getName().toLowerCase();
+						if (name.endsWith(".c16") || name.endsWith(".s16"))
+							specificImages.add(target);
+						if (name.endsWith(".blk"))
+							specificBackgrounds.add(target);
+					}
+				}
+			}
+			JFrame conversionProgress = new JFrame("Converting...");
+			JProgressBar progress = new JProgressBar();
+			progress.setMaximum(specificImages.size() + specificBackgrounds.size());
+			conversionProgress.add(progress);
+			conversionProgress.pack();
+			conversionProgress.setLocationByPlatform(true);
+			conversionProgress.setVisible(true);
+			(new Thread() {
+				@Override
+				public void run() {
+					StringWriter sw = new StringWriter();
+					PrintWriter pw = new PrintWriter(sw);
+					try {
+						int i = 0;
+						int c = 0;
+						for (File target : specificImages) {
+							try {
+								if (doConvert(target, false, forceOverwrite))
+									c++;
+							} catch (Exception ex) {
+								pw.append("Error in sprite: ");
+								pw.append(target.toString());
+								pw.append("\n");
+								ex.printStackTrace();
+								ex.printStackTrace(pw);
+							}
+							i++;
+							final int i2 = i;
+							EventQueue.invokeLater(() -> {
+								progress.setValue(i2);
+							});
+						}
+						for (File target : specificBackgrounds) {
+							try {
+								if (doConvert(target, true, forceOverwrite))
+									c++;
+							} catch (Exception ex) {
+								pw.append("Error in background: ");
+								pw.append(target.toString());
+								pw.append("\n");
+								ex.printStackTrace();
+								ex.printStackTrace(pw);
+							}
+							i++;
+							final int i2 = i;
+							EventQueue.invokeLater(() -> {
+								progress.setValue(i2);
+							});
+						}
+						pw.append(Integer.toString(i));
+						pw.append(" files processed\n");
+						pw.append(Integer.toString(c));
+						pw.append(" files changed\n");
+					} catch (Exception ex) {
+						pw.append("\nCritical exception\n");
+						ex.printStackTrace();
+						ex.printStackTrace(pw);
+					} finally {
+						EventQueue.invokeLater(() -> {
+							conversionProgress.setVisible(false);
+							JOptionPane.showMessageDialog(Main.this, sw.toString());
+						});
+					}
+				}
+			}).start();
+		}
+	}
+
+	private static boolean doConvert(File img, boolean blk, boolean forceOverwrite) throws IOException {
 		Path path = img.toPath();
 		byte[] data = Files.readAllBytes(path);
 		if (blk) {
 			BLKInfo res = CS16IO.readBLKInfo(img);
+			if (res.format == CS16Format.S16_RGB565 && !forceOverwrite)
+				return false;
 			ByteArrayOutputStream tmp = new ByteArrayOutputStream();
 			CS16IO.encodeBLK(tmp, res);
 			Files.write(path, tmp.toByteArray());
 		} else {
 			CS16Format originalFormat = CS16IO.determineFormat(data);
+			if ((originalFormat == CS16Format.C16_RGB565 || originalFormat == CS16Format.S16_RGB565) && !forceOverwrite)
+				return false;
 			S16Image[] res = CS16IO.decodeCS16(img);
 			if (originalFormat.compressed) {
 				Files.write(path, CS16IO.encodeC16(res));
@@ -185,6 +205,7 @@ public class Main extends JFrame {
 				Files.write(path, CS16IO.encodeS16(res));
 			}
 		}
+		return true;
 	}
 
 	public static void main(String[] args) throws IOException {
