@@ -106,14 +106,17 @@ public final class S16Image {
 		float[] tmp = new float[4];
 		for (int i = 0; i < pixels.length; i++) {
 			int val = CS16ColourFormat.argbFrom565(pixels[i], alphaAware);
-			Shaders.argbToFloats(tmp, val);
-			tmp[0] += red;
-			tmp[1] += green;
-			tmp[2] += blue;
-			Shaders.clampFloats(tmp);
-			Shaders.rotate(tmp, rotation);
-			Shaders.swap(tmp, swap);
-			intpix[i] = Shaders.floatsToARGB(tmp);
+			if (!(red == 0 && green == 0 && blue == 0 && rotation == 0 && swap == 0)) {
+				Shaders.argbToFloats(tmp, val);
+				tmp[0] += red;
+				tmp[1] += green;
+				tmp[2] += blue;
+				Shaders.clampFloats(tmp);
+				Shaders.rotate(tmp, rotation);
+				Shaders.swap(tmp, swap);
+				val = Shaders.floatsToARGB(tmp);
+			}
+			intpix[i] = val;
 		}
 		bi.getRaster().setDataElements(0, 0, width, height, intpix);
 		return bi;

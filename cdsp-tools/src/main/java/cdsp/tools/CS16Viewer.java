@@ -10,29 +10,26 @@ package cdsp.tools;
 import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.Graphics;
-import java.awt.Panel;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.GridBagLayout;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 
 import cdsp.common.app.CDSPCommonUI;
+import cdsp.common.app.JInfiniteCanvas;
+import cdsp.common.app.JIntScrollWR;
+import cdsp.common.app.JTintEditor;
+import cdsp.common.app.TintedBufferedImageCache;
 import cdsp.common.s16.CS16IO;
 import cdsp.common.s16.S16Image;
 
 public class CS16Viewer {
 	S16Image[] fr;
-	BufferedImage bi;
+	TintedBufferedImageCache tbic = new TintedBufferedImageCache();
 	int frI = 0;
-	int ofsX = 0;
-	int ofsY = 0;
-	int lastX = 0;
-	int lastY = 0;
 
 	public CS16Viewer(S16Image[] fr) {
 		this.fr = fr;
@@ -48,77 +45,61 @@ public class CS16Viewer {
 
 	@SuppressWarnings("serial")
 	public void doTheThing() {
-		refreshBI();
 		JFrame testFrame = new JFrame();
-		testFrame.setSize(400, 400);
-		Panel testCanvas = new Panel() {
+		testFrame.setSize(800, 600);
+		JSplitPane jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		jsp.setResizeWeight(1);
+		testFrame.add(jsp);
+		JPanel left = new JPanel();
+		JTintEditor right = new JTintEditor();
+		right.copyFrom(tbic);
+		jsp.add(left);
+		jsp.add(right);
+		left.setLayout(new GridBagLayout());
+		JIntScrollWR scrollbar = new JIntScrollWR(frI, 0, fr.length);
+		left.add(scrollbar, CDSPCommonUI.gridBagFill(0, 1, 1, 1, 1, 0));
+		JInfiniteCanvas testCanvas = new JInfiniteCanvas() {
 			@Override
-			public void paint(Graphics g) {
-				doPaintTo(this, g);
+			public void paintStaticBackground(int w, int h, Graphics g) {
+				g.setColor(Color.black);
+				g.fillRect(0, 0, w, h);
 			}
+
+			@Override
+			public void paintStage(int w, int h, Graphics g) {
+				BufferedImage bi = tbic.getImage();
+				if (bi != null)
+					g.drawImage(bi, 0, 0, null);
+			}
+
+			@Override
+			public void paintStaticForeground(int w, int h, Graphics g) {
+			}
+		};
+		refreshBI(testCanvas);
+		right.onEditTint = () -> {
+			tbic.copyFrom(right);
+			refreshBI(testCanvas);
+		};
+		scrollbar.onChange = () -> {
+			frI = scrollbar.getValue();
+			refreshBI(testCanvas);
 		};
 		testFrame.setBackground(null);
 		testCanvas.setBackground(null);
-		testFrame.add(testCanvas);
+		left.add(testCanvas, CDSPCommonUI.gridBagFill(0, 0, 1, 1, 1, 1));
 		testFrame.setVisible(true);
-		testCanvas.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-					frI--;
-				} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-					frI++;
-				}
-				refreshBI();
-				doPaintTo(testCanvas, testCanvas.getGraphics());
-			}
-		});
-		testCanvas.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				super.mousePressed(e);
-				lastX = e.getX();
-				lastY = e.getY();
-			}
-		});
-		testCanvas.addMouseMotionListener(new MouseMotionAdapter() {
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				super.mouseDragged(e);
-				int ex = e.getX();
-				int ey = e.getY();
-				ofsX += ex - lastX;
-				ofsY += ey - lastY;
-				lastX = ex;
-				lastY = ey;
-				doPaintTo(testCanvas, testCanvas.getGraphics());
-			}
-		});
 	}
 
-	private void refreshBI() {
+	private void refreshBI(JInfiniteCanvas canvas) {
 		if (frI < 0 || frI >= fr.length) {
-			bi = null;
+			tbic.setSource(null);
 		} else {
-			bi = fr[frI].toBI(true);
+			S16Image frame = fr[frI];
+			tbic.setSource(frame);
+			canvas.stageW = frame.width;
+			canvas.stageH = frame.height;
 		}
-	}
-
-	private void doPaintTo(Panel p, Graphics g) {
-		int w = p.getWidth();
-		int h = p.getHeight();
-		BufferedImage tmp = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		Graphics tmpG = tmp.getGraphics();
-		tmpG.setColor(Color.black);
-		tmpG.fillRect(0, 0, w, h);
-		tmpG.setColor(Color.white);
-		tmpG.drawString(Integer.toString(frI), 8, 16);
-		if (bi != null)
-			tmpG.drawImage(bi, ofsX, ofsY, null);
-		tmpG.setColor(Color.black);
-		tmpG.fillRect(0, 0, 128, 24);
-		tmpG.setColor(Color.white);
-		tmpG.drawString(Integer.toString(frI), 8, 16);
-		g.drawImage(tmp, 0, 0, null);
+		canvas.repaintCleanly();
 	}
 }

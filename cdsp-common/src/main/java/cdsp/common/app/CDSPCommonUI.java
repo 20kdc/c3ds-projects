@@ -7,6 +7,7 @@
 package cdsp.common.app;
 
 import java.awt.Component;
+import java.awt.GridBagConstraints;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -31,5 +32,18 @@ public class CDSPCommonUI {
 	public static void fixAWT() {
 		System.setProperty("sun.awt.noerasebackground", "true");
 		System.setProperty("sun.awt.erasebackgroundonresize", "true");
+	}
+
+	public static GridBagConstraints gridBagFill(int x, int y, int w, int h, float wX, float wY) {
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = x;
+		gbc.gridy = y;
+		gbc.gridwidth = w;
+		gbc.gridheight = h;
+		gbc.weightx = wX;
+		gbc.weighty = wY;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.anchor = GridBagConstraints.CENTER;
+		return gbc;
 	}
 }
