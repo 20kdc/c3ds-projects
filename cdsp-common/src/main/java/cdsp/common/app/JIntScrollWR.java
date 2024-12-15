@@ -30,13 +30,17 @@ public class JIntScrollWR extends JPanel {
 		text.setHorizontalAlignment(JLabel.CENTER);
 		text.setVerticalAlignment(JLabel.CENTER);
 		text.setPreferredSize(new Dimension(64, 24));
-		text.setText(Integer.toString(value) + "/" + Integer.toString(max - 1));
+		updateText();
 		add(text, CDSPCommonUI.gridBagFill(0, 0, 1, 1, 0, 1));
 		add(scrollBar, CDSPCommonUI.gridBagFill(1, 0, 1, 1, 1, 1));
 		scrollBar.addAdjustmentListener(adj -> {
-			text.setText(Integer.toString(scrollBar.getValue()) + "/" + Integer.toString(max - 1));
+			updateText();
 			onChange.run();
 		});
+	}
+
+	private void updateText() {
+		text.setText(Integer.toString(scrollBar.getValue()) + "/" + Integer.toString(scrollBar.getMaximum() - 1));
 	}
 
 	public int getValue() {
@@ -44,6 +48,14 @@ public class JIntScrollWR extends JPanel {
 	}
 	
 	public void setValue(int v) {
+		updateText();
 		scrollBar.setValue(v);
+	}
+
+	public void setRange(int value, int min, int max) {
+		updateText();
+		scrollBar.setMinimum(min);
+		scrollBar.setMaximum(max);
+		scrollBar.setValue(value);
 	}
 }

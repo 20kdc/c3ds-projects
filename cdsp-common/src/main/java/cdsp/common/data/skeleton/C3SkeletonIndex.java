@@ -9,6 +9,8 @@ package cdsp.common.data.skeleton;
 
 import java.util.LinkedList;
 
+import cdsp.common.data.CreaturesFacts;
+
 /**
  * Index in the skeleton fallback system.
  */
@@ -23,10 +25,10 @@ public class C3SkeletonIndex extends SkeletonIndex {
 	public final int ageIndex;
 
 	public C3SkeletonIndex(int b, int g, int s, int a) {
-		super(Character.toString((char) ('0' + (g + (s * 4)))) + Character.toString((char) ('0' + a)) + Character.toString((char) ('a' + b)));
-		if (b < 0 || b > 25)
+		super(Character.toString((char) ('0' + (g + (s * 4)))) + Character.toString((char) ('0' + a)) + CreaturesFacts.C_23_BREED_INDEX[b]);
+		if (b < 0 || b >= CreaturesFacts.C_23_BREED_INDEX.length)
 			throw new RuntimeException("Breed out of range.");
-		if (g < 0 || g > 3)
+		if (g < 0 || g >= CreaturesFacts.GENUS.length)
 			throw new RuntimeException("Genus out of range.");
 		if (s < 0 || s > 1)
 			throw new RuntimeException("Sex out of range.");
@@ -50,7 +52,7 @@ public class C3SkeletonIndex extends SkeletonIndex {
 				}
 			}
 			for (int sXor = bsIndex; sXor < 2; sXor++) {
-				for (int bl = breedIndex + 1; bl < 26; bl++) {
+				for (int bl = breedIndex + 1; bl < CreaturesFacts.C_23_BREED_INDEX.length; bl++) {
 					for (int al = ageIndex; al >= 0; al--) {
 						lls.add(new C3SkeletonIndex(bl, gl, bsIndex ^ sXor, al));
 					}
@@ -58,10 +60,5 @@ public class C3SkeletonIndex extends SkeletonIndex {
 			}
 		}
 		return lls.toArray(new SkeletonIndex[0]);
-	}
-
-	@Override
-	public String toString() {
-		return "SkeletonIndex:" + suffix;
 	}
 }

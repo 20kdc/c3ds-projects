@@ -44,12 +44,12 @@ public final class LoadedSkeleton {
 
 	/**
 	 * Loads the skeleton.
-	 * @throws IOException 
 	 */
-	public LoadedSkeleton(DirLookup src, SkeletonIndex[] searchPath, SkeletonDef def) throws IOException {
+	public LoadedSkeleton(DirLookup src, SkeletonIndex[] genes, SkeletonDef def) throws IOException {
 		this(def);
 		for (int i = 0; i < def.length; i++) {
 			SkeletonDef.Part part = loadedParts[i];
+			SkeletonIndex[] searchPath = genes[part.sourceGene].getSearchPath();
 			try {
 				File image = SkeletonIndex.findFileIn(Location.IMAGES, src, searchPath, part.id, ".c16");
 				if (image == null) {
@@ -89,11 +89,11 @@ public final class LoadedSkeleton {
 	}
 
 	public int getPartJointX(Point[] partLocations, int[] partFrames, int part, int joint) {
-		return partLocations[part].x + loadedPartATTs[part].getX(partFrames[part] % def.dirCount, joint);
+		return partLocations[part].x + loadedPartATTs[part].getX(partFrames[part] % def.poseDirCount, joint);
 	}
 
 	public int getPartJointY(Point[] partLocations, int[] partFrames, int part, int joint) {
-		return partLocations[part].y + loadedPartATTs[part].getY(partFrames[part] % def.dirCount, joint);
+		return partLocations[part].y + loadedPartATTs[part].getY(partFrames[part] % def.poseDirCount, joint);
 	}
 
 	/**
@@ -106,8 +106,8 @@ public final class LoadedSkeleton {
 				continue;
 			int baseX = getPartJointX(partLocations, partFrames, part.parentIndex, part.parentJoint);
 			int baseY = getPartJointY(partLocations, partFrames, part.parentIndex, part.parentJoint);
-			baseX -= loadedPartATTs[i].getX(partFrames[i] % def.dirCount, part.localParentJoint);
-			baseY -= loadedPartATTs[i].getY(partFrames[i] % def.dirCount, part.localParentJoint);
+			baseX -= loadedPartATTs[i].getX(partFrames[i] % def.poseDirCount, part.localParentJoint);
+			baseY -= loadedPartATTs[i].getY(partFrames[i] % def.poseDirCount, part.localParentJoint);
 			partLocations[i].x = baseX;
 			partLocations[i].y = baseY;
 		}

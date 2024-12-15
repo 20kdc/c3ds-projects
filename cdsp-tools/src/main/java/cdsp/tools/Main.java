@@ -29,9 +29,8 @@ import cdsp.common.app.GameInfo;
 import cdsp.common.app.JButtonWR;
 import cdsp.common.app.JGameInfo;
 import cdsp.common.data.DirLookup;
-import cdsp.common.data.skeleton.C3SkeletonIndex;
-import cdsp.common.data.skeleton.LoadedSkeleton;
-import cdsp.common.data.skeleton.SkeletonDef;
+import cdsp.common.data.genetics.GenUtils;
+import cdsp.common.data.genetics.GenVersion;
 import cdsp.common.s16.BLKInfo;
 import cdsp.common.s16.CS16Format;
 import cdsp.common.s16.CS16IO;
@@ -54,40 +53,33 @@ public class Main extends JFrame {
 			configPage.setVisible(true);
 		}));
 		add(new JButtonWR("View C16/S16", () -> {
-			FileDialog fd = new FileDialog((JFrame) null);
-			fd.setMultipleMode(false);
-			fd.setVisible(true);
-			File[] files = fd.getFiles();
-			if (files.length == 1) {
-				File f = files[0];
-				if (f.getName().toLowerCase().endsWith(".blk")) {
-					try {
-						// .wine/drive_c/Program Files (x86)/Docking Station/Backgrounds/C2toDS.blk
-						BLKInfo fr = CS16IO.readBLKInfo(f);
-						System.out.println("BLK " + fr.width + " " + fr.height + " " + fr.dataOfs);
-						new CS16Viewer(new S16Image[] {fr.decode()}, f.getName()).doTheThing();
-					} catch (Exception ex) {
-						CDSPCommonUI.showExceptionDialog(Main.this, "Could not load BLK.", "Error", ex);
+			CDSPCommonUI.fileDialog(Main.this, "C16/S16/BLK...", FileDialog.LOAD, (f) -> {
+				new CS16Viewer(f, Main.this).setVisible(true);
+			});
+		}));
+		add(new JButtonWR("Summarize Genome", () -> {
+			CDSPCommonUI.fileDialog(Main.this, "GEN...", FileDialog.LOAD, (f) -> {
+				try {
+					StringBuilder result = new StringBuilder();
+					GenVersion gv = GenUtils.identify(f);
+					result.append(gv.toString());
+					result.append("\n");
+					byte[] genomeData = GenUtils.readGenome(f);
+					int offset = 0;
+					while (offset < genomeData.length) {
+						offset = GenUtils.nextChunk(genomeData, offset);
+						result.append(gv.summarizeGene(genomeData, offset));
+						result.append("\n");
+						offset += 4;
 					}
-				} else {
-					try {
-						S16Image[] fr = CS16IO.decodeCS16(f);
-						new CS16Viewer(fr, f.getName()).doTheThing();
-					} catch (Exception ex) {
-						CDSPCommonUI.showExceptionDialog(Main.this, "Could not load C16/S16.", "Error", ex);
-					}
+					CDSPCommonUI.showReport("Genome " + f + " Report", result.toString());
+				} catch (Exception ex) {
+					CDSPCommonUI.showExceptionDialog(Main.this, "Could not load genome.", "Error", ex);
 				}
-			}
+			});
 		}));
 		add(new JButtonWR("Nornposer", () -> {
-			LoadedSkeleton ls;
-			try {
-				ls = new LoadedSkeleton(gameInfo, new C3SkeletonIndex(0, 0, 0, 4).getSearchPath(), SkeletonDef.C3);
-			} catch (Exception ex) {
-				CDSPCommonUI.showExceptionDialog(Main.this, "Could not load skeleton.", "Error", ex);
-				return;
-			}
-			new NornPoser(ls).setVisible(true);
+			new NornPoser(gameInfo).setVisible(true);
 		}));
 		add(new JButtonWR("Convert To RGB565", () -> {
 			converter(false, CS16Format.S16_RGB565, CS16Format.C16_RGB565);

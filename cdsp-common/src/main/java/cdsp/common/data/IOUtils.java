@@ -109,4 +109,22 @@ public class IOUtils {
 		bb.position(pos + len);
 		return str;
 	}
+
+	/**
+	 * Converts data to hex.
+	 */
+	public static String toHex(byte[] data, int offset, int length) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = offset; i < offset + length; i++) {
+			if (i < 0 || i >= data.length)
+				break;
+			if (i != offset)
+				sb.append(' ');
+			String hex = Integer.toHexString(data[i] & 0xFF);
+			if (hex.length() == 1)
+				hex = "0" + hex;
+			sb.append(hex);
+		}
+		return sb.toString();
+	}
 }

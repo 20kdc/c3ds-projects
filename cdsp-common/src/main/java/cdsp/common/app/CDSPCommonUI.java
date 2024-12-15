@@ -7,9 +7,16 @@
 package cdsp.common.app;
 
 import java.awt.Component;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
+import java.awt.TextArea;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.function.Consumer;
 
 import javax.swing.JOptionPane;
 
@@ -19,6 +26,7 @@ import javax.swing.JOptionPane;
 public class CDSPCommonUI {
 	public static void showExceptionDialog(Component parent, String introText, String title, Exception exception) {
 		StringWriter sw = new StringWriter();
+		exception.printStackTrace();
 		exception.printStackTrace(new PrintWriter(sw));
 		JOptionPane.showMessageDialog(parent, introText + "\n" + sw.toString(), title, JOptionPane.ERROR_MESSAGE);
 	}
@@ -27,6 +35,33 @@ public class CDSPCommonUI {
 		int res = JOptionPane.showOptionDialog(parent, text, title, JOptionPane.YES_NO_OPTION,
 				JOptionPane.WARNING_MESSAGE, null, null, null);
 		return res == JOptionPane.YES_OPTION;
+	}
+
+	public static void fileDialog(Frame parent, String title, int mode, Consumer<File> result) {
+		FileDialog fd = new FileDialog(parent);
+		fd.setMultipleMode(false);
+		fd.setMode(mode);
+		fd.setVisible(true);
+		File[] files = fd.getFiles();
+		if (files.length == 1) {
+			File f = files[0];
+			result.accept(f);
+		}
+	}
+
+	public static void showReport(String title, String text) {
+        Frame f = new Frame(title);
+        f.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+            	f.dispose();
+            }
+        });
+        TextArea ta = new TextArea();
+        ta.setText(text);
+        f.add(ta);
+        f.setSize(800, 600);
+        f.setVisible(true);
 	}
 
 	public static void fixAWT() {

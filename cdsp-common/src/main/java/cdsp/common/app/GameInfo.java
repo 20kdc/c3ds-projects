@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -142,26 +143,41 @@ public class GameInfo implements DirLookup {
 	 * Returns the location of a file.
 	 */
 	@Override
-	public File findFile(Location location, String name, boolean caseInsensitive) {
-		FilenameFilter caseInsensitiveChecker = caseInsensitive ? new FilenameFilter() {
+	public File findFile(Location location, String name) {
+		FilenameFilter caseInsensitiveChecker = new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String chkName) {
 				return chkName.equalsIgnoreCase(name);
 			}
-		} : null;
+		};
 		for (File f : locations.get(location)) {
 			File potential = new File(f, name);
 			if (potential.exists())
 				return potential;
-			if (caseInsensitiveChecker != null) {
-				File[] targets = f.listFiles(caseInsensitiveChecker);
-				if (targets != null)
-					if (targets.length != 0)
-						if (targets[0] != null)
-							return targets[0];
-			}
+			File[] targets = f.listFiles(caseInsensitiveChecker);
+			if (targets != null)
+				if (targets.length != 0)
+					if (targets[0] != null)
+						return targets[0];
 		}
 		return newFile(location, name);
+	}
+
+	@Override
+	public File[] listFiles(Location location) {
+		HashSet<String> includedCanonized = new HashSet<>();
+		LinkedList<File> list = new LinkedList<>();
+		for (File f : locations.get(location)) {
+			File[] targets = f.listFiles();
+			if (targets == null)
+				continue;
+			for (File s : targets) {
+				String sCanonized = s.getName().toLowerCase();
+				if (includedCanonized.add(sCanonized))
+					list.add(s);
+			}
+		}
+		return list.toArray(new File[0]);
 	}
 
 	/**

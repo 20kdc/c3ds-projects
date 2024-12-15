@@ -7,53 +7,74 @@
 
 package cdsp.common.app;
 
+import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.Panel;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 
 /**
  * Infinite canvas.
  */
 @SuppressWarnings("serial")
-public abstract class JInfiniteCanvas extends Panel {
+public abstract class JInfiniteCanvas extends Component {
 	public int stageW = 0;
 	public int stageH = 0;
-	public int offsetX = 0;
-	public int offsetY = 0;
+	// floats because of higher scales
+	public float offsetX = 0;
+	public float offsetY = 0;
 	private int lastX = 0;
 	private int lastY = 0;
 	private boolean mb1Down = false;
+	private int scale = 1;
 
 	public JInfiniteCanvas() {
-		enableEvents(ComponentEvent.MOUSE_EVENT_MASK | ComponentEvent.MOUSE_MOTION_EVENT_MASK);
+		enableEvents(ComponentEvent.MOUSE_EVENT_MASK | ComponentEvent.MOUSE_MOTION_EVENT_MASK | ComponentEvent.MOUSE_WHEEL_EVENT_MASK);
 	}
 
 	@Override
 	public final void paint(Graphics arg0) {
-		int w = getWidth();
-		int h = getHeight();
+		int w = (getWidth() + (scale - 1)) / scale;
+		int h = (getHeight() + (scale - 1)) / scale;
 		if (w < 1)
 			w = 1;
 		if (h < 1)
 			h = 1;
-		BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		Graphics big = bi.getGraphics();
-		int ofx = offsetX + ((w - stageW) / 2);
-		int ofy = offsetY + ((h - stageH) / 2);
-		paintStaticBackground(w, h, big);
-		big.translate(ofx, ofy);
-		paintStage(w, h, big);
-		big.translate(-ofx, -ofy);
-		paintStaticForeground(w, h, big);
-		arg0.drawImage(bi, 0, 0, null);
+		BufferedImage bi = createContentsImage(w, h, true, true, true);
+		arg0.drawImage(bi, 0, 0, bi.getWidth() * scale, bi.getHeight() * scale, null);
 	}
 
 	public void repaintCleanly() {
 		Graphics g = getGraphics();
 		if (g != null)
 			paint(g);
+	}
+
+	public final BufferedImage createPhoto() {
+		int w = (getWidth() + (scale - 1)) / scale;
+		int h = (getHeight() + (scale - 1)) / scale;
+		if (w < 1)
+			w = 1;
+		if (h < 1)
+			h = 1;
+		return createContentsImage(w, h, false, true, false);
+	}
+
+	public final BufferedImage createContentsImage(int w, int h, boolean background, boolean stage, boolean foreground) {
+		BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		Graphics big = bi.getGraphics();
+		int ofx = ((int) offsetX) + ((w - stageW) / 2);
+		int ofy = ((int) offsetY) + ((h - stageH) / 2);
+		if (background)
+			paintStaticBackground(w, h, big);
+		big.translate(ofx, ofy);
+		if (stage)
+			paintStage(w, h, big);
+		big.translate(-ofx, -ofy);
+		if (foreground)
+			paintStaticForeground(w, h, big);
+		return bi;
 	}
 
 	public abstract void paintStaticBackground(int w, int h, Graphics g);
@@ -69,8 +90,8 @@ public abstract class JInfiniteCanvas extends Panel {
 		int x = e.getX();
 		int y = e.getY();
 		if (mb1Down) {
-			offsetX += x - lastX;
-			offsetY += y - lastY;
+			offsetX += (x - lastX) / (float) scale;
+			offsetY += (y - lastY) / (float) scale;
 			repaintCleanly();
 		}
 		lastX = x;
@@ -93,6 +114,22 @@ public abstract class JInfiniteCanvas extends Panel {
 		} else if (e.getID() == MouseEvent.MOUSE_RELEASED) {
 			if (e.getButton() == MouseEvent.BUTTON1)
 				mb1Down = false;
+		}
+	}
+
+	@Override
+	protected void processMouseWheelEvent(MouseWheelEvent e) {
+		if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+			int amount = e.getWheelRotation();
+			if (amount < 0)
+				scale++;
+			else if (amount > 0)
+				scale--;
+			if (scale < 1)
+				scale = 1;
+			if (scale > 8)
+				scale = 8;
+			repaintCleanly();
 		}
 	}
 }

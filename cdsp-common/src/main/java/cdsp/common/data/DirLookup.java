@@ -13,7 +13,16 @@ import java.io.File;
  * Directory lookup device.
  */
 public interface DirLookup {
-	public File findFile(Location location, String name, boolean caseInsensitive);
+	/**
+	 * Finds files/directories.
+	 */
+	public File findFile(Location location, String name);
+
+	/**
+	 * Lists files/directories.
+	 * Importantly, the listing is case-insensitive.
+	 */
+	public File[] listFiles(Location location);
 
 	public static enum Location {
 		// nameInternal is saved into files.

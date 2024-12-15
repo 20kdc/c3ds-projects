@@ -13,6 +13,8 @@ import java.util.function.Consumer;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import cdsp.common.s16.Tint;
+
 /**
  * Edits tint.
  */

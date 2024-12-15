@@ -34,10 +34,15 @@ public abstract class SkeletonIndex {
 		for (SkeletonIndex si : path) {
 			String name = prefix + si.suffix + suffix;
 			//System.out.println(name);
-			File res = lookup.findFile(location, name, true);
+			File res = lookup.findFile(location, name);
 			if (res.exists())
 				return res;
 		}
 		return null;
+	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + ":" + suffix;
 	}
 }

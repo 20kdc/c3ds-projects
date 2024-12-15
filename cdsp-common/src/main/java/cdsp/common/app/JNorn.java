@@ -14,6 +14,8 @@ import java.awt.image.BufferedImage;
 
 import cdsp.common.data.skeleton.LoadedSkeleton;
 import cdsp.common.s16.S16Image;
+import cdsp.common.s16.Tint;
+import cdsp.common.s16.TintedBufferedImageCache;
 
 /**
  * The Norn viewer itself.
@@ -24,6 +26,7 @@ public class JNorn extends JInfiniteCanvas {
 	//private LoadedSkeleton loadedSkeleton = LoadedSkeleton.EMPTY;
 	private TintedBufferedImageCache[] imageCache = new TintedBufferedImageCache[] { new TintedBufferedImageCache() };
 	private Point[] partLocations = new Point[] { new Point(0, 0) };
+	private int[] zOrder = new int[] { 0 };
 
 	public JNorn() {
 		
@@ -36,6 +39,7 @@ public class JNorn extends JInfiniteCanvas {
 		if (imageCache.length != partFrames.length) {
 			imageCache = new TintedBufferedImageCache[partFrames.length];
 			partLocations = new Point[partFrames.length];
+			zOrder = new int[partFrames.length];
 			for (int i = 0; i < partFrames.length; i++) {
 				imageCache[i] = new TintedBufferedImageCache();
 				imageCache[i].setTint(tint);
@@ -45,18 +49,21 @@ public class JNorn extends JInfiniteCanvas {
 		for (int i = 0; i < partFrames.length; i++)
 			imageCache[i].setSource(skeleton.getPartImage(i, partFrames[i]));
 		skeleton.updateSkeleton(partLocations, partFrames);
+		skeleton.def.updateZOrder(partFrames, zOrder);
 		// centre on the root part
 		S16Image img = imageCache[0].getSource();
 		if (img != null) {
 			stageW = img.width;
 			stageH = img.height;
 		}
+		repaintCleanly();
 	}
 
 	public void setTint(Tint tint) {
 		this.tint = tint;
 		for (int i = 0; i < imageCache.length; i++)
 			imageCache[i].setTint(tint);
+		repaintCleanly();
 	}
 
 	@Override
@@ -67,10 +74,11 @@ public class JNorn extends JInfiniteCanvas {
 
 	@Override
 	public void paintStage(int w, int h, Graphics g) {
-		for (int i = 0; i < partLocations.length; i++) {
-			BufferedImage bi = imageCache[i].getImage();
+		for (int i = 0; i < zOrder.length; i++) {
+			int pi = zOrder[i];
+			BufferedImage bi = imageCache[pi].getImage();
 			if (bi != null)
-				g.drawImage(bi, partLocations[i].x, partLocations[i].y, null);
+				g.drawImage(bi, partLocations[pi].x, partLocations[pi].y, null);
 		}
 	}
 }
