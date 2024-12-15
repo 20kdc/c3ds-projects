@@ -7,6 +7,7 @@
 
 package natsue.server.firewall;
 
+import cdsp.common.data.pray.ExportedCreatures;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.server.cryo.CryoFunctions;
@@ -33,7 +34,7 @@ public class CreatureCheckingFWModule implements IFWModule {
 			PackedMessagePRAY pray = (PackedMessagePRAY) message;
 			if (CryoFunctions.expectedToContainACreature(pray.messageBlocks)) {
 				// check that it's well-formed
-				String err = CryoFunctions.checkWellFormedCreature(pray.messageBlocks);
+				String err = ExportedCreatures.checkWellFormedCreature(pray.messageBlocks);
 				if (err != null) {
 					hub.rejectMessage(destUser.getUIN(), message, err);
 					return true;

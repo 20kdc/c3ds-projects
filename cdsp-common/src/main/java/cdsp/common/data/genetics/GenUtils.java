@@ -41,7 +41,7 @@ public class GenUtils {
 	/**
 	 * Strips the header from a genome file.
 	 */
-	public static byte[] readGenome(File file) throws IOException {
+	public static GenPackage readGenome(File file) throws IOException {
 		return readGenome(Files.readAllBytes(file.toPath()));
 	}
 
@@ -49,16 +49,16 @@ public class GenUtils {
 	 * Strips the header from a genome file.
 	 * May return the passed-in array.
 	 */
-	public static byte[] readGenome(byte[] data) {
+	public static GenPackage readGenome(byte[] data) {
 		GenVersion gv = identify(data);
 		if (gv == GenVersion.C1) {
-			return data;
+			return new GenPackage(gv, data);
 		} else if (gv == null) {
 			throw new RuntimeException("Unknown genome version.");
 		} else {
 			byte[] outb = new byte[data.length - 4];
 			System.arraycopy(data, 4, outb, 0, outb.length);
-			return outb;
+			return new GenPackage(gv, outb);
 		}
 	}
 

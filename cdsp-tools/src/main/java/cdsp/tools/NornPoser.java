@@ -22,6 +22,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 
 import cdsp.common.app.CDSPCommonUI;
+import cdsp.common.app.DoWhatIMeanLoader;
 import cdsp.common.app.JButtonWR;
 import cdsp.common.app.JC3PartSlotEditor;
 import cdsp.common.app.JFilePicker;
@@ -31,8 +32,7 @@ import cdsp.common.app.RunnableItemListener;
 import cdsp.common.data.CachedDirLookup;
 import cdsp.common.data.CreaturesFacts;
 import cdsp.common.data.DirLookup;
-import cdsp.common.data.genetics.GenUtils;
-import cdsp.common.data.genetics.GenVersion;
+import cdsp.common.data.genetics.GenPackage;
 import cdsp.common.data.skeleton.C3PartSlots;
 import cdsp.common.data.skeleton.C3SkeletalAgingSimulation;
 import cdsp.common.data.skeleton.LoadedSkeleton;
@@ -114,14 +114,15 @@ public class NornPoser extends JFrame {
 		File f = geneticsPicker.getFile();
 		if (f != null) {
 			try {
-				GenVersion version = GenUtils.identify(f);
-				byte[] genomeData = GenUtils.readGenome(f);
-				C3SkeletalAgingSimulation simulator = new C3SkeletalAgingSimulation(version, genomeData);
-				for (int i = 0; i <= age.getSelectedIndex(); i++)
-					simulator.executeAge(i, sxs.getSelectedIndex());
-				tint.setTint(simulator.myTint);
-				jNorn.setTint(simulator.myTint);
-				jpse.setSlots(simulator.myPartSlots);
+				GenPackage genomeData = DoWhatIMeanLoader.loadGenetics(f, this);
+				if (genomeData != null) {
+					C3SkeletalAgingSimulation simulator = new C3SkeletalAgingSimulation(genomeData);
+					for (int i = 0; i <= age.getSelectedIndex(); i++)
+						simulator.executeAge(i, sxs.getSelectedIndex());
+					tint.setTint(simulator.myTint);
+					jNorn.setTint(simulator.myTint);
+					jpse.setSlots(simulator.myPartSlots);
+				}
 			} catch (Exception ex) {
 				CDSPCommonUI.showExceptionDialog(this, "Could not simulate genetics.", "Error", ex);
 				geneticsPicker.setFile(null);

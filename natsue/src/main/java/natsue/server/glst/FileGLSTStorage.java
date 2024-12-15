@@ -13,8 +13,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import cdsp.common.data.Monikers;
 import cdsp.common.data.creaturesarchive.CArcContainer;
-import natsue.names.CreatureDataVerifier;
 
 /**
  * GLST storage
@@ -31,7 +31,7 @@ public class FileGLSTStorage implements IGLSTStorage {
 
 	@Override
 	public void storeGLST(String moniker, byte[] data) {
-		if (!CreatureDataVerifier.verifyMoniker(moniker))
+		if (!Monikers.verifyMoniker(moniker))
 			return;
 		try {
 			if (!compressed) {

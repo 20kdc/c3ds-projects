@@ -47,8 +47,6 @@ public class TintedBufferedImageCache {
 		float red = (lastTint.r - 128) / 255.0f;
 		float green = (lastTint.g - 128) / 255.0f;
 		float blue = (lastTint.b - 128) / 255.0f;
-		float rotation = (lastTint.rot - 128) / 128.0f;
-		float swap = Math.abs(lastTint.swap - 128) / 128.0f;
-		return lastBI = lastImage.toBITinted(true, red, green, blue, rotation, swap);
+		return lastBI = lastImage.toBITinted(true, red, green, blue, lastTint.rot, lastTint.swap);
 	}
 }

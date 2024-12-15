@@ -9,6 +9,7 @@ package cdsp.common.data.skeleton;
 
 import cdsp.common.data.CreaturesFacts;
 import cdsp.common.data.genetics.GenDataLayout;
+import cdsp.common.data.genetics.GenPackage;
 import cdsp.common.data.genetics.GenUtils;
 import cdsp.common.data.genetics.GenVersion;
 import cdsp.common.s16.Tint;
@@ -23,9 +24,9 @@ public class C3SkeletalAgingSimulation {
 	public C3PartSlots myPartSlots = new C3PartSlots(0, 0);
 	public Tint myTint = new Tint();
 
-	public C3SkeletalAgingSimulation(GenVersion version, byte[] genome) {
-		this.version = version;
-		this.genome = genome;
+	public C3SkeletalAgingSimulation(GenPackage genome) {
+		this.version = genome.version;
+		this.genome = genome.data;
 	}
 
 	public void executeAge(int age, int sxs) {

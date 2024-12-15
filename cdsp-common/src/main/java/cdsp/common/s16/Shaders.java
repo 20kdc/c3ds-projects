@@ -33,26 +33,61 @@ public class Shaders {
 	}
 
 	/**
-	 * Rotates a vec3.
-	 * Rotation is in range -1 to 1.
+	 * Emulates quirky absolute lerp: A coefficient
 	 */
-	public static void rotate(float[] colour, float v) {
-		float newR = v < 0 ? colour[2] : colour[1];
-		float newG = v < 0 ? colour[0] : colour[2];
-		float newB = v < 0 ? colour[1] : colour[0];
-		colour[0] = lerp(colour[0], newR, Math.abs(v));
-		colour[1] = lerp(colour[1], newG, Math.abs(v));
-		colour[2] = lerp(colour[2], newB, Math.abs(v));
+	public static float emulateQuirkyAbsLerpACoeff(int val) {
+		// this one quirk makes everything so much more scuffed
+		if (val == 0)
+			return 65535 / 128.0f;
+		return 1 - emulateQuirkyAbsLerpBCoeff(val);
+	}
+
+	/**
+	 * Emulates quirky absolute lerp: B coefficient
+	 */
+	public static float emulateQuirkyAbsLerpBCoeff(int val) {
+		return Math.abs((val - 128) / 128.0f);
+	}
+
+	/**
+	 * Rotates a vec3 colour.
+	 * Value is passed as an integer to emulate Quirks.
+	 */
+	public static void rotate(float[] colour, int val) {
+		float aCoeff = emulateQuirkyAbsLerpACoeff(val);
+		float bCoeff = emulateQuirkyAbsLerpBCoeff(val);
+		boolean rotateLeft = val < 128;
+		float newR = rotateLeft ? colour[2] : colour[1];
+		float newG = rotateLeft ? colour[0] : colour[2];
+		float newB = rotateLeft ? colour[1] : colour[0];
+		colour[0] = (colour[0] * aCoeff) + (newR * bCoeff);
+		colour[1] = (colour[1] * aCoeff) + (newG * bCoeff);
+		colour[2] = (colour[2] * aCoeff) + (newB * bCoeff);
+	}
+
+	/**
+	 * Surprise mechanics
+	 */
+	public static void doQuirkyOverflow(float[] colour) {
+		float constant = 65536;
+		if (colour[0] > constant)
+			colour[0] = -constant;
+		if (colour[1] > constant)
+			colour[1] = -constant;
+		if (colour[2] > constant)
+			colour[2] = -constant;
 	}
 
 	/**
 	 * Swaps a vec3.
-	 * Swap is in range 0 to 1.
+	 * Value is passed as an integer to emulate Quirks.
 	 */
-	public static void swap(float[] colour, float v) {
+	public static void swap(float[] colour, int val) {
+		float aCoeff = emulateQuirkyAbsLerpACoeff(val);
+		float bCoeff = emulateQuirkyAbsLerpBCoeff(val);
 		float tmp = colour[0];
-		colour[0] = lerp(tmp, colour[2], v);
-		colour[2] = lerp(tmp, colour[2], 1 - v);
+		colour[0] = (tmp * aCoeff) + (colour[2] * bCoeff);
+		colour[2] = (colour[2] * aCoeff) + (tmp * bCoeff);
 	}
 
 	/**

@@ -12,12 +12,13 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import cdsp.common.data.IOUtils;
+import cdsp.common.data.Monikers;
+import cdsp.common.data.pray.ExportedCreatures;
 import cdsp.common.data.pray.PRAYBlock;
 import natsue.config.Config;
 import natsue.data.babel.PacketReader;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
-import natsue.names.CreatureDataVerifier;
 import natsue.server.userdata.INatsueUserData;
 
 /**
@@ -51,19 +52,19 @@ public class CryoFrontend implements ILogSource {
 				return "Only admins can submit to cryo";
 		try {
 			// I know FW already does this, but just to be SURE (maybe in less filtered contexts)...
-			String obvious = CryoFunctions.checkWellFormedCreature(pm);
+			String obvious = ExportedCreatures.checkWellFormedCreature(pm);
 			if (obvious != null)
 				return obvious;
 			// Make a copy of the creature
 			LinkedList<PRAYBlock> converted = PRAYBlock.copyList(pm);
-			if (!CryoFunctions.creatureConvertInPlace(converted, "DSEX"))
+			if (!ExportedCreatures.creatureConvertInPlace(converted, "DSEX"))
 				return "Failure to convert to DSEX";
-			PRAYBlock convertedRoot = CryoFunctions.findCreatureRootBlock(converted);
+			PRAYBlock convertedRoot = ExportedCreatures.findCreatureRootBlock(converted);
 			// Grab the moniker
-			String moniker = CryoFunctions.monikerFromRootBlock(convertedRoot);
+			String moniker = ExportedCreatures.monikerFromRootBlock(convertedRoot);
 			// Verify it just to be absolutely sure, because we will be WRITING FILES using this
 			// In theory this is a total waste of time as checkWellFormedCreature should have done this
-			if (!CreatureDataVerifier.verifyMoniker(moniker))
+			if (!Monikers.verifyMoniker(moniker))
 				return "invalid moniker";
 			CryoFunctions.cryoUpdateRootStorage(convertedRoot, who.getUIN());
 			return performActualSubmit(who.getUINString() + "." + moniker, PRAYBlock.write(converted, config.messages.compressPRAYChunks.getValue()));
@@ -110,7 +111,7 @@ public class CryoFrontend implements ILogSource {
 			byte[] data = storage.readFromCryo(optV);
 			LinkedList<PRAYBlock> pb = PRAYBlock.read(IOUtils.wrapLE(data), config.messages.maxDecompressedPRAYSize.getValue(), PacketReader.CHARSET);
 			// do this check early b/c otherwise it turns into an exception in rcc
-			PRAYBlock root = CryoFunctions.findCreatureRootBlock(pb);
+			PRAYBlock root = ExportedCreatures.findCreatureRootBlock(pb);
 			if (root == null) {
 				log("can't get: " + optV + ", no root");
 				return null;
@@ -120,7 +121,7 @@ public class CryoFrontend implements ILogSource {
 				return null;
 			// compatible, do the following:
 			// 1. convert to warp
-			if (!CryoFunctions.creatureConvertInPlace(pb, "warp")) {
+			if (!ExportedCreatures.creatureConvertInPlace(pb, "warp")) {
 				log("can't get: " + optV + ", convert failure");
 				return null;
 			}

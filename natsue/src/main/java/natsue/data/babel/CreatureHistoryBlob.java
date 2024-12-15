@@ -9,7 +9,7 @@ package natsue.data.babel;
 
 import java.nio.ByteBuffer;
 
-import natsue.names.CreatureDataVerifier;
+import cdsp.common.data.Monikers;
 
 /**
  * Data on a creature's history!
@@ -113,7 +113,7 @@ public class CreatureHistoryBlob {
 	 * Returns non-null on error
 	 */
 	public String verifySanity() {
-		if (!CreatureDataVerifier.verifyMoniker(moniker))
+		if (!Monikers.verifyMoniker(moniker))
 			return "Moniker"; 
 		for (LifeEvent le : events)
 			if (le.index < 0)

@@ -12,13 +12,13 @@ import java.io.ByteArrayOutputStream;
 
 import javax.imageio.ImageIO;
 
+import cdsp.common.data.pray.ExportedCreatures;
 import cdsp.common.data.pray.PRAYBlock;
 import cdsp.common.s16.S16Image;
 import natsue.data.babel.pm.PackedMessage;
 import natsue.data.babel.pm.PackedMessagePRAY;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
-import natsue.server.cryo.CryoFunctions;
 import natsue.server.glst.IGLSTStorage;
 import natsue.server.hub.ServerHub;
 import natsue.server.photo.IPhotoStorage;
@@ -56,16 +56,16 @@ public class DataExtractorFWModule implements IFWModule, ILogSource {
 		if (message instanceof PackedMessagePRAY) {
 			PackedMessagePRAY pray = (PackedMessagePRAY) message;
 			// Also verifies moniker as basic part of operation.
-			PRAYBlock rootBlock = CryoFunctions.findCreatureRootBlock(pray.messageBlocks);
+			PRAYBlock rootBlock = ExportedCreatures.findCreatureRootBlock(pray.messageBlocks);
 			if (rootBlock == null)
 				return false;
-			String moniker = CryoFunctions.monikerFromRootBlock(rootBlock);
+			String moniker = ExportedCreatures.monikerFromRootBlock(rootBlock);
 			for (PRAYBlock block : pray.messageBlocks) {
 				if (block.getType().equals("GLST")) {
 					glst.storeGLST(moniker, block.data);
 				} else if (block.getType().equals("PHOT")) {
 					S16Image decoded = PhotoFunctions.ensureValidPhoto(block.data, serverHub.config.photos, this);
-					int eventIndex = CryoFunctions.getPHOTEventIndex(block.getName(), moniker, rootBlock.getType());
+					int eventIndex = ExportedCreatures.getPHOTEventIndex(block.getName(), moniker, rootBlock.getType());
 					// The strict flag controls overwriting.
 					// In either case, the photo won't be attempted to be saved if "weird"...
 					if (strict && decoded == null)

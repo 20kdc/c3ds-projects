@@ -20,12 +20,11 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
 import cdsp.common.app.CDSPCommonUI;
+import cdsp.common.app.DoWhatIMeanLoader;
 import cdsp.common.app.JFilePicker;
 import cdsp.common.app.JInfiniteCanvas;
 import cdsp.common.app.JIntScrollWR;
 import cdsp.common.app.JTintEditor;
-import cdsp.common.s16.BLKInfo;
-import cdsp.common.s16.CS16IO;
 import cdsp.common.s16.S16Image;
 import cdsp.common.s16.TintedBufferedImageCache;
 
@@ -40,28 +39,7 @@ public class CS16Viewer extends JFrame {
 
 	public CS16Viewer(File f, Frame frame) {
 		this();
-		setFileAndFrames(f, doLoad(f, frame));
-	}
-
-	private static S16Image[] doLoad(File f, Frame frame) {
-		if (f.getName().toLowerCase().endsWith(".blk")) {
-			try {
-				// .wine/drive_c/Program Files (x86)/Docking Station/Backgrounds/C2toDS.blk
-				BLKInfo fr = CS16IO.readBLKInfo(f);
-				System.out.println("BLK " + fr.width + " " + fr.height + " " + fr.dataOfs);
-				return new S16Image[] {fr.decode()};
-			} catch (Exception ex) {
-				CDSPCommonUI.showExceptionDialog(frame, "Could not load BLK.", "Error", ex);
-			}
-		} else {
-			try {
-				S16Image[] fr = CS16IO.decodeCS16(f);
-				return fr;
-			} catch (Exception ex) {
-				CDSPCommonUI.showExceptionDialog(frame, "Could not load C16/S16.", "Error", ex);
-			}
-		}
-		return new S16Image[0];
+		setFileAndFrames(f, DoWhatIMeanLoader.loadImage(f, frame));
 	}
 
 	public CS16Viewer() {
@@ -115,7 +93,7 @@ public class CS16Viewer extends JFrame {
 	}
 
 	public void setFile(File file) {
-		setFileAndFrames(file, doLoad(file, CS16Viewer.this));
+		setFileAndFrames(file, DoWhatIMeanLoader.loadImage(file, CS16Viewer.this));
 	}
 
 	public void setFileAndFrames(File file, S16Image[] frames) {

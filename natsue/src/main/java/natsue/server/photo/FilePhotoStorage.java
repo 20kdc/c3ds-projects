@@ -12,11 +12,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.LinkedList;
 
+import cdsp.common.data.Monikers;
 import cdsp.common.util.UnixTime;
 import natsue.data.babel.UINUtils;
 import natsue.log.ILogProvider;
 import natsue.log.ILogSource;
-import natsue.names.CreatureDataVerifier;
 import natsue.server.http.JSONEncoder;
 
 /**
@@ -36,7 +36,7 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 	}
 
 	private boolean verifyID(String moniker, int index) {
-		if (!CreatureDataVerifier.verifyMoniker(moniker))
+		if (!Monikers.verifyMoniker(moniker))
 			return false;
 		return index >= 0;
 	}
@@ -51,7 +51,7 @@ public class FilePhotoStorage implements IPhotoStorage, ILogSource {
 	@Override
 	public LinkedList<Integer> getIndices(String moniker) {
 		LinkedList<Integer> list = new LinkedList<>();
-		if (!CreatureDataVerifier.verifyMoniker(moniker))
+		if (!Monikers.verifyMoniker(moniker))
 			return list;
 		try {
 			for (File f : monikerToDir(moniker, false).listFiles()) {

@@ -29,8 +29,8 @@ import cdsp.common.app.GameInfo;
 import cdsp.common.app.JButtonWR;
 import cdsp.common.app.JGameInfo;
 import cdsp.common.data.DirLookup;
+import cdsp.common.data.genetics.GenPackage;
 import cdsp.common.data.genetics.GenUtils;
-import cdsp.common.data.genetics.GenVersion;
 import cdsp.common.s16.BLKInfo;
 import cdsp.common.s16.CS16Format;
 import cdsp.common.s16.CS16IO;
@@ -61,14 +61,14 @@ public class Main extends JFrame {
 			CDSPCommonUI.fileDialog(Main.this, "GEN...", FileDialog.LOAD, (f) -> {
 				try {
 					StringBuilder result = new StringBuilder();
-					GenVersion gv = GenUtils.identify(f);
-					result.append(gv.toString());
+					GenPackage gPackage = GenUtils.readGenome(f);
+					result.append(gPackage.version.toString());
 					result.append("\n");
-					byte[] genomeData = GenUtils.readGenome(f);
+					byte[] genomeData = gPackage.data;
 					int offset = 0;
 					while (offset < genomeData.length) {
 						offset = GenUtils.nextChunk(genomeData, offset);
-						result.append(gv.summarizeGene(genomeData, offset));
+						result.append(gPackage.version.summarizeGene(genomeData, offset));
 						result.append("\n");
 						offset += 4;
 					}
