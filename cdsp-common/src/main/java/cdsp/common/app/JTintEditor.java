@@ -8,6 +8,7 @@
 package cdsp.common.app;
 
 import java.awt.GridBagLayout;
+import java.util.function.Consumer;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -16,17 +17,17 @@ import javax.swing.JPanel;
  * Edits tint.
  */
 @SuppressWarnings("serial")
-public class JTintEditor extends JPanel implements TintHolder {
+public class JTintEditor extends JPanel {
 	/**
 	 * Run on an internally generated edit to the tint settings.
 	 */
-	public Runnable onEditTint = () -> {};
+	public Consumer<Tint> onEditTint = (tint) -> {};
 
 	private final JIntScrollWR scR, scG, scB, scRot, scSwap;
 
 	public JTintEditor() {
 		Runnable generalOnChange = () -> {
-			onEditTint.run();
+			onEditTint.accept(getTint());
 		};
 		setLayout(new GridBagLayout());
 		
@@ -56,37 +57,15 @@ public class JTintEditor extends JPanel implements TintHolder {
 		add(scSwap, CDSPCommonUI.gridBagFill(1, 4, 1, 1, 1, 0));
 	}
 
-	@Override
-	public int getTintR() {
-		return scR.getValue();
+	public Tint getTint() {
+		return new Tint(scR.getValue(), scG.getValue(), scB.getValue(), scRot.getValue(), scSwap.getValue());
 	}
 
-	@Override
-	public int getTintG() {
-		return scG.getValue();
-	}
-
-	@Override
-	public int getTintB() {
-		return scB.getValue();
-	}
-
-	@Override
-	public int getTintRot() {
-		return scRot.getValue();
-	}
-
-	@Override
-	public int getTintSwap() {
-		return scSwap.getValue();
-	}
-
-	@Override
-	public void setTint(int r, int g, int b, int rot, int swap) {
-		scR.setValue(r);
-		scG.setValue(g);
-		scB.setValue(b);
-		scRot.setValue(rot);
-		scSwap.setValue(swap);
+	public void setTint(Tint tint) {
+		scR.setValue(tint.r);
+		scG.setValue(tint.g);
+		scB.setValue(tint.b);
+		scRot.setValue(tint.rot);
+		scSwap.setValue(tint.swap);
 	}
 }

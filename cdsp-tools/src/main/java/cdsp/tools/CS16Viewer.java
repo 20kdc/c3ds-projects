@@ -12,6 +12,7 @@ import java.awt.FileDialog;
 import java.awt.Graphics;
 import java.awt.GridBagLayout;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JFrame;
@@ -30,29 +31,32 @@ public class CS16Viewer {
 	S16Image[] fr;
 	TintedBufferedImageCache tbic = new TintedBufferedImageCache();
 	int frI = 0;
+	String name;
 
-	public CS16Viewer(S16Image[] fr) {
+	public CS16Viewer(S16Image[] fr, String n) {
 		this.fr = fr;
+		name = n;
 	}
 
 	public static void main(String[] args) throws IOException {
 		CDSPCommonUI.fixAWT();
 		FileDialog fd = new FileDialog((JFrame) null);
 		fd.setVisible(true);
-		S16Image[] fr = CS16IO.decodeCS16(fd.getFiles()[0]);
-		new CS16Viewer(fr).doTheThing();
+		File f = fd.getFiles()[0];
+		S16Image[] fr = CS16IO.decodeCS16(f);
+		new CS16Viewer(fr, f.getName()).doTheThing();
 	}
 
 	@SuppressWarnings("serial")
 	public void doTheThing() {
-		JFrame testFrame = new JFrame();
+		JFrame testFrame = new JFrame(name);
 		testFrame.setSize(800, 600);
 		JSplitPane jsp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		jsp.setResizeWeight(1);
 		testFrame.add(jsp);
 		JPanel left = new JPanel();
 		JTintEditor right = new JTintEditor();
-		right.copyFrom(tbic);
+		right.setTint(tbic.getTint());
 		jsp.add(left);
 		jsp.add(right);
 		left.setLayout(new GridBagLayout());
@@ -77,8 +81,8 @@ public class CS16Viewer {
 			}
 		};
 		refreshBI(testCanvas);
-		right.onEditTint = () -> {
-			tbic.copyFrom(right);
+		right.onEditTint = (tint) -> {
+			tbic.setTint(tint);
 			refreshBI(testCanvas);
 		};
 		scrollbar.onChange = () -> {

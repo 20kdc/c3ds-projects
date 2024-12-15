@@ -56,8 +56,7 @@ public abstract class JInfiniteCanvas extends Panel {
 			paint(g);
 	}
 
-	public void paintStaticBackground(int w, int h, Graphics g) {
-	}
+	public abstract void paintStaticBackground(int w, int h, Graphics g);
 
 	public abstract void paintStage(int w, int h, Graphics g);
 

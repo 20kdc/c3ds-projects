@@ -29,6 +29,9 @@ import cdsp.common.app.GameInfo;
 import cdsp.common.app.JButtonWR;
 import cdsp.common.app.JGameInfo;
 import cdsp.common.data.DirLookup;
+import cdsp.common.data.skeleton.C3SkeletonIndex;
+import cdsp.common.data.skeleton.LoadedSkeleton;
+import cdsp.common.data.skeleton.SkeletonDef;
 import cdsp.common.s16.BLKInfo;
 import cdsp.common.s16.CS16Format;
 import cdsp.common.s16.CS16IO;
@@ -62,19 +65,29 @@ public class Main extends JFrame {
 						// .wine/drive_c/Program Files (x86)/Docking Station/Backgrounds/C2toDS.blk
 						BLKInfo fr = CS16IO.readBLKInfo(f);
 						System.out.println("BLK " + fr.width + " " + fr.height + " " + fr.dataOfs);
-						new CS16Viewer(new S16Image[] {fr.decode()}).doTheThing();
+						new CS16Viewer(new S16Image[] {fr.decode()}, f.getName()).doTheThing();
 					} catch (Exception ex) {
 						CDSPCommonUI.showExceptionDialog(Main.this, "Could not load BLK.", "Error", ex);
 					}
 				} else {
 					try {
 						S16Image[] fr = CS16IO.decodeCS16(f);
-						new CS16Viewer(fr).doTheThing();
+						new CS16Viewer(fr, f.getName()).doTheThing();
 					} catch (Exception ex) {
 						CDSPCommonUI.showExceptionDialog(Main.this, "Could not load C16/S16.", "Error", ex);
 					}
 				}
 			}
+		}));
+		add(new JButtonWR("Nornposer", () -> {
+			LoadedSkeleton ls;
+			try {
+				ls = new LoadedSkeleton(gameInfo, new C3SkeletonIndex(0, 0, 0, 4).getSearchPath(), SkeletonDef.C3);
+			} catch (Exception ex) {
+				CDSPCommonUI.showExceptionDialog(Main.this, "Could not load skeleton.", "Error", ex);
+				return;
+			}
+			new NornPoser(ls).setVisible(true);
 		}));
 		add(new JButtonWR("Convert To RGB565", () -> {
 			converter(false, CS16Format.S16_RGB565, CS16Format.C16_RGB565);

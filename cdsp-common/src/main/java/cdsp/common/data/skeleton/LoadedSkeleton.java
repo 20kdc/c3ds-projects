@@ -8,66 +8,106 @@
 package cdsp.common.data.skeleton;
 
 import java.awt.Point;
-import java.util.function.Function;
+import java.io.File;
+import java.io.IOException;
 
 import cdsp.common.data.DirLookup;
+import cdsp.common.data.DirLookup.Location;
+import cdsp.common.s16.CS16IO;
 import cdsp.common.s16.S16Image;
 
 /**
  * A creature skeleton.
  */
-public final class LoadedSkeleton<I> {
+public final class LoadedSkeleton {
+	public static final LoadedSkeleton EMPTY = new LoadedSkeleton(SkeletonDef.EMPTY);
+
 	public final SkeletonDef def;
 
-	private final Object[] loadedPartImages;
+	private final S16Image[][] loadedPartImages;
 	private final ATTFile[] loadedPartATTs;
 	private final SkeletonDef.Part[] loadedParts;
 
 	/**
-	 * Loads the skeleton.
+	 * Empty skeleton of the given type.
 	 */
-	public LoadedSkeleton(DirLookup src, Function<S16Image, I> converter, SkeletonDef def) {
+	public LoadedSkeleton(SkeletonDef def) {
 		this.def = def;
-		loadedPartImages = new Object[def.length];
+		loadedPartImages = new S16Image[def.length][];
 		loadedPartATTs = new ATTFile[def.length];
 		loadedParts = new SkeletonDef.Part[def.length];
 		for (int i = 0; i < def.length; i++) {
 			SkeletonDef.Part part = def.getPart(i);
 			loadedParts[i] = part;
-			//loadedPartImages[i] = src.findBreedFile(null, suffix, false);
-			//loadedPartATTs[i] = ;
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public I getPartImage(int i) {
-		return (I) loadedPartImages[i];
+	/**
+	 * Loads the skeleton.
+	 * @throws IOException 
+	 */
+	public LoadedSkeleton(DirLookup src, SkeletonIndex[] searchPath, SkeletonDef def) throws IOException {
+		this(def);
+		for (int i = 0; i < def.length; i++) {
+			SkeletonDef.Part part = loadedParts[i];
+			try {
+				File image = SkeletonIndex.findFileIn(Location.IMAGES, src, searchPath, part.id, ".c16");
+				if (image == null) {
+					System.err.println("NOENT @ " + searchPath[0] + " part " + part.id + " c16");
+				} else {
+					loadedPartImages[i] = image != null ? CS16IO.decodeCS16(image) : null;
+				}
+			} catch (Exception ex) {
+				System.err.println("Error @ " + searchPath[0] + " part " + part.id + " c16");
+				ex.printStackTrace();
+			}
+			try {
+				File att = SkeletonIndex.findFileIn(Location.BODY_DATA, src, searchPath, part.id, ".att");
+				if (att == null) {
+					System.err.println("NOENT @ " + searchPath[0] + " part " + part.id + " att");
+				} else {
+					loadedPartATTs[i] = att != null ? new ATTFile(att) : null;
+				}
+			} catch (Exception ex) {
+				System.err.println("Error @ " + searchPath[0] + " part " + part.id + " att");
+				ex.printStackTrace();
+			}
+		}
+	}
+
+	public S16Image getPartImage(int i, int j) {
+		S16Image[] frames = loadedPartImages[i];
+		if (frames == null)
+			return null;
+		if (j < 0 || j > frames.length)
+			return null;;
+		return frames[j];
 	}
 
 	public ATTFile getPartATT(int i) {
 		return loadedPartATTs[i];
 	}
 
-	public int getPartJointX(Point[] partLocations, int[] partDirections, int part, int joint) {
-		return partLocations[part].x + loadedPartATTs[part].getX(partDirections[part], joint);
+	public int getPartJointX(Point[] partLocations, int[] partFrames, int part, int joint) {
+		return partLocations[part].x + loadedPartATTs[part].getX(partFrames[part] % def.dirCount, joint);
 	}
 
-	public int getPartJointY(Point[] partLocations, int[] partDirections, int part, int joint) {
-		return partLocations[part].y + loadedPartATTs[part].getY(partDirections[part], joint);
+	public int getPartJointY(Point[] partLocations, int[] partFrames, int part, int joint) {
+		return partLocations[part].y + loadedPartATTs[part].getY(partFrames[part] % def.dirCount, joint);
 	}
 
 	/**
 	 * Updates a skeleton. Beware: The points within are mutated, not just replaced.
 	 */
-	public void updateSkeleton(Point[] partLocations, int[] partDirections) {
+	public void updateSkeleton(Point[] partLocations, int[] partFrames) {
 		for (int i = 0; i < partLocations.length; i++) {
 			SkeletonDef.Part part = loadedParts[i];
 			if (part.parentIndex == -1)
 				continue;
-			int baseX = getPartJointX(partLocations, partDirections, part.parentIndex, part.parentJoint);
-			int baseY = getPartJointY(partLocations, partDirections, part.parentIndex, part.parentJoint);
-			baseX -= loadedPartATTs[i].getX(partDirections[i], part.localParentJoint);
-			baseY -= loadedPartATTs[i].getY(partDirections[i], part.localParentJoint);
+			int baseX = getPartJointX(partLocations, partFrames, part.parentIndex, part.parentJoint);
+			int baseY = getPartJointY(partLocations, partFrames, part.parentIndex, part.parentJoint);
+			baseX -= loadedPartATTs[i].getX(partFrames[i] % def.dirCount, part.localParentJoint);
+			baseY -= loadedPartATTs[i].getY(partFrames[i] % def.dirCount, part.localParentJoint);
 			partLocations[i].x = baseX;
 			partLocations[i].y = baseY;
 		}

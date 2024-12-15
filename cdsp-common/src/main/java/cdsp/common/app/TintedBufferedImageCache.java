@@ -14,44 +14,31 @@ import cdsp.common.s16.S16Image;
 /**
  * Caches a tinted frame.
  */
-public class TintedBufferedImageCache implements TintHolder {
+public class TintedBufferedImageCache {
 	private S16Image lastImage;
 	private BufferedImage lastBI;
-	private int tintR = 128, tintG = 128, tintB = 128, tintRot = 128, tintSwap = 128;
+	private Tint lastTint = new Tint();
 
-	@Override
-	public int getTintR() {
-		return tintR;
+	public Tint getTint() {
+		return lastTint;
 	}
 
-	@Override
-	public int getTintG() {
-		return tintG;
+	public void setTint(Tint tint) {
+		if (lastTint != tint) {
+			lastTint = tint;
+			lastBI = null;
+		}
 	}
 
-	@Override
-	public int getTintB() {
-		return tintB;
+	public S16Image getSource() {
+		return lastImage;
 	}
 
-	@Override
-	public int getTintRot() {
-		return tintRot;
-	}
-
-	@Override
-	public int getTintSwap() {
-		return tintSwap;
-	}
-
-	@Override
-	public void setTint(int r, int g, int b, int rot, int swap) {
-		tintR = r;
-		tintG = g;
-		tintB = b;
-		tintRot = rot;
-		tintSwap = swap;
-		lastBI = null;
+	public void setSource(S16Image source) {
+		if (lastImage != source) {
+			lastImage = source;
+			lastBI = null;
+		}
 	}
 
 	public BufferedImage getImage() {
@@ -59,20 +46,11 @@ public class TintedBufferedImageCache implements TintHolder {
 			return lastBI;
 		if (lastImage == null)
 			return null;
-		float red = (tintR - 128) / 255.0f;
-		float green = (tintG - 128) / 255.0f;
-		float blue = (tintB - 128) / 255.0f;
-		float rotation = (tintRot - 128) / 128.0f;
-		float swap = Math.abs(tintSwap - 128) / 128.0f;
+		float red = (lastTint.r - 128) / 255.0f;
+		float green = (lastTint.g - 128) / 255.0f;
+		float blue = (lastTint.b - 128) / 255.0f;
+		float rotation = (lastTint.rot - 128) / 128.0f;
+		float swap = Math.abs(lastTint.swap - 128) / 128.0f;
 		return lastBI = lastImage.toBITinted(true, red, green, blue, rotation, swap);
-	}
-
-	public void setSource(S16Image source) {
-		lastImage = source;
-		lastBI = null;
-	}
-
-	public S16Image getSource() {
-		return lastImage;
 	}
 }

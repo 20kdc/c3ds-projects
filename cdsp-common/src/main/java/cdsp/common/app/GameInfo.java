@@ -156,8 +156,9 @@ public class GameInfo implements DirLookup {
 			if (caseInsensitiveChecker != null) {
 				File[] targets = f.listFiles(caseInsensitiveChecker);
 				if (targets != null)
-					if (targets[0] != null)
-						return targets[0];
+					if (targets.length != 0)
+						if (targets[0] != null)
+							return targets[0];
 			}
 		}
 		return newFile(location, name);

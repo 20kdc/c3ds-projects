@@ -5,20 +5,27 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-package cdsp.common.app;
+package cdsp.tools;
+
+import javax.swing.JFrame;
+
+import cdsp.common.app.JNorn;
+import cdsp.common.data.skeleton.LoadedSkeleton;
 
 /**
- * A thing with inherent tint.
+ * NornPoser!
  */
-public interface TintHolder {
-	public int getTintR();
-	public int getTintG();
-	public int getTintB();
-	public int getTintRot();
-	public int getTintSwap();
-	public void setTint(int r, int g, int b, int rot, int swap);
+@SuppressWarnings("serial")
+public class NornPoser extends JFrame {
 
-	public default void copyFrom(TintHolder other) {
-		setTint(other.getTintR(), other.getTintG(), other.getTintB(), other.getTintRot(), other.getTintSwap());
+	public final JNorn jNorn = new JNorn();
+
+	public NornPoser(LoadedSkeleton ls) {
+		super("NornPoser");
+		setSize(800, 600);
+		setLocationByPlatform(true);
+		add(jNorn);
+		jNorn.setParameters(ls, new int[ls.def.length]);
 	}
+	
 }
