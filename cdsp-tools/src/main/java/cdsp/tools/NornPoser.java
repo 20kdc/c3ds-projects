@@ -72,6 +72,7 @@ public class NornPoser extends JFrame {
 		setSize(1024, 600);
 		setLocationByPlatform(true);
 
+		age.setSelectedIndex(4);
 		reloadWithAge.setSelected(true);
 
 		JPanel rhs = new JPanel();

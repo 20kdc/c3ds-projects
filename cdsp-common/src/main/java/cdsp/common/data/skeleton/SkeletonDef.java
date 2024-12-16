@@ -245,7 +245,7 @@ public final class SkeletonDef {
 		private static final int[] remap = {3, 2, 0, 1};
 
 		public C3DirectionChar() {
-			super("Dir.", "X0123", '1', -1);
+			super("Dir.", "X?!0123", '1', -1);
 		}
 
 		@Override
@@ -260,7 +260,7 @@ public final class SkeletonDef {
 	public static class C3PoseChar extends PoseChar {
 		private final int[] partIndexes;
 		public C3PoseChar(String name, char def, int... partIndexes) {
-			super(name, "X012345", def, partIndexes.length > 0 ? partIndexes[0] : -1);
+			super(name, "X?!012345", def, partIndexes.length > 0 ? partIndexes[0] : -1);
 			this.partIndexes = partIndexes;
 		}
 

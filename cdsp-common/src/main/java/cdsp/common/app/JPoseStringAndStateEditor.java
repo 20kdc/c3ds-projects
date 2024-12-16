@@ -14,6 +14,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -38,20 +39,27 @@ public class JPoseStringAndStateEditor extends JPanel {
 	private final JTextField poseString;
 
 	private final DocumentListener feedDoc = new DocumentListener() {
-		@Override
-		public void removeUpdate(DocumentEvent e) {
+		private void onUpdateFD() {
 			setPoseString(poseString.getText());
 			onChange.run();
+		}
+		@Override
+		public void removeUpdate(DocumentEvent e) {
+			SwingUtilities.invokeLater(() -> {
+				onUpdateFD();
+			});
 		}
 		@Override
 		public void insertUpdate(DocumentEvent e) {
-			setPoseString(poseString.getText());
-			onChange.run();
+			SwingUtilities.invokeLater(() -> {
+				onUpdateFD();
+			});
 		}
 		@Override
 		public void changedUpdate(DocumentEvent e) {
-			setPoseString(poseString.getText());
-			onChange.run();
+			SwingUtilities.invokeLater(() -> {
+				onUpdateFD();
+			});
 		}
 	};
 	private final ItemListener feed = new RunnableItemListener(() -> {
