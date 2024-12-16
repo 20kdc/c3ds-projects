@@ -142,24 +142,18 @@ public class Main extends JFrame {
 		{
 			imagingPanel.setBorder(BorderFactory.createTitledBorder("Imaging"));
 			imagingPanel.setLayout(new GridBagLayout());
-			imagingPanel.add(new JButtonWR("View C16/S16", () -> {
+			imagingPanel.add(new JButtonWR("View C16/S16/BLK", () -> {
 				CDSPCommonUI.fileDialog(Main.this, "C16/S16/BLK...", FileDialog.LOAD, (f) -> {
 					new CS16Viewer(f, Main.this).setVisible(true);
 				});
 			}), CDSPCommonUI.gridBagFill(0, 0, 1, 1, 0, 0));
 			imagingPanel.add(new JButtonWR("Convert To RGB565 (Rainbow Fix)", () -> {
-				if (!convinceUserToDoSetup())
-					return;
 				converter(false, CS16Format.S16_RGB565, CS16Format.C16_RGB565);
 			}), CDSPCommonUI.gridBagFill(0, 1, 1, 1, 0, 0));
 			imagingPanel.add(new JButtonWR("Rewrite All As RGB565", () -> {
-				if (!convinceUserToDoSetup())
-					return;
 				converter(true, CS16Format.S16_RGB565, CS16Format.C16_RGB565);
 			}), CDSPCommonUI.gridBagFill(0, 2, 1, 1, 0, 0));
 			imagingPanel.add(new JButtonWR("Rewrite All As RGB555 (Force Spew)", () -> {
-				if (!convinceUserToDoSetup())
-					return;
 				converter(true, CS16Format.S16_RGB555, CS16Format.C16_RGB555);
 			}), CDSPCommonUI.gridBagFill(0, 3, 1, 1, 0, 0));
 		}
@@ -291,7 +285,7 @@ public class Main extends JFrame {
 			return;
 		DoWhatIMeanLoader.loadGeneticsFileDialog(this, (f, gPackage) -> {
 			try {
-				// standard genetics file name
+				// standard genetics file name, essentially reserved for overwriting by GK/etc.
 				File target = gameInfo.newFile(Location.GENETICS, "dave.gen");
 				Files.write(target.toPath(), gPackage.toFileData());
 				Injector.cpxRequest("execute\nsetv va00 " + sxs + " " + EGG_REQUEST, gameInfo.charset);
@@ -302,6 +296,8 @@ public class Main extends JFrame {
 	}
 
 	private void converter(boolean forceOverwrite, CS16Format uncompressed, CS16Format compressed) {
+		if (!convinceUserToDoSetup())
+			return;
 		LinkedList<File> locations = new LinkedList<>();
 		locations.addAll(gameInfo.locations.get(DirLookup.Location.IMAGES));
 		locations.addAll(gameInfo.locations.get(DirLookup.Location.BACKGROUNDS));

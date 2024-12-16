@@ -54,7 +54,7 @@ public class JGameInfoLocation extends JPanel {
 				onModify.run();
 			}
 		}));
-		jbp.add(new JLabel(" Directories are searched in order. "));
+		jbp.add(new JLabel(" Directories are searched in order. C3 should be *after* DS."));
 		add(jbp, BorderLayout.SOUTH);
 	}
 

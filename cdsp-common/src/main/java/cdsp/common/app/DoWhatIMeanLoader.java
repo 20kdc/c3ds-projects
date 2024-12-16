@@ -11,7 +11,6 @@ import java.awt.Frame;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.LinkedList;
-import java.util.function.Consumer;
 
 import cdsp.common.data.IOUtils;
 import cdsp.common.data.bytestring.W1252Fixed;
