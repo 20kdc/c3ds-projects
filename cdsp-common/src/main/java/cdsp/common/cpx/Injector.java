@@ -67,7 +67,7 @@ public class Injector {
 	}
 
 	// this is stupid and dumb, frankly.
-	private static boolean checkIfLikelyWindows() {
+	public static boolean checkIfLikelyWindows() {
 		String res = System.getProperty("os.name");
 		if (res == null)
 			return false;

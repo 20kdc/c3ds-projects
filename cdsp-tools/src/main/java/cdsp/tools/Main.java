@@ -26,14 +26,20 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 
 import cdsp.common.app.CDSPCommonUI;
+import cdsp.common.app.DoWhatIMeanLoader;
 import cdsp.common.app.GameInfo;
 import cdsp.common.app.JButtonWR;
 import cdsp.common.app.JGameInfo;
 import cdsp.common.cpx.Injector;
 import cdsp.common.data.DirLookup;
-import cdsp.common.data.genetics.GenPackage;
+import cdsp.common.data.DirLookup.Location;
 import cdsp.common.data.genetics.GenUtils;
 import cdsp.common.s16.BLKInfo;
 import cdsp.common.s16.CS16Format;
@@ -42,6 +48,15 @@ import cdsp.common.s16.S16Image;
 
 @SuppressWarnings("serial")
 public class Main extends JFrame {
+	public static final String ONBOARDING_NAME = "cdsp-tools";
+	public static final String EGG_REQUEST =
+		"new: simp 3 4 1 \"eggs\" 8 56 2000\n" +
+		"setv ov01 va00\n" +
+		"elas 10 fric 100 attr 195 bhvr 32 aero 10 accg 4 perm 60\n" +
+		"mvsf 500 9295\n" +
+		"gene load targ 1 \"dave\"\n" +
+		"cmrt 0";
+
 	public final GameInfo gameInfo = new GameInfo();
 
 	public Main() {
@@ -61,6 +76,8 @@ public class Main extends JFrame {
 				configPage.setVisible(true);
 			}));
 			configPanel.add(new JButtonWR("CPX Info", () -> {
+				if (!convinceUserToInstallCPX())
+					return;
 				try {
 					StringBuilder info = new StringBuilder();
 					info.append("Game information:\n");
@@ -82,7 +99,7 @@ public class Main extends JFrame {
 					info.append("\n");
 					CDSPCommonUI.showReport("CPX Info", info.toString());
 				} catch (Exception ex) {
-					CDSPCommonUI.showExceptionDialog(Main.this, "Could not connect to CPX.\nCheck your CAOS proxy settings.", "Error", ex);
+					CDSPCommonUI.showExceptionDialog(Main.this, "Something weird happened.", "Error", ex);
 				}
 			}));
 		}
@@ -91,10 +108,9 @@ public class Main extends JFrame {
 			geneticsPanel.setBorder(BorderFactory.createTitledBorder("Genetics"));
 			geneticsPanel.setLayout(new GridBagLayout());
 			geneticsPanel.add(new JButtonWR("Summarize Genome", () -> {
-				CDSPCommonUI.fileDialog(Main.this, "GEN...", FileDialog.LOAD, (f) -> {
+				DoWhatIMeanLoader.loadGeneticsFileDialog(this, (f, gPackage) -> {
 					try {
 						StringBuilder result = new StringBuilder();
-						GenPackage gPackage = GenUtils.readGenome(f);
 						result.append(gPackage.version.toString());
 						result.append("\n");
 						byte[] genomeData = gPackage.data;
@@ -106,15 +122,21 @@ public class Main extends JFrame {
 						}
 						CDSPCommonUI.showReport("Genome " + f + " Report", result.toString());
 					} catch (Exception ex) {
-						CDSPCommonUI.showExceptionDialog(Main.this, "Could not load genome.", "Error", ex);
+						CDSPCommonUI.showExceptionDialog(Main.this, "Could not summarize genome.", "Error", ex);
 					}
 				});
-			}), CDSPCommonUI.gridBagFill(0, 0, 1, 1, 0, 0));
+			}), CDSPCommonUI.gridBagFill(0, 0, 2, 1, 0, 0));
 			geneticsPanel.add(new JButtonWR("Norn Poser", () -> {
 				if (!convinceUserToDoSetup())
 					return;
 				new NornPoser(gameInfo).setVisible(true);
-			}), CDSPCommonUI.gridBagFill(0, 1, 1, 1, 0, 0));
+			}), CDSPCommonUI.gridBagFill(0, 1, 2, 1, 0, 0));
+			geneticsPanel.add(new JButtonWR("Inject Egg (M)", () -> {
+				eggject("1");
+			}), CDSPCommonUI.gridBagFill(0, 2, 1, 1, 0, 0));
+			geneticsPanel.add(new JButtonWR("Inject Egg (F)", () -> {
+				eggject("2");
+			}), CDSPCommonUI.gridBagFill(1, 2, 1, 1, 0, 0));
 		}
 		JPanel imagingPanel = new JPanel();
 		{
@@ -151,15 +173,29 @@ public class Main extends JFrame {
 	}
 
 	private boolean convinceUserToDoSetup() {
-		String onboardingName = "cdsp-tools";
 		if (gameInfo.looksEmpty()) {
-			if (CDSPCommonUI.confirmInformationOperation(this, "It seems you haven't added your Docking Station directory yet!\nWould you like to do that now?\n(Pressing 'no' will allow you to proceed regardless, but you probably shouldn't do that.)", onboardingName)) {
+			if (CDSPCommonUI.confirmInformationOperation(this, "It seems you haven't added your Docking Station directory yet!\nWould you like to do that now?\n(Pressing 'no' will allow you to proceed regardless, but you probably shouldn't do that.)", ONBOARDING_NAME)) {
 				// if the user is running the game with the CAOS proxy on Windows, we can automatically determine the game path
 				try {
 					String result = Injector.cpxRequest("cpx-gamepath\n", Charset.defaultCharset());
-					gameInfo.fromGameDirectory(new File(result.trim()));
-					if (!gameInfo.looksEmpty())
+					System.out.println("Autodetect: " + result);
+					boolean windows = Injector.checkIfLikelyWindows();
+					boolean windowsishPath = result.indexOf(':') == 1;
+					if (windowsishPath && !windows) {
+						result = result.replace('\\', '/');
+						String home = System.getenv("HOME");
+						if (home == null)
+							home = ".";
+						result = home + "/.wine/dosdevices/" + result.substring(0, 1).toLowerCase() + result.substring(1);
+					} else if (windows && !windowsishPath) {
+						result = "Z:" + result.replace('/', '\\');
+					}
+					System.out.println("Autodetect post-conversion: " + result);
+					gameInfo.fromGameDirectory(new File(result));
+					if (!gameInfo.looksEmpty()) {
+						gameInfo.saveToDefaultLocation();
 						return true;
+					}
 					// clean up bad entries
 					gameInfo.reset();
 				} catch (Exception ex) {
@@ -171,14 +207,98 @@ public class Main extends JFrame {
 				if (file != null) {
 					gameInfo.reset();
 					gameInfo.fromGameDirectory(file);
-					if (!gameInfo.looksEmpty())
+					if (!gameInfo.looksEmpty()) {
+						gameInfo.saveToDefaultLocation();
 						return true;
+					}
 				}
 				return false;
 			}
 		}
 		// everything is okay or user chose to proceed regardless.
 		return true;
+	}
+
+	/**
+	 * pretty-please?
+	 */
+	private boolean convinceUserToInstallCPX() {
+		try {
+			Injector.cpxRequest("cpx-ver\n", gameInfo.charset);
+			// success, user has CPX installed & running
+			return true;
+		} catch (Injector.CPXException ex) {
+			// if we get a CPXException, the user has CPX installed & running
+			return true;
+		} catch (Exception ex) {
+			if (CDSPCommonUI.confirmInformationOperation(this, "CPX does not appear to be running.\nIf you require information about CPX, please press 'yes' now.", ONBOARDING_NAME)) {
+				// user does not know what CPX is. let's introduce them
+				JDialog dialog = new JDialog(this);
+				dialog.setTitle("About CPX");
+				JTextPane jtp = new JTextPane(new HTMLDocument());
+				jtp.setEditable(false);
+				jtp.setEditorKit(new HTMLEditorKit());
+				// 'da spiel
+				jtp.setText(
+					"<h1>CPX: CAOS Proxy</h1>" +
+					"<h2>What is it?</h2>" +
+					"<p>Tools for Creatures games access the game via an interface.</p>" +
+					"<p>For Creatures 1 and 2, it was DDE, but Creatures 3 and Docking Station instead use a 'shared memory interface'.</p>" +
+					"<p>These interfaces require finicky platform-specific native code to access, and cannot traverse into and out of wrappers such as Wine easily.</p>" +
+					"<p>This presents problems for people wishing to write cross-platform tools, and even for Windows-only applications, it limits the choice of languages. In particular, Java alone cannot access them.</p>" +
+					"<h2>How do I install it?</h2>" +
+					"<p>caosproxy/caosprox.exe is a program that (hopefully) should have been supplied with cdsp-tools, which can forward requests from most programming languages with TCP socket support to the game.</p>" +
+					"<p>It also comes in an installable form, caosproxy/engine-cpx.dll ; this may be copied directly into the Docking Station directory to automatically start and close CPX with the game.</p>" +
+					"<p>For Linux/Mac users running the game natively, python/cpxciesv.py implements CPX using the game's CAOS server.</p>" +
+					"<h2>Where is it used?</h2>" +
+					"<p>CPX was developed as the method of interfacing with Docking Station for tools in 20kdc/c3ds-projects, but it's available for anyone to use; a specification is included in caosproxy/spec.txt on how to communicate with it.</p>" +
+					"<p>Within 20kdc/c3ds-projects, it is used for RALjector (a RAL injector and CAOS debugger) and for caosproxy/cpxinvrt.exe (allows connecting Creature Labs tools on Wine to connect to native Linux/Mac Docking Station).</p>"
+				);
+				dialog.setLayout(new GridBagLayout());
+				JScrollPane jsp = new JScrollPane(jtp);
+				jsp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+				dialog.add(jsp, CDSPCommonUI.gridBagFill(0, 0, 1, 1, 1, 1));
+				dialog.add(new JButtonWR("OK", () -> dialog.setVisible(false)), CDSPCommonUI.gridBagFill(0, 1, 1, 1, 1, 0));
+				dialog.setSize(640, 480);
+				dialog.setModal(true);
+				dialog.setLocationByPlatform(true);
+				SwingUtilities.invokeLater(() -> jsp.getVerticalScrollBar().setValue(0));
+				dialog.setVisible(true);
+				JOptionPane.showMessageDialog(this, "Press 'OK' once CPX and the game are running.\nIf caosprox.exe is used, there will be an icon in the notification tray.", ONBOARDING_NAME, JOptionPane.INFORMATION_MESSAGE);
+				try {
+					Injector.cpxRequest("cpx-ver\n", gameInfo.charset);
+					// success, user has CPX installed & running
+					return true;
+				} catch (Injector.CPXException ex2) {
+					// give an extra-nice diagnostic in this case
+					CDSPCommonUI.showExceptionDialog(this, "CPX seems to be running, but communicating with the game failed.\nIf the game isn't running, you should start it and try again.", ONBOARDING_NAME, ex2);
+					return false;
+				} catch (Exception ex2) {
+					CDSPCommonUI.showExceptionDialog(this, "It appears CPX is either not running or cannot be accessed.\nYou may need to confirm that a firewall is not restricting local TCP servers.", ONBOARDING_NAME, ex2);
+					return false;
+				}
+			} else {
+				// user knows what CPX is, so they'll get the error they get
+				return true;
+			}
+		}
+	}
+
+	private void eggject(String sxs) {
+		if (!convinceUserToDoSetup())
+			return;
+		if (!convinceUserToInstallCPX())
+			return;
+		DoWhatIMeanLoader.loadGeneticsFileDialog(this, (f, gPackage) -> {
+			try {
+				// standard genetics file name
+				File target = gameInfo.newFile(Location.GENETICS, "dave.gen");
+				Files.write(target.toPath(), gPackage.toFileData());
+				Injector.cpxRequest("execute\nsetv va00 " + sxs + " " + EGG_REQUEST, gameInfo.charset);
+			} catch (Exception ex) {
+				CDSPCommonUI.showExceptionDialog(Main.this, "Could not inject egg.", "Error", ex);
+			}
+		});
 	}
 
 	private void converter(boolean forceOverwrite, CS16Format uncompressed, CS16Format compressed) {

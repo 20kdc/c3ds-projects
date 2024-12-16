@@ -63,6 +63,13 @@ public final class Gene {
 	}
 
 	/**
+	 * Is this the header (i.e. Genus) gene?
+	 */
+	public final boolean isHeaderGene() {
+		return version.isHeaderGene(data.getType());
+	}
+
+	/**
 	 * Reads this gene from a byte[].
 	 * This overwrites the data field (and all the other fields).
 	 */

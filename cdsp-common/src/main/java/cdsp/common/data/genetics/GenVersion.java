@@ -48,6 +48,13 @@ public abstract class GenVersion {
 		return res;
 	}
 
+	/**
+	 * Is this the header (i.e. Genus) gene?
+	 */
+	public final boolean isHeaderGene(int type) {
+		return type == 0x0201;
+	}
+
 	public final int getGeneType(byte[] genome, int start) {
 		int high = GenUtils.safeGet(genome, start + 4, 0, subTypes.length);
 		int low = GenUtils.safeGet(genome, start + 5, 0, subTypes[high]);

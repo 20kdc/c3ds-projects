@@ -6,10 +6,12 @@
  */
 package cdsp.common.app;
 
+import java.awt.FileDialog;
 import java.awt.Frame;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 import cdsp.common.data.IOUtils;
 import cdsp.common.data.bytestring.W1252Fixed;
@@ -76,5 +78,21 @@ public class DoWhatIMeanLoader {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Ties everything up in a bow.
+	 */
+	public static void loadGeneticsFileDialog(Frame frame, FileDialogThenLoad<GenPackage> handler) {
+		CDSPCommonUI.fileDialog(frame, "Genome/Exported Creature...", FileDialog.LOAD, (f) -> {
+			GenPackage gPackage = loadGenetics(f, frame);
+			if (gPackage == null)
+				return;
+			handler.accept(f, gPackage);
+		});
+	}
+
+	public interface FileDialogThenLoad<T> {
+		void accept(File from, T value);
 	}
 }

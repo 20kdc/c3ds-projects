@@ -88,6 +88,7 @@ public class CDSPCommonUI {
 		} catch (Exception ex) {
 			// shhh.
 		}
+		fd.setTitle(title);
 		fd.setMultipleMode(false);
 		fd.setMode(mode);
 		fd.setVisible(true);
