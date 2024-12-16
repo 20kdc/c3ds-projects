@@ -61,7 +61,7 @@ script TalkingLemon:act1 {
 	// There's also a short version of this sort of statement:
 	// alias targ!SpeechBubbleFactory;
 	// And of course now we can just emit the message as so.
-	targ->speechBubble("Hello! I'm a talking lemon!", ownr);
+	targ->speechBubble(text, ownr);
 }
 
 remove {

@@ -124,7 +124,7 @@ That appears here:
 	// Secondly, emit statements have this form: `EXPRESSION->message([p1[, p2]]) [after EXPRESSION];`
 	// This is the more idiomatic equivalent to `mesgWrtP`.
 	// This is also why casting is important, as message names are dependent on agent type.
-	factory->speechBubble("Hello! I'm a talking lemon!", ownr);
+	factory->speechBubble(text, ownr);
 ```
 
 #### Constructor Script, Interface File

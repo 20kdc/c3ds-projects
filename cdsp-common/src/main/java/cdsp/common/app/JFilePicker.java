@@ -7,6 +7,7 @@
 
 package cdsp.common.app;
 
+import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.io.File;
@@ -23,6 +24,7 @@ public class JFilePicker extends JButton {
 	public Consumer<File> onChangeFile = file -> {};
 	private File f;
 	public JFilePicker(File f, String dialogName) {
+		setPreferredSize(new Dimension(16, getPreferredSize().height));
 		setFile(f);
 		addActionListener((a) -> {
 			CDSPCommonUI.fileDialog((Frame) SwingUtilities.getWindowAncestor(JFilePicker.this), dialogName, FileDialog.LOAD, (file) -> {

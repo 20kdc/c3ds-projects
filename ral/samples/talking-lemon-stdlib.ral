@@ -48,7 +48,7 @@ script TalkingLemon:act1 {
 	// We have to write "targ!" here rather than just "targ" for one reason:
 	// RAL assumes that targ could be NULL at any given time.
 	// Specifying "!" after a value indicates to RAL that it can't be NULL.
-	mesgWrtP(targ!, 126, "Hello! I'm a talking lemon!", ownr, 0);
+	mesgWrtP(targ!, 126, text, ownr, 0);
 	// A better way of writing this will be shown shortly.
 }
 
