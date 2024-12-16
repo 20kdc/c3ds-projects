@@ -44,4 +44,8 @@ public final class Tint {
 	public Tint withSwap(int swap) {
 		return new Tint(r, g, b, rot, swap);
 	}
+
+	public boolean isIdentity() {
+		return r == 128 && g == 128 && b == 128 && rot == 128 && swap == 128;
+	}
 }

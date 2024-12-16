@@ -27,6 +27,7 @@ import cdsp.common.app.JButtonWR;
 import cdsp.common.app.JC3PartSlotEditor;
 import cdsp.common.app.JFilePicker;
 import cdsp.common.app.JNorn;
+import cdsp.common.app.JPoseStringAndStateEditor;
 import cdsp.common.app.JTintEditor;
 import cdsp.common.app.RunnableItemListener;
 import cdsp.common.data.CachedDirLookup;
@@ -54,6 +55,7 @@ public class NornPoser extends JFrame {
 	private final JComboBox<String> age = new JComboBox<>(CreaturesFacts.C__3_AGES);
 	private final JComboBox<String> sxs = new JComboBox<>(CreaturesFacts.C123_SXS);
 	private final JToggleButton reloadWithAge = new JToggleButton("Simulate");
+	private final JPoseStringAndStateEditor poseString = new JPoseStringAndStateEditor(SkeletonDef.C3);
 
 	private final ItemListener feedSimulator = new RunnableItemListener(() -> {
 		if (reloadWithAge.isSelected()) {
@@ -67,7 +69,7 @@ public class NornPoser extends JFrame {
 		super("NornPoser");
 		this.gameInfo = gameInfo;
 		pose = new int[SkeletonDef.C3.length];
-		setSize(800, 600);
+		setSize(1024, 600);
 		setLocationByPlatform(true);
 
 		reloadWithAge.setSelected(true);
@@ -78,6 +80,7 @@ public class NornPoser extends JFrame {
 		rhs.add(new JButtonWR("Reload", () -> doLoadGenetics()), CDSPCommonUI.gridBagFill(3, 0, 1, 1, 1, 0));
 		rhs.add(jpse, CDSPCommonUI.gridBagFill(0, 1, 4, 1, 1, 1));
 		rhs.add(tint, CDSPCommonUI.gridBagFill(0, 2, 4, 1, 1, 0));
+		rhs.add(poseString, CDSPCommonUI.gridBagFill(4, 0, 4, 4, 1, 1));
 		// bottom bar {
 		rhs.add(age, CDSPCommonUI.gridBagFill(0, 3, 1, 1, 1, 0));
 		rhs.add(sxs, CDSPCommonUI.gridBagFill(1, 3, 1, 1, 1, 0));
@@ -96,6 +99,9 @@ public class NornPoser extends JFrame {
 		};
 		tint.onEditTint = tint -> {
 			jNorn.setTint(tint);
+		};
+		poseString.onChange = () -> {
+			reloadSkeleton(this);
 		};
 		age.addItemListener(feedSimulator);
 		sxs.addItemListener(feedSimulator);
@@ -144,6 +150,7 @@ public class NornPoser extends JFrame {
 
 	public void reloadSkeleton(Frame frame) {
 		try {
+			poseString.intoPartFrames(pose);
 			C3PartSlots c3ps = jpse.getSlots();
 			SkeletonIndex[] genes = c3ps.asSkeletonIndexes(sxs.getSelectedIndex(), age.getSelectedIndex());
 			DirLookup cached = new CachedDirLookup(gameInfo);

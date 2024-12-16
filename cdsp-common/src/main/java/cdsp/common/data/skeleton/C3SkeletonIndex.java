@@ -44,14 +44,14 @@ public class C3SkeletonIndex extends SkeletonIndex {
 	public SkeletonIndex[] getSearchPath() {
 		LinkedList<SkeletonIndex> lls = new LinkedList<>();
 		for (int gl = genusIndex; gl >= 0; gl--) {
-			for (int sXor = bsIndex; sXor < 2; sXor++) {
+			for (int sXor = 0; sXor < 2; sXor++) {
 				for (int bl = breedIndex; bl >= 0; bl--) {
 					for (int al = ageIndex; al >= 0; al--) {
 						lls.add(new C3SkeletonIndex(bl, gl, bsIndex ^ sXor, al));
 					}
 				}
 			}
-			for (int sXor = bsIndex; sXor < 2; sXor++) {
+			for (int sXor = 0; sXor < 2; sXor++) {
 				for (int bl = breedIndex + 1; bl < CreaturesFacts.C_23_BREED_INDEX.length; bl++) {
 					for (int al = ageIndex; al >= 0; al--) {
 						lls.add(new C3SkeletonIndex(bl, gl, bsIndex ^ sXor, al));

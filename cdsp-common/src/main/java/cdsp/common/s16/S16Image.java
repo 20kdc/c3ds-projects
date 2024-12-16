@@ -98,25 +98,25 @@ public final class S16Image {
 	 * Tint colour is roughly -0.5 to 0.5, (it can be just a bit lower than -0.5 in practice though)
 	 * Rotation/swap are in integers because of emulating Quirks.
 	 */
-	public BufferedImage toBITinted(boolean alphaAware, float red, float green, float blue, int rotation, int swap) {
+	public BufferedImage toBITinted(boolean alphaAware, Tint tint) {
+		if (tint.isIdentity())
+			return toBI(alphaAware);
 		BufferedImage bi = new BufferedImage(width, height,
 				alphaAware ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
 		int[] intpix = new int[pixels.length];
-		float[] tmp = new float[4];
+		int[] tmp = new int[4];
 		for (int i = 0; i < pixels.length; i++) {
 			int val = CS16ColourFormat.argbFrom565(pixels[i], alphaAware);
-			if (!(red == 0 && green == 0 && blue == 0 && rotation == 0 && swap == 0)) {
-				Shaders.argbToFloats(tmp, val);
-				tmp[0] += red;
-				tmp[1] += green;
-				tmp[2] += blue;
-				Shaders.clampFloats(tmp);
-				Shaders.rotate(tmp, rotation);
-				Shaders.doQuirkyOverflow(tmp);
-				Shaders.swap(tmp, swap);
-				Shaders.doQuirkyOverflow(tmp);
-				val = Shaders.floatsToARGB(tmp);
+			Shaders.argbToIntsEmu565(tmp, val);
+			if (tmp[0] != 0 || tmp[1] != 0 || tmp[2] != 0) {
+				tmp[0] += tint.r - 128;
+				tmp[1] += tint.g - 128;
+				tmp[2] += tint.b - 128;
+				Shaders.clampChannelInts(tmp);
+				Shaders.rotate(tmp, tint.rot);
+				Shaders.swap(tmp, tint.swap);
 			}
+			val = Shaders.intsToARGBEmu565(tmp);
 			intpix[i] = val;
 		}
 		bi.getRaster().setDataElements(0, 0, width, height, intpix);
