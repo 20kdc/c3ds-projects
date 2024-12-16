@@ -33,6 +33,21 @@ public abstract class GenVersion {
 		geneTypes[gdl.type] = gdl;
 	}
 
+	/**
+	 * Gets a list of all gene types.
+	 */
+	public final int[] getGeneTypes() {
+		int total = 0;
+		for (int v : subTypes)
+			total += v;
+		int[] res = new int[total];
+		int ptr = 0;
+		for (int type = 0; type < subTypes.length; type++)
+			for (int i = 0; i < subTypes[type]; i++)
+				res[ptr++] = i | (type << 8);
+		return res;
+	}
+
 	public final int getGeneType(byte[] genome, int start) {
 		int high = GenUtils.safeGet(genome, start + 4, 0, subTypes.length);
 		int low = GenUtils.safeGet(genome, start + 5, 0, subTypes[high]);
@@ -114,7 +129,7 @@ public abstract class GenVersion {
 			return geneType + " I" + (geneId & 0xFF) + " G" + (generation & 0xFF) + " A" + (switchOn & 0xFF) + " " + GeneFlags.summarizeGeneFlags((byte) flags);
 		}
 	};
-	public static final GenVersion C2 = new GenVersion("C2", new int[] {2, 5, 1, 8}, 11) {
+	public static final GenVersion C2 = new GenVersion("C2", new int[] {2, 5, 8, 1}, 11) {
 		public boolean flagsWillExpress(int geneFlags, int sxs) {
 			if ((geneFlags & GeneFlags.C_23_CARRY) != 0)
 				return false;
@@ -138,7 +153,7 @@ public abstract class GenVersion {
 			return geneType + " I" + (geneId & 0xFF) + " G" + (generation & 0xFF) + " A" + (switchOn & 0xFF) + " " + GeneFlags.summarizeGeneFlags((byte) flags) + " M" + (mutability & 0xFF);
 		}
 	};
-	public static final GenVersion C3 = new GenVersion("C3/DS/CV/SM", new int[] {3, 6, 1, 9}, 12) {
+	public static final GenVersion C3 = new GenVersion("C3/DS/CV/SM", new int[] {3, 6, 9, 1}, 12) {
 		public boolean flagsWillExpress(int geneFlags, int sxs) {
 			if ((geneFlags & GeneFlags.C_23_CARRY) != 0)
 				return false;
@@ -164,28 +179,82 @@ public abstract class GenVersion {
 		}
 	};
 
+	public static final GenVersion[] VERSIONS = new GenVersion[] {C1, C2, C3};
+
 	static {
+		// subType 0
+
+		C1.attach(GenDataLayout.C12__LOBE);
+		C2.attach(GenDataLayout.C12__LOBE);
 		C3.attach(GenDataLayout.C__3_LOBE);
-		C3.attach(GenDataLayout.C__3_BORG);
-		C3.attach(GenDataLayout.C__3_GENS);
+
+		C2.attach(GenDataLayout.C_23_BORG);
+		C3.attach(GenDataLayout.C_23_BORG);
+
+		C3.attach(GenDataLayout.C__3_TRCT);
+
+		// subType 1
+
+		C1.attach(GenDataLayout.C123_RCPT);
+		C2.attach(GenDataLayout.C123_RCPT);
+		C3.attach(GenDataLayout.C123_RCPT);
+
+		C1.attach(GenDataLayout.C123_EMIT);
+		C2.attach(GenDataLayout.C123_EMIT);
+		C3.attach(GenDataLayout.C123_EMIT);
+
+		C1.attach(GenDataLayout.C123_REAC);
+		C2.attach(GenDataLayout.C123_REAC);
+		C3.attach(GenDataLayout.C123_REAC);
 
 		C1.attach(GenDataLayout.C123_BCHL);
 		C2.attach(GenDataLayout.C123_BCHL);
 		C3.attach(GenDataLayout.C123_BCHL);
 
+		C1.attach(GenDataLayout.C123_INIT);
+		C2.attach(GenDataLayout.C123_INIT);
+		C3.attach(GenDataLayout.C123_INIT);
+
+		C3.attach(GenDataLayout.C__3_NEMT);
+
+		// subType 2
+
+		C1.attach(GenDataLayout.C123_STIM);
+		C2.attach(GenDataLayout.C123_STIM);
+		C3.attach(GenDataLayout.C123_STIM);
+
+		C1.attach(GenDataLayout.C12__GENS);
+		C2.attach(GenDataLayout.C12__GENS);
+		C3.attach(GenDataLayout.C__3_GENS);
+
+		C1.attach(GenDataLayout.C1___APPR);
 		C2.attach(GenDataLayout.C_23_APPR);
 		C3.attach(GenDataLayout.C_23_APPR);
 
+		C1.attach(GenDataLayout.C12__POSE);
+		C2.attach(GenDataLayout.C12__POSE);
 		C3.attach(GenDataLayout.C__3_POSE);
 
 		C1.attach(GenDataLayout.C123_GAIT);
 		C2.attach(GenDataLayout.C123_GAIT);
 		C3.attach(GenDataLayout.C123_GAIT);
 
+		C1.attach(GenDataLayout.C123_INST);
+		C2.attach(GenDataLayout.C123_INST);
+		C3.attach(GenDataLayout.C123_INST);
+
 		C1.attach(GenDataLayout.C123_PIGM);
 		C2.attach(GenDataLayout.C123_PIGM);
 		C3.attach(GenDataLayout.C123_PIGM);
 
-		C3.attach(GenDataLayout.C__3_PIGB);
+		C2.attach(GenDataLayout.C_23_PIGB);
+		C3.attach(GenDataLayout.C_23_PIGB);
+
+		C3.attach(GenDataLayout.C__3_EXPR);
+
+		// subType 3
+
+		C2.attach(GenDataLayout.C_23_ORGN);
+		C3.attach(GenDataLayout.C_23_ORGN);
 	}
 }

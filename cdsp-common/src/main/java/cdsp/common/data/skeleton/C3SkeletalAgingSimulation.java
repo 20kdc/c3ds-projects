@@ -30,7 +30,6 @@ public class C3SkeletalAgingSimulation {
 	}
 
 	public void executeAge(int age, int sxs) {
-		// pass 1: genus init
 		boolean unlockAppr = false;
 		int tintR = 0;
 		int tintRC = 0;
@@ -55,7 +54,7 @@ public class C3SkeletalAgingSimulation {
 				continue;
 			GenDataLayout gdl = version.getGeneLayout(geneType);
 			if (gdl != null) {
-				if (gdl == GenDataLayout.C__3_GENS) {
+				if (gdl == GenDataLayout.C__3_GENS || gdl == GenDataLayout.C12__GENS) {
 					int gen = GenUtils.safeGet(genome, offset, 0, CreaturesFacts.GENUS.length);
 					myPartSlots = new C3PartSlots(gen, 0);
 					unlockAppr = true;
@@ -77,7 +76,7 @@ public class C3SkeletalAgingSimulation {
 						tintB += val;
 						tintBC++;
 					}
-				} else if (gdl == GenDataLayout.C__3_PIGB) {
+				} else if (gdl == GenDataLayout.C_23_PIGB) {
 					tintRot += GenUtils.safeGet(genome, offset);
 					tintSwap += GenUtils.safeGet(genome, offset + 1);
 					tintRot >>= 1;
