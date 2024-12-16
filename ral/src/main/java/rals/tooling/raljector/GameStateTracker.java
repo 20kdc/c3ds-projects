@@ -8,6 +8,7 @@ package rals.tooling.raljector;
 
 import java.util.function.Function;
 
+import cdsp.common.app.Signal;
 import cdsp.common.cpx.Injector;
 import rals.caos.CAOSUtils;
 

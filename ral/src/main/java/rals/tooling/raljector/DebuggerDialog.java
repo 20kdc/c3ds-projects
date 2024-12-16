@@ -21,6 +21,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 import cdsp.common.app.JButtonWR;
+import cdsp.common.app.Signal;
 
 /**
  * RAL's debugger.
