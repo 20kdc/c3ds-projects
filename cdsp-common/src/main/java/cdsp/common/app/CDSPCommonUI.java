@@ -18,17 +18,38 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.function.Consumer;
 
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 /**
  * Common dialogs and fixes.
  */
 public class CDSPCommonUI {
+	// this is a bit nasty but helps to make selection less painful
+	private static File lastDir = null;
+
+	public static File selectDirectory(Component d) {
+		JFileChooser fd = new JFileChooser(lastDir);
+		fd.setFileHidingEnabled(false);
+		fd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		int res = fd.showOpenDialog(d);
+		lastDir = fd.getCurrentDirectory();
+		if (res == JFileChooser.APPROVE_OPTION)
+			return fd.getSelectedFile();
+		return null;
+	}
+
 	public static void showExceptionDialog(Component parent, String introText, String title, Exception exception) {
 		StringWriter sw = new StringWriter();
 		exception.printStackTrace();
 		exception.printStackTrace(new PrintWriter(sw));
 		JOptionPane.showMessageDialog(parent, introText + "\n" + sw.toString(), title, JOptionPane.ERROR_MESSAGE);
+	}
+
+	public static boolean confirmInformationOperation(Component parent, String text, String title) {
+		int res = JOptionPane.showOptionDialog(parent, text, title, JOptionPane.YES_NO_OPTION,
+				JOptionPane.INFORMATION_MESSAGE, null, null, null);
+		return res == JOptionPane.YES_OPTION;
 	}
 
 	public static boolean confirmDangerousOperation(Component parent, String text, String title) {
@@ -39,9 +60,19 @@ public class CDSPCommonUI {
 
 	public static void fileDialog(Frame parent, String title, int mode, Consumer<File> result) {
 		FileDialog fd = new FileDialog(parent);
+		try {
+			fd.setDirectory(lastDir.getAbsolutePath());
+		} catch (Exception ex) {
+			// shhh.
+		}
 		fd.setMultipleMode(false);
 		fd.setMode(mode);
 		fd.setVisible(true);
+		try {
+			lastDir = new File(fd.getDirectory());
+		} catch (Exception ex) {
+			// shhh.
+		}
 		File[] files = fd.getFiles();
 		if (files.length == 1) {
 			File f = files[0];

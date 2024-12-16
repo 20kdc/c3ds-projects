@@ -13,15 +13,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import javax.swing.BoxLayout;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public class JGameInfoLocation extends JPanel {
-	// this is a bit nasty but helps to make selection less painful
-	private static File lastDir = null;
 	private final JList<File> jlf;
 	private final LinkedList<File> files;
 
@@ -33,7 +30,7 @@ public class JGameInfoLocation extends JPanel {
 		JPanel jbp = new JPanel();
 		jbp.setLayout(new BoxLayout(jbp, BoxLayout.X_AXIS));
 		jbp.add(new JButtonWR("Add", () -> {
-			File f = selectDirectory(d);
+			File f = CDSPCommonUI.selectDirectory(d);
 			if (f != null) {
 				files.addLast(f);
 				jlf.setListData(ftar(files));
@@ -59,17 +56,6 @@ public class JGameInfoLocation extends JPanel {
 		}));
 		jbp.add(new JLabel(" Directories are searched in order. "));
 		add(jbp, BorderLayout.SOUTH);
-	}
-
-	public static File selectDirectory(Component d) {
-		JFileChooser fd = new JFileChooser(lastDir);
-		fd.setFileHidingEnabled(false);
-		fd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int res = fd.showOpenDialog(d);
-		lastDir = fd.getCurrentDirectory();
-		if (res == JFileChooser.APPROVE_OPTION)
-			return fd.getSelectedFile();
-		return null;
 	}
 
 	private File[] ftar(LinkedList<File> files) {

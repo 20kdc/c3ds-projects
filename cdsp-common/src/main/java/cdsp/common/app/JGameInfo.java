@@ -33,7 +33,7 @@ public class JGameInfo extends JPanel {
 		JPanel buttonbar = new JPanel();
 		buttonbar.setLayout(new BoxLayout(buttonbar, BoxLayout.X_AXIS));
 		buttonbar.add(new JButtonWR("Add Game Directory", () -> {
-			File res = JGameInfoLocation.selectDirectory(this);
+			File res = CDSPCommonUI.selectDirectory(this);
 			if (res != null) {
 				gameInfo.fromGameDirectory(res);
 				for (JGameInfoLocation jgil : jgils)

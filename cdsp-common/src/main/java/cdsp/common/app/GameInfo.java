@@ -186,4 +186,8 @@ public class GameInfo implements DirLookup {
 	public File newFile(Location location, String name) {
 		return new File(locations.get(location).getFirst(), name);
 	}
+
+	public boolean looksEmpty() {
+		return locations.get(Location.GENETICS).size() == 0;
+	}
 }
