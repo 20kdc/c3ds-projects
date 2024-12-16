@@ -9,7 +9,7 @@ package cdsp.tools;
 
 import java.awt.EventQueue;
 import java.awt.FileDialog;
-import java.awt.GridLayout;
+import java.awt.GridBagLayout;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -19,9 +19,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 
+import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
 import cdsp.common.app.CDSPCommonUI;
@@ -45,50 +47,68 @@ public class Main extends JFrame {
 		gameInfo.loadFromDefaultLocation();
 		// Continue
 		setTitle("cdsp-tools");
-		setLayout(new GridLayout(0, 1));
-		add(new JButtonWR("Configuration", () -> {
-			JDialog configPage = new JDialog(Main.this, "Configuration");
-			configPage.add(new JGameInfo(gameInfo));
-			configPage.setSize(800, 600);
-			configPage.setVisible(true);
-		}));
-		add(new JButtonWR("View C16/S16", () -> {
-			CDSPCommonUI.fileDialog(Main.this, "C16/S16/BLK...", FileDialog.LOAD, (f) -> {
-				new CS16Viewer(f, Main.this).setVisible(true);
-			});
-		}));
-		add(new JButtonWR("Summarize Genome", () -> {
-			CDSPCommonUI.fileDialog(Main.this, "GEN...", FileDialog.LOAD, (f) -> {
-				try {
-					StringBuilder result = new StringBuilder();
-					GenPackage gPackage = GenUtils.readGenome(f);
-					result.append(gPackage.version.toString());
-					result.append("\n");
-					byte[] genomeData = gPackage.data;
-					int offset = GenUtils.nextGene(genomeData, 0);
-					while (offset < genomeData.length) {
-						result.append(gPackage.version.summarizeGene(genomeData, offset));
+		setLayout(new GridBagLayout());
+		JPanel configPanel = new JPanel();
+		{
+			configPanel.setBorder(BorderFactory.createTitledBorder("Configuration"));
+			configPanel.setLayout(new GridBagLayout());
+			configPanel.add(new JButtonWR("Game Directories...", () -> {
+				JDialog configPage = new JDialog(Main.this, "Game Directories");
+				configPage.add(new JGameInfo(gameInfo));
+				configPage.setSize(800, 600);
+				configPage.setVisible(true);
+			}));
+		}
+		JPanel geneticsPanel = new JPanel();
+		{
+			geneticsPanel.setBorder(BorderFactory.createTitledBorder("Genetics"));
+			geneticsPanel.setLayout(new GridBagLayout());
+			geneticsPanel.add(new JButtonWR("Summarize Genome", () -> {
+				CDSPCommonUI.fileDialog(Main.this, "GEN...", FileDialog.LOAD, (f) -> {
+					try {
+						StringBuilder result = new StringBuilder();
+						GenPackage gPackage = GenUtils.readGenome(f);
+						result.append(gPackage.version.toString());
 						result.append("\n");
-						offset = GenUtils.nextGene(genomeData, offset + 4);
+						byte[] genomeData = gPackage.data;
+						int offset = GenUtils.nextGene(genomeData, 0);
+						while (offset < genomeData.length) {
+							result.append(gPackage.version.summarizeGene(genomeData, offset));
+							result.append("\n");
+							offset = GenUtils.nextGene(genomeData, offset + 4);
+						}
+						CDSPCommonUI.showReport("Genome " + f + " Report", result.toString());
+					} catch (Exception ex) {
+						CDSPCommonUI.showExceptionDialog(Main.this, "Could not load genome.", "Error", ex);
 					}
-					CDSPCommonUI.showReport("Genome " + f + " Report", result.toString());
-				} catch (Exception ex) {
-					CDSPCommonUI.showExceptionDialog(Main.this, "Could not load genome.", "Error", ex);
-				}
-			});
-		}));
-		add(new JButtonWR("Norn Poser", () -> {
-			new NornPoser(gameInfo).setVisible(true);
-		}));
-		add(new JButtonWR("Convert To RGB565", () -> {
-			converter(false, CS16Format.S16_RGB565, CS16Format.C16_RGB565);
-		}));
-		add(new JButtonWR("Rewrite All As RGB565", () -> {
-			converter(true, CS16Format.S16_RGB565, CS16Format.C16_RGB565);
-		}));
-		add(new JButtonWR("Rewrite All As RGB555 (Force Spew)", () -> {
-			converter(true, CS16Format.S16_RGB555, CS16Format.C16_RGB555);
-		}));
+				});
+			}), CDSPCommonUI.gridBagFill(0, 0, 1, 1, 0, 0));
+			geneticsPanel.add(new JButtonWR("Norn Poser", () -> {
+				new NornPoser(gameInfo).setVisible(true);
+			}), CDSPCommonUI.gridBagFill(0, 1, 1, 1, 0, 0));
+		}
+		JPanel imagingPanel = new JPanel();
+		{
+			imagingPanel.setBorder(BorderFactory.createTitledBorder("Imaging"));
+			imagingPanel.setLayout(new GridBagLayout());
+			imagingPanel.add(new JButtonWR("View C16/S16", () -> {
+				CDSPCommonUI.fileDialog(Main.this, "C16/S16/BLK...", FileDialog.LOAD, (f) -> {
+					new CS16Viewer(f, Main.this).setVisible(true);
+				});
+			}), CDSPCommonUI.gridBagFill(0, 0, 1, 1, 0, 0));
+			imagingPanel.add(new JButtonWR("Convert To RGB565 (Rainbow Fix)", () -> {
+				converter(false, CS16Format.S16_RGB565, CS16Format.C16_RGB565);
+			}), CDSPCommonUI.gridBagFill(0, 1, 1, 1, 0, 0));
+			imagingPanel.add(new JButtonWR("Rewrite All As RGB565", () -> {
+				converter(true, CS16Format.S16_RGB565, CS16Format.C16_RGB565);
+			}), CDSPCommonUI.gridBagFill(0, 2, 1, 1, 0, 0));
+			imagingPanel.add(new JButtonWR("Rewrite All As RGB555 (Force Spew)", () -> {
+				converter(true, CS16Format.S16_RGB555, CS16Format.C16_RGB555);
+			}), CDSPCommonUI.gridBagFill(0, 3, 1, 1, 0, 0));
+		}
+		add(configPanel, CDSPCommonUI.gridBagFill(0, 0, 1, 1, 1, 1));
+		add(geneticsPanel, CDSPCommonUI.gridBagFill(0, 1, 1, 1, 1, 1));
+		add(imagingPanel, CDSPCommonUI.gridBagFill(1, 0, 1, 2, 1, 1));
 		pack();
 		setLocationByPlatform(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
