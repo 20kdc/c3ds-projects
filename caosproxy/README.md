@@ -12,7 +12,7 @@ For further information see `spec.txt`.
 
 ## `w32` (CAOSProxy Server W32)
 
-This is a CAOSProxy (CPX) server to be used on Wine or on Windows.
+`caosprox.exe` is a CAOSProxy (CPX) server to be used on Wine or on Windows.
 
 ```
 caosprox [loud/quiet/invisible/help] [HOST] [PORT] [game name]
@@ -20,3 +20,6 @@ default mode is loud, HOST is 127.0.0.1 (set to 0.0.0.0 for remote access), defa
 all prior args must be specified if you wish to use one
 ```
 
+`caosprxc.exe` is the same, but as a console application.
+
+`engine-cpx.dll` is the same again, but it's a loadable module you drop in your game directory, so you don't need to manually start the server.

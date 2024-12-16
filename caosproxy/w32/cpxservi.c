@@ -234,8 +234,7 @@ static void handleClientInsideMutex(rGlobals_t * g, const char * gameID) {
 
 void cpxservi_handleClient(libcpx_channel_t * client) {
 	// notify UI thread for blinkenlights (moved here because of plan for multiple contact methods)
-	if (globalWindow)
-		PostMessageA(globalWindow, msgTrayBlink, 1, 0);
+	cpxservg_activity();
 	// continue...
 	rGlobals_t g;
 	g.client = client;

@@ -12,8 +12,7 @@
 #include "libcpx.h"
 
 // main
-extern HWND globalWindow;
-extern UINT msgTrayBlink;
+void cpxservg_activity();
 
 // cpxservi
 extern const char * cpxservi_gameID;

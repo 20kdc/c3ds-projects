@@ -1,5 +1,5 @@
 CAOSPROX_W32_EXES := caosproxy/caosprox.exe caosproxy/caosprxc.exe
-CAOSPROX_W32_EXES += caosproxy/cpxinvrt.exe
+CAOSPROX_W32_EXES += caosproxy/cpxinvrt.exe caosproxy/engine-cpx.dll
 all: $(CAOSPROX_W32_EXES)
 
 CAOSPROX_REL += $(CAOSPROX_W32_EXES)
@@ -10,6 +10,9 @@ INTERMEDIATES += caosproxy/w32/caospres.o
 CAOSPROX_BODY := caosproxy/w32/cpxservg.c caosproxy/w32/cpxservi.c caosproxy/w32/cpxservl.c
 CAOSPROX_BODY += caosproxy/w32/caospres.o caosproxy/w32/libcpx.c
 
+CPX_DLL_BODY := caosproxy/w32/cpx_embedded.c caosproxy/w32/cpxservi.c caosproxy/w32/cpxservl.c
+CPX_DLL_BODY += caosproxy/w32/caospres.o caosproxy/w32/libcpx.c
+
 CPXINVRT_BODY := caosproxy/w32/cpxinvrt.c
 CPXINVRT_BODY += caosproxy/w32/caospres.o caosproxy/w32/libcpx.c
 
@@ -19,6 +22,10 @@ caosproxy/caosprox.exe: $(CAOSPROX_BODY) caosproxy/w32/libcpx.h caosproxy/w32/cp
 
 caosproxy/caosprxc.exe: $(CAOSPROX_BODY) caosproxy/w32/libcpx.h caosproxy/w32/cpxservc.h
 	$(W32_CC) $(W32_CFLAGS_EXE) $(CAOSPROX_BODY) -o $@ -lws2_32
+	$(W32_STRIP) $@
+
+caosproxy/engine-cpx.dll: $(CPX_DLL_BODY) caosproxy/w32/libcpx.h caosproxy/w32/cpxservc.h
+	$(W32_CC) $(W32_CFLAGS_EXE) $(CPX_DLL_BODY) -o $@ -lws2_32 -shared
 	$(W32_STRIP) $@
 
 caosproxy/w32/caospres.o: caosproxy/w32/caospres.rc caosproxy/w32/caosprox.ico

@@ -13,9 +13,14 @@
 
 #include "cpxservc.h"
 
-HWND globalWindow = NULL;
-UINT msgTrayCallback = WM_USER;
-UINT msgTrayBlink = WM_USER + 1;
+static HWND globalWindow = NULL;
+static UINT msgTrayCallback = WM_USER;
+static UINT msgTrayBlink = WM_USER + 1;
+
+void cpxservg_activity() {
+	if (globalWindow)
+		PostMessageA(globalWindow, msgTrayBlink, 1, 0);
+}
 
 static int mbMutex = 0;
 static NOTIFYICONDATAA notifyIcon = {};
