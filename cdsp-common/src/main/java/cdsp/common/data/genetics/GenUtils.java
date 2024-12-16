@@ -77,6 +77,24 @@ public class GenUtils {
 	}
 
 	/**
+	 * Returns the offset of the next 'gene'.
+	 * Returns data.length if we run out of data or if 'gend' is found.
+	 */
+	public static int nextGene(byte[] data, int start) {
+		int effectiveLen = data.length - 4;
+		while (start <= effectiveLen) {
+			if (data[start] == 'g' && data[start + 1] == 'e' && data[start + 2] == 'n') {
+				if (data[start + 3] == 'e')
+					return start;
+				if (data[start + 3] == 'd')
+					return data.length;
+			}
+			start++;
+		}
+		return data.length;
+	}
+
+	/**
 	 * Confirms that a word in the genome matches.
 	 */
 	public static boolean matchWord(byte[] data, int ptr, char a, char b, char c, char d) {

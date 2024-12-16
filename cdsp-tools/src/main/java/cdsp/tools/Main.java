@@ -65,12 +65,11 @@ public class Main extends JFrame {
 					result.append(gPackage.version.toString());
 					result.append("\n");
 					byte[] genomeData = gPackage.data;
-					int offset = 0;
+					int offset = GenUtils.nextGene(genomeData, 0);
 					while (offset < genomeData.length) {
-						offset = GenUtils.nextChunk(genomeData, offset);
 						result.append(gPackage.version.summarizeGene(genomeData, offset));
 						result.append("\n");
-						offset += 4;
+						offset = GenUtils.nextGene(genomeData, offset + 4);
 					}
 					CDSPCommonUI.showReport("Genome " + f + " Report", result.toString());
 				} catch (Exception ex) {
@@ -78,7 +77,7 @@ public class Main extends JFrame {
 				}
 			});
 		}));
-		add(new JButtonWR("Nornposer", () -> {
+		add(new JButtonWR("Norn Poser", () -> {
 			new NornPoser(gameInfo).setVisible(true);
 		}));
 		add(new JButtonWR("Convert To RGB565", () -> {

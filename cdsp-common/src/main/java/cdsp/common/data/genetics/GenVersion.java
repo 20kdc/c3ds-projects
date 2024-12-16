@@ -7,7 +7,7 @@
 
 package cdsp.common.data.genetics;
 
-import cdsp.common.data.IOUtils;
+import cdsp.common.data.genes.Gene;
 
 /**
  * Genome versions.
@@ -16,16 +16,11 @@ public abstract class GenVersion {
 	public final String name;
 	public final int geneHeaderLength;
 	private final GenDataLayout[] geneTypes = new GenDataLayout[0x10000];
+	private final int[] subTypes;
 
-	public static final int GF_MUT = 1;
-	public static final int GF_DUP = 2;
-	public static final int GF_CUT = 4;
-	public static final int GF_MALE = 8;
-	public static final int GF_FEMALE = 16;
-	public static final int GF_CARRY = 32;
-
-	public GenVersion(String whatami, int hdr) {
+	public GenVersion(String whatami, int[] st, int hdr) {
 		name = whatami;
+		subTypes = st;
 		geneHeaderLength = hdr;
 	}
 
@@ -38,31 +33,9 @@ public abstract class GenVersion {
 		geneTypes[gdl.type] = gdl;
 	}
 
-	public final String summarizeGeneFlags(byte flags) {
-		StringBuilder sb = new StringBuilder();
-		sb.append('[');
-		if ((flags & GF_MUT) != 0)
-			sb.append("M");
-		if ((flags & GF_DUP) != 0)
-			sb.append("D");
-		if ((flags & GF_CUT) != 0)
-			sb.append("C");
-		if ((flags & GF_MALE) != 0)
-			sb.append("m");
-		if ((flags & GF_FEMALE) != 0)
-			sb.append("f");
-		if ((flags & GF_CARRY) != 0)
-			sb.append("I");
-		sb.append(']');
-		return sb.toString();
-	}
-
 	public final int getGeneType(byte[] genome, int start) {
-		if (start + 6 > genome.length)
-			return 0;
-		// todo: subtype counts should be in genversion db
-		int high = genome[start + 4] & 0xFF;
-		int low = genome[start + 5] & 0xFF;
+		int high = GenUtils.safeGet(genome, start + 4, 0, subTypes.length);
+		int low = GenUtils.safeGet(genome, start + 5, 0, subTypes[high]);
 		return (high << 8) | low;
 	}
 
@@ -80,16 +53,7 @@ public abstract class GenVersion {
 	/**
 	 * If a gene will express (based on flags).
 	 */
-	public final boolean flagsWillExpress(int geneFlags, int sxs) {
-		if ((geneFlags & GenVersion.GF_CARRY) != 0)
-			return false;
-		if ((geneFlags & (GenVersion.GF_MALE | GenVersion.GF_FEMALE)) != 0) {
-			int relevantFlag = sxs == 0 ? GenVersion.GF_MALE : GenVersion.GF_FEMALE;
-			if ((geneFlags & relevantFlag) == 0)
-				return false;
-		}
-		return true;
-	}
+	public abstract boolean flagsWillExpress(int geneFlags, int sxs);
 
 	/**
 	 * Gets the known data layout of a gene by type.
@@ -119,24 +83,26 @@ public abstract class GenVersion {
 	/**
 	 * Summarizes a gene.
 	 */
-	public String summarizeGene(byte[] genome, int start) {
+	public final String summarizeGene(byte[] genome, int start) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(summarizeGeneHeader(genome, start));
-		GenDataLayout gdl = getGeneLayout(getGeneType(genome, start));
-		sb.append("\n ");
-		if (gdl != null) {
-			sb.append(gdl.summarize(genome, start + geneHeaderLength));
-		} else {
-			int endOfHeader = start + geneHeaderLength;
-			if (endOfHeader < genome.length) {
-				int nextHeader = GenUtils.nextChunk(genome, endOfHeader);
-				sb.append(IOUtils.toHex(genome, endOfHeader, nextHeader - endOfHeader));
-			}
-		}
+		Gene g = new Gene(this);
+		int len = GenUtils.nextChunk(genome, start + geneHeaderLength) - start;
+		if (len < 0)
+			len = 0;
+		g.deserialize(genome, start, len);
+		g.summarize(sb);
 		return sb.toString();
 	}
 
-	public static final GenVersion C1 = new GenVersion("C1", 10) {
+	public static final GenVersion C1 = new GenVersion("C1", new int[] {1, 5, 7}, 10) {
+		public boolean flagsWillExpress(int geneFlags, int sxs) {
+			if ((geneFlags & (GeneFlags.C123_MALE | GeneFlags.C123_FEMALE)) != 0) {
+				int relevantFlag = sxs == 0 ? GeneFlags.C123_MALE : GeneFlags.C123_FEMALE;
+				if ((geneFlags & relevantFlag) == 0)
+					return false;
+			}
+			return true;
+		}
 		@Override
 		public String summarizeGeneHeader(byte[] genome, int start) {
 			int geneTypeV = getGeneType(genome, start);
@@ -145,10 +111,21 @@ public abstract class GenVersion {
 			int generation = GenUtils.safeGet(genome, start + 7);
 			int switchOn = GenUtils.safeGet(genome, start + 8);
 			int flags = GenUtils.safeGet(genome, start + 9);
-			return geneType + " I" + (geneId & 0xFF) + " G" + (generation & 0xFF) + " A" + (switchOn & 0xFF) + " " + summarizeGeneFlags((byte) flags);
+			return geneType + " I" + (geneId & 0xFF) + " G" + (generation & 0xFF) + " A" + (switchOn & 0xFF) + " " + GeneFlags.summarizeGeneFlags((byte) flags);
 		}
 	};
-	public static final GenVersion C2 = new GenVersion("C2", 11) {
+	public static final GenVersion C2 = new GenVersion("C2", new int[] {2, 5, 1, 8}, 11) {
+		public boolean flagsWillExpress(int geneFlags, int sxs) {
+			if ((geneFlags & GeneFlags.C_23_CARRY) != 0)
+				return false;
+			if ((geneFlags & (GeneFlags.C123_MALE | GeneFlags.C123_FEMALE)) != 0) {
+				int relevantFlag = sxs == 0 ? GeneFlags.C123_MALE : GeneFlags.C123_FEMALE;
+				if ((geneFlags & relevantFlag) == 0)
+					return false;
+			}
+			return true;
+		}
+
 		@Override
 		public String summarizeGeneHeader(byte[] genome, int start) {
 			int geneTypeV = getGeneType(genome, start);
@@ -158,10 +135,21 @@ public abstract class GenVersion {
 			int switchOn = GenUtils.safeGet(genome, start + 8);
 			int flags = GenUtils.safeGet(genome, start + 9);
 			int mutability = GenUtils.safeGet(genome, start + 10);
-			return geneType + " I" + (geneId & 0xFF) + " G" + (generation & 0xFF) + " A" + (switchOn & 0xFF) + " " + summarizeGeneFlags((byte) flags) + " M" + (mutability & 0xFF);
+			return geneType + " I" + (geneId & 0xFF) + " G" + (generation & 0xFF) + " A" + (switchOn & 0xFF) + " " + GeneFlags.summarizeGeneFlags((byte) flags) + " M" + (mutability & 0xFF);
 		}
 	};
-	public static final GenVersion C3 = new GenVersion("C3/DS/CV/SM", 12) {
+	public static final GenVersion C3 = new GenVersion("C3/DS/CV/SM", new int[] {3, 6, 1, 9}, 12) {
+		public boolean flagsWillExpress(int geneFlags, int sxs) {
+			if ((geneFlags & GeneFlags.C_23_CARRY) != 0)
+				return false;
+			if ((geneFlags & (GeneFlags.C123_MALE | GeneFlags.C123_FEMALE)) != 0) {
+				int relevantFlag = sxs == 0 ? GeneFlags.C123_MALE : GeneFlags.C123_FEMALE;
+				if ((geneFlags & relevantFlag) == 0)
+					return false;
+			}
+			return true;
+		}
+
 		@Override
 		public String summarizeGeneHeader(byte[] genome, int start) {
 			int geneTypeV = getGeneType(genome, start);
@@ -172,7 +160,7 @@ public abstract class GenVersion {
 			int flags = GenUtils.safeGet(genome, start + 9);
 			int mutability = GenUtils.safeGet(genome, start + 10);
 			int variant = GenUtils.safeGet(genome, start + 11);
-			return geneType + " I" + (geneId & 0xFF) + " G" + (generation & 0xFF) + " A" + (switchOn & 0xFF) + " " + summarizeGeneFlags((byte) flags) + " M" + (mutability & 0xFF) + " V" + (variant & 0xFF);
+			return geneType + " I" + (geneId & 0xFF) + " G" + (generation & 0xFF) + " A" + (switchOn & 0xFF) + " " + GeneFlags.summarizeGeneFlags((byte) flags) + " M" + (mutability & 0xFF) + " V" + (variant & 0xFF);
 		}
 	};
 

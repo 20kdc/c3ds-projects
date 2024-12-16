@@ -31,7 +31,6 @@ public class C3SkeletalAgingSimulation {
 
 	public void executeAge(int age, int sxs) {
 		// pass 1: genus init
-		int offset = 0;
 		boolean unlockAppr = false;
 		int tintR = 0;
 		int tintRC = 0;
@@ -41,8 +40,11 @@ public class C3SkeletalAgingSimulation {
 		int tintBC = 0;
 		int tintRot = 128;
 		int tintSwap = 128;
+		int offset = 0;
 		while (offset < genome.length) {
-			offset = GenUtils.nextChunk(genome, offset);
+			offset = GenUtils.nextGene(genome, offset);
+			if (offset == genome.length)
+				break;
 			int geneType = version.getGeneType(genome, offset);
 			int geneAge = version.getGeneAge(genome, offset);
 			int geneFlags = version.getGeneFlags(genome, offset);
