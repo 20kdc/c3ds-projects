@@ -7,6 +7,7 @@
 package cdsp.common.app;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -18,8 +19,14 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.function.Consumer;
 
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 /**
  * Common dialogs and fixes.
@@ -39,11 +46,28 @@ public class CDSPCommonUI {
 		return null;
 	}
 
-	public static void showExceptionDialog(Component parent, String introText, String title, Exception exception) {
+	public static void showExceptionDialog(Frame parent, String introText, String title, Exception exception) {
 		StringWriter sw = new StringWriter();
 		exception.printStackTrace();
 		exception.printStackTrace(new PrintWriter(sw));
-		JOptionPane.showMessageDialog(parent, introText + "\n" + sw.toString(), title, JOptionPane.ERROR_MESSAGE);
+		JDialog dialog = new JDialog(parent);
+		dialog.setModal(true);
+		JTabbedPane tabs = new JTabbedPane();
+		dialog.add(tabs);
+		JPanel mainError = new JPanel();
+		JTextArea jta1 = new JTextArea(introText + "\n" + exception.toString());
+		jta1.setEditable(false);
+		mainError.add(jta1);
+		mainError.add(new JButtonWR("Close", () -> dialog.setVisible(false)));
+		tabs.addTab("Error", mainError);
+		JTextArea jta = new JTextArea(sw.toString());
+		jta.setEditable(false);
+		JScrollPane jsp = new JScrollPane(jta);
+		jsp.setPreferredSize(new Dimension(640, 480));
+		tabs.addTab("Details", jsp);
+		dialog.setLocationByPlatform(true);
+		dialog.pack();
+		dialog.setVisible(true);
 	}
 
 	public static boolean confirmInformationOperation(Component parent, String text, String title) {

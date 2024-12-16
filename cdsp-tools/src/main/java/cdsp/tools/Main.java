@@ -82,7 +82,7 @@ public class Main extends JFrame {
 					info.append("\n");
 					CDSPCommonUI.showReport("CPX Info", info.toString());
 				} catch (Exception ex) {
-					CDSPCommonUI.showExceptionDialog(Main.this, "Could not connect to CPX.", "Error", ex);
+					CDSPCommonUI.showExceptionDialog(Main.this, "Could not connect to CPX.\nCheck your CAOS proxy settings.", "Error", ex);
 				}
 			}));
 		}
