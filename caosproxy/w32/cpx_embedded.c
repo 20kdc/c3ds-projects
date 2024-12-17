@@ -8,6 +8,8 @@
 // Embeddable CPX server module for engines on Wine
 
 #include "cpxservc.h"
+#include <stdint.h>
+#include <stdlib.h>
 
 void cpxservg_activity() {
 }
@@ -30,7 +32,30 @@ int CreaturesEngineModuleInterfaceVersion() {
 }
 
 typedef struct {
-	__thiscall void (*name)(void *, void *);
+	int allocator;
+	char * data;
+	size_t len;
+	size_t res;
+} std_string_t;
+
+static uint8_t * std_string_refcount(std_string_t * str) {
+	return (uint8_t *) str->data - 1;
+}
+
+static void std_string_unref(std_string_t * str) {
+	if (str->data) {
+		uint8_t refcount = *std_string_refcount(str);
+		if (refcount == 0 || refcount == 255) {
+			free(std_string_refcount(str));
+		} else {
+			refcount--;
+			*std_string_refcount(str) = refcount;
+		}
+	}
+}
+
+typedef struct {
+	__thiscall void (*name)(void *, std_string_t *);
 	__thiscall int (*version)(void *);
 	__thiscall void (*caos)(void *, void *);
 	__thiscall void (*shutdown)(void *);
@@ -57,6 +82,18 @@ static __thiscall void mi_v3(void * a, void * b, void * c) {
 
 static __thiscall void mi_update(void * a, int t) {
 }
+static __thiscall void mi_name(void * t, std_string_t * a) {
+	std_string_unref(a);
+	char * data = (char *) malloc(5);
+	data[0] = (char) 255;
+	data[1] = 'c';
+	data[2] = 'p';
+	data[3] = 'x';
+	data[4] = 0;
+	a->data = data + 1;
+	a->len = 3;
+	a->res = 3;
+}
 static __thiscall int mi_version(void * a) {
 	return 1;
 }
@@ -68,7 +105,7 @@ static __thiscall char mi_serializer(void * a, void * b) {
 }
 
 static const c2e_module_vtbl_t my_module_vtbl = {
-	.name = mi_v2,
+	.name = mi_name,
 	.version = mi_version,
 	.caos = mi_v2,
 	.shutdown = mi_v1,
