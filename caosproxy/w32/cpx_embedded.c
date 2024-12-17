@@ -11,7 +11,67 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+// super-hyper-undocumented stuff only 'documented' by a blogpost on someone's blog posing ABOUT HOW YOU SHOULD NOT USE UNDOCUMENTED STUFF
+// you can't make this up, I swear
+extern void * __ImageBase;
+
+static HWND globalWindow = NULL;
+static UINT msgTrayCallback = WM_USER;
+static UINT msgTrayBlink = WM_USER + 1;
+
 void cpxservg_activity() {
+	if (globalWindow)
+		PostMessageA(globalWindow, msgTrayBlink, 1, 0);
+}
+
+static int mbMutex = 0;
+static NOTIFYICONDATAA notifyIcon = {};
+static NOTIFYICONDATAA notifyIconBlink = {};
+
+static LRESULT WINAPI cpxservg_wp(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	if (uMsg == msgTrayCallback) { // system tray callback
+		// do nothing
+	} else if (uMsg == msgTrayBlink) { // blink tray icon, from network thread
+		Shell_NotifyIconA(NIM_MODIFY, &notifyIconBlink);
+		SetTimer(globalWindow, msgTrayBlink, 250, NULL);
+	} else if (uMsg == WM_TIMER && wParam == msgTrayBlink) { // timer for ending blink finished
+		Shell_NotifyIconA(NIM_MODIFY, &notifyIcon);
+	}
+	return DefWindowProcA(hwnd, uMsg, wParam, lParam);
+}
+
+static DWORD WINAPI cpxservg_uiThread(void * param) {
+	HMODULE me = (HMODULE) &__ImageBase;
+	// create window class
+	WNDCLASSA windowClass = {};
+	windowClass.lpfnWndProc = cpxservg_wp;
+	windowClass.hInstance = GetModuleHandleA(NULL);
+	windowClass.lpszClassName = "CAOSProxServerClass";
+	RegisterClassA(&windowClass);
+
+	// create window
+	globalWindow = CreateWindowA("CAOSProxServerClass", "CAOSProx", WS_OVERLAPPEDWINDOW, 0, 0, 800, 600, NULL, NULL, NULL, NULL);
+
+	// create notification icon(s)
+	notifyIcon.cbSize = sizeof(notifyIcon);
+	notifyIcon.hWnd = globalWindow;
+	notifyIcon.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+	notifyIcon.uCallbackMessage = msgTrayCallback;
+	notifyIcon.hIcon = LoadIconA(me, MAKEINTRESOURCEA(1000));
+	notifyIcon.uID = 1;
+	strcpy(notifyIcon.szTip, "CPX Server [Embedded]");
+
+	notifyIconBlink = notifyIcon;
+	notifyIconBlink.hIcon = LoadIconA(me, MAKEINTRESOURCEA(1001));
+
+	Shell_NotifyIconA(NIM_ADD, &notifyIcon);
+
+	// standard message loop
+	MSG msg = {};
+	while (GetMessageA(&msg, NULL, 0, 0) > 0) {
+		TranslateMessage(&msg);
+		DispatchMessageA(&msg);
+	}
 }
 
 static DWORD WINAPI cpxservg_serverThread(void * param) {
@@ -21,6 +81,7 @@ static DWORD WINAPI cpxservg_serverThread(void * param) {
 
 BOOL WINAPI DllMain(HINSTANCE h, DWORD r, void *) {
 	if (r == DLL_PROCESS_ATTACH) {
+		CreateThread(NULL, 0, cpxservg_uiThread, NULL, 0, NULL);
 		cpxservl_serverInit(0x0100007F, 19960);
 		CreateThread(NULL, 0, cpxservg_serverThread, NULL, 0, NULL);
 	}

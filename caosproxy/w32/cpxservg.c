@@ -66,11 +66,11 @@ static void cpxservg_ui() {
 	notifyIcon.uCallbackMessage = msgTrayCallback;
 	notifyIcon.hIcon = LoadIconA(GetModuleHandleA(NULL), MAKEINTRESOURCEA(1000));
 	notifyIcon.uID = 1;
+	strcpy(notifyIcon.szTip, "CPX Server for Creatures 3/DS");
 
 	notifyIconBlink = notifyIcon;
 	notifyIconBlink.hIcon = LoadIconA(GetModuleHandleA(NULL), MAKEINTRESOURCEA(1001));
 	
-	strcpy(notifyIcon.szTip, "CPX Server for Creatures 3/DS");
 	Shell_NotifyIconA(NIM_ADD, &notifyIcon);
 
 	// standard message loop
