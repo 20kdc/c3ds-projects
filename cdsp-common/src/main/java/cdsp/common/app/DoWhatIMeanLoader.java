@@ -9,6 +9,7 @@ package cdsp.common.app;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.LinkedList;
 
@@ -54,36 +55,46 @@ public class DoWhatIMeanLoader {
 	 * Loads genetics or returns null.
 	 */
 	public static GenPackage loadGenetics(File f, Frame frame) {
-		if (f.getName().toLowerCase().endsWith(".creature")) {
-			try {
-				byte[] data = Files.readAllBytes(f.toPath());
-				LinkedList<PRAYBlock> blocks = PRAYBlock.read(IOUtils.wrapLE(data), Integer.MAX_VALUE, W1252Fixed.INSTANCE);
-				PRAYBlock root = ExportedCreatures.findCreatureRootBlock(blocks);
-				if (root == null)
-					throw new RuntimeException("No creature root block");
-				String expectedName = ExportedCreatures.monikerFromRootBlock(root) + "." + root.getType() + ".genetics";
-				for (PRAYBlock pb : blocks)
-					if (pb.getType().equals("GENE") && pb.getName().equals(expectedName))
-						return GenUtils.readGenome(pb.data);
-				throw new RuntimeException("GENE chunk '" + expectedName + "' is missing.");
-			} catch (Exception ex) {
-				CDSPCommonUI.showExceptionDialog(frame, "Could not pull genetics from creature.", "Error", ex);
-			}
-		} else {
-			try {
-				return GenUtils.readGenome(f);
-			} catch (Exception ex) {
-				CDSPCommonUI.showExceptionDialog(frame, "Could not load genetics.", "Error", ex);
-			}
+		try {
+			return loadGenetics(f, frame);
+		} catch (Exception ex) {
+			CDSPCommonUI.showExceptionDialog(frame, "Could not load genetics.", "Error", ex);
 		}
 		return null;
+	}
+
+	/**
+	 * Loads genetics or throws an exception..
+	 */
+	public static GenPackage loadGeneticsCore(File f) throws IOException {
+		if (f.getName().toLowerCase().endsWith(".creature")) {
+			byte[] data = Files.readAllBytes(f.toPath());
+			LinkedList<PRAYBlock> blocks = PRAYBlock.read(IOUtils.wrapLE(data), Integer.MAX_VALUE, W1252Fixed.INSTANCE);
+			PRAYBlock root = ExportedCreatures.findCreatureRootBlock(blocks);
+			if (root == null)
+				throw new RuntimeException("No creature root block");
+			String expectedName = ExportedCreatures.monikerFromRootBlock(root) + "." + root.getType() + ".genetics";
+			for (PRAYBlock pb : blocks)
+				if (pb.getType().equals("GENE") && pb.getName().equals(expectedName))
+					return GenUtils.readGenome(pb.data);
+			throw new RuntimeException("GENE chunk '" + expectedName + "' is missing.");
+		} else {
+			return GenUtils.readGenome(f);
+		}
 	}
 
 	/**
 	 * Ties everything up in a bow.
 	 */
 	public static void loadGeneticsFileDialog(Frame frame, FileDialogThenLoad<GenPackage> handler) {
-		CDSPCommonUI.fileDialog(frame, "Genome/Exported Creature...", FileDialog.LOAD, (f) -> {
+		loadGeneticsFileDialog(frame, "Genome/Exported Creature...", handler);
+	}
+
+	/**
+	 * Ties everything up in a bow.
+	 */
+	public static void loadGeneticsFileDialog(Frame frame, String title, FileDialogThenLoad<GenPackage> handler) {
+		CDSPCommonUI.fileDialog(frame, title, FileDialog.LOAD, (f) -> {
 			GenPackage gPackage = loadGenetics(f, frame);
 			if (gPackage == null)
 				return;

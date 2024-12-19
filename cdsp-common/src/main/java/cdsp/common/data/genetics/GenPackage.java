@@ -7,6 +7,8 @@
 
 package cdsp.common.data.genetics;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * Genetics (version, data) tuple.
  */
@@ -43,5 +45,24 @@ public final class GenPackage {
 			return dataMagic;
 		}
 		throw new RuntimeException("Invalid version???");
+	}
+
+	/**
+	 * Concatenates genomes.
+	 * If you do a version mismatch, that's on you, ahaha~
+	 */
+	public GenPackage cat(GenPackage b) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		int aMeasured = version.effectiveGenomeLength(data);
+		int bMeasured = b.version.effectiveGenomeLength(b.data);
+		int bStart = b.version.genomeSkipGenusOffset(b.data);
+		baos.write(data, 0, aMeasured);
+		if (bStart < bMeasured)
+			baos.write(b.data, bStart, bMeasured - bStart);
+		baos.write('g');
+		baos.write('e');
+		baos.write('n');
+		baos.write('d');
+		return new GenPackage(version, baos.toByteArray());
 	}
 }

@@ -3,4 +3,3 @@ include caosproxy/w32/index.mk
 
 rel: $(CAOSPROX_REL)
 rel-sdk: $(CAOSPROX_REL)
-

@@ -3,6 +3,7 @@
 *.dll
 release.zip
 sdk.zip
+fscc.zip
 release-id.txt
 *.dxvk-cache
 *.log

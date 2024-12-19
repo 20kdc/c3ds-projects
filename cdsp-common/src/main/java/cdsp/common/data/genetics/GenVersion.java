@@ -49,6 +49,38 @@ public abstract class GenVersion {
 	}
 
 	/**
+	 * Measures the effective genome length, not including the 'gend'!!!!
+	 * We don't want to risk corrupting custom/extended genes in GeneCat, so we use byte array access.
+	 */
+	public int effectiveGenomeLength(byte[] data) {
+		int length = 0;
+		int offset = 0;
+		while (true) {
+			int geneStart = GenUtils.nextGene(data, offset);
+			if (geneStart == data.length)
+				break;
+			offset = geneStart + geneHeaderLength;
+			length = GenUtils.nextChunk(data, offset);
+		}
+		return length;
+	}
+
+	/**
+	 * Works out the offset to skip the genus.
+	 * Returns 0 if it can't figure it out, so it won't do anything stupid.
+	 */
+	public int genomeSkipGenusOffset(byte[] data) {
+		int geneStart = GenUtils.nextGene(data, 0);
+		int type = getGeneType(data, geneStart);
+		// we always know header genes right
+		// ...if you somehow make your own GenVersion and this breaks NOT MY FAULT LOL
+		// who am I? is this the hidden shitposter kess
+		if (isHeaderGene(type))
+			return geneStart + geneHeaderLength + getGeneLayout(type).length;
+		return 0;
+	}
+
+	/**
 	 * Is this the header (i.e. Genus) gene?
 	 */
 	public final boolean isHeaderGene(int type) {

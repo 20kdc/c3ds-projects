@@ -9,7 +9,7 @@ INTERMEDIATES := release-id.txt
 all:
 
 # Release All
-rel-all: rel rel-sdk
+rel-all: rel rel-sdk rel-fscc
 
 # Release (Full)
 rel: COPYING.txt README.md CREDITS.txt assorted-caos
@@ -39,6 +39,19 @@ rel-sdk: COPYING.txt README.md CREDITS.txt assorted-caos
 	rm -f sdk.zip
 	zip -r sdk.zip $^
 	zip sdk.zip release-id.txt
+
+# Release (FSCC)
+rel-fscc: COPYING.txt README.md CREDITS.txt
+	echo "r`date +%s` (festival edition)" > release-id.txt
+	echo "Linux host:" $(HOST_LINUX) >> release-id.txt
+	echo "Java/Maven available:" $(HOST_JAVA) >> release-id.txt
+	echo "git status:" >> release-id.txt
+	git status >> release-id.txt
+	echo "Latest commit:" >> release-id.txt
+	git log HEAD^..HEAD >> release-id.txt
+	rm -f fscc.zip
+	zip -r fscc.zip $^
+	zip fscc.zip release-id.txt
 
 include colour-depth-fix/index.mk
 include caosproxy/index.mk
@@ -70,6 +83,9 @@ endif
 ifeq ($(HOST_LINUX),1)
 include ciesetup/index.mk
 endif
+
+rel-fscc: $(CAOSPROX_REL)
+rel-fscc: $(JTOOLS_REL)
 
 clean:
 	rm -f $(INTERMEDIATES)

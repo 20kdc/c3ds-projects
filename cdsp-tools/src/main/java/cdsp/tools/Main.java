@@ -40,6 +40,7 @@ import cdsp.common.app.JGameInfo;
 import cdsp.common.cpx.Injector;
 import cdsp.common.data.DirLookup;
 import cdsp.common.data.DirLookup.Location;
+import cdsp.common.data.genetics.GenPackage;
 import cdsp.common.data.genetics.GenUtils;
 import cdsp.common.s16.BLKInfo;
 import cdsp.common.s16.CS16Format;
@@ -125,7 +126,21 @@ public class Main extends JFrame {
 						CDSPCommonUI.showExceptionDialog(Main.this, "Could not summarize genome.", "Error", ex);
 					}
 				});
-			}), CDSPCommonUI.gridBagFill(0, 0, 2, 1, 0, 0));
+			}), CDSPCommonUI.gridBagFill(0, 0, 1, 1, 0, 0));
+			geneticsPanel.add(new JButtonWR("GeneCat", () -> {
+				DoWhatIMeanLoader.loadGeneticsFileDialog(this, "Genome 1", (f1, gPackage1) -> {
+					DoWhatIMeanLoader.loadGeneticsFileDialog(this, "Genome 2", (f2, gPackage2) -> {
+						CDSPCommonUI.fileDialog(this, "Output", FileDialog.SAVE, (fo) -> {
+							try {
+								GenPackage res = gPackage1.cat(gPackage2);
+								Files.write(fo.toPath(), res.toFileData());
+							} catch (Exception ex) {
+								CDSPCommonUI.showExceptionDialog(Main.this, "Could not concatenate genomes.", "Error", ex);
+							}
+						});
+					});
+				});
+			}), CDSPCommonUI.gridBagFill(1, 0, 1, 1, 0, 0));
 			geneticsPanel.add(new JButtonWR("Norn Poser", () -> {
 				if (!convinceUserToDoSetup())
 					return;

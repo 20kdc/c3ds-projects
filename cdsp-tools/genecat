@@ -1,0 +1,4 @@
+#!/bin/sh
+SCRIPT_PATH="`readlink -e $0`"
+SCRIPT_DIR="`dirname "$SCRIPT_PATH"`"
+java -cp "$SCRIPT_DIR/cdsp-tools.jar" cdsp.tools.GeneCat "$@"
