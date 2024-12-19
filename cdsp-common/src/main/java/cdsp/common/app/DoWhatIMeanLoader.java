@@ -56,7 +56,7 @@ public class DoWhatIMeanLoader {
 	 */
 	public static GenPackage loadGenetics(File f, Frame frame) {
 		try {
-			return loadGenetics(f, frame);
+			return loadGeneticsCore(f);
 		} catch (Exception ex) {
 			CDSPCommonUI.showExceptionDialog(frame, "Could not load genetics.", "Error", ex);
 		}
