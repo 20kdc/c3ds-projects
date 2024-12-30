@@ -25,6 +25,9 @@ public class AppConfig {
 	private static final File configRoot = configRootPos();
 
 	private static File configRootPos() {
+		String override = System.getenv("CDSP_CONFIG_ROOT");
+		if (override != null)
+			return new File(override);
 		File userHome = new File(System.getProperty("user.home", "."));
 		return new File(new File(new File(userHome, ".local"), "share"), "cdsp-common");
 	}
@@ -32,9 +35,9 @@ public class AppConfig {
 	/**
 	 * Loads a config file (or returns null).
 	 */
-	public static Object load(String name) {
+	public static Object load(String name, String overrideVar) {
 		try {
-			File f = new File(configRoot, name);
+			File f = accountForOverrideVar(name, overrideVar);
 			if (!f.exists())
 				return null;
 			try (FileInputStream fis = new FileInputStream(f)) {
@@ -49,10 +52,10 @@ public class AppConfig {
 	/**
 	 * Saves a config file (or at least tries to).
 	 */
-	public static void save(String name, Object val) {
+	public static void save(String name, String overrideVar, Object val) {
 		try {
 			configRoot.mkdirs();
-			File f = new File(configRoot, name);
+			File f = accountForOverrideVar(name, overrideVar);
 			StringWriter sw = new StringWriter();
 			if (val instanceof JSONObject) {
 				((JSONObject) val).write(sw, 4, 0);
@@ -63,5 +66,14 @@ public class AppConfig {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	private static File accountForOverrideVar(String name, String overrideVar) {
+		if (overrideVar != null) {
+			String override = System.getenv(overrideVar);
+			if (override != null)
+				return new File(override);
+		}
+		return new File(configRoot, name);
 	}
 }

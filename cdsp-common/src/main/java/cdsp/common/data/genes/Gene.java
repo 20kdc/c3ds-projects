@@ -8,6 +8,7 @@
 package cdsp.common.data.genes;
 
 import cdsp.common.data.IOUtils;
+import cdsp.common.data.VirtualCatalogue;
 import cdsp.common.data.genetics.GenDataLayout;
 import cdsp.common.data.genetics.GenUtils;
 import cdsp.common.data.genetics.GenVersion;
@@ -141,10 +142,10 @@ public final class Gene {
 	/**
 	 * Summarizes this gene as a whole.
 	 */
-	public final void summarize(StringBuilder builder) {
+	public final void summarize(VirtualCatalogue catalogue, StringBuilder builder) {
 		summarizeHeader(builder);
 		builder.append("\n ");
-		data.summarizeData(builder);
+		data.summarizeData(catalogue, builder);
 	}
 
 	/**
@@ -175,7 +176,7 @@ public final class Gene {
 		/**
 		 * Summarizes the data in this gene.
 		 */
-		void summarizeData(StringBuilder builder);
+		void summarizeData(VirtualCatalogue catalogue, StringBuilder builder);
 
 		/**
 		 * Writes out this gene's data.
@@ -228,7 +229,7 @@ public final class Gene {
 		}
 
 		@Override
-		public void summarizeData(StringBuilder builder) {
+		public void summarizeData(VirtualCatalogue catalogue, StringBuilder builder) {
 			builder.append(IOUtils.toHex(data, 0, data.length));
 		}
 	}

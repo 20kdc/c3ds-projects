@@ -9,6 +9,7 @@ package cdsp.common.app;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -18,13 +19,16 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import cdsp.common.cpx.Injector;
 import cdsp.common.data.DirLookup;
+import cdsp.common.data.VirtualCatalogue;
 import cdsp.common.data.bytestring.W1252Fixed;
+import cdsp.common.data.skeleton.SkeletonDef;
 
 /**
  * Game information.
  */
-public class GameInfo implements DirLookup {
+public class GameInfo implements DirLookup, VirtualCatalogue {
 	/**
 	 * File version (used for upgrades)
 	 */
@@ -40,10 +44,25 @@ public class GameInfo implements DirLookup {
 	 */
 	public final EnumMap<Location, LinkedList<File>> locations = new EnumMap<>(Location.class);
 
+	/**
+	 * Chemical names.
+	 */
+	public final String[] chemNames = new String[256];
+
 	public GameInfo() {
 		for (Location loc : Location.values())
 			locations.put(loc, new LinkedList<>());
 		reset();
+	}
+
+	@Override
+	public SkeletonDef getSkeletonDef() {
+		return SkeletonDef.C3;
+	}
+
+	@Override
+	public String findChemName(int chem) {
+		return chemNames[chem & 0xFF];
 	}
 
 	/**
@@ -53,6 +72,8 @@ public class GameInfo implements DirLookup {
 		charset = W1252Fixed.INSTANCE;
 		for (LinkedList<File> llf : locations.values())
 			llf.clear();
+		for (int i = 0; i < chemNames.length; i++)
+			chemNames[i] = null;
 	}
 
 	/**
@@ -101,6 +122,18 @@ public class GameInfo implements DirLookup {
 						}
 					}
 				}
+				JSONArray la = jo.optJSONArray("chemNames");
+				if (la != null) {
+					for (int i = 0; i < 256; i++) {
+						try {
+							Object obj = la.get(i);
+							if (obj instanceof String)
+								chemNames[i] = (String) obj;
+						} catch (Exception ex) {
+							// ignored...
+						}
+					}
+				}
 			}
 		} catch (Exception je) {
 			je.printStackTrace();
@@ -111,7 +144,7 @@ public class GameInfo implements DirLookup {
 	 * Loads from the default location.
 	 */
 	public void loadFromDefaultLocation() {
-		load(AppConfig.load("gameinfo.json"));
+		load(AppConfig.load("gameinfo.json", "CDSP_GAMEINFO"));
 	}
 
 	/**
@@ -129,6 +162,10 @@ public class GameInfo implements DirLookup {
 			loc.put(ent.getKey().nameInternal, array);
 		}
 		obj.put("locations", loc);
+		JSONArray cn = new JSONArray();
+		for (int i = 0; i < 256; i++)
+			cn.put((Object) chemNames[i]);
+		obj.put("chemNames", cn);
 		return obj;
 	}
 
@@ -136,7 +173,7 @@ public class GameInfo implements DirLookup {
 	 * Saves to the default location.
 	 */
 	public void saveToDefaultLocation() {
-		AppConfig.save("gameinfo.json", save());
+		AppConfig.save("gameinfo.json", "CDSP_GAMEINFO", save());
 	}
 
 	/**
@@ -189,5 +226,17 @@ public class GameInfo implements DirLookup {
 
 	public boolean looksEmpty() {
 		return locations.get(Location.GENETICS).size() == 0;
+	}
+
+	/**
+	 * Loads catalogues via CPX.
+	 */
+	public void loadCataloguesViaCPX() throws IOException {
+		for (int i = 0; i < 256; i++) {
+			String res = Injector.cpxRequest("execute\nouts read \"chemical_names\" " + i, charset);
+			if (i == 90 && res.equals("90"))
+				res = "Wounded";
+			chemNames[i] = res;
+		}
 	}
 }

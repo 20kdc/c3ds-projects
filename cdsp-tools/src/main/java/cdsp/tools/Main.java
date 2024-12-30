@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
@@ -36,16 +37,20 @@ import cdsp.common.app.CDSPCommonUI;
 import cdsp.common.app.DoWhatIMeanLoader;
 import cdsp.common.app.GameInfo;
 import cdsp.common.app.JButtonWR;
-import cdsp.common.app.JGameInfo;
+import cdsp.common.app.JGameInfoLocations;
 import cdsp.common.cpx.Injector;
 import cdsp.common.data.DirLookup;
 import cdsp.common.data.DirLookup.Location;
+import cdsp.common.data.genes.GC123_0102Reaction;
+import cdsp.common.data.genes.Gene;
 import cdsp.common.data.genetics.GenPackage;
 import cdsp.common.data.genetics.GenUtils;
 import cdsp.common.s16.BLKInfo;
 import cdsp.common.s16.CS16Format;
 import cdsp.common.s16.CS16IO;
 import cdsp.common.s16.S16Image;
+import cdsp.common.util.Graph;
+import cdsp.common.util.Graph.Link;
 
 @SuppressWarnings("serial")
 public class Main extends JFrame {
@@ -72,10 +77,21 @@ public class Main extends JFrame {
 			configPanel.setLayout(new GridBagLayout());
 			configPanel.add(new JButtonWR("Game Directories...", () -> {
 				JDialog configPage = new JDialog(Main.this, "Game Directories");
-				configPage.add(new JGameInfo(gameInfo));
+				configPage.add(new JGameInfoLocations(gameInfo));
 				configPage.setSize(800, 600);
 				configPage.setVisible(true);
-			}));
+			}), CDSPCommonUI.gridBagFill(0, 0, 1, 1, 0, 0));
+			configPanel.add(new JButtonWR("Load Game Catalogues", () -> {
+				if (!convinceUserToInstallCPX())
+					return;
+				try {
+					gameInfo.loadCataloguesViaCPX();
+					gameInfo.saveToDefaultLocation();
+					JOptionPane.showMessageDialog(configPanel, "Catalogues loaded.", ONBOARDING_NAME, JOptionPane.INFORMATION_MESSAGE);
+				} catch (Exception ex) {
+					CDSPCommonUI.showExceptionDialog(Main.this, "Something weird happened.", "Error", ex);
+				}
+			}), CDSPCommonUI.gridBagFill(0, 1, 1, 1, 0, 0));
 			configPanel.add(new JButtonWR("CPX Info", () -> {
 				if (!convinceUserToInstallCPX())
 					return;
@@ -102,7 +118,7 @@ public class Main extends JFrame {
 				} catch (Exception ex) {
 					CDSPCommonUI.showExceptionDialog(Main.this, "Something weird happened.", "Error", ex);
 				}
-			}));
+			}), CDSPCommonUI.gridBagFill(0, 2, 1, 1, 0, 0));
 		}
 		JPanel geneticsPanel = new JPanel();
 		{
@@ -111,22 +127,44 @@ public class Main extends JFrame {
 			geneticsPanel.add(new JButtonWR("Summarize Genome", () -> {
 				DoWhatIMeanLoader.loadGeneticsFileDialog(this, (f, gPackage) -> {
 					try {
-						StringBuilder result = new StringBuilder();
-						result.append(gPackage.version.toString());
-						result.append("\n");
-						byte[] genomeData = gPackage.data;
-						int offset = GenUtils.nextGene(genomeData, 0);
-						while (offset < genomeData.length) {
-							result.append(gPackage.version.summarizeGene(genomeData, offset));
-							result.append("\n");
-							offset = GenUtils.nextGene(genomeData, offset + 4);
-						}
-						CDSPCommonUI.showReport("Genome " + f + " Report", result.toString());
+						String genomeReport = makeGenomeReport(gPackage);
+						CDSPCommonUI.showReport("Genome " + f + " Report", genomeReport);
 					} catch (Exception ex) {
 						CDSPCommonUI.showExceptionDialog(Main.this, "Could not summarize genome.", "Error", ex);
 					}
 				});
 			}), CDSPCommonUI.gridBagFill(0, 0, 1, 1, 0, 0));
+			geneticsPanel.add(new JButtonWR("Chem.dot", () -> {
+				DoWhatIMeanLoader.loadGeneticsFileDialog(this, (f, gPackage) -> {
+					try {
+						String data = makeReactionGraph(gPackage);
+						CDSPCommonUI.fileDialog(this, "Save .dot", FileDialog.SAVE, (fo) -> {
+							try {
+								Files.write(fo.toPath(), data.getBytes(StandardCharsets.UTF_8));
+							} catch (Exception ex) {
+								CDSPCommonUI.showExceptionDialog(Main.this, "Could not write file.", "Error", ex);
+							}
+						});
+					} catch (Exception ex) {
+						CDSPCommonUI.showExceptionDialog(Main.this, "Could not graph chems.", "Error", ex);
+					}
+				});
+			}), CDSPCommonUI.gridBagFill(1, 0, 1, 1, 0, 0));
+			geneticsPanel.add(new JButtonWR("xdot", () -> {
+				DoWhatIMeanLoader.loadGeneticsFileDialog(this, (f, gPackage) -> {
+					try {
+						String data = makeReactionGraph(gPackage);
+						File fo = File.createTempFile("chem", ".dot");
+						Files.write(fo.toPath(), data.getBytes(StandardCharsets.UTF_8));
+						fo.deleteOnExit();
+						ProcessBuilder pb = new ProcessBuilder();
+						pb.command("xdot", fo.getAbsolutePath());
+						pb.start();
+					} catch (Exception ex) {
+						CDSPCommonUI.showExceptionDialog(Main.this, "Could not graph chems.", "Error", ex);
+					}
+				});
+			}), CDSPCommonUI.gridBagFill(2, 0, 1, 1, 0, 0));
 			geneticsPanel.add(new JButtonWR("GeneCat", () -> {
 				DoWhatIMeanLoader.loadGeneticsFileDialog(this, "Genome 1", (f1, gPackage1) -> {
 					DoWhatIMeanLoader.loadGeneticsFileDialog(this, "Genome 2", (f2, gPackage2) -> {
@@ -140,18 +178,18 @@ public class Main extends JFrame {
 						});
 					});
 				});
-			}), CDSPCommonUI.gridBagFill(1, 0, 1, 1, 0, 0));
+			}), CDSPCommonUI.gridBagFill(0, 1, 3, 1, 0, 0));
 			geneticsPanel.add(new JButtonWR("Norn Poser", () -> {
 				if (!convinceUserToDoSetup())
 					return;
 				new NornPoser(gameInfo).setVisible(true);
-			}), CDSPCommonUI.gridBagFill(0, 1, 2, 1, 0, 0));
+			}), CDSPCommonUI.gridBagFill(0, 2, 3, 1, 0, 0));
 			geneticsPanel.add(new JButtonWR("Inject Egg (M)", () -> {
 				eggject("1");
-			}), CDSPCommonUI.gridBagFill(0, 2, 1, 1, 0, 0));
+			}), CDSPCommonUI.gridBagFill(0, 3, 1, 1, 0, 0));
 			geneticsPanel.add(new JButtonWR("Inject Egg (F)", () -> {
 				eggject("2");
-			}), CDSPCommonUI.gridBagFill(1, 2, 1, 1, 0, 0));
+			}), CDSPCommonUI.gridBagFill(1, 3, 2, 1, 0, 0));
 		}
 		JPanel imagingPanel = new JPanel();
 		{
@@ -179,6 +217,90 @@ public class Main extends JFrame {
 		setLocationByPlatform(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
+	}
+
+	private String makeGenomeReport(GenPackage gPackage) {
+		StringBuilder result = new StringBuilder();
+		result.append(gPackage.version.toString());
+		result.append("\n");
+		byte[] genomeData = gPackage.data;
+		int offset = GenUtils.nextGene(genomeData, 0);
+		while (offset < genomeData.length) {
+			result.append(gPackage.version.summarizeGene(gameInfo, genomeData, offset));
+			result.append("\n");
+			offset = GenUtils.nextGene(genomeData, offset + 4);
+		}
+		return result.toString();
+	}
+
+	private String makeReactionGraph(GenPackage gPackage) {
+		// attempt to graph reactions
+		Graph graph = new Graph(true);
+		// construct chem nodes
+		Graph.Node[] chemNodes = new Graph.Node[256];
+		for (int i = 0; i < chemNodes.length; i++) {
+			StringBuilder name = new StringBuilder();
+			GenUtils.summarizeChemRef(gameInfo, name, i);
+			chemNodes[i] = new Graph.Node("chem" + i).withText(name.toString());
+		}
+		// graph reactions
+		byte[] genomeData = gPackage.data;
+		int offset = GenUtils.nextGene(genomeData, 0);
+		Gene gene = new Gene(gPackage.version);
+		while (offset < genomeData.length) {
+			gene.deserialize(genomeData, offset, genomeData.length - offset);
+			if (gene.data.getType() == 0x0100) {
+				// receptor
+				int o = GenUtils.safeGet(genomeData, offset + gPackage.version.geneHeaderLength + 0);
+				int t = GenUtils.safeGet(genomeData, offset + gPackage.version.geneHeaderLength + 1);
+				int l = GenUtils.safeGet(genomeData, offset + gPackage.version.geneHeaderLength + 2);
+				int chem = GenUtils.safeGet(genomeData, offset + gPackage.version.geneHeaderLength + 3);
+				if (chem != 0) {
+					String info = "Rcpt/" + gene.id;
+					if (o == 1 && t == 0)
+						info += "\naging " + l;
+					if (o == 1 && t == 3)
+						info += "\ntermination";
+					Graph.Node reacNode = new Graph.Node("rcpt" + offset).withText(info);
+					graph.nodes.add(reacNode);
+					graph.nodes.add(chemNodes[chem]);
+					graph.links.add(new Link(chemNodes[chem], reacNode));
+				}
+			} else if (gene.data.getType() == 0x0101) {
+				// emitter
+				int chem = GenUtils.safeGet(genomeData, offset + gPackage.version.geneHeaderLength + 3);
+				if (chem != 0) {
+					Graph.Node reacNode = new Graph.Node("emit" + offset).withText("Emit/" + gene.id);
+					graph.nodes.add(reacNode);
+					graph.nodes.add(chemNodes[chem]);
+					graph.links.add(new Link(reacNode, chemNodes[chem]));
+				}
+			} else if (gene.data instanceof GC123_0102Reaction) {
+				GC123_0102Reaction reac = (GC123_0102Reaction) gene.data;
+				Graph.Node reacNode = new Graph.Node("reac" + offset).withText("Reac/" + gene.id);
+				graph.nodes.add(reacNode);
+				if (reac.inAChem != 0) {
+					graph.nodes.add(chemNodes[reac.inAChem]);
+					graph.links.add(new Link(chemNodes[reac.inAChem], reacNode));
+				}
+				if (reac.inBChem != 0) {
+					graph.nodes.add(chemNodes[reac.inBChem]);
+					graph.links.add(new Link(chemNodes[reac.inBChem], reacNode));
+				}
+				if (reac.outAChem != 0) {
+					graph.nodes.add(chemNodes[reac.outAChem]);
+					graph.links.add(new Link(reacNode, chemNodes[reac.outAChem]));
+				}
+				if (reac.outBChem != 0) {
+					graph.nodes.add(chemNodes[reac.outBChem]);
+					graph.links.add(new Link(reacNode, chemNodes[reac.outBChem]));
+				}
+			}
+			offset = GenUtils.nextGene(genomeData, offset + 4);
+		}
+		StringBuilder result = new StringBuilder();
+		graph.export(result);
+		return result.toString();
 	}
 
 	private boolean convinceUserToDoSetup() {

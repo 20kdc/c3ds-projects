@@ -8,6 +8,7 @@
 package cdsp.common.data.genes;
 
 import cdsp.common.data.CreaturesFacts;
+import cdsp.common.data.VirtualCatalogue;
 import cdsp.common.data.genetics.GenUtils;
 import cdsp.common.data.skeleton.SkeletonDef;
 
@@ -29,8 +30,8 @@ public class GC_23_0202Appearance implements Gene.Data {
 	}
 
 	@Override
-	public void summarizeData(StringBuilder builder) {
-		builder.append(SkeletonDef.C3.getGeneName(geneIndex));
+	public void summarizeData(VirtualCatalogue catalogue, StringBuilder builder) {
+		builder.append(catalogue.getSkeletonDef().getGeneName(geneIndex));
 		builder.append(" = ");
 		builder.append(CreaturesFacts.GENUS[genus]);
 		builder.append(' ');

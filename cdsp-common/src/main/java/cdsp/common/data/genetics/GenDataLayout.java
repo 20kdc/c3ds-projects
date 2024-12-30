@@ -7,6 +7,7 @@
 
 package cdsp.common.data.genetics;
 
+import cdsp.common.data.genes.GC123_0102Reaction;
 import cdsp.common.data.genes.GC_23_0202Appearance;
 import cdsp.common.data.genes.Gene;
 import cdsp.common.data.genes.Gene.Data;
@@ -57,7 +58,7 @@ public final class GenDataLayout {
 	// subType 1
 	public static final GenDataLayout C123_RCPT = new GenDataLayout(0x0100, 8, "Receptor");
 	public static final GenDataLayout C123_EMIT = new GenDataLayout(0x0101, 8, "Emitter");
-	public static final GenDataLayout C123_REAC = new GenDataLayout(0x0102, 9, "Reaction");
+	public static final GenDataLayout C123_REAC = new GenDataLayout(0x0102, 9, "Reaction", GC123_0102Reaction.class);
 	public static final GenDataLayout C123_BCHL = new GenDataLayout(0x0103, 256, "Half-Lives");
 	public static final GenDataLayout C123_INIT = new GenDataLayout(0x0104, 2, "Initial Chemical");
 	public static final GenDataLayout C__3_NEMT = new GenDataLayout(0x0105, 15, "Neuroemitter");

@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import cdsp.common.data.VirtualCatalogue;
+
 /**
  * Utilities for reading a .gen file.
  * These work with 'uncanonized' genetics. This is important for emulating various quirks the game can create.
@@ -132,5 +134,19 @@ public class GenUtils {
 		val %= max - min;
 		val += min;
 		return val;
+	}
+
+	/**
+	 * Chemical reference
+	 */
+	public static void summarizeChemRef(VirtualCatalogue catalogue, StringBuilder builder, int chem) {
+		String name = catalogue.findChemName(chem);
+		if (name != null) {
+			builder.append(name);
+			builder.append(" ");
+		}
+		builder.append("[");
+		builder.append(chem);
+		builder.append("]");
 	}
 }

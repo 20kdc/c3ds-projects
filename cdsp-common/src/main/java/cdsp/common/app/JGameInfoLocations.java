@@ -17,8 +17,8 @@ import javax.swing.JTabbedPane;
 import cdsp.common.data.DirLookup.Location;
 
 @SuppressWarnings("serial")
-public class JGameInfo extends JPanel {
-	public JGameInfo(GameInfo gameInfo) {
+public class JGameInfoLocations extends JPanel {
+	public JGameInfoLocations(GameInfo gameInfo) {
 		setLayout(new BorderLayout());
 		LinkedList<JGameInfoLocation> jgils = new LinkedList<>();
 		JTabbedPane directories = new JTabbedPane();

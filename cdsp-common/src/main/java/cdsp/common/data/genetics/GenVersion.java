@@ -7,6 +7,7 @@
 
 package cdsp.common.data.genetics;
 
+import cdsp.common.data.VirtualCatalogue;
 import cdsp.common.data.genes.Gene;
 
 /**
@@ -137,14 +138,14 @@ public abstract class GenVersion {
 	/**
 	 * Summarizes a gene.
 	 */
-	public final String summarizeGene(byte[] genome, int start) {
+	public final String summarizeGene(VirtualCatalogue catalogue, byte[] genome, int start) {
 		StringBuilder sb = new StringBuilder();
 		Gene g = new Gene(this);
 		int len = GenUtils.nextChunk(genome, start + geneHeaderLength) - start;
 		if (len < 0)
 			len = 0;
 		g.deserialize(genome, start, len);
-		g.summarize(sb);
+		g.summarize(catalogue, sb);
 		return sb.toString();
 	}
 
