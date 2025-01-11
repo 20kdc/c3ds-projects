@@ -81,18 +81,29 @@ When not in use, hides off-screen.
 class UIFrameRate 1 2 201;
 field bool UIFrameRate.toolActive 0;
 
-// "C3/GUI1.cos" "DS/ds gui - creaturemenu.cos"
-class UICreatureMenu 1 2 13;
+/*
+The three C3/DS UI trays use the same in/out design.
+They don't use the same code, though.
+*/
+interface UITray;
+
+C3DS_UITRAY_STATE_IN = -1;
+C3DS_UITRAY_STATE_OUT = 1;
+field int UITray.uiTrayState 99;
+
+// "C3/GUI 1.cos" "DS/ds gui - creaturemenu.cos"
+class UICreatureMenu 1 2 13 extends UITray;
 class UICreatureMenuCurrentCreature 1 2 35;
 
-// "C3/GUI1.cos" "DS/ds gui - inventory.cos"
-class UIInventory 1 2 11;
+// "C3/GUI 1.cos" "DS/ds gui - inventory.cos"
+class UIInventory 1 2 11 extends UITray;
 
-// "C3/GUI1.cos" "DS/ds gui - options.cos"
-class UIOptions 1 2 12;
+// "C3/GUI 1.cos" "DS/ds gui - options.cos"
+class UIOptions 1 2 12 extends UITray;
+
 class UIAboutBox 1 2 34;
 
-// "C3/GUI1.cos" "DS/ds gui - topleft.cos"
+// "C3/GUI 1.cos" "DS/ds gui - topleft.cos"
 class UITopleft 1 2 14;
 
 // "C3/Home smell emitters.cos" "DS/DS Home smell emitters.cos"
