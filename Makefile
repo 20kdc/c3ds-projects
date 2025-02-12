@@ -69,9 +69,7 @@ endif
 ifeq ($(HOST_JAVA),1)
 .PHONY: java
 java:
-	mvn clean
-	mvn install
-	mvn package
+	./umvn package
 include ral/index.mk
 include cdsp-tools/index.mk
 endif
