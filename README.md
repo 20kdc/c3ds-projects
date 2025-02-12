@@ -45,6 +45,10 @@ c3ds-projects contributors are in no way affiliated with Creature Labs, this is 
 	To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 	You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+Some parts of this repository directly import third-party dependencies:
+
++ `umvn.class`, `umvn` and `umvn.cmd` are from https://github.com/20kdc/gabien-common/tree/master/micromvn ; a copy of the Unlicense is included in each file.
+
 Some parts of this repository use third-party dependencies (which are not included in the source of this repository), in particular:
 
 + creature-monitor-gd uses Godot Engine ( https://godotengine.org/ ) and dependencies thereof.
