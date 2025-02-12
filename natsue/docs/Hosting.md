@@ -17,9 +17,6 @@ Before you continue with this guide, have you considered using the `eemfoo.org` 
 * Something that can run Docking Station (this is listed as a requirement *solely for testing and issuing administrative commands* and it need not be active at all times)
 * A Java JDK with a version above or equal to 8.
 	* If you somehow don't have a system that packages one of these, maybe look at https://adoptium.net/en-gb/temurin/releases/ ?
-* Apache Maven: https://maven.apache.org/
-* A JDBC driver that quacks enough like either MySQL or SQLite to get by.
-	* For any reasonable situation, Natsue will automatically use SQLite without any dedicated setup. If you've somehow managed to get into an unreasonable situation, then you're assumed to know what you're doing.
 * At least one of:
 	* Something to extract `.zip` files
 	* Something to extract `.tar.gz` files
@@ -28,11 +25,11 @@ Before you continue with this guide, have you considered using the `eemfoo.org` 
 
 ## Procedure
 
-1. Ensure the above requirements are *installed.* Maven and Java must be available from your terminal/command prompt. Try `mvn --version` and `java --version` if you're unsure.
+1. Ensure the above requirements are *installed.* Java must be available from your terminal/command prompt. Try `java --version` if you're unsure.
 2. Somehow acquire the Natsue source code, say, by downloading this repository using Git or as a `.zip` file or a `.tar.gz` file.
-3. Using a terminal (or Command Prompt on Windows), `cd` to the `c3ds-projects` directory and run `mvn clean` followed by `mvn install`.
-4. Assuming this succeeds, then `cd` into the `c3ds-projects/natsue/cradle` directory and run `mvn package`.
-5. Assuming this succeeds, the file `target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` now exists in the `c3ds-projects/natsue/cradle` directory. While still within the `c3ds-projects/natsue/cradle` directory, run `java -jar target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` to start the server for the first time.
+3. Using a terminal (or Command Prompt on Windows), `cd` to the `c3ds-projects/natsue` directory. (You may need to use a backslash on Windows.)
+4. Assuming this succeeds, then run `build`.
+5. Assuming this succeeds, the file `natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` now exists in the `c3ds-projects/natsue/cradle/target` directory. While still within the `c3ds-projects/natsue/cradle` directory, run `java -jar target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` to start the server for the first time.
 6. Assuming *that* succeeds, immediately stop the server (Control-C on Linux, who knows on Windows).
 7. Modify the generated `ntsuconf.txt` file to your liking. The meaning of each option is listed within the file.
 8. Restart the server with the same `java -jar target/natsue-server-cradle-0.666-SNAPSHOT-jar-with-dependencies.jar` command.
