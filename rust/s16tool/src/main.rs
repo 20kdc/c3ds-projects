@@ -261,8 +261,8 @@ The inverse conversion is of course not lossless (lower bits are dropped).",
                 println!(
                     "           Adds less than a bit of \"effective depth\", but very reliable."
                 );
-                println!(" bayer2: Bayer 2x2 as described by https://github.com/SixLabors/ImageSharp/blob/main/src/ImageSharp/Processing/Processors/Dithering/DHALF.TXT");
-                println!(" bayer4: Bayer 4x4 from same");
+                println!(" bayer[2, 4]: Bayer 2x2/4x4 as described by https://github.com/SixLabors/ImageSharp/blob/main/src/ImageSharp/Processing/Processors/Dithering/DHALF.TXT");
+                println!(" bluenoise[9, 15]: 'bluenoise' contributed by Tomeno");
                 println!("The default CDMODE is floor, and the default ADMODE is nearest.");
                 println!("(This is because these modes are lossless with decode output.)");
                 std::process::exit(0);
@@ -348,10 +348,10 @@ fn dither_command(
     let input_rgb = ARGB32::raster_rgb(&input);
     let (input_r, input_g, input_b) = RGB24::separate_channels(&input_rgb);
 
-    let output_r = cdmode.run(input_r, rbits);
-    let output_g = cdmode.run(input_g, gbits);
-    let output_b = cdmode.run(input_b, bbits);
-    let output_a = admode.run(input_a, abits);
+    let output_r = cdmode.run(input_r, rbits, false);
+    let output_g = cdmode.run(input_g, gbits, false);
+    let output_b = cdmode.run(input_b, bbits, false);
+    let output_a = admode.run(input_a, abits, true);
 
     imaging_ex::export_argb(
         &ofn,

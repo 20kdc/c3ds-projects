@@ -79,8 +79,8 @@ def command_help():
 	print(" checkers: 2x2 checkerboard in the 25% to 75% range.")
 	print("           Adds less than a bit of \"effective depth\", but very reliable.")
 	print(" always-checkers: Checkerboard whenever the value is not exactly equal.")
-	print(" bayer2: Bayer 2x2 as described by https://github.com/SixLabors/ImageSharp/blob/main/src/ImageSharp/Processing/Processors/Dithering/DHALF.TXT")
-	print(" bayer4: Bayer 4x4 from same")
+	print(" bayer[2, 4]: Bayer 2x2/4x4 as described by https://github.com/SixLabors/ImageSharp/blob/main/src/ImageSharp/Processing/Processors/Dithering/DHALF.TXT")
+	print(" bluenoise[9, 15]: 'bluenoise' dither pattern from Tomeno")
 	print("The default CDMODE is floor, and the default ADMODE is nearest.")
 	print("(This is because these modes are lossless with decode output.)")
 
@@ -315,8 +315,8 @@ if len(sys.argv) >= 2:
 		data = [list(vpil.getdata(i)) for i in range(4)]
 		# dither
 		for i in range(3):
-			dither_channel(vpil.width, vpil.height, data[i], bits[i], cdmode)
-		dither_channel(vpil.width, vpil.height, data[3], bits[3], admode)
+			dither_channel(vpil.width, vpil.height, data[i], bits[i], cdmode, False)
+		dither_channel(vpil.width, vpil.height, data[3], bits[3], admode, True)
 		# convert
 		data_total = []
 		for i in range(vpil.width * vpil.height):

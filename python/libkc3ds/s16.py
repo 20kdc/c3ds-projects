@@ -469,11 +469,11 @@ def rgba_to_565(w, h, data_r, data_g, data_b, data_a, false_black: int = COL_BLA
 	idx = 0
 	# skip the full dithering pass if we implement it ourselves
 	if cdmode != "floor":
-		bitdither.dither_channel(w, h, data_r, 5, cdmode)
-		bitdither.dither_channel(w, h, data_g, 6, cdmode)
-		bitdither.dither_channel(w, h, data_b, 5, cdmode)
+		bitdither.dither_channel(w, h, data_r, 5, cdmode, False)
+		bitdither.dither_channel(w, h, data_g, 6, cdmode, False)
+		bitdither.dither_channel(w, h, data_b, 5, cdmode, False)
 	if admode != "nearest":
-		bitdither.dither_channel(w, h, data_a, 1, admode)
+		bitdither.dither_channel(w, h, data_a, 1, admode, True)
 	for i in range(w * h):
 		v = 0
 		if data_a[i] >= 128:
@@ -496,9 +496,9 @@ def rgb_to_565_blk(w, h, data_r, data_g, data_b, cdmode: str = CDMODE_DEFAULT) -
 	img = S16Image(w, h)
 	idx = 0
 	if cdmode != "floor":
-		bitdither.dither_channel(w, h, data_r, 5, cdmode)
-		bitdither.dither_channel(w, h, data_g, 6, cdmode)
-		bitdither.dither_channel(w, h, data_b, 5, cdmode)
+		bitdither.dither_channel(w, h, data_r, 5, cdmode, False)
+		bitdither.dither_channel(w, h, data_g, 6, cdmode, False)
+		bitdither.dither_channel(w, h, data_b, 5, cdmode, False)
 	for i in range(w * h):
 		v = ((data_r[i] << 8) & 0xF800) | ((data_g[i] << 3) & 0x07E0) | ((data_b[i] >> 3) & 0x001F)
 		img.data[idx] = v
