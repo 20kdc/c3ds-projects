@@ -1,0 +1,23 @@
+ * This version of the script has two lines, with a delay before the response.
+ * It also shows off how lock can avoid interruption.
+scrp 2 24 8802 1
+	lock
+	doif mv00 = 0
+		sets va00 "Hello! I'm a talking lemon!"
+		setv mv00 2
+		wait 15
+		setv mv00 1
+	elif mv00 = 1
+		sets va00 "Oh no, not again..."
+		setv mv00 2
+		wait 15
+		setv mv00 0
+	else
+		sets va00 "You ought not to see this..."
+		setv mv00 0
+	endi
+	* Actually say the line
+	rtar 1 2 10
+	mesg wrt+ targ 126 va00 ownr 0
+endm
+

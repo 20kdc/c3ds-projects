@@ -1,0 +1,8 @@
+rscr
+	* Delete all talking lemons
+	enum 2 24 8802
+		kill targ
+	next
+	* Remove the script
+	scrx 2 24 8802 1
+

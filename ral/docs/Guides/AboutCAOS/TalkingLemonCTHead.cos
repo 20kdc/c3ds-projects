@@ -1,0 +1,10 @@
+ * Create the talking lemon
+new: simp 2 24 8802 "ds lemon pod" 1 30 8000
+ * Move it to the Meso
+mvsf 631 9158
+ * Set attributes
+perm 100
+attr 199
+aero 10
+accg 2
+
