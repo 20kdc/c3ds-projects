@@ -16,3 +16,9 @@ mkdir -p "local/Creature Galleries"
 mkdir -p "local/Journal"
 mkdir -p "local/My Worlds"
 mkdir -p "local/Users"
+
+echo "# Dummy" > "local/Catalogue/nucleus_dummy.catalogue"
+mkdir -p "local/Bootstrap/000 Switcher"
+
+cp "ds/Bootstrap/000 Switcher/!DS splash map.cos" "local/Bootstrap/000 Switcher"
+cp "ds/Bootstrap/010 Docking Station/DS CAOS command line.cos" "local/Bootstrap/000 Switcher"

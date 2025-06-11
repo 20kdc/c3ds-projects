@@ -4,5 +4,11 @@ c2e
 *.so.0
 *.exe
 *.dll
+*.map
 creatures_engine_logfile.txt
 local/
+stdout.txt
+stderr.txt
+machine.cfg
+password.cfg
+user.cfg
