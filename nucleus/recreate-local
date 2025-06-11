@@ -1,0 +1,18 @@
+#!/bin/sh
+rm -rf "local/"
+
+mkdir -p "local/Backgrounds"
+mkdir -p "local/Body Data"
+mkdir -p "local/Bootstrap"
+mkdir -p "local/Catalogue"
+mkdir -p "local/My Creatures"
+mkdir -p "local/Genetics"
+mkdir -p "local/Images"
+mkdir -p "local/Overlay Data"
+mkdir -p "local/My Agents"
+mkdir -p "local/Sounds"
+
+mkdir -p "local/Creature Galleries"
+mkdir -p "local/Journal"
+mkdir -p "local/My Worlds"
+mkdir -p "local/Users"

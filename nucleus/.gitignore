@@ -1,0 +1,8 @@
+c3
+ds
+c2e
+*.so.0
+*.exe
+*.dll
+creatures_engine_logfile.txt
+local/
