@@ -22,3 +22,6 @@ mkdir -p "local/Bootstrap/000 Switcher"
 
 cp "ds/Bootstrap/000 Switcher/!DS splash map.cos" "local/Bootstrap/000 Switcher"
 cp "ds/Bootstrap/010 Docking Station/DS CAOS command line.cos" "local/Bootstrap/000 Switcher"
+
+cp machine-nucleus.cfg machine.cfg
+cp user-nucleus.cfg user.cfg
