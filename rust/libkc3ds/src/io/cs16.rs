@@ -416,6 +416,8 @@ pub fn build_s16(sheet: &S16Sheet) -> Vec<u8> {
             }
         }
     }
+    let fixed_headers = headers.to_bytes();
+    out[0..fixed_headers.len()].copy_from_slice(&fixed_headers);
     out
 }
 
@@ -441,5 +443,7 @@ pub fn build_c16(sheet: &C16Sheet) -> Vec<u8> {
         }
         push_u16(&mut out, endianness, 0)
     }
+    let fixed_headers = headers.to_bytes();
+    out[0..fixed_headers.len()].copy_from_slice(&fixed_headers);
     out
 }
