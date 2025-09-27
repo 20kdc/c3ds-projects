@@ -77,7 +77,6 @@ public class RemoteFlagControlBotCommand extends BaseBotCommand {
 				} else if (!ltp.updateFlags(and, xor)) {
 					args.response.append("Failed to update flags, system user?\n");
 				} else {
-					args.hub.considerRandomStatus(ltp);
 					String flagsInfo = INatsueUserFlags.Flag.showFlags(ltp.getFlags());
 					String setInfo = INatsueUserFlags.Flag.showFlags(set);
 					String unsetInfo = INatsueUserFlags.Flag.showFlags(unset);

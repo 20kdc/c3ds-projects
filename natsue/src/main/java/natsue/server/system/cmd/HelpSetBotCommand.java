@@ -30,6 +30,10 @@ public class HelpSetBotCommand extends BaseBotCommand {
 		category2 = isAdmin ? Cat.Admin2FA : Cat.Public2FA;
 	}
 
+	boolean categoryMatches(BaseBotCommand bbc) {
+		return bbc.category == category || bbc.category == category2;
+	}
+	
 	@Override
 	public void run(Context args) {
 		String cmd = args.nextArg();
@@ -39,7 +43,7 @@ public class HelpSetBotCommand extends BaseBotCommand {
 				return;
 			}
 			for (BaseBotCommand bbc : args.helpInfo) {
-				if (bbc.name.equals(cmd) && (bbc.category == category || bbc.category == category2)) {
+				if (bbc.name.equals(cmd) && categoryMatches(bbc)) {
 					args.response.append(bbc.name);
 					args.response.append(" ");
 					args.response.append(bbc.helpArgs);
@@ -62,7 +66,7 @@ public class HelpSetBotCommand extends BaseBotCommand {
 		} else {
 			args.response.append("Commands:\n");
 			for (BaseBotCommand bbc : args.helpInfo) {
-				if (bbc.category == category) {
+				if (categoryMatches(bbc)) {
 					args.response.append("<tint 255 255 255>");
 					args.response.append(bbc.name);
 					args.response.append(ChatColours.CHAT);

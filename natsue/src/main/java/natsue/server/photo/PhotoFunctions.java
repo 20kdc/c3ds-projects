@@ -28,7 +28,9 @@ public class PhotoFunctions {
 			URL res = PhotoFunctions.class.getResource("/invalid_photo.s16");
 			URLConnection uc = res.openConnection();
 			invalidPhoto = new byte[uc.getContentLength()];
-			new DataInputStream(uc.getInputStream()).readFully(invalidPhoto);
+			try (DataInputStream dis = new DataInputStream(uc.getInputStream())) {
+				dis.readFully(invalidPhoto);
+			}
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}

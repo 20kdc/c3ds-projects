@@ -69,11 +69,6 @@ public interface IHubPrivilegedAPI extends IHubCommonAPI, IHubUserDataCachePrivi
 	void forceDisconnectUIN(long uin, boolean sync);
 
 	/**
-	 * Properly applies changes to a user's random pool status.
-	 */
-	void considerRandomStatus(INatsueUserData.LongTerm user);
-
-	/**
 	 * Attempts to find anything unusual.
 	 */
 	String runSystemCheck(boolean detailed);

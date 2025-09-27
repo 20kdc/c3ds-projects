@@ -7,14 +7,12 @@
 
 package natsue.server.hub;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 import natsue.server.hubapi.IHubClient;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
-import natsue.server.userdata.INatsueUserData;
 
 /**
  * Exists because ServerHub got obscenely complicated.
@@ -23,7 +21,6 @@ import natsue.server.userdata.INatsueUserData;
 public class HubUserRegister {
 	public final HashSet<IWWRListener> wwrListeners = new HashSet<>();
 	public final HashMap<Long, IHubClient> connectedClients = new HashMap<>();
-	public final ArrayList<Long> randomPool = new ArrayList<>();
 
 	private final IHubUserDataCacheBetweenCacheAndHub userDataCache;
 	public HubUserRegister(IHubUserDataCacheBetweenCacheAndHub udc) {
@@ -42,8 +39,6 @@ public class HubUserRegister {
 			return null;
 		// Past this point, hubLogin has occurred and we really, REALLY better not break this.
 		connectedClients.put(uin, cc);
-		if (!cc.isNoRandom())
-			randomPool.add(uin);
 		LinkedList<IWWRListener> wwrNotify = new LinkedList<IWWRListener>(wwrListeners);
 		wwrListeners.add(cc);
 		return wwrNotify;
@@ -55,24 +50,8 @@ public class HubUserRegister {
 	 */
 	public void earlyClientLogoutInSync(IHubClient cc) {
 		Long uin = cc.getUIN();
-		randomPool.remove(uin);
 		connectedClients.remove(uin, cc);
 		wwrListeners.remove(cc);
 		userDataCache.hubLogout(cc.getUserData());
-	}
-
-	/**
-	 * Updates the random pool based on user flags.
-	 */
-	public void considerRandomStatusInSync(INatsueUserData.LongTerm user) {
-		Long uin = user.getUIN(); 
-		if (user.isNoRandom()) {
-			// System.out.println("no random");
-			randomPool.remove(uin);
-		} else {
-			// System.out.println("ya random");
-			if (connectedClients.containsKey(uin))
-				randomPool.add(uin);
-		}
 	}
 }

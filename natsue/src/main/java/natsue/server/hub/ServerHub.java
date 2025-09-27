@@ -7,10 +7,12 @@
 
 package natsue.server.hub;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 
+import natsue.config.BaseConfig.Opt;
 import natsue.config.Config;
 import natsue.data.babel.CreatureHistoryBlob;
 import natsue.data.babel.UINUtils;
@@ -33,7 +35,6 @@ import natsue.server.system.SystemCommands;
 import natsue.server.userdata.IHubUserDataCacheBetweenCacheAndHub;
 import natsue.server.userdata.IHubUserDataCachePrivileged;
 import natsue.server.userdata.INatsueUserData;
-import natsue.server.userdata.INatsueUserData.LongTerm;
 
 /**
  * Class that contains everything important to everything ever.
@@ -126,34 +127,16 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public long getRandomOnlineNonSystemUIN(long whoIsnt) {
+	public long getRandomOnlineNonSystemUIN(final long whoIsnt) {
 		long result = 0;
-		Long wiObj = whoIsnt == 0 ? null : whoIsnt;
 		synchronized (this) {
-			// sanity check
-			LinkedList<Long> notSupposedToBeThere = new LinkedList<>(users.randomPool);
-			notSupposedToBeThere.removeIf((l) -> users.connectedClients.containsKey(l));
-			if (notSupposedToBeThere.size() > 0) {
-				StringBuilder sb = new StringBuilder();
-				sb.append("INCONSISTENCY IN RANDOM POOL:");
-				for (Long l : notSupposedToBeThere) {
-					sb.append(' ');
-					sb.append(UINUtils.toString(l));
-				}
-				log(sb.toString());
-				users.randomPool.removeAll(notSupposedToBeThere);
-			}
-			// It's easier to remove and re-add the object than to rebuild the pool, even if it is dumb.
-			boolean needsReadd = false;
-			if (wiObj != null)
-				needsReadd = users.randomPool.remove(wiObj);
-			int size = users.randomPool.size();
+			ArrayList<IHubClient> randomPool = new ArrayList<>(users.connectedClients.values());
+			randomPool.removeIf(v -> (v.getUIN() == whoIsnt) || v.isNoRandom());
+			int size = randomPool.size();
 			if (size != 0) {
 				int idx = randomGen.nextInt(size);
-				result = users.randomPool.get(idx);
+				result = randomPool.get(idx).getUIN();
 			}
-			if (needsReadd)
-				users.randomPool.add(wiObj);
 		}
 		return result;
 	}
@@ -467,20 +450,44 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 	}
 
 	@Override
-	public synchronized void considerRandomStatus(LongTerm user) {
-		users.considerRandomStatusInSync(user);
-	}
-
-	@Override
 	public synchronized String runSystemCheck(boolean detailed) {
 		StringBuilder sb = new StringBuilder();
 		// Preface
-		if (detailed) {
-			sb.append("-- Server Info --\n");
-			sb.append("Version: " + SystemCommands.VERSION + "\n");
-		} else {
-			sb.append(SystemCommands.VERSION + "\n");
-		}
+		sb.append("-- Server Info --\n");
+		sb.append("Version: " + SystemCommands.VERSION + "\n");
+		Opt[] reportOptions = {
+				// db
+				config.db.dbType,
+				// messsages
+				config.messages.compressPRAYChunks,
+				// cryo
+				config.cryo.cryoSubmitEnabled,
+				config.cryo.cryoSubmitPublic,
+				// photos
+				config.photos.photosEnabled,
+				config.photos.photosDownloadEnabled,
+				// glst
+				config.glst.glstMode,
+				// accounts
+				config.accounts.allowRegistration,
+				// general
+				config.excludeSelfRUSO,
+				config.allowConnectionShootdown,
+				config.manualKeepAliveTime,
+				config.initialNoDataShutdownTime,
+				config.httpAPIPublic,
+				config.httpRequestsEnabled,
+				config.httpRequestTime,
+				config.httpRequestFakeLingerTime,
+				config.httpRequestMaxLength,
+				config.allowCreatureHistory,
+				config.firewallLevel,
+				config.allowNetWrit,
+				config.contactAddStrategy,
+				config.contactAddLoudForTowerUsers,
+		};
+		for (Opt o : reportOptions)
+			sb.append(o.key + ": " + o.valueToString() + "\n");
 		// Threads (if a detailed report)
 		if (detailed) {
 			sb.append("-- Threads --\n");
@@ -494,31 +501,10 @@ public class ServerHub implements IHubPrivilegedClientAPI, ILogSource {
 				}
 			}
 		}
-		// Random Pool
-		if (detailed) {
-			sb.append("-- Random Pool --\n");
-			for (long entry : users.randomPool) {
-				INatsueUserData nud = getUserDataByUIN(entry);
-				if (nud == null) {
-					sb.append(UINUtils.toString(entry) + " (unknown)\n");
-				} else {
-					sb.append(UINUtils.toString(entry) + " = " + nud.getNickname() + "\n");
-				}
-			}
-		} else {
-			sb.append("Random Pool:");
-			for (long entry : users.randomPool)
-				sb.append(" " + UINUtils.toString(entry));
-			sb.append("\n");
-		}
 		// User Data Cache
 		userDataCache.runSystemCheck(sb, detailed);
 		// Connected Users
-		if (detailed) {
-			sb.append("-- Connected --\n");
-		} else {
-			sb.append("Connected:\n");
-		}
+		sb.append("-- Connected --\n");
 		for (IHubClient entry : users.connectedClients.values())
 			sb.append(UINUtils.toString(entry.getUIN()) + ": " + entry.getNickname() + "\n");
 		// Quota Manager
