@@ -60,6 +60,7 @@ public class GeneCat {
 		if (working == null) {
 			System.err.println("You passed exactly zero GEN files; we don't even know what version of GEN you want, nevermind genus!");
 			System.exit(1);
+			return;
 		}
 		byte[] finale24CCSFBranch = working.toFileData();
 		if (outputFile != null) {
