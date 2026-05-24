@@ -1,9 +1,8 @@
 [book]
 authors = ["c3ds-projects Contributors"]
 language = "en"
-multilingual = false
 src = "."
-title = "Tower Of Babel"
+title = "NetBabel protocol docs/research"
 
 [build]
-build-dir = "../tob-book"
+build-dir = "../site/tob-book"

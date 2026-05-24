@@ -1,6 +1,6 @@
-# Yes, pretty much everything here is cross-compiled to Windows from Linux.
+# Yes, some key stuff here is cross-compiled to Windows from Linux.
 # This is because pretty much all of it is mucking around with old stuff that's
-# usually Windows-only and at best has an ancient Linux port.
+# usually Windows-only.
 
 include tools.mk
 

@@ -1,0 +1,5 @@
+#!/bin/sh
+# site build script for GH pages
+cd tob
+mdbook build
+cd ..

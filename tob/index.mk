@@ -8,5 +8,5 @@ rel-sdk: tob
 # rel-sdk: tob-book
 
 tob-book:
-	rm -rf tob-book
+	rm -rf site/tob-book
 	cd tob ; mdbook build
