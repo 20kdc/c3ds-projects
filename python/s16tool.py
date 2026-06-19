@@ -45,13 +45,6 @@ def command_help():
 	print(" decodes a BLK file to a PNG file")
 	print("s16tool.py decodeC2B <IN> <OUT>")
 	print(" decodes a C2 background file to a PNG file")
-	print("s16tool.py mask <SOURCE> <X> <Y> <VICTIM> <FRAME> [<CHECKPRE> [<CHECKPOST>]]")
-	print(" **REWRITES** the given FRAME of the VICTIM file to use the colours from SOURCE frame 0 at the given X/Y position, but basing alpha on the existing data in the frame.")
-	print(" CHECKPRE/CHECKPOST are useful for comparisons.")
-	print("s16tool.py shift <VICTIM> <FRAME> <X> <Y> [<CHECKPRE> [<CHECKPOST>]]")
-	print(" **REWRITES** the given FRAME of the VICTIM file to shift it by X and Y.")
-	print(" CHECKPRE/CHECKPOST are useful for comparisons.")
-	print(" If the X and Y values are *negative*, pixels are lost. If they are *positive*, transparent pixels are added.")
 	print("s16tool.py blit <SOURCE> <SRCFRAME> <VICTIM> <DSTFRAME> <X> <Y> [<CHECKPRE> [<CHECKPOST>]]")
 	print(" **REWRITES** the given DSTFRAME of the VICTIM file, blitting SOURCE's SRCFRAME to it.")
 	print(" This blit is alpha-aware.")
@@ -253,47 +246,6 @@ if len(sys.argv) >= 2:
 		images = _read_cs16_file(sys.argv[2])
 		vpil = sxlimage_to_pil(stitch_blk(len(images) // 16, 16, images), alpha_aware = False)
 		vpil.save(sys.argv[3], "PNG")
-	elif sys.argv[1] == "mask":
-		# args
-		srci = sys.argv[2]
-		srcx = int(sys.argv[3])
-		srcy = int(sys.argv[4])
-		victim_fn = sys.argv[5]
-		frame = int(sys.argv[6])
-		test_pre = _opt_arg(7)
-		test_post = _opt_arg(8)
-		# load source image
-		srci = _read_cs16_file(srci)[0]
-		# load target file
-		victim_data = _read_bytes(victim_fn)
-		images = decode_cs16(victim_data)
-		# test pre
-		_opt_save_test(test_pre, images[frame])
-		# actually run op
-		images[frame].colours_from(srci, srcx, srcy)
-		# test post
-		_opt_save_test(test_post, images[frame])
-		# writeout
-		_write_equal_format(victim_fn, images, victim_data)
-	elif sys.argv[1] == "shift":
-		# args
-		victim_fn = sys.argv[2]
-		frame = int(sys.argv[3])
-		shiftx = int(sys.argv[4])
-		shifty = int(sys.argv[5])
-		test_pre = _opt_arg(6)
-		test_post = _opt_arg(7)
-		# load target file
-		victim_data = _read_bytes(victim_fn)
-		images = decode_cs16(victim_data)
-		# test pre
-		_opt_save_test(test_pre, images[frame])
-		# actually run op
-		images[frame].shift(shiftx, shifty)
-		# test post
-		_opt_save_test(test_post, images[frame])
-		# writeout
-		_write_equal_format(victim_fn, images, victim_data)
 	elif sys.argv[1] == "blit":
 		# args
 		srci = sys.argv[2]
