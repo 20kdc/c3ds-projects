@@ -23,6 +23,12 @@ pub mod s16dither;
 mod spritefile;
 pub use self::spritefile::*;
 
+mod c16frame;
+pub use self::c16frame::*;
+
+mod png;
+pub use self::png::*;
+
 mod blockfile;
 pub use self::blockfile::*;
 

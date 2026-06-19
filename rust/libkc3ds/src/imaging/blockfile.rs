@@ -8,35 +8,32 @@ use super::*;
 /// Size of a BLK tile
 pub const BLK_TILE_SIZE: usize = 128;
 
-/// BLK types are S16 types
-pub type BLK16Type = S16Type;
-
 /// BLK tiles are RasterTile
-pub type BLK16Tile = RasterTile<u16, BLK_TILE_SIZE, BLK_TILE_SIZE>;
+pub type BLK16Tile = RasterTile<Pixel, BLK_TILE_SIZE, BLK_TILE_SIZE>;
 
 /// BLK file data.
 #[derive(Clone)]
 pub struct BLK16 {
     /// Type of S16.
-    /// BLK files inherit their endianness and colour model from S16.
-    pub variant: BLK16Type,
+    /// BLK files inherit everything from S16.
+    pub variant: SprType,
     pub blocks: Raster<BLK16Tile>,
 }
 
 impl BLK16 {
     /// Split a S16Frame into a BLK16.
-    pub fn split(variant: BLK16Type, value: &S16Frame) -> BLK16 {
+    pub fn split(variant: SprType, value: &SprFrame) -> BLK16 {
         BLK16 {
             variant,
             blocks: Self::split_raster(value),
         }
     }
     /// Join into a S16Frame.
-    pub fn join(&self) -> S16Frame {
+    pub fn join(&self) -> SprFrame {
         Self::join_raster(&self.blocks)
     }
     /// Split a S16Frame into a raster of tiles.
-    pub fn split_raster(value: &S16Frame) -> Raster<BLK16Tile> {
+    pub fn split_raster(value: &SprFrame) -> Raster<BLK16Tile> {
         let bw = if (value.width() % BLK_TILE_SIZE) != 0 {
             (value.width() / BLK_TILE_SIZE) + 1
         } else {
@@ -63,8 +60,8 @@ impl BLK16 {
         })
     }
     /// Join a BLK16's blocks raster into a single S16Frame.
-    pub fn join_raster(value: &Raster<BLK16Tile>) -> S16Frame {
-        let mut raster = S16Frame::new(
+    pub fn join_raster(value: &Raster<BLK16Tile>) -> SprFrame {
+        let mut raster = SprFrame::new(
             value.width() * BLK_TILE_SIZE,
             value.height() * BLK_TILE_SIZE,
         );

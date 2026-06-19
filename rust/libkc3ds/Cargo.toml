@@ -6,3 +6,4 @@ license = "CC0-1.0"
 description = "The Rust functions used in 20kdc/c3ds-projects."
 
 [dependencies]
+image = { version = "0.24.9", default-features = false, features = ["png"] }

@@ -7,10 +7,10 @@ use super::super::imaging::*;
 use super::*;
 
 /// Identifies a BLK.
-pub fn identify(data: &[u8]) -> Option<BLK16Type> {
+pub fn identify(data: &[u8]) -> Option<SprType> {
     if let Ok(val) = ENDIANNESS_LE.r_u32(data, 0) {
-        if let Some(val) = CS16Type::of_magic(val) {
-            if let CS16Type::S16(val) = val {
+        if let Some(val) = SprType::of_magic(val) {
+            if val.blk_capable() {
                 Some(val)
             } else {
                 None
@@ -40,7 +40,7 @@ pub fn identify_and_read(data: &[u8]) -> Result<BLK16, ()> {
 /// BLK header.
 /// The redundant (and sometimes incorrect!) data is ignored.
 pub struct BLK16Header {
-    pub variant: BLK16Type,
+    pub variant: SprType,
     pub width: u16,
     pub height: u16,
 }
@@ -75,7 +75,7 @@ impl BLK16Header {
 }
 
 /// Gets headers for a BLK.
-pub fn headers(t: BLK16Type, data: &[u8]) -> Result<BLK16Header, ()> {
+pub fn headers(t: SprType, data: &[u8]) -> Result<BLK16Header, ()> {
     let endianness = t.endianness();
     Ok(BLK16Header {
         variant: t,
@@ -126,7 +126,7 @@ pub fn read_blk(header: &BLK16Header, data: &[u8]) -> Result<BLK16, ()> {
         let tile = &mut blk.blocks.pixel_mut(x as usize, y as usize);
         for row in &mut tile.0 {
             for pixel in row {
-                *pixel = endianness.r_u16(data, ptr)?;
+                *pixel = endianness.r_u16(data, ptr)? as Pixel;
                 ptr += 2;
             }
         }
@@ -152,7 +152,7 @@ pub fn build_blk(blk: BLK16) -> Vec<u8> {
         let tile = blk.blocks.pixel(x as usize, y as usize);
         for row in &tile.0 {
             for pixel in row {
-                cs16::push_u16(&mut data, endianness, *pixel);
+                cs16::push_u16(&mut data, endianness, *pixel as u16);
             }
         }
     }

@@ -8,7 +8,6 @@ extern crate libkc3ds;
 extern crate norncli;
 
 use libkc3ds::imaging::*;
-use libkc3ds::io::cs16::CS16HeaderCommon;
 use libkc3ds::io::*;
 use norncli::*;
 use std::path::{Path, PathBuf};
@@ -45,7 +44,7 @@ const COMMAND: &'static dyn CLIElement = &CLISubcommands(
                 for f in args {
                     if let Ok(bytes) = std::fs::read(&f) {
                         if let Ok(headers) = cs16::identify_and_headers(&bytes) {
-                            println!("{}: {}", f, headers.variant_cs16());
+                            println!("{}: {}", f, headers.variant);
                             let sz = headers.image_sizes();
                             println!("{} frames", sz.len());
                             for (i, s) in sz.iter().enumerate() {
@@ -74,7 +73,7 @@ const COMMAND: &'static dyn CLIElement = &CLISubcommands(
                                 println!(
                                     "{}: {}, {} frames",
                                     f,
-                                    headers.variant_cs16(),
+                                    headers.variant,
                                     headers.image_sizes().len()
                                 );
                             } else {
@@ -95,7 +94,7 @@ const COMMAND: &'static dyn CLIElement = &CLISubcommands(
                 "",
                 "encodes 565 S16 file from directory",
                 |args| {
-                    sc16_encoding_command(args, CS16Type::S16(S16Type::S16_565));
+                    sc16_encoding_command(args, SprType::S16(S16Type::S16_565));
                 },
             ),
         ),
@@ -106,7 +105,18 @@ const COMMAND: &'static dyn CLIElement = &CLISubcommands(
                 "",
                 "encodes 565 C16 file from directory",
                 |args| {
-                    sc16_encoding_command(args, CS16Type::C16(C16Type::C16_565));
+                    sc16_encoding_command(args, SprType::C16(C16Type::C16_565));
+                },
+            ),
+        ),
+        (
+            "encodeS32",
+            &CLIVecCmd(
+                "<INDIR> <OUT>",
+                "",
+                "encodes S32 file from directory",
+                |args| {
+                    sc16_encoding_command(args, SprType::S32);
                 },
             ),
         ),
@@ -122,8 +132,26 @@ const COMMAND: &'static dyn CLIElement = &CLISubcommands(
                     }
                     let img = imaging_ex::import(&args[0]);
                     let cdmode = cdmode_parse(args.get(2));
-                    let dithered = s16dither::blk(&ARGB32::raster_rgb(&img), &CM_RGB565, cdmode);
-                    let blk16 = BLK16::split(S16Type::S16_565, &dithered);
+                    let dithered = s16dither::blk(&img, &CM_RGB565, cdmode);
+                    let blk16 = BLK16::split(SprType::S16(S16Type::S16_565), &dithered);
+                    std::fs::write(&args[1], blk16::build_blk(blk16)).unwrap();
+                    std::process::exit(0);
+                },
+            ),
+        ),
+        (
+            "encodeB32",
+            &CLIVecCmd(
+                "<IN> <OUT>",
+                "",
+                "encodes S32 BLK file from source",
+                |args| {
+                    if args.len() != 2 {
+                        return;
+                    }
+                    let img = imaging_ex::import(&args[0]);
+                    let dithered = s16dither::blk(&img, &CM_ARGB32, cdmode_parse(None));
+                    let blk16 = BLK16::split(SprType::S32, &dithered);
                     std::fs::write(&args[1], blk16::build_blk(blk16)).unwrap();
                     std::process::exit(0);
                 },
@@ -134,7 +162,7 @@ const COMMAND: &'static dyn CLIElement = &CLISubcommands(
             &CLIVecCmd(
                 "<IN> <OUTDIR>",
                 "",
-                "decodes S16 or C16 files
+                "decodes sprite files
 s16/c16 files are converted to directories of numbered PNG files.
 This process is lossless, though RGB555 files are converted to RGB565.
 The inverse conversion is of course not lossless (lower bits are dropped).",
@@ -150,7 +178,7 @@ The inverse conversion is of course not lossless (lower bits are dropped).",
                         imaging_ex::export_spr(
                             &path_base.join(format!("{}.png", i)).to_string_lossy(),
                             frame,
-                            sheet.id.to_cm16(),
+                            sheet.id.to_cm(),
                             false,
                         );
                     }
@@ -170,7 +198,7 @@ The inverse conversion is of course not lossless (lower bits are dropped).",
                     }
                     let sheet =
                         blk16::identify_and_read(&std::fs::read(&args[0]).unwrap()).unwrap();
-                    imaging_ex::export_blk(&args[1], &sheet.join(), sheet.variant.to_cm16(), false);
+                    imaging_ex::export_blk(&args[1], &sheet.join(), sheet.variant.to_cm(), false);
                     std::process::exit(0);
                 },
             ),
@@ -186,9 +214,9 @@ The inverse conversion is of course not lossless (lower bits are dropped).",
                         return;
                     }
                     let image = Raster::generate(256, 256, &mut |x, y| {
-                        CM_RGB565.decode((x + (y * 256)) as Pixel)
+                        CM_RGB565.decode((x + (y * 256)) as Pixel, false)
                     });
-                    imaging_ex::export_rgb(&args[0], &image, false);
+                    imaging_ex::export_argb(&args[0], &image, false);
                     std::process::exit(0);
                 },
             ),
@@ -271,15 +299,14 @@ The inverse conversion is of course not lossless (lower bits are dropped).",
     ],
 );
 
-fn sc16_encoding_command(args: Vec<String>, t: CS16Type) {
-    // INDIR OUT [CDMODE [ADMODE]]
+fn sc16_encoding_command(args: Vec<String>, t: SprType) {
     if args.len() < 2 || args.len() > 4 {
         return;
     }
     let base = Path::new(&args[0]);
     let exts: &'static [&str] = &[".png", ".jpg", ".bmp"];
     let mut idx = 0;
-    let mut frames: Vec<S16Frame> = Vec::new();
+    let mut frames: Vec<SprFrame> = Vec::new();
     let cdmode = cdmode_parse(args.get(2));
     let admode = admode_parse(args.get(3));
     loop {
@@ -294,12 +321,12 @@ fn sc16_encoding_command(args: Vec<String>, t: CS16Type) {
         if let Some(found) = found {
             let imp = imaging_ex::import(&found.to_string_lossy());
             idx += 1;
-            frames.push(s16dither::spr(&imp, &t.to_cm16(), cdmode, admode));
+            frames.push(s16dither::spr(&imp, t.to_cm(), cdmode, admode));
         } else {
             break;
         }
     }
-    let res = cs16::build(&CS16Sheet { id: t, frames });
+    let res = cs16::build(&SprSheet { id: t, frames }, None);
     std::fs::write(&args[1], res).unwrap();
     std::process::exit(0);
 }

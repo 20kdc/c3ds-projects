@@ -20,24 +20,6 @@ pub fn import(name: &str) -> Raster<ARGB32> {
 }
 
 /// Exports an image
-pub fn export_rgb(name: &str, image: &Raster<RGB24>, bmp: bool) {
-    let mut img = image::RgbImage::new(image.width() as u32, image.height() as u32);
-    img.enumerate_pixels_mut().for_each(|(x, y, p)| {
-        let px = image.pixel(x as usize, y as usize);
-        *p = image::Rgb([px.0, px.1, px.2]);
-    });
-    img.save_with_format(
-        name,
-        if bmp {
-            image::ImageFormat::Bmp
-        } else {
-            image::ImageFormat::Png
-        },
-    )
-    .unwrap();
-}
-
-/// Exports an image
 pub fn export_argb(name: &str, image: &Raster<ARGB32>, bmp: bool) {
     let mut img = image::RgbaImage::new(image.width() as u32, image.height() as u32);
     img.enumerate_pixels_mut().for_each(|(x, y, p)| {
@@ -56,17 +38,19 @@ pub fn export_argb(name: &str, image: &Raster<ARGB32>, bmp: bool) {
 }
 
 /// Exports an image
-pub fn export_spr(name: &str, image: &Raster<u16>, cm: &dyn ColourModel, bmp: bool) {
-    let tmpconv = Raster::generate(image.width(), image.height(), &mut |x, y| {
-        image.pixel(x, y) as Pixel
-    });
-    export_argb(name, &cm.decode_raster_spr(&tmpconv), bmp);
+pub fn export_spr(name: &str, image: &Raster<Pixel>, cm: &dyn ColourModel, bmp: bool) {
+    export_argb(
+        name,
+        &cm.decode_raster(&image.map(&mut |_, _, v| v as Pixel), true),
+        bmp,
+    );
 }
 
 /// Exports an image
-pub fn export_blk(name: &str, image: &Raster<u16>, cm: &dyn ColourModel, bmp: bool) {
-    let tmpconv = Raster::generate(image.width(), image.height(), &mut |x, y| {
-        image.pixel(x, y) as Pixel
-    });
-    export_rgb(name, &cm.decode_raster_blk(&tmpconv), bmp);
+pub fn export_blk(name: &str, image: &Raster<Pixel>, cm: &dyn ColourModel, bmp: bool) {
+    export_argb(
+        name,
+        &cm.decode_raster(&image.map(&mut |_, _, v| v as Pixel), false),
+        bmp,
+    );
 }

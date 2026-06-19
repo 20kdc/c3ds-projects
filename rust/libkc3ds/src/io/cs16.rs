@@ -9,28 +9,21 @@ use super::*;
 // -- outer utils --
 
 /// Identifies a S16/C16.
-pub fn identify(data: &[u8]) -> Option<CS16Type> {
+pub fn identify(data: &[u8]) -> Option<SprType> {
     if let Ok(val) = ENDIANNESS_LE.r_u32(data, 0) {
-        CS16Type::of_magic(val)
+        SprType::of_magic(val)
     } else {
         None
     }
 }
 
 /// Gets headers for a S16/C16.
-pub fn headers(t: CS16Type, data: &[u8]) -> Result<CS16Header, String> {
-    match t {
-        CS16Type::S16(st) => headers_s16(st, data)
-            .map(CS16Header::S16)
-            .map_err(|_| "invalid S16 header".into()),
-        CS16Type::C16(st) => headers_c16(st, data)
-            .map(CS16Header::C16)
-            .map_err(|_| "invalid C16 header".into()),
-    }
+pub fn headers(t: SprType, data: &[u8]) -> Result<SprHeader, String> {
+    SprHeader::from_bytes(t, false, data).map_err(|_| "invalid header".into())
 }
 
 /// Identifies and gets headers for a S16/C16.
-pub fn identify_and_headers(data: &[u8]) -> Result<CS16Header, String> {
+pub fn identify_and_headers(data: &[u8]) -> Result<SprHeader, String> {
     if let Some(val) = identify(data) {
         headers(val, data)
     } else {
@@ -38,180 +31,174 @@ pub fn identify_and_headers(data: &[u8]) -> Result<CS16Header, String> {
     }
 }
 
-/// Reads and decompresses a S16/C16.
-pub fn read_and_decompress(header: &CS16Header, data: &[u8]) -> Result<CS16Sheet, String> {
-    match header {
-        CS16Header::S16(st) => read_s16(st, data).map(|v| v.into()),
-        CS16Header::C16(st) => read_c16(st, data).map(|v| v.into()),
-    }
-}
-
-/// Just do absolutely everything and get a CS16Sheet.
-pub fn identify_and_decompress(data: &[u8]) -> Result<CS16Sheet, String> {
-    read_and_decompress(&identify_and_headers(data)?, data)
-}
-
-/// Builds from a CS16Sheet.
-pub fn build(t: &CS16Sheet) -> Vec<u8> {
-    match t.id {
-        CS16Type::S16(s16) => build_s16(&S16Sheet {
-            id: s16,
-            frames: t.frames.clone(),
-        }),
-        CS16Type::C16(c16) => build_c16(&C16Sheet {
-            id: c16,
-            frames: t.frames.iter().map(|v| C16Frame::compress(v)).collect(),
-        }),
-    }
+/// Just do absolutely everything and get a [SprSheet].
+pub fn identify_and_decompress(data: &[u8]) -> Result<SprSheet, String> {
+    read_spr(&identify_and_headers(data)?, data)
 }
 
 // -- header management --
 
-pub trait CS16HeaderCommon {
-    /// Gets CS16 variant.
-    fn variant_cs16(&self) -> CS16Type;
-    /// Gets a summary of image sizes.
-    fn image_sizes(&self) -> Vec<(usize, usize)>;
-    /// Measures the size of the header.
-    fn size(&self) -> usize;
-    /// Converts to bytes.
-    fn to_bytes(&self) -> Vec<u8>;
-}
-
-#[derive(Clone, Debug)]
-pub enum CS16Header {
-    S16(S16Header),
-    C16(C16Header),
-}
-
-impl CS16HeaderCommon for CS16Header {
-    fn variant_cs16(&self) -> CS16Type {
-        match self {
-            Self::S16(s16) => s16.variant_cs16(),
-            Self::C16(c16) => c16.variant_cs16(),
-        }
-    }
-    fn image_sizes(&self) -> Vec<(usize, usize)> {
-        match self {
-            Self::S16(s16) => s16.image_sizes(),
-            Self::C16(c16) => c16.image_sizes(),
-        }
-    }
-    fn size(&self) -> usize {
-        match self {
-            Self::S16(s16) => s16.size(),
-            Self::C16(c16) => c16.size(),
-        }
-    }
-    fn to_bytes(&self) -> Vec<u8> {
-        match self {
-            Self::S16(s16) => s16.to_bytes(),
-            Self::C16(c16) => c16.to_bytes(),
-        }
-    }
-}
-
 /// S16 file headers.
 #[derive(Clone, Debug)]
-pub struct S16Header {
-    pub variant: S16Type,
-    pub images: Vec<S16HeaderImage>,
+pub struct SprHeader {
+    pub variant: SprType,
+    pub blk_size: Option<(u16, u16)>,
+    pub images: Vec<SprHeaderImage>,
 }
 
 /// S16 image headers.
-#[derive(Clone, Copy, Debug)]
-pub struct S16HeaderImage {
+#[derive(Clone, Debug)]
+pub struct SprHeaderImage {
     pub base: u32,
     pub width: u16,
     pub height: u16,
+    /// Row bases for non-1st row in C16.
+    /// If not C16, empty.
+    pub row_bases: Vec<u32>,
 }
 
-impl CS16HeaderCommon for S16Header {
-    fn variant_cs16(&self) -> CS16Type {
-        CS16Type::S16(self.variant)
-    }
-    fn image_sizes(&self) -> Vec<(usize, usize)> {
+impl SprHeader {
+    /// Gets a summary of image sizes.
+    pub fn image_sizes(&self) -> Vec<(usize, usize)> {
         self.images
             .iter()
             .map(|v| (v.width as usize, v.height as usize))
             .collect()
     }
-    fn size(&self) -> usize {
-        6 + (self.images.len() * 8)
+
+    /// Measures the size of the header.
+    pub fn size(&self) -> usize {
+        let mut total = 6 + (self.images.len() * 8);
+        if self.blk_size.is_some() {
+            total += 4;
+        }
+        if let SprType::C16(_) = self.variant {
+            for v in &self.images {
+                total += v.row_bases.len() * 4;
+            }
+        }
+        total
     }
-    fn to_bytes(&self) -> Vec<u8> {
+
+    /// Reads sprite headers from bytes given a known sprite type.
+    pub fn from_bytes(t: SprType, is_blk: bool, data: &[u8]) -> Result<SprHeader, ()> {
+        let endianness = t.endianness();
+        let mut headers = SprHeader {
+            variant: t,
+            blk_size: None,
+            images: Vec::new(),
+        };
+        let mut ptr = 4;
+        if is_blk {
+            headers.blk_size = Some((
+                endianness.r_u16(data, ptr)?,
+                endianness.r_u16(data, ptr + 2)?,
+            ));
+            ptr += 4;
+        }
+        let image_count = endianness.r_u16(data, ptr)?;
+        ptr += 2;
+        match t {
+            SprType::S16(_) => {
+                for _ in 0..image_count {
+                    let mut ih = SprHeaderImage {
+                        base: endianness.r_u32(data, ptr)?,
+                        width: endianness.r_u16(data, ptr + 4)?,
+                        height: endianness.r_u16(data, ptr + 6)?,
+                        row_bases: Vec::new(),
+                    };
+                    ptr += 8;
+                    if ih.height > 1 {
+                        for _ in 1..ih.height {
+                            ih.row_bases.push(endianness.r_u32(data, ptr)?);
+                            ptr += 4;
+                        }
+                    }
+                    headers.images.push(ih);
+                }
+                if is_blk {
+                    // BLK compatibilty workaround.
+                    // Offsets in BLK files are fake and incorrect; the engine relies on BLK tiles being in-order.
+                    // See also the notice in the Python lib's s16.py about Random's Room etc.
+                    let mut simptr = headers.size();
+                    for image in &mut headers.images {
+                        image.base = simptr as u32;
+                        simptr += BLK_TILE_SIZE * BLK_TILE_SIZE * 2;
+                    }
+                }
+            }
+            SprType::S32 => {
+                for _ in 0..image_count {
+                    let ih = SprHeaderImage {
+                        base: endianness.r_u32(data, ptr)?,
+                        width: endianness.r_u16(data, ptr + 4)?,
+                        height: endianness.r_u16(data, ptr + 6)?,
+                        row_bases: Vec::new(),
+                    };
+                    ptr += 8;
+                    // Note the lack of a BLK workaround here; BLK32 files are required to have correct offsets.
+                    // (A question arises as to why BLK32 files exist when the background could 'just' be one whole PNG.)
+                    headers.images.push(ih);
+                }
+            }
+            SprType::C16(_) => {
+                for _ in 0..image_count {
+                    let mut ih = SprHeaderImage {
+                        base: endianness.r_u32(data, ptr)?,
+                        width: endianness.r_u16(data, ptr + 4)?,
+                        height: endianness.r_u16(data, ptr + 6)?,
+                        row_bases: Vec::new(),
+                    };
+                    ptr += 8;
+                    if ih.height > 1 {
+                        for _ in 1..ih.height {
+                            ih.row_bases.push(endianness.r_u32(data, ptr)?);
+                            ptr += 4;
+                        }
+                    }
+                    headers.images.push(ih);
+                }
+            }
+        }
+        Ok(headers)
+    }
+
+    /// Converts to bytes.
+    pub fn to_bytes(&self) -> Vec<u8> {
         let mut data = vec![0; self.size()];
         let endianness = self.variant.endianness();
         ENDIANNESS_LE.w_u32(&mut data, 0, self.variant.magic());
-        endianness.w_u16(&mut data, 4, self.images.len() as u16);
-        let mut ptr = 6;
+        let mut ptr = 4;
+        if let Some(blk_size) = self.blk_size {
+            endianness.w_u16(&mut data, ptr, blk_size.0);
+            ptr += 2;
+            endianness.w_u16(&mut data, ptr, blk_size.1);
+            ptr += 2;
+        }
+        endianness.w_u16(&mut data, ptr, self.images.len() as u16);
+        ptr += 2;
         for img in &self.images {
             endianness.w_u32(&mut data, ptr, img.base);
             endianness.w_u16(&mut data, ptr + 4, img.width);
             endianness.w_u16(&mut data, ptr + 6, img.height);
             ptr += 8;
+            if let SprType::C16(_) = self.variant {
+                if img.height > 1 {
+                    assert_eq!(img.row_bases.len(), (img.height - 1) as usize);
+                    for rb in &img.row_bases {
+                        endianness.w_u32(&mut data, ptr, *rb);
+                        ptr += 4;
+                    }
+                } else {
+                    assert_eq!(img.row_bases.len(), 0);
+                }
+            }
         }
         data
     }
 }
 
-/// Reads S16 headers.
-pub fn headers_s16(t: S16Type, data: &[u8]) -> Result<S16Header, ()> {
-    let endianness = t.endianness();
-    let image_count = endianness.r_u16(data, 4)?;
-    let mut headers = S16Header {
-        variant: t,
-        images: Vec::new(),
-    };
-    let mut ptr = 6;
-    for _ in 0..image_count {
-        headers.images.push(S16HeaderImage {
-            base: endianness.r_u32(data, ptr)?,
-            width: endianness.r_u16(data, ptr + 4)?,
-            height: endianness.r_u16(data, ptr + 6)?,
-        });
-        ptr += 8;
-    }
-    Ok(headers)
-}
-
-/// C16 file headers.
-#[derive(Clone, Debug)]
-pub struct C16Header {
-    pub variant: C16Type,
-    pub images: Vec<C16HeaderImage>,
-}
-
-/// C16 image headers.
-#[derive(Clone, Debug)]
-pub struct C16HeaderImage {
-    pub base: u32,
-    pub width: u16,
-    pub height: u16,
-    // Row bases for non-1st row
-    pub row_bases: Vec<u32>,
-}
-
-impl C16HeaderImage {
-    /// Creates the header from a base offset and a frame.
-    pub fn from_base_and_frame(base: usize, frame: &C16Frame) -> C16HeaderImage {
-        let mut row_bases: Vec<u32> = Vec::new();
-        let mut ptr = base;
-        let mut first_row = true;
-        for row in &frame.rows {
-            if !first_row {
-                row_bases.push(ptr as u32);
-            }
-            ptr += (row.len() * 2) + 2;
-            first_row = false;
-        }
-        C16HeaderImage {
-            base: base as u32,
-            width: frame.width as u16,
-            height: frame.rows.len() as u16,
-            row_bases,
-        }
-    }
+impl SprHeaderImage {
     /// The base gets shifted after creation because it's easier to handle that way. Do that.
     pub fn shift_base(&mut self, base: usize) {
         self.base += base as u32;
@@ -221,133 +208,68 @@ impl C16HeaderImage {
     }
 }
 
-impl CS16HeaderCommon for C16Header {
-    fn variant_cs16(&self) -> CS16Type {
-        CS16Type::C16(self.variant)
-    }
-    fn image_sizes(&self) -> Vec<(usize, usize)> {
-        self.images
-            .iter()
-            .map(|v| (v.width as usize, v.height as usize))
-            .collect()
-    }
-    fn size(&self) -> usize {
-        let mut total = 6 + (self.images.len() * 8);
-        for v in &self.images {
-            total += v.row_bases.len() * 4;
-        }
-        total
-    }
-    fn to_bytes(&self) -> Vec<u8> {
-        let mut data = vec![0; self.size()];
-        let endianness = self.variant.endianness();
-        ENDIANNESS_LE.w_u32(&mut data, 0, self.variant.magic());
-        endianness.w_u16(&mut data, 4, self.images.len() as u16);
-        let mut ptr = 6;
-        for img in &self.images {
-            endianness.w_u32(&mut data, ptr, img.base);
-            endianness.w_u16(&mut data, ptr + 4, img.width);
-            endianness.w_u16(&mut data, ptr + 6, img.height);
-            ptr += 8;
-            if img.height > 1 {
-                assert_eq!(img.row_bases.len(), (img.height - 1) as usize);
-                for rb in &img.row_bases {
-                    endianness.w_u32(&mut data, ptr, *rb);
-                    ptr += 4;
-                }
-            } else {
-                assert_eq!(img.row_bases.len(), 0);
-            }
-        }
-        data
-    }
-}
-
-pub fn headers_c16(t: C16Type, data: &[u8]) -> Result<C16Header, ()> {
-    let endianness = t.endianness();
-    let image_count = endianness.r_u16(data, 4)?;
-    let mut headers = C16Header {
-        variant: t,
-        images: Vec::new(),
-    };
-    let mut ptr = 6;
-    for _ in 0..image_count {
-        let mut ih = C16HeaderImage {
-            base: endianness.r_u32(data, ptr)?,
-            width: endianness.r_u16(data, ptr + 4)?,
-            height: endianness.r_u16(data, ptr + 6)?,
-            row_bases: Vec::new(),
-        };
-        ptr += 8;
-        if ih.height > 1 {
-            for _ in 1..ih.height {
-                ih.row_bases.push(endianness.r_u32(data, ptr)?);
-                ptr += 4;
-            }
-        }
-        headers.images.push(ih);
-    }
-    Ok(headers)
-}
-
 // -- actual readers --
 
-/// Reads a S16.
-pub fn read_s16(header: &S16Header, data: &[u8]) -> Result<S16Sheet, String> {
+/// Reads a sprite file. We do not bother trying to preserve C16Sheet at this point, it's a fruitless endeavour.
+pub fn read_spr(header: &SprHeader, data: &[u8]) -> Result<SprSheet, String> {
     let endianness = header.variant.endianness();
-    let mut res = S16Sheet {
+    let mut res = SprSheet {
         id: header.variant,
         frames: Vec::new(),
     };
-    for ihdr in &header.images {
-        let mut frame = S16Frame::new(ihdr.width as usize, ihdr.height as usize);
-        let mut ptr = ihdr.base as usize;
-        for y in 0..ihdr.height {
-            for x in 0..ihdr.width {
-                frame.set_pixel(
-                    x as usize,
-                    y as usize,
-                    endianness
-                        .r_u16(data, ptr)
-                        .map_err(|_| "unable to read pixel")?,
-                );
-                ptr += 2;
+    match header.variant {
+        SprType::S16(_) => {
+            for ihdr in &header.images {
+                let mut frame = SprFrame::new(ihdr.width as usize, ihdr.height as usize);
+                let mut ptr = ihdr.base as usize;
+                for y in 0..ihdr.height {
+                    for x in 0..ihdr.width {
+                        frame.set_pixel(
+                            x as usize,
+                            y as usize,
+                            endianness
+                                .r_u16(data, ptr)
+                                .map_err(|_| "unable to read pixel")?
+                                as Pixel,
+                        );
+                        ptr += 2;
+                    }
+                }
+                res.frames.push(frame);
             }
         }
-        res.frames.push(frame);
-    }
-    Ok(res)
-}
-
-/// Reads a C16.
-pub fn read_c16(header: &C16Header, data: &[u8]) -> Result<C16Sheet, String> {
-    let endianness = header.variant.endianness();
-    let mut res = C16Sheet {
-        id: header.variant,
-        frames: Vec::new(),
-    };
-    for (fidx, ihdr) in header.images.iter().enumerate() {
-        let mut frame = C16Frame {
-            width: ihdr.width as usize,
-            rows: Vec::new(),
-        };
-        // read each row
-        for idx in 0..ihdr.height {
-            let row_base = if idx == 0 {
-                ihdr.base as usize
-            } else {
-                ihdr.row_bases[idx as usize - 1] as usize
-            };
-            frame
-                .rows
-                .push(read_c16_row(endianness, data, row_base).map_err(|err| {
-                    format!(
-                        "frame {}: error in row {} (start @ {}): {}",
-                        fidx, idx, row_base, err
-                    )
-                })?);
+        SprType::C16(_) => {
+            for (fidx, ihdr) in header.images.iter().enumerate() {
+                let mut frame = C16Frame {
+                    width: ihdr.width as usize,
+                    rows: Vec::new(),
+                };
+                // read each row
+                for idx in 0..ihdr.height {
+                    let row_base = if idx == 0 {
+                        ihdr.base as usize
+                    } else {
+                        ihdr.row_bases[idx as usize - 1] as usize
+                    };
+                    frame
+                        .rows
+                        .push(read_c16_row(endianness, data, row_base).map_err(|err| {
+                            format!(
+                                "frame {}: error in row {} (start @ {}): {}",
+                                fidx, idx, row_base, err
+                            )
+                        })?);
+                }
+                res.frames.push(frame.decompress());
+            }
         }
-        res.frames.push(frame);
+        SprType::S32 => {
+            for ihdr in &header.images {
+                // Note we don't bother trying to chop this.
+                let png_data = &data[ihdr.base as usize..];
+                res.frames.push(s32png_decode(png_data)?);
+            }
+        }
     }
     Ok(res)
 }
@@ -392,56 +314,75 @@ pub(crate) fn push_u16(data: &mut Vec<u8>, endianness: &'static dyn Endianness, 
     data.push(tmp[1]);
 }
 
-/// Builds a S16.
-pub fn build_s16(sheet: &S16Sheet) -> Vec<u8> {
-    let mut headers = S16Header {
+/// Builds from a SprSheet.
+pub fn build(sheet: &SprSheet, blk_size: Option<(u16, u16)>) -> Vec<u8> {
+    let endianness = sheet.id.endianness();
+    let mut headers = SprHeader {
         variant: sheet.id,
+        blk_size,
         images: sheet
             .frames
             .iter()
-            .map(|v| S16HeaderImage {
+            .map(|v| SprHeaderImage {
                 base: 0,
                 width: v.width() as u16,
                 height: v.height() as u16,
+                row_bases: Vec::new(),
             })
             .collect(),
     };
     let mut out = headers.to_bytes();
-    let endianness = sheet.id.endianness();
-    for (idx, frame) in sheet.frames.iter().enumerate() {
-        headers.images[idx].base = out.len() as u32;
-        for y in 0..frame.height() {
-            for v in frame.row(y) {
-                push_u16(&mut out, endianness, *v)
+    match sheet.id {
+        SprType::S16(_) => {
+            for (idx, frame) in sheet.frames.iter().enumerate() {
+                headers.images[idx].base = out.len() as u32;
+                if blk_size.is_some() {
+                    // SpriteBuilder writes these with a dodgy offset. We write the same way for compatibility.
+                    headers.images[idx].base -= 4;
+                }
+                for y in 0..frame.height() {
+                    for v in frame.row(y) {
+                        push_u16(&mut out, endianness, *v as u16)
+                    }
+                }
             }
         }
-    }
-    let fixed_headers = headers.to_bytes();
-    out[0..fixed_headers.len()].copy_from_slice(&fixed_headers);
-    out
-}
-
-/// Builds a C16.
-pub fn build_c16(sheet: &C16Sheet) -> Vec<u8> {
-    let mut headers = C16Header {
-        variant: sheet.id,
-        images: sheet
-            .frames
-            .iter()
-            .map(|v| C16HeaderImage::from_base_and_frame(0, v))
-            .collect(),
-    };
-    let mut out = headers.to_bytes();
-    let endianness = sheet.id.endianness();
-    for (idx, frame) in sheet.frames.iter().enumerate() {
-        headers.images[idx].shift_base(out.len());
-        for row in &frame.rows {
-            for v in row {
-                push_u16(&mut out, endianness, *v)
+        SprType::S32 => {
+            for (idx, frame) in sheet.frames.iter().enumerate() {
+                headers.images[idx].base = out.len() as u32;
+                out.extend(s32png_encode(frame));
             }
-            push_u16(&mut out, endianness, 0)
         }
-        push_u16(&mut out, endianness, 0)
+        SprType::C16(_) => {
+            let compressed: Vec<C16Frame> = sheet
+                .frames
+                .iter()
+                .map(|i| C16Frame::compress(i, sheet.id.to_cm()))
+                .collect();
+            for (idx, frame) in compressed.iter().enumerate() {
+                let row_bases: &mut Vec<u32> = &mut headers.images[idx].row_bases;
+                let mut ptr = 0;
+                let mut first_row = true;
+                for row in &frame.rows {
+                    if !first_row {
+                        row_bases.push(ptr as u32);
+                    }
+                    ptr += (row.len() * 2) + 2;
+                    first_row = false;
+                }
+            }
+            let mut out = headers.to_bytes();
+            for (idx, frame) in compressed.iter().enumerate() {
+                headers.images[idx].shift_base(out.len());
+                for row in &frame.rows {
+                    for v in row {
+                        push_u16(&mut out, endianness, *v)
+                    }
+                    push_u16(&mut out, endianness, 0)
+                }
+                push_u16(&mut out, endianness, 0)
+            }
+        }
     }
     let fixed_headers = headers.to_bytes();
     out[0..fixed_headers.len()].copy_from_slice(&fixed_headers);

@@ -55,7 +55,8 @@ impl CLIElement for CLISubcommands<'_> {
                     if v.0.eq_ignore_ascii_case(&sc) {
                         // okie!
                         v.1.run(remainder, &format!("{} {}", help_prefix, v.0));
-                        return;
+                        v.1.help_eprint(help_prefix);
+                        std::process::exit(1);
                     }
                 }
                 // oh no
