@@ -202,7 +202,7 @@ class ReqPaths():
 	"""
 	Describes file paths.
 	"""
-	def __init__(self, path_png, path_bmp, fsb, frame_c16):
+	def __init__(self, path_png: str, path_bmp: str, fsb: str, frame_c16: int):
 		self.png = path_png
 		self.bmp = path_bmp
 		# i.e. "a00a"
@@ -216,7 +216,7 @@ class BlankReq():
 	"""
 	Describes a blank frame request.
 	"""
-	def __init__(self, part_info, paths):
+	def __init__(self, part_info, paths: ReqPaths):
 		self.part_name = part_info.part_id.name
 		self.part_info = part_info
 		self.paths = paths
@@ -226,7 +226,7 @@ class FrameReq(BlankReq):
 	Describes a single frame request.
 	Frame requests must be in C16 order so they collate properly.
 	"""
-	def __init__(self, gizmo_context, gizmo_props, part_info, paths):
+	def __init__(self, gizmo_context, gizmo_props, part_info, paths: ReqPaths):
 		super().__init__(part_info, paths)
 		self.gizmo_context = gizmo_context
 		self.gizmo_props = gizmo_props
@@ -373,7 +373,6 @@ class CompileATTsKC3DSBPY(Operator):
 
 def _iterate_framelists(scene, cb):
 	# actually prepare
-	path_ib = bpy.path.abspath(scene.render.filepath)
 	framereqs = calc_req_group(scene)
 	# actually do the thing
 	fsb_names = {}
@@ -385,15 +384,9 @@ def _iterate_framelists(scene, cb):
 		for frame in framereqs:
 			if frame.paths.fsb == fsb:
 				relevant_frames.append(frame)
-		def inner(cb):
-			# load and dither
-			for frame in relevant_frames:
-				path_png = os.path.join(path_ib, frame.paths.png)
-				with imaging.ReadImg(path_png) as tmp_img:
-					cb(tmp_img)
-		cb(fsb + ".c16", inner, relevant_frames)
+		cb(fsb, relevant_frames)
 
-def _iterate_framelists_c16ify(scene, inner):
+def _iterate_framelists_c16ify(scene, relevant_frames):
 	# dithering modes
 	if scene.kc3dsbpy_c16_dither_colour:
 		cdmode = "bayer2"
@@ -405,9 +398,11 @@ def _iterate_framelists_c16ify(scene, inner):
 		admode = "nearest"
 	# the core
 	c16_frames = []
-	def y(tmp_img):
-		c16_frames.append(imaging.bpy_to_s16image(tmp_img, cdmode = cdmode, admode = admode))
-	inner(y)
+	path_ib = bpy.path.abspath(scene.render.filepath)
+	for frame in relevant_frames:
+		path_png = os.path.join(path_ib, frame.paths.png)
+		with imaging.ReadImg(path_png) as tmp_img:
+			c16_frames.append(imaging.bpy_to_s16image(tmp_img, cdmode = cdmode, admode = admode))
 	return c16_frames
 
 class PNG2C16KC3DSBPY(Operator):
@@ -421,10 +416,10 @@ class PNG2C16KC3DSBPY(Operator):
 		# actually prepare
 		path_cb = bpy.path.abspath(scene.kc3dsbpy_c16_outpath)
 		state = {"files_written": 0}
-		def x(c16, inner, relevant_frames):
-			c16_frames = _iterate_framelists_c16ify(scene, inner)
+		def x(fsb, relevant_frames):
+			c16_frames = _iterate_framelists_c16ify(scene, relevant_frames)
 			# finish
-			imaging.save_c16_with_makedirs(c16_frames, os.path.join(path_cb, c16))
+			imaging.save_c16_with_makedirs(c16_frames, os.path.join(path_cb, fsb + ".c16"))
 			state["files_written"] += 1
 		_iterate_framelists(scene, x)
 		self.report({"INFO"}, "Completed PNG->C16, " + str(state["files_written"]) + " files written")
@@ -441,10 +436,10 @@ class MakeSheetsKC3DSBPY(Operator):
 		# actually prepare
 		path_cb = bpy.path.abspath(scene.kc3dsbpy_c16_outpath)
 		columns = 16
-		def x(c16, inner, relevant_frames):
-			c16_frames = _iterate_framelists_c16ify(scene, inner)
+		def x(fsb, relevant_frames):
+			c16_frames = _iterate_framelists_c16ify(scene, relevant_frames)
 			# finish
-			imaging.s16image_save_png_with_makedirs(imaging.make_sheet(c16_frames, columns), os.path.join(path_cb, c16 + ".png"))
+			imaging.s16image_save_png_with_makedirs(imaging.make_sheet(c16_frames, columns), os.path.join(path_cb, fsb + ".c16.png"))
 		_iterate_framelists(scene, x)
 		self.report({"INFO"}, "Completed sheets")
 		return {"FINISHED"}
