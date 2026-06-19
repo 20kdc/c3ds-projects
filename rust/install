@@ -1,4 +1,5 @@
 #!/bin/sh
 cargo fmt
+cargo doc
 cargo install --path s16tool
 cargo install --path ssxtool

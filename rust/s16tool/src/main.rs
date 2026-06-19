@@ -186,7 +186,7 @@ The inverse conversion is of course not lossless (lower bits are dropped).",
                         return;
                     }
                     let image = Raster::generate(256, 256, &mut |x, y| {
-                        CM_RGB565.decode((x + (y * 256)) as u16)
+                        CM_RGB565.decode((x + (y * 256)) as Pixel)
                     });
                     imaging_ex::export_rgb(&args[0], &image, false);
                     std::process::exit(0);

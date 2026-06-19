@@ -56,11 +56,17 @@ pub fn export_argb(name: &str, image: &Raster<ARGB32>, bmp: bool) {
 }
 
 /// Exports an image
-pub fn export_spr(name: &str, image: &Raster<u16>, cm: &dyn ColourModel<u16>, bmp: bool) {
-    export_argb(name, &cm.decode_raster_spr(image), bmp);
+pub fn export_spr(name: &str, image: &Raster<u16>, cm: &dyn ColourModel, bmp: bool) {
+    let tmpconv = Raster::generate(image.width(), image.height(), &mut |x, y| {
+        image.pixel(x, y) as Pixel
+    });
+    export_argb(name, &cm.decode_raster_spr(&tmpconv), bmp);
 }
 
 /// Exports an image
-pub fn export_blk(name: &str, image: &Raster<u16>, cm: &dyn ColourModel<u16>, bmp: bool) {
-    export_rgb(name, &cm.decode_raster_blk(image), bmp);
+pub fn export_blk(name: &str, image: &Raster<u16>, cm: &dyn ColourModel, bmp: bool) {
+    let tmpconv = Raster::generate(image.width(), image.height(), &mut |x, y| {
+        image.pixel(x, y) as Pixel
+    });
+    export_rgb(name, &cm.decode_raster_blk(&tmpconv), bmp);
 }

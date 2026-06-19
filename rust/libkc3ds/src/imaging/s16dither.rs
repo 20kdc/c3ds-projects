@@ -19,7 +19,7 @@ pub fn spr(
     rgb_stage.map_inplace(&mut |x, y, v| {
         let alpha = alpha_stage.pixel(x, y) >= 0x80;
         if alpha {
-            if model.opaque(v) {
+            if model.opaque(v as Pixel) {
                 v
             } else {
                 model.nudge
@@ -45,6 +45,6 @@ pub fn blk(
         let pix_r = res_r.pixel(x, y);
         let pix_g = res_g.pixel(x, y);
         let pix_b = res_b.pixel(x, y);
-        model.encode(RGB24(pix_r, pix_g, pix_b))
+        model.encode(RGB24(pix_r, pix_g, pix_b)) as u16
     })
 }

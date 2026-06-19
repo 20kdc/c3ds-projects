@@ -61,24 +61,28 @@ impl RGB24 {
     }
 }
 
+/// Generic pixel irrespective of colour model.
+/// That is, a `Raster<Pixel>` should be statically generic across all colour models, even if potentially inefficient.
+pub type Pixel = u32;
+
 /// This represents a colour model.
 /// The colour models are intended to be used via trait object to prevent over-genericization.
 /// In addition, doing things this way allows for indexed-colour models to be represented.
-pub trait ColourModel<P: Copy + Sized + Default> {
+pub trait ColourModel {
     /// Returns true if the given pixel would be opaque in a sprite context.
-    fn opaque(&self, data: P) -> bool;
+    fn opaque(&self, data: Pixel) -> bool;
 
     /// Converts a pixel from this colour model to a RGB24 colour.
     /// Invalid values should be handled by ignoring invalid bits or so forth.
-    fn decode(&self, data: P) -> RGB24;
+    fn decode(&self, data: Pixel) -> RGB24;
 
     /// Decodes an entire raster.
-    fn decode_raster_blk(&self, source: &dyn RasterishObj<P>) -> Raster<RGB24> {
+    fn decode_raster_blk(&self, source: &dyn RasterishObj<Pixel>) -> Raster<RGB24> {
         source.map(&mut |_, _, v| self.decode(v))
     }
 
     /// Decodes a raster with transparency handling.
-    fn decode_raster_spr(&self, source: &dyn RasterishObj<P>) -> Raster<ARGB32> {
+    fn decode_raster_spr(&self, source: &dyn RasterishObj<Pixel>) -> Raster<ARGB32> {
         source.map(&mut |_, _, v| ARGB32(if self.opaque(v) { 255 } else { 0 }, self.decode(v)))
     }
 
@@ -86,10 +90,10 @@ pub trait ColourModel<P: Copy + Sized + Default> {
     /// This is always referred to as the "floor" dither method.
     /// This must be lossless for any value returned from `decode`, assuming no invalid values.
     /// The inverse is not true, `decode` may not return what was passed to `encode` (due to loss of precision in the format).
-    fn encode(&self, v: RGB24) -> P;
+    fn encode(&self, v: RGB24) -> Pixel;
 
     /// Boxify self - essentially a dynamic copy
-    fn to_box(&self) -> Box<&dyn ColourModel<P>>;
+    fn to_box(&self) -> Box<&dyn ColourModel>;
 }
 
 /// Bit positions for packed RGB
@@ -112,15 +116,17 @@ pub struct ColourModelRGB16 {
     pub transparency_check_mask: u16,
 }
 
-impl ColourModel<u16> for ColourModelRGB16 {
+impl ColourModel for ColourModelRGB16 {
     #[inline]
-    fn opaque(&self, data: u16) -> bool {
+    fn opaque(&self, data: Pixel) -> bool {
+        let data = data as u16;
         (self.transparency_check_mask & data) != 0
     }
 
     #[inline]
-    fn decode(&self, data: u16) -> RGB24 {
+    fn decode(&self, data: Pixel) -> RGB24 {
         // Decompose to RGB
+        let data = data as u16;
         let mut r = ((data & self.r_mask) >> self.r_pos) as u8;
         let mut g = ((data & self.g_mask) >> self.g_pos) as u8;
         let mut b = ((data & self.b_mask) >> self.b_pos) as u8;
@@ -133,15 +139,16 @@ impl ColourModel<u16> for ColourModelRGB16 {
     }
 
     #[inline]
-    fn encode(&self, v: RGB24) -> u16 {
+    fn encode(&self, v: RGB24) -> Pixel {
         let r = self.r_bits.shiftdown(v.0 as usize) as u8;
         let g = self.g_bits.shiftdown(v.1 as usize) as u8;
         let b = self.b_bits.shiftdown(v.2 as usize) as u8;
 
-        ((r as u16) << self.r_pos) | ((g as u16) << self.g_pos) | ((b as u16) << self.b_pos)
+        (((r as u16) << self.r_pos) | ((g as u16) << self.g_pos) | ((b as u16) << self.b_pos))
+            as Pixel
     }
 
-    fn to_box(&self) -> Box<&dyn ColourModel<u16>> {
+    fn to_box(&self) -> Box<&dyn ColourModel> {
         Box::new(self)
     }
 }
