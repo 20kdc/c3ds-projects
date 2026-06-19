@@ -135,7 +135,8 @@ class SkeletonReqContext():
 		scene = gizmo_context.scene
 		self.setup = cset.setup
 		self.gizmo_context = gizmo_context
-		self.path_gb = os.path.join(scene.kc3dsbpy_render_genus, scene.kc3dsbpy_render_breed, sex, age_char)
+		# Skeleton's render directory.
+		self.path_gb = os.path.join(bpy.path.abspath(scene.render.filepath), scene.kc3dsbpy_render_genus, scene.kc3dsbpy_render_breed, sex, age_char)
 		self.age_data = cset.ages[age_char]
 		self.pixels_per_unit = scene.kc3dsbpy_render_ppu
 		gs_char = libkc3ds.parts.C3_GS_MAP[sex + scene.kc3dsbpy_render_genus]
@@ -295,13 +296,11 @@ class RenderKC3DSBPY(Operator):
 		else:
 			padding_frame = bpy.data.images["PaddingFrame"]
 		# actually prepare
-		path_base = bpy.path.abspath(scene.render.filepath)
 		framereqs = calc_req_group(scene)
 		gizmo_idx = 0
 		# Main rendering phase
 		for frame in framereqs:
 			print("GIZMOBATCH: " + str(gizmo_idx) + " / " + str(len(framereqs)))
-			path_png = os.path.join(path_base, frame.paths.png)
 			scene.render.image_settings.file_format = "PNG"
 			scene.render.image_settings.color_mode = "RGBA"
 			out_image = padding_frame
@@ -310,14 +309,13 @@ class RenderKC3DSBPY(Operator):
 				bpy.ops.render.render()
 				frame.deactivate()
 				out_image = bpy.data.images["Render Result"]
-			imaging.save_image_with_makedirs(out_image, path_png)
+			imaging.save_image_with_makedirs(out_image, frame.paths.png)
 			if scene.kc3dsbpy_render_bmp:
-				path_bmp = os.path.join(path_base, frame.paths.bmp)
 				scene.render.image_settings.file_format = "BMP"
 				scene.render.image_settings.color_mode = "RGB"
-				tmp_img = bpy.data.images.load(path_png)
-				imaging.save_image_with_makedirs(tmp_img, path_bmp)
-				bpy.data.images.remove(tmp_img)
+				# Not sure why this had to be done, but presumably it had to be done.
+				with imaging.ReadImg(frame.paths.png) as tmp_img:
+					imaging.save_image_with_makedirs(tmp_img, frame.paths.bmp)
 			gizmo_idx += 1
 		# Done!
 		if we_own_padding_frame:
@@ -398,10 +396,8 @@ def _iterate_framelists_c16ify(scene, relevant_frames):
 		admode = "nearest"
 	# the core
 	c16_frames = []
-	path_ib = bpy.path.abspath(scene.render.filepath)
 	for frame in relevant_frames:
-		path_png = os.path.join(path_ib, frame.paths.png)
-		with imaging.ReadImg(path_png) as tmp_img:
+		with imaging.ReadImg(frame.paths.png) as tmp_img:
 			c16_frames.append(imaging.bpy_to_s16image(tmp_img, cdmode = cdmode, admode = admode))
 	return c16_frames
 
@@ -417,12 +413,28 @@ class PNG2C16KC3DSBPY(Operator):
 		path_cb = bpy.path.abspath(scene.kc3dsbpy_c16_outpath)
 		state = {"files_written": 0}
 		def x(fsb, relevant_frames):
+			s32_path = os.path.join(path_cb, fsb + ".s32")
+			c16_path = os.path.join(path_cb, fsb + ".c16")
+			# build C16
 			c16_frames = _iterate_framelists_c16ify(scene, relevant_frames)
-			# finish
-			imaging.save_c16_with_makedirs(c16_frames, os.path.join(path_cb, fsb + ".c16"))
+			imaging.save_c16_with_makedirs(c16_frames, c16_path)
+			# build S32?
+			if scene.kc3dsbpy_s32:
+				s32_images = []
+				for fidx in range(len(relevant_frames)):
+					frame = relevant_frames[fidx]
+					frame_c16 = c16_frames[fidx]
+					frame_png_file = open(frame.paths.png, "rb")
+					frame_png_data = frame_png_file.read()
+					frame_png_file.close()
+					s32_images.append(libkc3ds.s16.S32Image(frame_c16.width, frame_c16.height, frame_png_data))
+				s32_file = open(s32_path, "wb")
+				s32_file.write(libkc3ds.s16.encode_s32(s32_images))
+				s32_file.close()
+			# and update counter
 			state["files_written"] += 1
 		_iterate_framelists(scene, x)
-		self.report({"INFO"}, "Completed PNG->C16, " + str(state["files_written"]) + " files written")
+		self.report({"INFO"}, "Completed PNG->C16, " + str(state["files_written"]) + " C16s written")
 		return {"FINISHED"}
 
 class MakeSheetsKC3DSBPY(Operator):

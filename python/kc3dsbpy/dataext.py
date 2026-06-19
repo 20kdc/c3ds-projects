@@ -265,6 +265,7 @@ class SCENE_PT_ScenePanelRenderConvertKC3DSBPY(Panel):
 		row.operator("kc3dsbpy.render")
 		row.prop(context.scene, "kc3dsbpy_render_mode")
 		self.layout.separator()
+		self.layout.prop(context.scene, "kc3dsbpy_s32")
 		row = self.layout.row()
 		row.prop(context.scene, "kc3dsbpy_c16_dither_colour")
 		row.prop(context.scene, "kc3dsbpy_c16_dither_alpha")
@@ -409,6 +410,8 @@ def register():
 	bpy.types.Object.kc3dsbpy_pitch_s2 = FloatProperty(name = "S2", default = -45,
 	description = "Pitch in degrees, side view, far upward")
 	# Data
+	bpy.types.Scene.kc3dsbpy_s32 = BoolProperty(name = "S32 (RGBA, CE engines only)", default = False,
+	description = "S32 export. You probably shouldn't use this unless your breed has transparent features.")
 	bpy.types.Scene.kc3dsbpy_c16_dither_colour = BoolProperty(name = "Dither C16 Colour", default = False,
 	description = "!!!VERY SLOW!!! Enables Bayer 2x2 dithering. Useful if you run into banding")
 	bpy.types.Scene.kc3dsbpy_c16_dither_alpha = BoolProperty(name = "Dither C16 Alpha", default = False,
