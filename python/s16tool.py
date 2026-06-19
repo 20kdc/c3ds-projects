@@ -16,8 +16,8 @@ import sys
 
 import PIL.Image
 
-from libkc3ds.s16 import decode_cs16, decode_blk, encode_c16, encode_s16, identify_cs16, stitch_blk, S16Image, CDMODE_DEFAULT, ADMODE_DEFAULT
-from libkc3ds.s16pil import pil_to_565, pil_to_565_blk, s16image_to_pil_rgba
+from libkc3ds.s16 import decode_cs16, decode_blk, encode_c16, encode_s16, encode_s32, identify_cs16, stitch_blk, S16Image, SXLImage, S32Image, CDMODE_DEFAULT, ADMODE_DEFAULT, COMP_S16, COMP_C16, COMP_PNG
+from libkc3ds.s16pil import pil_to_565, pil_to_565_blk, sxlimage_to_pil, sxlimage_to_png
 from libkc3ds.bitdither import dither_channel, BITCOPY_TABLES
 
 # ---- Command Line ----
@@ -31,6 +31,8 @@ def command_help():
 	print(" encodes 565 S16 file from directory")
 	print("s16tool.py encodeC16 <INDIR> <OUT> [<CDMODE> [<ADMODE>]]")
 	print(" encodes 565 C16 file from directory")
+	print("s16tool.py encodeS32 <INDIR> <OUT>")
+	print(" encodes S32 file from directory")
 	print("s16tool.py encodeBLK <IN> <OUT> [<CDMODE>]")
 	print(" encodes 565 BLK file from source")
 	print("s16tool.py decode <IN> <OUTDIR>")
@@ -90,13 +92,18 @@ def _read_bytes(fn):
 	f.close()
 	return data
 
+def _write_png(sxlimage: SXLImage, fn: str, alpha_aware: bool = True):
+	f = open(fn, "wb")
+	f.write(sxlimage_to_png(sxlimage, alpha_aware))
+	f.close()
+
 def _read_cs16_file(fn):
 	return decode_cs16(_read_bytes(fn))
 
 def _opt_save_test(fn, fr):
 	if not (fn is None):
 		if fn != "":
-			s16image_to_pil_rgba(fr).save(fn, "PNG")
+			_write_png(fr, fn)
 
 def _opt_arg(idx, df = None):
 	if len(sys.argv) <= idx:
@@ -105,35 +112,44 @@ def _opt_arg(idx, df = None):
 
 def _write_equal_format(fn, images, original):
 	f = open(fn, "wb")
-	if identify_cs16(original).compressed:
+	comp = identify_cs16(original).compressed
+	if comp == COMP_C16:
 		f.write(encode_c16(images))
-	else:
+	elif comp == COMP_S16:
 		f.write(encode_s16(images))
+	else:
+		raise Exception("This operation cannot be performed on a non-S16/C16 image.")
 	f.close()
 
 import os
 import os.path
 
+def encode_getfile(fileset, idx):
+	exts = [".png", ".jpg", ".bmp"]
+	f_path = None
+	for ext in exts:
+		f_path = os.path.join(fileset, str(idx) + ext)
+		try:
+			os.stat(f_path)
+			# yay!
+			break
+		except:
+			pass
+		# :(
+		f_path = None
+	if f_path is None:
+		# did not find a candidate
+		return None
+	print("Frame " + f_path + "...")
+	return f_path
+
 def encode_fileset(fileset, output, compressed, cdmode, admode):
 	imgs = []
 	idx = 0
-	exts = [".png", ".jpg", ".bmp"]
 	while True:
-		f_path = None
-		for ext in exts:
-			f_path = os.path.join(fileset, str(idx) + ext)
-			try:
-				os.stat(f_path)
-				# yay!
-				break
-			except:
-				pass
-			# :(
-			f_path = None
+		f_path = encode_getfile(fileset, idx)
 		if f_path is None:
-			# did not find a candidate
 			break
-		print("Frame " + f_path + "...")
 		f_pil = PIL.Image.open(f_path)
 		print(" Encoding to RGB565...")
 		imgs.append(pil_to_565(f_pil, cdmode = cdmode, admode = admode))
@@ -143,6 +159,25 @@ def encode_fileset(fileset, output, compressed, cdmode, admode):
 		data = encode_c16(imgs)
 	else:
 		data = encode_s16(imgs)
+	res = open(output, "wb")
+	res.write(data)
+	res.close()
+
+def encode_fileset_s32(fileset, output):
+	imgs = []
+	idx = 0
+	while True:
+		f_path = encode_getfile(fileset, idx)
+		if f_path is None:
+			break
+		f_pil = PIL.Image.open(f_path)
+		f = io.BytesIO(b"")
+		f_pil.save(f, "PNG")
+		f.flush()
+		imgs.append(S32Image(f_pil.width, f_pil.height, f.getvalue()))
+		idx += 1
+	print("Building final data...")
+	data = encode_s32(imgs)
 	res = open(output, "wb")
 	res.write(data)
 	res.close()
@@ -179,6 +214,8 @@ if len(sys.argv) >= 2:
 		cdmode = _opt_arg(4, CDMODE_DEFAULT)
 		admode = _opt_arg(5, ADMODE_DEFAULT)
 		encode_fileset(sys.argv[2], sys.argv[3], sys.argv[1] == "encodeC16", cdmode, admode)
+	elif sys.argv[1] == "encodeS32":
+		encode_fileset_s32(sys.argv[2], sys.argv[3])
 	elif sys.argv[1] == "encodeBLK":
 		cdmode = _opt_arg(4, "floor")
 		img = PIL.Image.open(sys.argv[2])
@@ -195,14 +232,12 @@ if len(sys.argv) >= 2:
 		images = _read_cs16_file(sys.argv[2])
 		idx = 0
 		for v in images:
-			vpil = s16image_to_pil_rgba(v)
-			vpil.save(os.path.join(sys.argv[3], str(idx) + ".png"), "PNG")
+			_write_png(v, os.path.join(sys.argv[3], str(idx) + ".png"))
 			idx += 1
 	elif sys.argv[1] == "decodeFrame":
 		frame = int(sys.argv[3])
 		images = _read_cs16_file(sys.argv[2])
-		vpil = s16image_to_pil_rgba(images[frame])
-		vpil.save(sys.argv[4], "PNG")
+		_write_png(images[frame], sys.argv[4])
 	elif sys.argv[1] == "decodeFrameBMP":
 		frame = int(sys.argv[3])
 		images = _read_cs16_file(sys.argv[2])
@@ -212,11 +247,11 @@ if len(sys.argv) >= 2:
 		f.close()
 	elif sys.argv[1] == "decodeBLK":
 		blk = decode_blk(_read_bytes(sys.argv[2]))
-		vpil = s16image_to_pil_rgba(blk, alpha_aware = False)
+		vpil = sxlimage_to_pil(blk, alpha_aware = False)
 		vpil.save(sys.argv[3], "PNG")
 	elif sys.argv[1] == "decodeC2B":
 		images = _read_cs16_file(sys.argv[2])
-		vpil = s16image_to_pil_rgba(stitch_blk(len(images) // 16, 16, images), alpha_aware = False)
+		vpil = sxlimage_to_pil(stitch_blk(len(images) // 16, 16, images), alpha_aware = False)
 		vpil.save(sys.argv[3], "PNG")
 	elif sys.argv[1] == "mask":
 		# args
@@ -288,7 +323,7 @@ if len(sys.argv) >= 2:
 			for x in range(256):
 				image.data[idx] = idx
 				idx += 1
-		vpil = s16image_to_pil_rgba(image, alpha_aware = False)
+		vpil = sxlimage_to_pil(image, alpha_aware = False)
 		vpil.save(sys.argv[2], "PNG")
 	elif sys.argv[1] == "dither" or sys.argv[1] == "dithera":
 		fni = sys.argv[2]

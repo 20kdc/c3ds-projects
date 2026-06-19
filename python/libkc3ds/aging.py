@@ -9,7 +9,7 @@
 from ._aging_dsc import CHICHI
 from ._aging_c3g import C3_GRENDEL
 from ._aging_c3e import C3_ETTIN
-from ._aging_defs import CSet, CAge, AgedPart
+from ._aging_defs import CSet, CAge, AgedPart # noqa: F401
 
 CSETS_ALL = [CHICHI, C3_GRENDEL, C3_ETTIN]
 

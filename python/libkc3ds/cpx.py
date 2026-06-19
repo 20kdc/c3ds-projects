@@ -34,7 +34,7 @@ class CSMIHead():
 		self.data_len = 0
 		self.data_len_max = 1048576
 		self.padding = 0
-		if not (b is None):
+		if b is not None:
 			self.of_bytes(b)
 	def is_valid(self) -> bool:
 		"""
@@ -63,15 +63,15 @@ class CSMIHead():
 		"""
 		return "CSMIHead: magic=" + self.magic.decode(enc) + " pid=" + str(self.process_id) + " code=" + str(self.result_code) + " dl=" + str(self.data_len) + " dlm=" + str(self.data_len_max) + " pad=" + str(self.padding)
 
-def recvall(s: socket.socket, l: int) -> bytes:
+def recvall(s: socket.socket, length: int) -> bytes:
 	"""
 	Calls recv repeatedly until end of stream (raising EOFError if encountered early) or until the given length has been fulfilled.
 	"""
 	data = b""
-	while len(data) < l:
-		chunk = s.recv(l - len(data))
+	while len(data) < length:
+		chunk = s.recv(length - len(data))
 		if chunk == b"":
-			raise EOFError("at " + str(len(data)) + " during recvall(" + str(s) + ", " + str(l) + ")")
+			raise EOFError("at " + str(len(data)) + " during recvall(" + str(s) + ", " + str(length) + ")")
 		data += chunk
 	return data
 

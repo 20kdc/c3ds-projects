@@ -1,0 +1,3 @@
+check:
+	ruff check libkc3ds
+	ty check --extra-search-path /usr/lib/python3/dist-packages/ libkc3ds

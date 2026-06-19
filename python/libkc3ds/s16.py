@@ -21,22 +21,27 @@ COL_MASK = 0
 # Definitive black colour (as actual blank = transparent)
 COL_BLACK = 0x0020
 
+COMP_S16 = 0
+COMP_C16 = 1
+COMP_PNG = 2 # CE7: S32
+
 # ---- Format Registry ----
 
 class CS16Format():
-	def __init__(self, compressed, cfmt, endian, desc):
+	def __init__(self, compressed: int, cfmt: str, endian: str, desc: str):
 		self.compressed = compressed
 		self.cfmt = cfmt
 		self.endian = endian
 		self.desc = desc
 
 CS16_FILETYPES = {
-	0x00000000: CS16Format(False, "rgb555",  "little", "S16 RGB555 LE"),
-	0x00000001: CS16Format(False, "rgb565",  "little", "S16 RGB565 LE"),
-	0x00000002: CS16Format( True, "rgb555",  "little", "C16 RGB555 LE"),
-	0x00000003: CS16Format( True, "rgb565",  "little", "C16 RGB565 LE"),
-	0x01000000: CS16Format(False, "rgb5551", "big",    "N16 RGB5551 BE"),
-	0x03000000: CS16Format(False, "rgb5551", "big",    "M16 RGB5551 BE")
+	0x00000000: CS16Format(COMP_S16, "rgb555",  "little", "S16 RGB555 LE"),
+	0x00000001: CS16Format(COMP_S16, "rgb565",  "little", "S16 RGB565 LE"),
+	0x00000002: CS16Format(COMP_C16, "rgb555",  "little", "C16 RGB555 LE"),
+	0x00000003: CS16Format(COMP_C16, "rgb565",  "little", "C16 RGB565 LE"),
+	0x00000004: CS16Format(COMP_PNG, "png",     "little", "S32 PNG LE"),
+	0x01000000: CS16Format(COMP_S16, "rgb5551", "big",    "N16 RGB5551 BE"),
+	0x03000000: CS16Format(COMP_S16, "rgb5551", "big",    "M16 RGB5551 BE")
 }
 
 # ---- Data Structures ----
@@ -45,6 +50,8 @@ struct_cs16_header = struct.Struct("<IH")
 struct_cs16_frame = struct.Struct("<IHH")
 struct_cs16_pixel = struct.Struct("<H")
 struct_cs16_lofs = struct.Struct("<I")
+
+struct_png_chunkhead = struct.Struct(">II")
 
 struct_blk_header = struct.Struct("<IHHH")
 
@@ -93,14 +100,21 @@ def _encode_shorts(shorts) -> bytes:
 
 # ---- S16/C16 IO ----
 
-class S16Image():
+class SXLImage():
+	"""
+	Base class for S16 and S32 images.
+	"""
+	def __init__(self, w: int, h: int):
+		self.width = w
+		self.height = h
+
+class S16Image(SXLImage):
 	"""
 	RGB565 image. Note that RGB555 is converted to RGB565 during load.
 	"""
-	def __init__(self, w: int, h: int, data = None):
-		self.width = w
-		self.height = h
-		if data == None:
+	def __init__(self, w: int, h: int, data: list[int] = None):
+		super().__init__(w, h)
+		if data is None:
 			self.data = [0] * (w * h)
 		else:
 			self.data = data
@@ -311,6 +325,14 @@ class S16Image():
 					col = srci.data[src_row + x]
 					self.data[dst_row + x] = col
 
+class S32Image(SXLImage):
+	"""
+	S32 image. This contains a PNG file.
+	"""
+	def __init__(self, w: int, h: int, data: bytes):
+		super().__init__(w, h)
+		self.data = data
+
 # ---- S16/C16 IO ----
 
 def identify_cs16(data: bytes) -> CS16Format:
@@ -326,13 +348,13 @@ def _filetype_or_fail(ft: int) -> CS16Format:
 	"""
 	Returns the type of a CS16 header from CS16_FILETYPES, or None.
 	"""
-	if not (ft in CS16_FILETYPES):
+	if ft not in CS16_FILETYPES:
 		raise Exception("Unknown S16/C16/BLK magic number " + str(ft))
 	return CS16_FILETYPES[ft]
 
-def decode_cs16(data: bytes) -> list:
+def decode_cs16(data: bytes) -> list[SXLImage]:
 	"""
-	Decodes a C16 or S16 file.
+	Decodes a C16, S16, or S32 file.
 	Returns a list of S16Image objects.
 	"""
 	filetype, count = struct_cs16_header.unpack_from(data, 0)
@@ -344,36 +366,53 @@ def decode_cs16(data: bytes) -> list:
 	results = []
 	for i in range(count):
 		iptr, iw, ih = struct_cs16_frame.unpack_from(data, hptr)
-		img = S16Image(iw, ih)
-		if cs16fmt.compressed:
-			# 8 + (4 * (ih - 1))
-			hptr += 4 * (ih + 1)
-			# have to decode things in lines. how can we cheese this for max. efficiency?
-			for row in range(ih):
-				pixidx = row * iw
-				while True:
-					elm = struct_cs16_pixel.unpack_from(data, iptr)[0]
-					iptr += 2
-					if elm == 0:
-						break
-					runlen = elm >> 1
-					if (elm & 1) != 0:
-						niptr = iptr + (runlen * 2)
-						img.data[pixidx:pixidx + runlen] = _decode_shorts(data[iptr:niptr], cfmt, "little", runlen)
-						pixidx += runlen
-						iptr = niptr
-					else:
-						pixidx += runlen
+		if cs16fmt.compressed == COMP_S16 or cs16fmt.compressed == COMP_C16:
+			img = S16Image(iw, ih)
+			if cs16fmt.compressed == COMP_C16:
+				# 8 + (4 * (ih - 1))
+				hptr += 4 * (ih + 1)
+				# have to decode things in lines. how can we cheese this for max. efficiency?
+				for row in range(ih):
+					pixidx = row * iw
+					while True:
+						elm = struct_cs16_pixel.unpack_from(data, iptr)[0]
+						iptr += 2
+						if elm == 0:
+							break
+						runlen = elm >> 1
+						if (elm & 1) != 0:
+							niptr = iptr + (runlen * 2)
+							img.data[pixidx:pixidx + runlen] = _decode_shorts(data[iptr:niptr], cfmt, "little", runlen)
+							pixidx += runlen
+							iptr = niptr
+						else:
+							pixidx += runlen
+			else:
+				hptr += 8
+				# just decode everything at once
+				iw = iw * ih
+				iw2 = iw * ih * 2
+				img.data[0:iw] = _decode_shorts(data[iptr:iptr + iw2], cfmt, "little", iw)
+		elif cs16fmt.compressed == COMP_PNG:
+			png_file = data[iptr:]
+			# try to cut down PNG file
+			if not png_file.startswith(b"\x89PNG\r\n\x1A\n"):
+				raise Exception("S32 PNG is not a PNG")
+			subptr = 8
+			while True:
+				pngchk_len, pngchk_type = struct_png_chunkhead.unpack_from(png_file, subptr)
+				subptr += 8 + pngchk_len + 4
+				if pngchk_type == 0x49454E44:
+					# IEND
+					break
+			png_file = png_file[:subptr]
+			img = S32Image(iw, ih, png_file)
 		else:
-			hptr += 8
-			# just decode everything at once
-			iw = iw * ih
-			iw2 = iw * ih * 2
-			img.data[0:iw] = _decode_shorts(data[iptr:iptr + iw2], cfmt, "little", iw)
+			raise Exception("Compression not supported (s16.py COMP_ = " + str(cs16fmt.compressed) + ")")
 		results.append(img)
 	return results
 
-def encode_s16(images) -> bytes:
+def encode_s16(images: list[S16Image]) -> bytes:
 	"""
 	Encodes a S16 file from S16Image objects.
 	The S16 file is forced to be RGB565.
@@ -400,11 +439,11 @@ def _encode_c16_run(line_p, run):
 		for v in run:
 			line_p.append(v)
 
-def _encode_c16_line(data, ofs, l):
+def _encode_c16_line(data: list[int], ofs: int, length: int):
 	line_p = []
 	run = []
 	run_tr = False
-	for i in range(l):
+	for i in range(length):
 		v = data[ofs]
 		vtr = v == 0 # COL_MASK
 		# break run on change, or if the run is already 16383 pixels long
@@ -422,7 +461,7 @@ def _encode_c16_line(data, ofs, l):
 	# pack into bytes
 	return _encode_shorts(line_p)
 
-def encode_c16(images) -> bytes:
+def encode_c16(images: list[S16Image]) -> bytes:
 	"""
 	Encodes a C16 file from S16Image objects.
 	The C16 file is forced to be RGB565.
@@ -612,3 +651,18 @@ def decode_blk(data: bytes) -> S16Image:
 	blocks_w, blocks_h, blocks = decode_blk_blocks(data)
 	return stitch_blk(blocks_w, blocks_h, blocks)
 
+# -- S32 support --
+
+def encode_s32(images: list[S32Image]) -> bytes:
+	"""
+	Encodes an S32 file from S32Image objects.
+	Returns bytes.
+	"""
+	data = struct_cs16_header.pack(4, len(images))
+	blob_ptr = struct_cs16_header.size + (struct_cs16_frame.size * len(images))
+	blob = b""
+	for v in images:
+		data += struct_cs16_frame.pack(blob_ptr, v.width, v.height)
+		blob += v.data
+		blob_ptr += len(v.data)
+	return data + blob

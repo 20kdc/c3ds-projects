@@ -265,7 +265,7 @@ def dither_channel(w: int, h: int, data, bits: int, strategy: str, is_alpha: boo
 	# This masks such that 1 bit is 0x80, 8 is 0xFF.
 	mask = (0xFF00 >> bits) & 0xFF
 	# This mask is used to check the half-way threshold.
-	nudge_mask = 0x80 >> bits
+	# nudge_mask = 0x80 >> bits
 	# This is the amount of distance between jumps
 	nudge = 0x100 >> bits
 	mapprob = BITCOPY_MAPPROB_TABLES_GAMMA[bits]

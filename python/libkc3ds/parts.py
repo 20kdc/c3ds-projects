@@ -49,11 +49,11 @@ class PartID():
 	def __init__(self, name, c3 = None, c2 = None, cv = None, unused = False):
 		self.name = name
 		self.games = {}
-		if not (c3 is None):
+		if c3 is not None:
 			self.games["c3"] = c3
-		if not (c2 is None):
+		if c2 is not None:
 			self.games["c2"] = c2
-		if not (cv is None):
+		if cv is not None:
 			self.games["cv"] = cv
 		self.unused = unused
 		ALL[name] = self
