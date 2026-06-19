@@ -608,7 +608,7 @@ def decode_blk_blocks(data: bytes):
 	cfmt = cs16fmt.cfmt
 	if cs16fmt.endian != "little":
 		raise Exception("No support for non-LE format: " + cs16fmt.desc)
-	if cs16fmt.compressed:
+	if cs16fmt.compressed != COMP_S16:
 		raise Exception("BLK files aren't supposed to be compressed! Found: " + cs16fmt.desc)
 
 	# Read sprite headers, but we don't *actually* care about pointers
