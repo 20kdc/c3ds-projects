@@ -389,9 +389,8 @@ def _iterate_framelists(scene, cb):
 			# load and dither
 			for frame in relevant_frames:
 				path_png = os.path.join(path_ib, frame.paths.png)
-				tmp_img = bpy.data.images.load(path_png)
-				cb(tmp_img)
-				bpy.data.images.remove(tmp_img)
+				with imaging.ReadImg(path_png) as tmp_img:
+					cb(tmp_img)
 		cb(fsb + ".c16", inner, relevant_frames)
 
 def _iterate_framelists_c16ify(scene, inner):

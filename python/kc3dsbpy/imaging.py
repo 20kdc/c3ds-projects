@@ -10,6 +10,22 @@ import bpy
 from libkc3ds import s16, piw
 import os
 
+class ReadImg():
+	"""
+	This represents an image that is loaded temporarily.
+	This is a horrible, no-good hack.
+	"""
+	def __init__(self, path):
+		self.path = path
+		self.image = None
+	def __enter__(self):
+		self.image = bpy.data.images.load(self.path)
+		return self.image
+	def __exit__(self, _a, _b, _c):
+		bpy.data.images.remove(self.image)
+		self.image = None
+		return False
+
 def save_image_with_makedirs(image, filepath):
 	try:
 		os.makedirs(os.path.dirname(filepath))
