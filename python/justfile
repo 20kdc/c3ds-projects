@@ -1,3 +1,7 @@
 check:
 	ruff check libkc3ds
 	ty check --extra-search-path /usr/lib/python3/dist-packages/ libkc3ds
+
+blenderzip:
+	rm -rf kc3dsbpy/__pycache__ libkc3ds/__pycache__
+	zip -r blender-addons.zip kc3dsbpy libkc3ds
