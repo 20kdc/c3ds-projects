@@ -101,19 +101,13 @@ impl SprHeader {
         match t {
             SprType::S16(_) => {
                 for _ in 0..image_count {
-                    let mut ih = SprHeaderImage {
+                    let ih = SprHeaderImage {
                         base: endianness.r_u32(data, ptr)?,
                         width: endianness.r_u16(data, ptr + 4)?,
                         height: endianness.r_u16(data, ptr + 6)?,
                         row_bases: Vec::new(),
                     };
                     ptr += 8;
-                    if ih.height > 1 {
-                        for _ in 1..ih.height {
-                            ih.row_bases.push(endianness.r_u32(data, ptr)?);
-                            ptr += 4;
-                        }
-                    }
                     headers.images.push(ih);
                 }
                 if is_blk {
@@ -122,6 +116,8 @@ impl SprHeader {
                     // See also the notice in the Python lib's s16.py about Random's Room etc.
                     let mut simptr = headers.size();
                     for image in &mut headers.images {
+                        image.width = BLK_TILE_SIZE as u16;
+                        image.height = BLK_TILE_SIZE as u16;
                         image.base = simptr as u32;
                         simptr += BLK_TILE_SIZE * BLK_TILE_SIZE * 2;
                     }

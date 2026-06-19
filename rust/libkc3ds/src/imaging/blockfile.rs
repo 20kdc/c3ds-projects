@@ -9,31 +9,55 @@ use super::*;
 pub const BLK_TILE_SIZE: usize = 128;
 
 /// BLK tiles are RasterTile
-pub type BLK16Tile = RasterTile<Pixel, BLK_TILE_SIZE, BLK_TILE_SIZE>;
+pub type BLKTile = RasterTile<Pixel, BLK_TILE_SIZE, BLK_TILE_SIZE>;
 
 /// BLK file data.
 #[derive(Clone)]
-pub struct BLK16 {
+pub struct BLKSheet {
     /// Type of S16.
     /// BLK files inherit everything from S16.
-    pub variant: SprType,
-    pub blocks: Raster<BLK16Tile>,
+    pub id: SprType,
+    pub blocks: Raster<BLKTile>,
 }
 
-impl BLK16 {
-    /// Split a S16Frame into a BLK16.
-    pub fn split(variant: SprType, value: &SprFrame) -> BLK16 {
-        BLK16 {
-            variant,
+impl BLKSheet {
+    pub fn from_frames(id: SprType, width: usize, height: usize, source: &[SprFrame]) -> Self {
+        let blocks: Raster<BLKTile> = Raster::generate(width, height, &mut |x, y| {
+            let idx = y + (x * height);
+            let mut tile = BLKTile::default();
+            if idx < source.len() {
+                tile.copy_clipped(&source[idx], 0, 0);
+            }
+            tile
+        });
+        Self { id, blocks }
+    }
+
+    pub fn build_frames(&self) -> Vec<SprFrame> {
+        let mut total = Vec::new();
+        for x in 0..self.blocks.width() {
+            for y in 0..self.blocks.height() {
+                total.push(self.blocks.pixel(x, y).to_raster());
+            }
+        }
+        total
+    }
+
+    /// Split a SprFrame into a BLKSheet.
+    pub fn split(id: SprType, value: &SprFrame) -> Self {
+        BLKSheet {
+            id,
             blocks: Self::split_raster(value),
         }
     }
+
     /// Join into a S16Frame.
     pub fn join(&self) -> SprFrame {
         Self::join_raster(&self.blocks)
     }
+
     /// Split a S16Frame into a raster of tiles.
-    pub fn split_raster(value: &SprFrame) -> Raster<BLK16Tile> {
+    pub fn split_raster(value: &SprFrame) -> Raster<BLKTile> {
         let bw = if (value.width() % BLK_TILE_SIZE) != 0 {
             (value.width() / BLK_TILE_SIZE) + 1
         } else {
@@ -45,7 +69,7 @@ impl BLK16 {
             value.height() / BLK_TILE_SIZE
         };
         Raster::generate(bw, bh, &mut |x, y| {
-            let mut tile = BLK16Tile::default();
+            let mut tile = BLKTile::default();
             tile.copy(
                 &value.region_clipped(
                     x * BLK_TILE_SIZE,
@@ -59,8 +83,9 @@ impl BLK16 {
             tile
         })
     }
+
     /// Join a BLK16's blocks raster into a single S16Frame.
-    pub fn join_raster(value: &Raster<BLK16Tile>) -> SprFrame {
+    pub fn join_raster(value: &Raster<BLKTile>) -> SprFrame {
         let mut raster = SprFrame::new(
             value.width() * BLK_TILE_SIZE,
             value.height() * BLK_TILE_SIZE,

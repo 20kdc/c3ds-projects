@@ -133,8 +133,8 @@ const COMMAND: &'static dyn CLIElement = &CLISubcommands(
                     let img = imaging_ex::import(&args[0]);
                     let cdmode = cdmode_parse(args.get(2));
                     let dithered = s16dither::blk(&img, &CM_RGB565, cdmode);
-                    let blk16 = BLK16::split(SprType::S16(S16Type::S16_565), &dithered);
-                    std::fs::write(&args[1], blk16::build_blk(blk16)).unwrap();
+                    let blk16 = BLKSheet::split(SprType::S16(S16Type::S16_565), &dithered);
+                    std::fs::write(&args[1], blk16::build_blk(&blk16)).unwrap();
                     std::process::exit(0);
                 },
             ),
@@ -151,8 +151,8 @@ const COMMAND: &'static dyn CLIElement = &CLISubcommands(
                     }
                     let img = imaging_ex::import(&args[0]);
                     let dithered = s16dither::blk(&img, &CM_ARGB32, cdmode_parse(None));
-                    let blk16 = BLK16::split(SprType::S32, &dithered);
-                    std::fs::write(&args[1], blk16::build_blk(blk16)).unwrap();
+                    let blk16 = BLKSheet::split(SprType::S32, &dithered);
+                    std::fs::write(&args[1], blk16::build_blk(&blk16)).unwrap();
                     std::process::exit(0);
                 },
             ),
@@ -198,7 +198,7 @@ The inverse conversion is of course not lossless (lower bits are dropped).",
                     }
                     let sheet =
                         blk16::identify_and_read(&std::fs::read(&args[0]).unwrap()).unwrap();
-                    imaging_ex::export_blk(&args[1], &sheet.join(), sheet.variant.to_cm(), false);
+                    imaging_ex::export_blk(&args[1], &sheet.join(), sheet.id.to_cm(), false);
                     std::process::exit(0);
                 },
             ),

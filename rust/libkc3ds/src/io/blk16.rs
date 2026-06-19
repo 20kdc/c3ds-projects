@@ -24,137 +24,36 @@ pub fn identify(data: &[u8]) -> Option<SprType> {
 }
 
 /// Identifies and gets headers for a BLK.
-pub fn identify_and_headers(data: &[u8]) -> Result<BLK16Header, ()> {
+pub fn identify_and_headers(data: &[u8]) -> Result<(cs16::SprHeader, (u16, u16)), String> {
     if let Some(id) = identify(data) {
-        headers(id, data)
+        let header = cs16::SprHeader::from_bytes(id, true, data)
+            .map_err(|_| "invalid header".to_string())?;
+        let blk_size = header.blk_size.ok_or_else(|| "no blk_size".to_string())?;
+        Ok((header, blk_size))
     } else {
-        Err(())
+        Err("not a valid BLK".to_string())
     }
 }
 
 /// Identifies, gets headers for, and then reads a BLK.
-pub fn identify_and_read(data: &[u8]) -> Result<BLK16, ()> {
-    read_blk(&identify_and_headers(data)?, data)
+pub fn identify_and_read(data: &[u8]) -> Result<BLKSheet, String> {
+    let headers = identify_and_headers(data)?;
+    let sheet = cs16::read_spr(&headers.0, data)?;
+    Ok(BLKSheet::from_frames(
+        sheet.id,
+        headers.1 .0 as usize,
+        headers.1 .1 as usize,
+        &sheet.frames,
+    ))
 }
 
-/// BLK header.
-/// The redundant (and sometimes incorrect!) data is ignored.
-pub struct BLK16Header {
-    pub variant: SprType,
-    pub width: u16,
-    pub height: u16,
-}
-
-impl BLK16Header {
-    /// Gets the size of the BLK16 header.
-    pub fn size(&self) -> usize {
-        10 + ((self.width as usize) * (self.height as usize) * 8)
-    }
-    /// Header as bytes.
-    pub fn to_bytes(&self) -> Vec<u8> {
-        let mut data = vec![0; self.size()];
-        let endianness = self.variant.endianness();
-        ENDIANNESS_LE.w_u32(&mut data, 0, self.variant.magic());
-        let imgc = (self.width as usize) * (self.height as usize);
-        endianness.w_u16(&mut data, 4, self.width);
-        endianness.w_u16(&mut data, 6, self.height);
-        endianness.w_u16(&mut data, 8, imgc as u16);
-        let mut ptr = 10;
-        // *deliberately* incorrect to match how these files are supposed to be written
-        // engine doesn't care'
-        let mut calculated_base = 6;
-        for _ in 0..imgc {
-            endianness.w_u32(&mut data, ptr, calculated_base as u32);
-            endianness.w_u16(&mut data, ptr + 4, BLK_TILE_SIZE as u16);
-            endianness.w_u16(&mut data, ptr + 6, BLK_TILE_SIZE as u16);
-            ptr += 8;
-            calculated_base += BLK_TILE_SIZE * BLK_TILE_SIZE;
-        }
-        data
-    }
-}
-
-/// Gets headers for a BLK.
-pub fn headers(t: SprType, data: &[u8]) -> Result<BLK16Header, ()> {
-    let endianness = t.endianness();
-    Ok(BLK16Header {
-        variant: t,
-        width: endianness.r_u16(data, 4)?,
-        height: endianness.r_u16(data, 6)?,
-    })
-}
-
-struct BLKCoordinateIterator {
-    x: u16,
-    y: u16,
-    w: u16,
-    h: u16,
-}
-
-impl Iterator for BLKCoordinateIterator {
-    type Item = (u16, u16);
-    fn next(&mut self) -> Option<Self::Item> {
-        let vx = self.x;
-        let vy = self.y;
-        if vx >= self.w {
-            None
-        } else {
-            self.y += 1;
-            if self.y >= self.h {
-                self.y = 0;
-                self.x += 1;
-            }
-            Some((vx, vy))
-        }
-    }
-}
-
-/// Reads a BLK.
-pub fn read_blk(header: &BLK16Header, data: &[u8]) -> Result<BLK16, ()> {
-    let mut ptr = header.size();
-    let mut blk = BLK16 {
-        variant: header.variant,
-        blocks: Raster::new(header.width as usize, header.height as usize),
-    };
-    let endianness = blk.variant.endianness();
-    for (x, y) in (BLKCoordinateIterator {
-        x: 0,
-        y: 0,
-        w: header.width,
-        h: header.height,
-    }) {
-        let tile = &mut blk.blocks.pixel_mut(x as usize, y as usize);
-        for row in &mut tile.0 {
-            for pixel in row {
-                *pixel = endianness.r_u16(data, ptr)? as Pixel;
-                ptr += 2;
-            }
-        }
-    }
-    Ok(blk)
-}
-
-/// Builds a BLK.
-pub fn build_blk(blk: BLK16) -> Vec<u8> {
-    let header = BLK16Header {
-        variant: blk.variant,
-        width: blk.blocks.width() as u16,
-        height: blk.blocks.height() as u16,
-    };
-    let mut data = header.to_bytes();
-    let endianness = blk.variant.endianness();
-    for (x, y) in (BLKCoordinateIterator {
-        x: 0,
-        y: 0,
-        w: header.width,
-        h: header.height,
-    }) {
-        let tile = blk.blocks.pixel(x as usize, y as usize);
-        for row in &tile.0 {
-            for pixel in row {
-                cs16::push_u16(&mut data, endianness, *pixel as u16);
-            }
-        }
-    }
-    data
+/// Builds a BLK file.
+pub fn build_blk(blk: &BLKSheet) -> Vec<u8> {
+    cs16::build(
+        &SprSheet {
+            id: blk.id,
+            frames: blk.build_frames(),
+        },
+        Some((blk.blocks.width() as u16, blk.blocks.height() as u16)),
+    )
 }
