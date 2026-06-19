@@ -47,7 +47,6 @@ os.system("rm Catalogue/NetBabel*.catalogue")
 machine_cfg_dm = preplib.DirectoryManager()
 machine_cfg_dm.add_kv("Game Name", "Docking Station")
 machine_cfg_dm.add_all_dirs("")
-machine_cfg_dm.add_dir("Catalogue", "../engine/Catalogue")
 machine_cfg_dm.add_all_dirs("../Creatures 3/")
 
 machine_cfg = open("machine.cfg", "w")

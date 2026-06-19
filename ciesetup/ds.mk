@@ -36,7 +36,22 @@ $(R)ds_195_64_dec.tar: gadgets/debz2.py $(R)ds_195_64.tar
 	python3 gadgets/debz2.py $(R)ds_195_64.tar $(R)ds_195_64_dec.tar_
 	mv $(R)ds_195_64_dec.tar_ $(R)ds_195_64_dec.tar
 
-# -- Gadget set 3: Engine package --
+# -- Gadget set 3a: Fixup package --
+
+INTERMEDIATES += $(R)fixup296.tar
+
+$(R)fixup296.tar: $(R)ds_195_64_dec.tar gadgets/prep_fixup296.py
+	# this contains assets that need to be injected into C3 to make it work on 2.296
+	mkdir -p $(R)tmp_fixup296
+	cd $(R)tmp_fixup296 ; tar -xf ../ds_195_64_dec.tar
+	# time to do modifications HERE
+	cd $(R)tmp_fixup296 ; python3 ../$(UNR)gadgets/prep_fixup296.py ../$(UNR)gadgets/
+	# done with modifications, save
+	cd $(R)tmp_fixup296 ; tar -cf ../fixup296.tar_ .
+	rm -rf $(R)tmp_fixup296
+	mv $(R)fixup296.tar_ $(R)fixup296.tar
+
+# -- Gadget set 3b: Engine package --
 
 INTERMEDIATES += $(R)pkg_engine.tar
 

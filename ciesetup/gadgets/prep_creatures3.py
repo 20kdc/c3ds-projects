@@ -13,7 +13,8 @@ import time
 import preplib
 
 src = tarfile.TarFile(sys.argv[1], "r")
-dst = tarfile.TarFile(sys.argv[2], "w")
+src_fixup = tarfile.TarFile(sys.argv[2], "r")
+dst = tarfile.TarFile(sys.argv[3], "w")
 
 lowercase_prefixes = [
 	"./Sounds/",
@@ -51,7 +52,7 @@ for member in src.getmembers():
 		continue
 	if member_name_lower.endswith(".url"):
 		continue
-	# we don't want engine catalogues, since we're using the engine package for that
+	# we don't want engine catalogues, since we're using fixup for that
 	if member_name_lower.startswith("./catalogue/voices"):
 		continue
 	if member_name_lower.startswith("./catalogue/vocab constructs"):
@@ -97,6 +98,27 @@ for member in src.getmembers():
 		tarinfo.type = member.type
 		dst.addfile(tarinfo)
 
+for member in src_fixup.getmembers():
+	# determine if and what to lowercase
+	translated_name = member.name
+	# start by fixing any potential errors in directory names
+	for v in known_directories:
+		if translated_name.lower().startswith(v.lower()):
+			translated_name = v + translated_name[len(v):]
+	translated_name = "./Creatures 3/" + translated_name[2:]
+	# and in any case, what is this anyway?
+	if member.isfile():
+		# alright, extract it
+		f = src_fixup.extractfile(member)
+		data = f.read()
+		f.close()
+		# store
+		tarinfo = tarfile.TarInfo(translated_name)
+		tarinfo.mtime = member.mtime
+		tarinfo.mode = member.mode
+		tarinfo.size = len(data)
+		dst.addfile(tarinfo, io.BytesIO(data))
+
 def add_text_file(name, mode, text):
 	data = text.encode("utf8")
 	tarinfo = tarfile.TarInfo(name)
@@ -115,7 +137,6 @@ add_dir("./Creatures 3/Users")
 machine_cfg_dm = preplib.DirectoryManager()
 machine_cfg_dm.add_kv("Game Name", "Creatures 3")
 machine_cfg_dm.add_all_dirs("")
-machine_cfg_dm.add_dir("Catalogue", "../engine/Catalogue")
 
 add_text_file("./Creatures 3/machine.cfg", 0o644, machine_cfg_dm.content)
 
@@ -138,5 +159,6 @@ FullScreen 0
 """)
 
 src.close()
+src_fixup.close()
 dst.close()
 

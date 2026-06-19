@@ -11,9 +11,9 @@ default: ds
 
 $(R)unified.tar: $(R)pkg_creatures3.tar $(R)pkg_dockingstation.tar $(R)pkg_engine.tar
 	rm -f $(R)unified.tar
-	tar --concatenate -f $(R)unified.tar $(R)pkg_engine.tar
 	tar --concatenate -f $(R)unified.tar $(R)pkg_dockingstation.tar
 	tar --concatenate -f $(R)unified.tar $(R)pkg_creatures3.tar
+	tar --concatenate -f $(R)unified.tar $(R)pkg_engine.tar
 
 test: $(R)unified.tar
 	mkdir -p /media/ramdisk/ds

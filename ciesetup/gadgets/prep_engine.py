@@ -18,7 +18,6 @@ geocentric = get_script_path + "cd \"$SCRIPT_DIR\"\n"
 gadgets_base = sys.argv[1]
 
 os.mkdir("engine")
-os.mkdir("engine/Catalogue")
 
 # - library stuff -
 
@@ -55,15 +54,6 @@ os.unlink("machine.cfg")
 os.unlink("user.cfg")
 os.unlink("Porting-Credits.txt")
 os.unlink("BuildNumber.txt")
-
-# pull the DS version of the engine catalogues
-os.system("mv \"Catalogue/voices.catalogue\" engine/Catalogue/")
-os.system("mv \"Catalogue/vocab constructs.catalogue\" engine/Catalogue/")
-os.system("mv Catalogue/System*.catalogue engine/Catalogue/")
-os.system("mv Catalogue/Norn*.catalogue engine/Catalogue/")
-os.system("mv Catalogue/CAOS.catalogue engine/Catalogue/")
-os.system("mv Catalogue/Brain*.catalogue engine/Catalogue/")
-os.system("mv Catalogue/NetBabel*.catalogue engine/Catalogue/")
 
 # - directories to remove -
 
