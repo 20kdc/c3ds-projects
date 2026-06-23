@@ -1,0 +1,11 @@
+#!/bin/sh
+# Builds openc2e 6a4396c83152fe9f9152be924b5a8edc8e759a6a praytools without doing the cmake/SDL3 dance.
+cd openc2e
+COMMON="externals/fmt/src/format.cc \
+src/fileformats/PrayFileReader.cpp src/fileformats/PrayFileWriter.cpp src/fileformats/PraySourceParser.cpp \
+src/common/NumericCast.cpp src/common/encoding.cpp src/common/readfile.cpp src/common/io/SpanReader.cpp src/common/io/FileReader.cpp src/common/io/FileWriter.cpp src/common/io/VectorWriter.cpp \
+-I src -I externals/fmt/include -I externals/ghc_filesystem/include \
+-lz"
+
+g++ src/tools/praybuilder.cpp $COMMON -o praybuilder
+g++ src/tools/praydumper.cpp $COMMON -o praydumper
